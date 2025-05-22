@@ -9,30 +9,36 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['update:modelValue'])
 
-const is = 'div'
+const is = 'dialog'
 
 // defineModel 'open'
 const _isOpen = ref(props.modelValue)
-watch(() => props.modelValue, (val) => {
-  _isOpen.value = val
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    console.log('props.modelValue', val)
+    _isOpen.value = val
+  },
+)
 const isOpen = computed({
   get: () => _isOpen.value,
   set: (val) => {
+    console.log('set', val)
     _isOpen.value = val
-    if (props.modelValue !== val)
+    if (props.modelValue !== val) {
+      console.log("emit('update:modelValue', val)", val)
       emit('update:modelValue', val)
+    }
   },
 })
 
 function handleClick() {
-  if (props.closeOnClickOutside)
-    isOpen.value = false
+  if (props.closeOnClickOutside) isOpen.value = false
 }
 </script>
 
 <template>
-  <input v-model="isOpen" type="checkbox" class="modal-toggle">
+  <input v-model="isOpen" type="checkbox" class="modal-toggle" />
   <component
     :is="is"
     v-bind="{ ...$attrs, ...$props }"

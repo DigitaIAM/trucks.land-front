@@ -127,6 +127,7 @@ declare module 'vue' {
     NavbarStart: typeof import('./components/widgets/NavbarStart.vue')['default']
     NavButton: typeof import('./components/widgets/NavButton.vue')['default']
     NextStatus: typeof import('./components/order/NextStatus.vue')['default']
+    NextStatusModal: typeof import('./components/modal/NextStatusModal.vue')['default']
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
     PickUpModal: typeof import('./components/modal/PickUpModal.vue')['default']

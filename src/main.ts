@@ -10,6 +10,8 @@ import { createPinia } from 'pinia'
 
 // import { createHead } from '@unhead/vue/server
 
+import 'vue-color/style.css'
+
 // const head = createHead()
 
 const app = createApp(App)

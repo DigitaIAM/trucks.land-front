@@ -56,7 +56,7 @@ export const useStatusesStore = defineStore('status', () => {
       .select()
       .then((response) => {
         console.log('response', response)
-        if (response.status == 201) {
+        if (response.status == 200) {
           response.data?.forEach((json) => {
             const status = json as Status
             mapping.value.set(status.id, status)

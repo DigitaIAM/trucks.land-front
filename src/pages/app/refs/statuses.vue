@@ -4,43 +4,94 @@ layout: app
 </route>
 
 <script setup lang="ts">
-// import Search from '@/components/windowElements/Search.vue'
-// import ListStatuses from '@/components/lists/ListStatuses.vue'
+import type { StatusNext } from '@/stores/statuses_next.ts'
 
 const statusesStore = useStatusesStore()
+const statusesNextStore = useStatusesNextStore()
 
-function createStatus(data) {
-  console.log('createStatus', data)
-  statusesStore.create(data)
+function generateStyle(col, status: Status | null) {
+  const style = {} // width: col.size + 'px'
+  if (status?.color) {
+    style['background-color'] = status.color // col.color(order)
+  }
+  return style
+}
+
+const cols = [
+  {
+    label: 'Name',
+    value: (v: Status) => v.name,
+    color: (v: Status) => v.color,
+    size: 50,
+  },
+  {
+    label: 'Next',
+    value: (v: StatusNext) => v.next,
+    // color: (v: Status) => v.color,
+    size: 50,
+  },
+]
+
+const selectedStatus = ref(null)
+const selectedNextStatus = ref(null)
+
+function editStatus(status: Status) {
+  console.log('editStatus', status)
+  selectedStatus.value = status
+}
+
+function selectNextStatus(status: Status) {
+  console.log('nextStatus', status)
+  selectedNextStatus.value = status
+}
+
+function onClose() {
+  console.log('closed')
+  selectedStatus.value = null
 }
 </script>
 
 <template>
-  <div class="flex px-10">
-    <button class="btn" onclick="modal_status.showModal()">Create</button>
-    <dialog id="modal_status" class="modal">
-      <div class="modal-box w-11/12 max-w-5xl">
-        <StatusModal @create="createStatus" />
-        <!--        <div class="modal-action">-->
-        <!--          <form method="dialog">-->
-        <!--            <button class="btn">Done</button>-->
-        <!--          </form>-->
-        <!--        </div>-->
-      </div>
-    </dialog>
-  </div>
+  <StatusModal :edit="selectedStatus" @closed="onClose" />
+  <NextStatusModal :edit="selectedNextStatus"></NextStatusModal>
 
-  <ListStatuses />
-
-  <!--  <Flex col items-center justify-center class="h-[32rem] gap-2 text-center">-->
-  <!--    <div>Loading {{ statusesStore.loading }}</div>-->
-  <!--    &lt;!&ndash;      <div>Error {{ statusesStore.isError }}</div>&ndash;&gt;-->
-  <!--    <div>Listing {{ statusesStore.listing }}</div>-->
-
-  <!--    <div v-for="status in statusesStore.listing" :key="status.id">-->
-  <!--      <div>{{ status.id }}</div>-->
-  <!--      <div>{{ status.name }}</div>-->
-  <!--      <div>{{ status.createAt }}</div>-->
-  <!--    </div>-->
-  <!--  </Flex>-->
+  <table class="w-full text-left table-auto min-w-max">
+    <thead>
+      <tr>
+        <th
+          v-for="col in cols"
+          class="p-4 border-b border-b-gray-300"
+          :style="{ width: col.size + 'px' }"
+          :key="col.label"
+        >
+          <p class="block text-sm antialiasing font-bold leading-none">
+            {{ col.label }}
+          </p>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="status in statusesStore.listing" :key="status.id" @click="editStatus(status)">
+        <td
+          v-for="col in cols"
+          :key="col.label"
+          class="py-3 px-4"
+          :style="generateStyle(col, status)"
+        >
+          <p
+            v-if="col.label != 'Next'"
+            class="block text-sm antialiasing font-normal leading-normal truncate"
+            :style="{ width: col.size + 'px' }"
+          >
+            {{ col.value(status) }}
+          </p>
+          <p v-else>
+            <!--                         v-for="nextstatus in statusesNextStore.listing" :key="nextstatus.id"-->
+            <!--                        {{ col.value(nextstatus) }}-->
+            <Button @click.stop="selectNextStatus(status)">+</Button>
+          </p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </template>

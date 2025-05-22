@@ -186,7 +186,7 @@ declare global {
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFeathers: (typeof import('./composables/use-feathers'))['useFeathers']
-  const useFeathersPiniaConfig: (typeof import('./models/feathers-pinia-config'))['useFeathersPiniaConfig']
+  const useFeathersPiniaConfig: (typeof import('@/model/feathers-pinia-config'))['useFeathersPiniaConfig']
   const useFeathersService: (typeof import('./composables/use-feathers'))['useFeathersService']
   const useFetch: typeof import('@vueuse/core')['useFetch']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
@@ -264,6 +264,7 @@ declare global {
   const useSorted: typeof import('@vueuse/core')['useSorted']
   const useSpeechRecognition: typeof import('@vueuse/core')['useSpeechRecognition']
   const useSpeechSynthesis: typeof import('@vueuse/core')['useSpeechSynthesis']
+  const useStatusesNextStore: typeof import('./stores/statuses_next')['useStatusesNextStore']
   const useStatusesStore: typeof import('./stores/statuses')['useStatusesStore']
   const useStepper: typeof import('@vueuse/core')['useStepper']
   const useStorage: typeof import('@vueuse/core')['useStorage']
@@ -293,9 +294,9 @@ declare global {
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
-  const useUserModel: (typeof import('./models/user'))['useUserModel']
+  const useUserModel: (typeof import('@/model/user'))['useUserModel']
   const useUserStore: (typeof import('./stores/service.users'))['useUserStore']
-  const useUsersConfig: (typeof import('./models/user'))['useUsersConfig']
+  const useUsersConfig: (typeof import('@/model/user'))['useUsersConfig']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
@@ -333,6 +334,9 @@ declare global {
   // @ts-ignore
   export type { Status } from './stores/statuses'
   import('./stores/statuses')
+  // @ts-ignore
+  export type { StatusNext } from './stores/statuses_next'
+  import('./stores/statuses_next')
 }
 
 // for vue template auto import
@@ -584,6 +588,7 @@ declare module 'vue' {
     readonly useSorted: UnwrapRef<typeof import('@vueuse/core')['useSorted']>
     readonly useSpeechRecognition: UnwrapRef<typeof import('@vueuse/core')['useSpeechRecognition']>
     readonly useSpeechSynthesis: UnwrapRef<typeof import('@vueuse/core')['useSpeechSynthesis']>
+    readonly useStatusesNextStore: UnwrapRef<typeof import('./stores/statuses_next')['useStatusesNextStore']>
     readonly useStatusesStore: UnwrapRef<typeof import('./stores/statuses')['useStatusesStore']>
     readonly useStepper: UnwrapRef<typeof import('@vueuse/core')['useStepper']>
     readonly useStorage: UnwrapRef<typeof import('@vueuse/core')['useStorage']>
