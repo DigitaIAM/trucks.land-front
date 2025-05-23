@@ -146,6 +146,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Search: typeof import('./components/windowElements/Search.vue')['default']
     Select: typeof import('./components/widgets/Select.vue')['default']
+    Sidebar: typeof import('./components/widgets/Sidebar.vue')['default']
     SideBar: typeof import('./components/windowElements/SideBar.vue')['default']
     Stack: typeof import('./components/widgets/Stack.vue')['default']
     Stat: typeof import('./components/widgets/Stat.vue')['default']

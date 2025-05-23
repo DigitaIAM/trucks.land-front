@@ -55,7 +55,6 @@ export const useStatusesStore = defineStore('status', () => {
       .eq('id', status.id)
       .select()
       .then((response) => {
-        console.log('response', response)
         if (response.status == 200) {
           response.data?.forEach((json) => {
             const status = json as Status
@@ -65,7 +64,11 @@ export const useStatusesStore = defineStore('status', () => {
       })
   }
 
-  return { listing, initialized, loading, create, update }
+  function resolve(id: number) {
+    return mapping.value.get(id)
+  }
+
+  return { listing, initialized, loading, create, update, resolve }
 })
 
 if (import.meta.hot) {

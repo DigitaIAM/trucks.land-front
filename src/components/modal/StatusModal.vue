@@ -15,7 +15,7 @@ const palette = [
   '#29f0d5',
   '#5bc8aC',
   '#98dbc6',
-  '#eaff00',
+  '#FDE68A',
   '#DC2626',
   '#00ff00',
   '#a6a737',
@@ -51,9 +51,10 @@ function saveStatus() {
 </script>
 
 <template>
-  <Flex class="mt-6 mb-2 justify-end px-6">
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Search></Search>
     <Button class="btn" onclick="edit_status.showModal()">Create</Button>
-  </Flex>
+  </div>
   <Modal id="edit_status">
     <ModalBox class="w-2/5 min-w-[40%] max-w-[40%]">
       <Text size="2xl">Status</Text>

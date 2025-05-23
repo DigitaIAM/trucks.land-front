@@ -22,13 +22,13 @@ const cols = [
     label: 'Name',
     value: (v: Status) => v.name,
     color: (v: Status) => v.color,
-    size: 50,
+    size: 300,
   },
   {
     label: 'Next',
     value: (v: StatusNext) => v.next,
-    // color: (v: Status) => v.color,
-    size: 50,
+    color: (v: Status) => v.color,
+    size: 300,
   },
 ]
 
@@ -85,10 +85,15 @@ function onClose() {
           >
             {{ col.value(status) }}
           </p>
-          <p v-else>
-            <!--                         v-for="nextstatus in statusesNextStore.listing" :key="nextstatus.id"-->
-            <!--                        {{ col.value(nextstatus) }}-->
-            <Button @click.stop="selectNextStatus(status)">+</Button>
+          <p
+            v-else
+            class="block text-sm antialiasing font-normal leading-normal truncate"
+            :style="{ width: col.size + 'px' }"
+          >
+            <span v-for="id in statusesNextStore.nextFor(status)" :key="id" class="mr-4">
+              {{ statusesStore.resolve(id).name }}
+            </span>
+            <Button ghost sm @click.stop="selectNextStatus(status)">+</Button>
           </p>
         </td>
       </tr>
