@@ -56,50 +56,49 @@ function saveStatus() {
     <Button class="btn" onclick="edit_status.showModal()">Create</Button>
   </div>
   <Modal id="edit_status">
-    <ModalBox class="w-2/5 min-w-[40%] max-w-[40%]">
+    <ModalBox class="w-4/5">
       <Text size="2xl">Status</Text>
 
-      <h5 class="text-gray-500 px-1 pb-2 mt-2">Name</h5>
-      <div class="flex mb-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <TextInput v-model="name" />
-        </div>
-        <div class="ml-6 md:w-1/2 md:mb-0">
-          <TwitterPicker :presetColors="palette" triangle="hide" v-model="color" />
-        </div>
-      </div>
+      <TextInput class="flex mb-4 mt-4 w-full" placeholder="Name" v-model="name" />
 
-      <div class="grid grid-cols-2 mt-10">
-        <div class="gap-3 w-full">
-          <div class="mb-2">
+      <div class="flex space-x-3 mb-6 mt-6 w-full">
+        <TwitterPicker
+          :presetColors="palette"
+          triangle="hide"
+          v-model="color"
+          class="md:w-1/2 md:mb-0"
+        />
+        <div class="flex-wrap">
+          <div class="px-3 mb-2">
             <ToggleDescription label="start"></ToggleDescription>
           </div>
-          <div class="mb-2">
+          <div class="px-3 mb-2">
             <ToggleDescription label="end"></ToggleDescription>
           </div>
         </div>
+      </div>
 
-        <div class="gap-3 w-full">
-          <div class="mb-2">
-            <ToggleDescription label="Dispatcher team"></ToggleDescription>
-          </div>
-          <div class="mb-2">
-            <ToggleDescription label="Tracking team"></ToggleDescription>
-          </div>
-          <div class="mb-2">
-            <ToggleDescription label="Check out before payments"></ToggleDescription>
-          </div>
-          <div class="mb-2">
-            <ToggleDescription label="Accounts"></ToggleDescription>
-          </div>
-          <div class="mb-2">
-            <ToggleDescription label="QPay"></ToggleDescription>
-          </div>
-          <div class="mb-2">
-            <ToggleDescription label="Ready for pay out"></ToggleDescription>
-          </div>
+      <div class="w-full">
+        <div class="mb-2">
+          <ToggleDescription label="Dispatcher team"></ToggleDescription>
+        </div>
+        <div class="mb-2">
+          <ToggleDescription label="Tracking team"></ToggleDescription>
+        </div>
+        <div class="mb-2">
+          <ToggleDescription label="Check out before payments"></ToggleDescription>
+        </div>
+        <div class="mb-2">
+          <ToggleDescription label="Accounts"></ToggleDescription>
+        </div>
+        <div class="mb-2">
+          <ToggleDescription label="QPay"></ToggleDescription>
+        </div>
+        <div class="mb-2">
+          <ToggleDescription label="Ready for pay out"></ToggleDescription>
         </div>
       </div>
+
       <ModalAction>
         <form method="dialog">
           <Button @click="saveStatus()">Create</Button>

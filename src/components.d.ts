@@ -131,6 +131,7 @@ declare module 'vue' {
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
     PickUpModal: typeof import('./components/modal/PickUpModal.vue')['default']
+    Pikaday: typeof import('./components/widgets/Pikaday.vue')['default']
     Progress: typeof import('./components/widgets/Progress.vue')['default']
     Prose: typeof import('./components/widgets/Prose.vue')['default']
     RadialProgress: typeof import('./components/widgets/RadialProgress.vue')['default']
