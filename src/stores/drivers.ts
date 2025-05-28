@@ -1,9 +1,12 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 
-export interface Driver {
+export interface Driver extends DriverCreate {
   id: number
   created_at: string
+}
+
+export interface DriverCreate {
   name: string
   user: string
   email: string
@@ -12,7 +15,19 @@ export interface Driver {
   company: string
   fix_payments: string
   percentage: string
-  expiry_date: string
+  expiry_date: Date
+}
+
+export interface DriverUpdate {
+  name?: string
+  user?: string
+  email?: string
+  phone?: string
+  licence?: string
+  company?: string
+  fix_payments?: string
+  percentage?: string
+  expiry_date?: Date
 }
 
 export const useDriversStore = defineStore('driver', () => {
@@ -40,7 +55,7 @@ export const useDriversStore = defineStore('driver', () => {
     return list
   })
 
-  function create(driver: Driver) {
+  function create(driver: DriverCreate) {
     supabase
       .from('drivers')
       .insert(driver)
@@ -56,11 +71,11 @@ export const useDriversStore = defineStore('driver', () => {
       })
   }
 
-  function update(driver: Driver) {
+  function update(id: number, driver: DriverUpdate) {
     supabase
       .from('drivers')
       .update(driver)
-      .eq('id', driver.id)
+      .eq('id', id)
       .select()
       .then((response) => {
         if (response.status == 200) {

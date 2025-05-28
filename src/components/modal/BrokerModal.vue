@@ -6,7 +6,7 @@ const props = defineProps<{
   edit: Broker | null
 }>()
 
-const id = ref<number>(null)
+const id = ref<number>()
 const name = ref('')
 const person = ref('')
 const phone = ref('')
@@ -62,10 +62,9 @@ function saveBroker() {
 
       dot: dot.value,
       ms: ms.value,
-    } as Broker)
+    } as BrokerCreate)
   } else {
-    brokersStore.update({
-      id: id.value,
+    brokersStore.update(id.value, {
       name: name.value,
 
       contact: person.value,
@@ -79,7 +78,7 @@ function saveBroker() {
 
       dot: dot.value,
       ms: ms.value,
-    } as Broker)
+    } as BrokerUpdate)
   }
   edit_broker.close()
   emit('closed')

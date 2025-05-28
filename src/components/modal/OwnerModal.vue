@@ -1,120 +1,143 @@
-<script>
-import FormComboField from '@/components/order/FormComboField.vue'
-import FormInputField from '@/components/order/FormInputField.vue'
-import RadioButton from '@/components/buttons/RadioButton.vue'
-import ToggleDescription from '@/components/buttons/ToggleDescription.vue'
+<script setup lang="ts">
+import type { Owner } from '@/stores/owners.ts'
 
-export default {
-  name: 'OwnerModal',
-  components: { ToggleDescription, RadioButton, FormInputField, FormComboField },
-  data: function () {
-    return {
-      show: false,
-    }
+const props = defineProps<{
+  edit: Owner | null
+}>()
+
+const id = ref<number>()
+
+const name = ref('')
+const ein = ref('')
+const street = ref('')
+const email = ref('')
+const phone = ref('')
+const city = ref('')
+const state = ref('')
+const zip = ref('')
+const is_person = ref(false)
+const is_active = ref(false)
+
+const emit = defineEmits(['closed'])
+
+watch(
+  () => props.edit,
+  (owner) => {
+    console.log('watch', owner)
+    resetAndShow(owner)
   },
-  methods: {
-    closeModal: function () {
-      this.show = false
-    },
-  },
+  { deep: true },
+)
+
+const ownersStore = useOwnersStore()
+
+function resetAndShow(owner: Owner | null) {
+  id.value = owner?.id
+  name.value = owner?.name || ''
+  ein.value = owner?.ein || ''
+  street.value = owner?.street || ''
+  email.value = owner?.email || ''
+  phone.value = owner?.phone || ''
+  city.value = owner?.city || ''
+  state.value = owner?.state || ''
+  zip.value = owner?.zip || ''
+  is_person.value = owner?.is_person || false
+  is_active.value = owner?.is_active || false
+  edit_owner.showModal()
+}
+
+function saveOwner() {
+  if (id.value == null) {
+    ownersStore.create({
+      name: name.value,
+      ein: ein.value,
+      street: street.value,
+      email: email.value,
+      phone: phone.value,
+      city: city.value,
+      state: state.value,
+      zip: zip.value,
+      is_person: is_person.value,
+      is_active: is_active.value,
+    } as OwnerCreate)
+  } else {
+    ownersStore.update(id.value, {
+      name: name.value,
+      ein: ein.value,
+      street: street.value,
+      email: email.value,
+      phone: phone.value,
+      city: city.value,
+      state: state.value,
+      zip: zip.value,
+      is_person: is_person.value,
+      is_active: is_active.value,
+    } as OwnerUpdate)
+  }
+  edit_owner.close()
+  emit('closed')
 }
 </script>
 
 <template>
-  <div v-if="show" class="modal-shadow" @click.self="closeModal">
-    <div class="modal">
-      <div class="flex items-start justify-between p-2">
-        <div>
-          <h5 class="text-gray-700 text-xl font-bold">Owner</h5>
-        </div>
-
-        <div
-          class="relative h-8 max-h-[32px] w-8 max-w-[32px] select-none rounded-lg text-center align-middle font-sans text-xs font-medium uppercase text-blue-gray-500 transition-all hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-          @click="closeModal"
-        >
-          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-              class="h-5 w-5"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </span>
-        </div>
-      </div>
-      <div class="flex flex-wrap mb-2 w-full">
-        <div class="md:w-4/5 px-3 md:mb-0">
-          <FormInputField id="name" label="Name" value="JB-CZ International Transportation LLC" />
-        </div>
-        <div class="md:w-1/5 px-3 md:mb-0">
-          <ToggleDescription label="active"></ToggleDescription>
-        </div>
-      </div>
-      <div class="flex flex-wrap mb-2 mt-6 w-full">
-        <div class="md:w-1/2 px-3 md:mb-0">
-          <FormInputField id="ein" label="EIN" value="83-3579016" />
-        </div>
-        <div class="md:w-1/2 px-3 md:mb-0">
-          <FormInputField id="street" label="Street" value="108 L P Auer Road" />
-        </div>
-      </div>
-      <div class="flex flex-wrap mb-2 mt-6 w-full">
-        <div class="md:w-1/2 px-3 md:mb-0">
-          <FormInputField id="city" label="City / town" value="VANDALIA" />
-        </div>
-        <div class="md:w-1/4 px-3 md:mb-0">
-          <FormInputField id="state" label="State" value="OH" />
-        </div>
-        <div class="md:w-1/4 px-3 md:mb-0">
-          <FormInputField id="zip" label="Zip" value="59837" />
-        </div>
-      </div>
-      <div class="flex flex-wrap mb-2 mt-6 w-full">
-        <div class="md:w-1/2 px-3 md:mb-0">
-          <FormInputField id="email" label="Email" value="robin@dslogisticsinc.com" />
-        </div>
-        <div class="md:w-1/2 px-3 md:mb-0">
-          <FormInputField id="phone" label="Phone" value="(423) 926-0823" />
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 place-items-end px-3 mt-6 mb-2">
-        <button
-          class="w-20 h-10 bg-[#68C3A8] hover:bg-[#059669] text-white rounded-xl transition duration-300"
-          @click="closeModal"
-        >
-          Done
-        </button>
-      </div>
-    </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Search></Search>
+    <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
+  <Modal id="edit_owner">
+    <ModalBox class="w-2/5">
+      <Text size="2xl">Owner</Text>
+
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <TextInput class="md:w-3/5 md:mb-0" placeholder="Name" v-model="name" />
+        <div>
+          <label class="label">
+            <Toggle v-model="is_active"></Toggle>
+            <span class="ml-3 text-gray-500">active</span>
+          </label>
+        </div>
+      </div>
+      <TextInput class="mt-2 w-full" placeholder="EIN" v-model="ein"></TextInput>
+      <div class="flex space-x-3 mb-4 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <TextInput placeholder="Email" v-model="email" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <TextInput placeholder="Phone" v-model="phone" />
+        </div>
+      </div>
+      <label class="label">
+        <span class="ml-3 text-gray-500">organization</span>
+        <Toggle v-model="is_person"></Toggle>
+        <span class="ml-3 text-gray-500">person</span>
+      </label>
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <TextInput placeholder="Street" v-model="street" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <TextInput placeholder="City / town" v-model="city" />
+        </div>
+      </div>
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/3 md:mb-0">
+          <TextInput placeholder="State" v-model="state" />
+        </div>
+        <div class="md:w-1/3 md:mb-0">
+          <TextInput placeholder="Zip" v-model="zip" />
+        </div>
+      </div>
+
+      <ModalAction>
+        <form method="dialog">
+          <Button @click="saveOwner()">
+            <span v-if="id > 0">Update</span><span v-else>Create</span>
+          </Button>
+          <Button class="ml-6">Close</Button>
+        </form>
+      </ModalAction>
+    </ModalBox>
+  </Modal>
 </template>
 
-<style scoped>
-.modal-shadow {
-  position: absolute;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  backdrop-filter: blur(var(--blur-2xl));
-}
-
-.modal {
-  background: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  min-width: 540px;
-  max-width: 600px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-</style>
+<style scoped></style>

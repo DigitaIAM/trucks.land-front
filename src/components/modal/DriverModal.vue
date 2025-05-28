@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import type { Driver, DriverCreate, DriverUpdate } from '@/stores/drivers.ts'
 
 const props = defineProps<{
   edit: Driver | null
 }>()
 
-const emit = defineEmits(['closed'])
-
-const id = ref(null)
+const id = ref<number>()
 
 const name = ref('')
 const user = ref('')
@@ -18,7 +17,9 @@ const licence = ref('')
 const company = ref('')
 const fix_payments = ref('')
 const percentage = ref('')
-const expiry_date = ref(new Date())
+const expiry_date = ref(new Date() as Date | undefined)
+
+const emit = defineEmits(['closed'])
 
 watch(
   () => props.edit,
@@ -32,7 +33,7 @@ watch(
     company.value = driver?.company || ''
     fix_payments.value = driver?.fix_payments || ''
     percentage.value = driver?.percentage || ''
-    expiry_date.value = driver?.expiry_date || ''
+    expiry_date.value = driver?.expiry_date
     edit_driver.showModal()
   },
   { deep: true },
@@ -44,28 +45,33 @@ function saveDriver() {
   if (id.value == null) {
     driversStore.create({
       name: name.value,
+
       user: user.value,
       email: email.value,
       phone: phone.value,
+
       licence: licence.value,
       company: company.value,
       fix_payments: fix_payments.value,
       percentage: percentage.value,
+
       expiry_date: expiry_date.value,
-    } as Driver)
+    } as DriverCreate)
   } else {
-    driversStore.update({
-      id: id.value,
+    driversStore.update(id.value, {
       name: name.value,
+
       user: user.value,
       email: email.value,
       phone: phone.value,
+
       licence: licence.value,
       company: company.value,
       fix_payments: fix_payments.value,
       percentage: percentage.value,
+
       expiry_date: expiry_date.value,
-    } as Driver)
+    } as DriverUpdate)
   }
   edit_driver.close()
   emit('closed')

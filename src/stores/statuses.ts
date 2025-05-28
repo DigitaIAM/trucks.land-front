@@ -1,11 +1,19 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 
-export interface Status {
+export interface Status extends StatusCreate {
   id: number
+  createAt: string
+}
+
+export interface StatusCreate {
   name: string
   color: string
-  createAt: string
+}
+
+export interface StatusUpdate {
+  name?: string
+  color?: string
 }
 
 export const useStatusesStore = defineStore('status', () => {
@@ -33,7 +41,7 @@ export const useStatusesStore = defineStore('status', () => {
     return list
   })
 
-  function create(status: Status) {
+  function create(status: StatusCreate) {
     supabase
       .from('statuses')
       .insert(status)
@@ -48,11 +56,11 @@ export const useStatusesStore = defineStore('status', () => {
       })
   }
 
-  function update(status: Status) {
+  function update(id: number, status: StatusUpdate) {
     supabase
       .from('statuses')
       .update(status)
-      .eq('id', status.id)
+      .eq('id', id)
       .select()
       .then((response) => {
         if (response.status == 200) {

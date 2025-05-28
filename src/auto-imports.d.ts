@@ -232,6 +232,7 @@ declare global {
   const useObjectUrl: typeof import('@vueuse/core')['useObjectUrl']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
+  const useOwnersStore: typeof import('./stores/owners')['useOwnersStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
@@ -334,11 +335,14 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { Broker } from './stores/brokers'
+  export type { Broker, BrokerCreate, BrokerUpdate } from './stores/brokers'
   import('./stores/brokers')
   // @ts-ignore
-  export type { Driver } from './stores/drivers'
+  export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
+  // @ts-ignore
+  export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
+  import('./stores/owners')
   // @ts-ignore
   export type { Status } from './stores/statuses'
   import('./stores/statuses')
@@ -566,6 +570,7 @@ declare module 'vue' {
     readonly useObjectUrl: UnwrapRef<typeof import('@vueuse/core')['useObjectUrl']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOwnersStore: UnwrapRef<typeof import('./stores/owners')['useOwnersStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>

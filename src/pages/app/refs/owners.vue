@@ -7,40 +7,37 @@ layout: app
 const cols = [
   {
     label: 'Name',
-    value: (v: Driver) => v.name,
+    value: (v: Owner) => v.name,
     size: 300,
   },
   {
     label: 'Phone',
-    value: (v: Driver) => v.phone,
+    value: (v: Owner) => v.phone,
     size: 120,
   },
   {
     label: 'Email',
-    value: (v: Driver) => v.email,
+    value: (v: Owner) => v.email,
     size: 300,
-  },
-  {
-    label: 'Percentage',
-    value: (v: Driver) => v.percentage,
-    size: 120,
   },
 ]
 
-const selectedDriver = ref(null)
-const driversStore = useDriversStore()
+const selectedOwner = ref(null)
+const ownersStore = useOwnersStore()
 
-function editDriver(driver: Driver) {
-  selectedDriver.value = driver
+function editOwner(owner: Owner) {
+  console.log('editOwner', owner)
+  selectedOwner.value = owner
 }
 
 function onClose() {
-  selectedDriver.value = null
+  console.log('closed')
+  selectedOwner.value = null
 }
 </script>
 
 <template>
-  <DriverModal :edit="selectedDriver" @closed="onClose"></DriverModal>
+  <OwnerModal :edit="selectedOwner" @closed="onClose"></OwnerModal>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
@@ -56,7 +53,7 @@ function onClose() {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="driver in driversStore.listing" :key="driver.id" @click="editDriver(driver)">
+      <tr v-for="owner in ownersStore.listing" :key="owner.id" @click="editOwner(owner)">
         <td
           v-for="col in cols"
           class="py-3 px-4 border-b border-b-gray-300"
@@ -66,7 +63,7 @@ function onClose() {
             class="block text-sm antialiasing font-normal leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(driver) }}
+            {{ col.value(owner) }}
           </p>
         </td>
       </tr>

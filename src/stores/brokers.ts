@@ -1,9 +1,12 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 
-export interface Broker {
+export interface Broker extends BrokerCreate {
   id: number
   created_at: string
+}
+
+export interface BrokerCreate {
   name: string
   contact: string
   phone: string
@@ -14,6 +17,19 @@ export interface Broker {
   zip: string
   ms: string
   dot: string
+}
+
+export interface BrokerUpdate {
+  name?: string
+  contact?: string
+  phone?: string
+  email?: string
+  city?: string
+  street?: string
+  state?: string
+  zip?: string
+  ms?: string
+  dot?: string
 }
 
 export const useBrokersStore = defineStore('broker', () => {
@@ -41,13 +57,12 @@ export const useBrokersStore = defineStore('broker', () => {
     return list
   })
 
-  function create(broker: Broker) {
+  function create(broker: BrokerCreate) {
     supabase
       .from('brokers')
       .insert(broker)
       .select()
       .then((response) => {
-        console.log('response', response)
         if (response.status == 201) {
           response.data?.forEach((json) => {
             const broker = json as Broker
@@ -57,11 +72,11 @@ export const useBrokersStore = defineStore('broker', () => {
       })
   }
 
-  function update(broker: Broker) {
+  function update(id: number, broker: BrokerUpdate) {
     supabase
       .from('brokers')
       .update(broker)
-      .eq('id', broker.id)
+      .eq('id', id)
       .select()
       .then((response) => {
         if (response.status == 200) {

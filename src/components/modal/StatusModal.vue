@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { TwitterPicker } from 'vue-color'
+import type { StatusCreate } from '@/stores/statuses.ts'
 
 const props = defineProps<{
   edit: Status | null
@@ -40,10 +41,9 @@ const statusesStore = useStatusesStore()
 
 function saveStatus() {
   if (id.value == null) {
-    statusesStore.create({ name: name.value, color: color.value } as Status)
+    statusesStore.create({ name: name.value, color: color.value } as StatusCreate)
   } else {
-    const status = { id: id.value, name: name.value, color: color.value } as Status
-    statusesStore.update(status)
+    statusesStore.update(id.value, { name: name.value, color: color.value } as StatusUpdate)
   }
   edit_status.close()
   emit('closed')
