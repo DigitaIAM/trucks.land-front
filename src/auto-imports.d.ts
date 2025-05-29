@@ -302,6 +302,7 @@ declare global {
   const useUsersConfig: (typeof import('@/model/user'))['useUsersConfig']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
+  const useVehiclesStore: typeof import('./stores/vehicles')['useVehiclesStore']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
   const useVirtualList: typeof import('@vueuse/core')['useVirtualList']
   const useWakeLock: typeof import('@vueuse/core')['useWakeLock']
@@ -344,11 +345,14 @@ declare global {
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
-  export type { Status } from './stores/statuses'
+  export type { Status, StatusCreate, StatusUpdate } from './stores/statuses'
   import('./stores/statuses')
   // @ts-ignore
   export type { StatusNext } from './stores/statuses_next'
   import('./stores/statuses_next')
+  // @ts-ignore
+  export type { Vehicle, VehicleCreate, VehicleUpdate } from './stores/vehicles'
+  import('./stores/vehicles')
 }
 
 // for vue template auto import
@@ -635,6 +639,7 @@ declare module 'vue' {
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
+    readonly useVehiclesStore: UnwrapRef<typeof import('./stores/vehicles')['useVehiclesStore']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
     readonly useVirtualList: UnwrapRef<typeof import('@vueuse/core')['useVirtualList']>
     readonly useWakeLock: UnwrapRef<typeof import('@vueuse/core')['useWakeLock']>

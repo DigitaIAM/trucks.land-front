@@ -7,6 +7,7 @@ export interface Broker extends BrokerCreate {
 }
 
 export interface BrokerCreate {
+  is_active: boolean
   name: string
   contact: string
   phone: string
@@ -20,6 +21,7 @@ export interface BrokerCreate {
 }
 
 export interface BrokerUpdate {
+  is_active?: boolean
   name?: string
   contact?: string
   phone?: string

@@ -10,7 +10,6 @@ export interface OwnerCreate {
   is_active: boolean
   is_person: boolean
   ein: string
-  // user: string
   email: string
   phone: string
   street: string
@@ -89,7 +88,20 @@ export const useOwnersStore = defineStore('owner', () => {
       })
   }
 
-  return { initialized, loading, listing, create, update }
+  async function search(text: string) {
+    const response = await supabase
+      .from('owners')
+      .select()
+      .ilike('name', '%' + text + '%')
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as Owner)
+    }
+
+    return []
+  }
+
+  return { initialized, loading, listing, create, update, search }
 })
 
 if (import.meta.hot) {

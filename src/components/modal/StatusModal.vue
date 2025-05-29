@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['closed'])
 
-const id = ref(null)
+const id = ref<number>()
 const name = ref('')
 
 const palette = [
@@ -29,15 +29,19 @@ const color = defineModel({
 watch(
   () => props.edit,
   (status) => {
-    id.value = status?.id
-    name.value = status?.name || ''
-    color.value = status?.color ?? '#00000000'
-    edit_status.showModal()
+    resetAndShow(status)
   },
   { deep: true },
 )
 
 const statusesStore = useStatusesStore()
+
+function resetAndShow(status: Status | null) {
+  id.value = status?.id
+  name.value = status?.name || ''
+  color.value = status?.color ?? '#00000000'
+  edit_status.showModal()
+}
 
 function saveStatus() {
   if (id.value == null) {
@@ -53,7 +57,7 @@ function saveStatus() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search></Search>
-    <Button class="btn" onclick="edit_status.showModal()">Create</Button>
+    <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_status">
     <ModalBox class="w-4/5">
@@ -101,7 +105,9 @@ function saveStatus() {
 
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveStatus()">Create</Button>
+          <Button @click="saveStatus()">
+            <span v-if="id > 0">Update</span><span v-else>Create</span>
+          </Button>
           <Button class="ml-6">Close</Button>
         </form>
       </ModalAction>

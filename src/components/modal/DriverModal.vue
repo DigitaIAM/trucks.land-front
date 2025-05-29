@@ -24,22 +24,26 @@ const emit = defineEmits(['closed'])
 watch(
   () => props.edit,
   (driver) => {
-    id.value = driver?.id
-    name.value = driver?.name || ''
-    user.value = driver?.user || ''
-    email.value = driver?.email || ''
-    phone.value = driver?.phone || ''
-    licence.value = driver?.licence || ''
-    company.value = driver?.company || ''
-    fix_payments.value = driver?.fix_payments || ''
-    percentage.value = driver?.percentage || ''
-    expiry_date.value = driver?.expiry_date
-    edit_driver.showModal()
+    resetAndShow(driver)
   },
   { deep: true },
 )
 
 const driversStore = useDriversStore()
+
+function resetAndShow(driver: Driver | null) {
+  id.value = driver?.id
+  name.value = driver?.name || ''
+  user.value = driver?.user || ''
+  email.value = driver?.email || ''
+  phone.value = driver?.phone || ''
+  licence.value = driver?.licence || ''
+  company.value = driver?.company || ''
+  fix_payments.value = driver?.fix_payments || ''
+  percentage.value = driver?.percentage || ''
+  expiry_date.value = driver?.expiry_date
+  edit_driver.showModal()
+}
 
 function saveDriver() {
   if (id.value == null) {
@@ -81,7 +85,7 @@ function saveDriver() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search></Search>
-    <Button class="btn" onclick="edit_driver.showModal()">Create</Button>
+    <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_driver">
     <ModalBox class="w-2/5">
@@ -125,7 +129,9 @@ function saveDriver() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveDriver()">Create</Button>
+          <Button @click="saveDriver()">
+            <span v-if="id > 0">Update</span><span v-else>Create</span>
+          </Button>
           <Button class="ml-6">Close</Button>
         </form>
       </ModalAction>

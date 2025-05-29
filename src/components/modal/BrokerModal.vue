@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ToggleDescription from '@/components/buttons/ToggleDescription.vue'
 import type { Broker } from '@/stores/brokers.ts'
 
 const props = defineProps<{
@@ -17,34 +16,40 @@ const state = ref('')
 const zip = ref('')
 const ms = ref('')
 const dot = ref('')
+const is_active = ref(false)
 
 const emit = defineEmits(['closed'])
 
 watch(
   () => props.edit,
   (broker) => {
-    id.value = broker?.id
-
-    name.value = broker?.name || ''
-
-    person.value = broker?.contact || ''
-    email.value = broker?.email || ''
-    phone.value = broker?.phone || ''
-
-    street.value = broker?.street || ''
-    city.value = broker?.city || ''
-    zip.value = broker?.zip || ''
-    state.value = broker?.state || ''
-
-    dot.value = broker?.dot || ''
-    ms.value = broker?.ms || ''
-
-    edit_broker.showModal()
+    resetAndShow(broker)
   },
   { deep: true },
 )
 
 const brokersStore = useBrokersStore()
+
+function resetAndShow(broker: Broker | null) {
+  id.value = broker?.id
+
+  name.value = broker?.name || ''
+
+  person.value = broker?.contact || ''
+  email.value = broker?.email || ''
+  phone.value = broker?.phone || ''
+
+  street.value = broker?.street || ''
+  city.value = broker?.city || ''
+  zip.value = broker?.zip || ''
+  state.value = broker?.state || ''
+
+  dot.value = broker?.dot || ''
+  ms.value = broker?.ms || ''
+
+  is_active.value = broker?.is_active || false
+  edit_broker.showModal()
+}
 
 function saveBroker() {
   if (id.value == null) {
@@ -62,6 +67,8 @@ function saveBroker() {
 
       dot: dot.value,
       ms: ms.value,
+
+      is_active: is_active.value,
     } as BrokerCreate)
   } else {
     brokersStore.update(id.value, {
@@ -78,6 +85,8 @@ function saveBroker() {
 
       dot: dot.value,
       ms: ms.value,
+
+      is_active: is_active.value,
     } as BrokerUpdate)
   }
   edit_broker.close()
@@ -88,24 +97,27 @@ function saveBroker() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search></Search>
-    <Button class="btn" onclick="edit_broker.showModal()">Create</Button>
+    <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
 
   <Modal id="edit_broker">
     <ModalBox class="w-2/5">
       <Text size="2xl">Broker</Text>
 
-      <div class="flex mb-4 mt-4 w-full">
+      <div class="flex space-x-5 mb-4 mt-4 w-full">
         <div class="md:w-3/5 md:mb-0">
           <TextInput placeholder="Name" v-model="name" />
         </div>
-        <div class="md:w-1/5 px-4 md:mb-0">
-          <ToggleDescription label="active"></ToggleDescription>
+        <div class="md:w-1/5 md:mb-0">
+          <label class="label">
+            <Toggle v-model="is_active"></Toggle>
+            <span class="ml-3">active</span>
+          </label>
         </div>
       </div>
-      <div class="mb-2 mt-6 md:mb-0">
-        <TextInput placeholder="Person" v-model="person" />
-      </div>
+
+      <TextInput class="mt-2 w-full" placeholder="Person" v-model="person" />
+
       <div class="flex flex-wrap mb-2 mt-6 w-full">
         <div class="md:w-1/2 md:mb-0">
           <TextInput placeholder="City/town" v-model="city" />
@@ -138,7 +150,9 @@ function saveBroker() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveBroker()">Create</Button>
+          <Button @click="saveBroker()">
+            <span v-if="id > 0">Update</span><span v-else>Create</span>
+          </Button>
           <Button class="ml-6">Close</Button>
         </form>
       </ModalAction>

@@ -4,41 +4,43 @@ layout: app
 </route>
 
 <script setup lang="ts">
-import type { Broker } from '@/stores/brokers.ts'
+const selectedVehicle = ref(null)
 
-const brokersStore = useBrokersStore()
-
-const selectedBroker = ref(null)
-
-function editBroker(broker: Broker) {
-  selectedBroker.value = broker
+function editVehicle(vehicle: Vehicle) {
+  selectedVehicle.value = vehicle
 }
 
 function onClose() {
-  selectedBroker.value = null
+  selectedVehicle.value = null
 }
 
 const cols = [
   {
-    label: 'Name',
-    value: (v) => v.name,
-    size: 300,
-  },
-  {
-    label: 'Phone',
-    value: (v) => v.phone,
+    label: 'ID',
+    value: (v) => v.id,
     size: 120,
   },
   {
-    label: 'Email',
-    value: (v) => v.email,
+    label: 'VIN',
+    value: (v) => v.vin,
+    size: 200,
+  },
+  {
+    label: 'Owner',
+    value: (v) => v.owner,
     size: 300,
   },
 ]
+
+const owner = ref(null)
+
+const owners = useOwnersStore()
 </script>
 
 <template>
-  <BrokerModal :edit="selectedBroker" @closed="onClose"></BrokerModal>
+  <VehicleModal :edit="selectedVehicle" @closed="onClose"></VehicleModal>
+  test
+  <selector v-model="owner" :store="owners"></selector>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
@@ -54,7 +56,8 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="broker in brokersStore.listing" :key="broker.id" @click="editBroker(broker)">
+      <tr v-for="vehicle in vehicles">
+        <!--      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" @click="editVehicle(vehicle)">-->
         <td
           v-for="col in cols"
           class="py-3 px-4 border-b border-b-gray-300"
@@ -64,7 +67,7 @@ const cols = [
             class="block text-sm antialiasing font-normal leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(broker) }}
+            {{ col.value(vehicle) }}
           </p>
         </td>
       </tr>

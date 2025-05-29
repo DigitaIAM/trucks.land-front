@@ -23,7 +23,6 @@ const emit = defineEmits(['closed'])
 watch(
   () => props.edit,
   (owner) => {
-    console.log('watch', owner)
     resetAndShow(owner)
   },
   { deep: true },
@@ -93,7 +92,7 @@ function saveOwner() {
         <div>
           <label class="label">
             <Toggle v-model="is_active"></Toggle>
-            <span class="ml-3 text-gray-500">active</span>
+            <span class="ml-3">active</span>
           </label>
         </div>
       </div>
@@ -107,9 +106,8 @@ function saveOwner() {
         </div>
       </div>
       <label class="label">
-        <span class="ml-3 text-gray-500">organization</span>
         <Toggle v-model="is_person"></Toggle>
-        <span class="ml-3 text-gray-500">person</span>
+        <span class="ml-3">person</span>
       </label>
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
