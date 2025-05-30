@@ -1,6 +1,9 @@
 <template>
   <div class="default-layout h-full">
     <AppNav />
-    <RouterView class="mt-16 h-full" />
+    <div class="h-full">
+      <RouterView />
+    </div>
   </div>
 </template>
+<script setup lang="ts"></script>

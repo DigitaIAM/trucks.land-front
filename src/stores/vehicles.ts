@@ -7,19 +7,18 @@ export interface Vehicle extends VehicleCreate {
 }
 
 export interface VehicleCreate {
-  is_cargo_van: boolean
-  is_small_straight: boolean
-  is_large_straight: boolean
   is_active: boolean
 
-  owner: string
+  owner: number
   unit_id: string
   vin: string
   expiry_date: Date
+
   model: string
   type: string
+
   color: string
-  year: string
+  year: number
 
   load_capacity: number
   length: number
@@ -30,19 +29,18 @@ export interface VehicleCreate {
 }
 
 export interface VehicleUpdate {
-  is_cargo_van?: boolean
-  is_small_straight?: boolean
-  is_large_straight?: boolean
   is_active?: boolean
 
-  owner?: string
+  owner?: number
   unit_id?: string
   vin?: string
   expiry_date?: Date
+
   model?: string
   type?: string
+
   color?: string
-  year?: string
+  year?: number
 
   load_capacity?: number
   length?: number
@@ -56,7 +54,7 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   const mapping = ref(new Map<number, Vehicle>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('vehicle').select()
+    const response = await supabase.from('vehicles').select()
 
     const map = new Map<number, Vehicle>()
     response.data?.forEach((json) => {
@@ -77,24 +75,23 @@ export const useVehiclesStore = defineStore('vehicle', () => {
     return list
   })
 
-  function create(vehicle: VehicleCreate) {
-    supabase
-      .from('vehicle')
-      .insert(vehicle)
-      .select()
-      .then((response) => {
-        if (response.status == 201) {
-          response.data?.forEach((json) => {
-            const vehicle = json as Vehicle
-            mapping.value.set(vehicle.id, vehicle)
-          })
-        }
+  async function create(vehicle: VehicleCreate) {
+    console.log('create', vehicle)
+    const response = await supabase.from('vehicles').insert(vehicle).select().throwOnError()
+
+    if (response.status == 201) {
+      response.data?.forEach((json) => {
+        const vehicle = json as Vehicle
+        mapping.value.set(vehicle.id, vehicle)
       })
+    } else {
+      throw 'unexpended response status: ' + response.status
+    }
   }
 
   function update(id: number, vehicle: VehicleUpdate) {
     supabase
-      .from('vehicle')
+      .from('vehicles')
       .update(vehicle)
       .eq('id', id)
       .select()
@@ -108,7 +105,11 @@ export const useVehiclesStore = defineStore('vehicle', () => {
       })
   }
 
-  return { initialized, loading, listing, create, update }
+  function resolve(id: number) {
+    return mapping.value.get(id)
+  }
+
+  return { initialized, loading, listing, create, update, resolve }
 })
 
 if (import.meta.hot) {

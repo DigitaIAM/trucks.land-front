@@ -88,6 +88,10 @@ export const useOwnersStore = defineStore('owner', () => {
       })
   }
 
+  function resolve(id: number) {
+    return mapping.value.get(id)
+  }
+
   async function search(text: string) {
     const response = await supabase
       .from('owners')
@@ -101,7 +105,7 @@ export const useOwnersStore = defineStore('owner', () => {
     return []
   }
 
-  return { initialized, loading, listing, create, update, search }
+  return { initialized, loading, listing, create, update, resolve, search }
 })
 
 if (import.meta.hot) {

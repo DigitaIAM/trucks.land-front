@@ -1,15 +1,17 @@
 <script setup lang="ts">
 export type Suggestion = {
-  id: number | string
+  id: number
   name: string
 }
 
 interface Searchable {
+  resolve(id: number): Suggestion
+
   search(query: string): Suggestion[]
 }
 
 const props = defineProps<{
-  modelValue?: Suggestion
+  modelValue?: Suggestion | null
   store: Searchable
 }>()
 
@@ -19,9 +21,18 @@ const isOpen = ref(false)
 const isSetResult = ref(false)
 
 const valueAsText = ref(props.modelValue?.name || '')
+
 watch(
   () => props.modelValue,
-  (suggestion) => (valueAsText.value = suggestion.name),
+  (suggestion) => {
+    if (suggestion) {
+      const obj = props.store.resolve(suggestion.id)
+      isSetResult.value = true
+      valueAsText.value = obj?.name || '???'
+    } else {
+      valueAsText.value = ''
+    }
+  },
 )
 
 watch(
@@ -70,6 +81,7 @@ function setResult(suggestion: Suggestion) {
   <div class="relative">
     <div class="relative">
       <TextInput
+        placeholder="Owner"
         v-model="valueAsText"
         aria-expanded="false"
         class="block w-full disabled:opacity-50 disabled:pointer-events-none"

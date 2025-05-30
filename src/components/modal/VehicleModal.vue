@@ -4,23 +4,23 @@ import '@vuepic/vue-datepicker/dist/main.css'
 
 const vanTypes = ['cargo van', 'small straight', 'large straight']
 
+const owners = useOwnersStore()
+
 const props = defineProps<{
   edit: Vehicle | null
 }>()
 
 const id = ref<number>()
 
-const is_cargo_van = ref(false)
-const is_small_straight = ref(false)
-const is_large_straight = ref(false)
 const is_active = ref(false)
 
-const owner = ref('')
+const owner = ref(null)
+
 const unit_id = ref('')
 const vin = ref('')
 const expiry_date = ref(new Date() as Date | undefined)
 const model = ref('')
-const type = ref('')
+
 const color = ref('')
 const year = ref<number>()
 
@@ -48,80 +48,78 @@ const vehicleStore = useVehiclesStore()
 function resetAndShow(vehicle: Vehicle | null) {
   id.value = vehicle?.id
 
-  owner.value = vehicle?.owner
+  owner.value = vehicle ? { id: vehicle.owner } : null
   unit_id.value = vehicle?.unit_id
   vin.value = vehicle?.vin
   expiry_date.value = vehicle?.expiry_date
   model.value = vehicle?.model
-  type.value = vehicle?.type
+
   color.value = vehicle?.color
   year.value = vehicle?.year
 
   load_capacity.value = vehicle?.load_capacity
-  length.value = vehicle?.lenght
+  length.value = vehicle?.length
   width.value = vehicle?.width
   height.value = vehicle?.height
   door_width.value = vehicle?.door_width
   door_height.value = vehicle?.door_height
 
   is_active.value = vehicle?.is_active || false
-  is_cargo_van.value = vehicle?.is_cargo_van || false
-  is_large_straight.value = vehicle?.is_large_straight || false
-  is_small_straight.value = vehicle?.is_small_straight || false
+  vanType.value = vehicle?.type
 
   edit_vehicle.showModal()
 }
 
-function saveVehicle() {
-  if (id.value == null) {
-    vehicleStore.create({
-      owner: owner.value,
-      unit_id: unit_id.value,
-      vin: vin.value,
-      expiry_date: expiry_date.value,
-      model: model.value,
-      type: type.value,
-      color: color.value,
-      year: year.value,
+async function saveVehicle() {
+  try {
+    if (id.value == null) {
+      await vehicleStore.create({
+        owner: owner.value?.id,
+        unit_id: unit_id.value,
+        vin: vin.value,
+        expiry_date: expiry_date.value,
+        model: model.value,
 
-      load_capacity: load_capacity.value,
-      length: length.value,
-      width: width.value,
-      height: height.value,
-      door_width: door_width.value,
-      door_height: door_height.value,
+        color: color.value,
+        year: year.value,
 
-      is_active: is_active.value,
-      is_cargo_van: is_cargo_van.value,
-      is_large_straight: is_large_straight.value,
-      is_small_straight: is_small_straight.value,
-    } as VehicleCreate)
-  } else {
-    vehicleStore.update(id.value, {
-      owner: owner.value,
-      unit_id: unit_id.value,
-      vin: vin.value,
-      expiry_date: expiry_date.value,
-      model: model.value,
-      type: type.value,
-      color: color.value,
-      year: year.value,
+        load_capacity: load_capacity.value,
+        length: length.value,
+        width: width.value,
+        height: height.value,
+        door_width: door_width.value,
+        door_height: door_height.value,
 
-      load_capacity: load_capacity.value,
-      length: length.value,
-      width: width.value,
-      height: height.value,
-      door_width: door_width.value,
-      door_height: door_height.value,
+        is_active: is_active.value,
+        type: vanType.value,
+      } as VehicleCreate)
+    } else {
+      vehicleStore.update(id.value, {
+        owner: owner.value?.id,
+        unit_id: unit_id.value,
+        vin: vin.value,
+        expiry_date: expiry_date.value,
+        model: model.value,
 
-      is_active: is_active.value,
-      is_cargo_van: is_cargo_van.value,
-      is_large_straight: is_large_straight.value,
-      is_small_straight: is_small_straight.value,
-    } as VehicleUpdate)
+        color: color.value,
+        year: year.value,
+
+        load_capacity: load_capacity.value,
+        length: length.value,
+        width: width.value,
+        height: height.value,
+        door_width: door_width.value,
+        door_height: door_height.value,
+
+        is_active: is_active.value,
+        type: vanType.value,
+      } as VehicleUpdate)
+    }
+    edit_vehicle.close()
+    emit('closed')
+  } catch (e) {
+    console.log('error', e)
   }
-  edit_vehicle.close()
-  emit('closed')
 }
 </script>
 
@@ -154,11 +152,7 @@ function saveVehicle() {
           </div>
         </div>
       </RadioGroup>
-      <selector
-        :suggestions="suggestions"
-        @build-options="callData"
-        @click:suggestion="emit('selected', $event.id)"
-      ></selector>
+      <selector v-model="owner" :store="owners"></selector>
 
       <div class="flex space-x-3 mb-2 mt-6 w-full">
         <div class="md:w-1/2 md:mb-0">
@@ -175,9 +169,6 @@ function saveVehicle() {
       <div class="flex space-x-3 mb-4 mt-6 w-full">
         <div class="md:w-1/4 md:mb-0">
           <TextInput placeholder="Model" v-model="model" />
-        </div>
-        <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Type" v-model="type" />
         </div>
         <div class="md:w-1/4 md:mb-0">
           <TextInput placeholder="Color" v-model="color" />

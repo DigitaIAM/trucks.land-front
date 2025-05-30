@@ -5,6 +5,8 @@ layout: app
 
 <script setup lang="ts">
 const selectedVehicle = ref(null)
+const vehiclesStore = useVehiclesStore()
+const ownersStore = useOwnersStore()
 
 function editVehicle(vehicle: Vehicle) {
   selectedVehicle.value = vehicle
@@ -16,31 +18,25 @@ function onClose() {
 
 const cols = [
   {
-    label: 'ID',
-    value: (v) => v.id,
+    label: 'Unit ID',
+    value: (v: Vehicle) => v.unit_id,
     size: 120,
   },
   {
     label: 'VIN',
-    value: (v) => v.vin,
+    value: (v: Vehicle) => v.vin,
     size: 200,
   },
   {
     label: 'Owner',
-    value: (v) => v.owner,
+    value: (v: Vehicle) => ownersStore.resolve(v.owner)?.name || '???',
     size: 300,
   },
 ]
-
-const owner = ref(null)
-
-const owners = useOwnersStore()
 </script>
 
 <template>
   <VehicleModal :edit="selectedVehicle" @closed="onClose"></VehicleModal>
-  test
-  <selector v-model="owner" :store="owners"></selector>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
@@ -56,8 +52,7 @@ const owners = useOwnersStore()
       </tr>
     </thead>
     <tbody>
-      <tr v-for="vehicle in vehicles">
-        <!--      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" @click="editVehicle(vehicle)">-->
+      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" @click="editVehicle(vehicle)">
         <td
           v-for="col in cols"
           class="py-3 px-4 border-b border-b-gray-300"
