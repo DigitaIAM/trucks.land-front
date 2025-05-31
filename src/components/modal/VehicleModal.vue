@@ -152,7 +152,7 @@ async function saveVehicle() {
           </div>
         </div>
       </RadioGroup>
-      <selector v-model="owner" :store="owners"></selector>
+      <selector v-model="owner" :store="owners" label="Owner"></selector>
 
       <div class="flex space-x-3 mb-2 mt-6 w-full">
         <div class="md:w-1/2 md:mb-0">
@@ -167,13 +167,13 @@ async function saveVehicle() {
         </div>
       </div>
       <div class="flex space-x-3 mb-4 mt-6 w-full">
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <TextInput placeholder="Model" v-model="model" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <TextInput placeholder="Color" v-model="color" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <TextInput placeholder="Year" v-model="year" />
         </div>
       </div>

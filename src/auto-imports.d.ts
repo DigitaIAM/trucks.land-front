@@ -232,6 +232,7 @@ declare global {
   const useObjectUrl: typeof import('@vueuse/core')['useObjectUrl']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
+  const useOrganizationsStore: typeof import('./stores/organizations')['useOrganizationsStore']
   const useOwnersStore: typeof import('./stores/owners')['useOwnersStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
@@ -300,6 +301,7 @@ declare global {
   const useUserModel: (typeof import('@/model/user'))['useUserModel']
   const useUserStore: (typeof import('./stores/service.users'))['useUserStore']
   const useUsersConfig: (typeof import('@/model/user'))['useUsersConfig']
+  const useUsersStore: typeof import('./stores/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
   const useVehiclesStore: typeof import('./stores/vehicles')['useVehiclesStore']
@@ -342,6 +344,9 @@ declare global {
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
   // @ts-ignore
+  export type { Organization, OrganizationCreate, OrganizationUpdate } from './stores/organizations'
+  import('./stores/organizations')
+  // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
@@ -350,6 +355,9 @@ declare global {
   // @ts-ignore
   export type { StatusNext } from './stores/statuses_next'
   import('./stores/statuses_next')
+  // @ts-ignore
+  export type { User, UserCreate, UserUpdate } from './stores/users'
+  import('./stores/users')
   // @ts-ignore
   export type { Vehicle, VehicleCreate, VehicleUpdate } from './stores/vehicles'
   import('./stores/vehicles')
@@ -574,6 +582,7 @@ declare module 'vue' {
     readonly useObjectUrl: UnwrapRef<typeof import('@vueuse/core')['useObjectUrl']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOrganizationsStore: UnwrapRef<typeof import('./stores/organizations')['useOrganizationsStore']>
     readonly useOwnersStore: UnwrapRef<typeof import('./stores/owners')['useOwnersStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
@@ -637,6 +646,7 @@ declare module 'vue' {
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>
+    readonly useUsersStore: UnwrapRef<typeof import('./stores/users')['useUsersStore']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
     readonly useVehiclesStore: UnwrapRef<typeof import('./stores/vehicles')['useVehiclesStore']>

@@ -13,6 +13,7 @@ interface Searchable {
 const props = defineProps<{
   modelValue?: Suggestion | null
   store: Searchable
+  label?: string
 }>()
 
 const emit = defineEmits(['update:modelValue', 'build'])
@@ -21,6 +22,7 @@ const isOpen = ref(false)
 const isSetResult = ref(false)
 
 const valueAsText = ref(props.modelValue?.name || '')
+const label = ref(props.label)
 
 watch(
   () => props.modelValue,
@@ -81,7 +83,7 @@ function setResult(suggestion: Suggestion) {
   <div class="relative">
     <div class="relative">
       <TextInput
-        placeholder="Owner"
+        :placeholder="label"
         v-model="valueAsText"
         aria-expanded="false"
         class="block w-full disabled:opacity-50 disabled:pointer-events-none"
