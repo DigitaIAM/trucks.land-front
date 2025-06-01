@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import WarningIcon from '~icons/mdi/warning'
+
 export type Suggestion = {
   id: number
   name: string
@@ -20,6 +22,7 @@ const emit = defineEmits(['update:modelValue', 'build'])
 
 const isOpen = ref(false)
 const isSetResult = ref(false)
+const isNotFound = ref(false)
 
 const valueAsText = ref(props.modelValue?.name || '')
 const label = ref(props.label)
@@ -27,11 +30,14 @@ const label = ref(props.label)
 watch(
   () => props.modelValue,
   (suggestion) => {
+    console.log('modelValue', suggestion)
     if (suggestion) {
       const obj = props.store.resolve(suggestion.id)
+      isNotFound.value = obj ? false : true
       isSetResult.value = true
-      valueAsText.value = obj?.name || '???'
+      valueAsText.value = obj?.name || ''
     } else {
+      isNotFound.value = false
       valueAsText.value = ''
     }
   },
@@ -39,7 +45,7 @@ watch(
 
 watch(
   () => valueAsText.value,
-  (value) => {
+  (value: string) => {
     if (isSetResult.value) {
       isSetResult.value = false
       suggestions.value = []
@@ -50,12 +56,19 @@ watch(
   },
 )
 
+function onFocusLost() {
+  console.log('onFocusLost', valueAsText.value, props.modelValue?.name)
+  if (valueAsText.value !== props.modelValue?.name) {
+    emit('update:modelValue', null)
+  }
+}
+
 const suggestions = ref([])
 
 let timer: ReturnType<typeof setTimeout>
 const delay = 300
 
-const querying = (query) => {
+const querying = (query: string) => {
   clearTimeout(timer)
   if (query) {
     const text = query
@@ -71,10 +84,11 @@ const querying = (query) => {
   }
 }
 
-function setResult(suggestion: Suggestion) {
+function setResult(suggestion: Suggestion | null) {
+  console.log('setResult', suggestion)
   isOpen.value = false
   isSetResult.value = true
-  valueAsText.value = suggestion.name
+  valueAsText.value = suggestion?.name ?? ''
   emit('update:modelValue', suggestion)
 }
 </script>
@@ -85,9 +99,14 @@ function setResult(suggestion: Suggestion) {
       <TextInput
         :placeholder="label"
         v-model="valueAsText"
+        v-on:blur="onFocusLost"
         aria-expanded="false"
         class="block w-full disabled:opacity-50 disabled:pointer-events-none"
       ></TextInput>
+
+      <div v-if="isNotFound" class="absolute top-1/2 end-7 -translate-y-1/2" aria-expanded="false">
+        <WarningIcon />
+      </div>
 
       <div class="absolute top-1/2 end-3 -translate-y-1/2" aria-expanded="false">
         <svg

@@ -15,14 +15,14 @@ export interface UserCreate {
 
   group: string
   // password: string
-  organization: number
+  organization?: number
 
   less_ten: number
   more_ten: number
   percent: number
 
   admin: boolean
-  organization_manager: boolean
+  manager: boolean
   dispatcher_supervisor: boolean
   dispatcher: boolean
   tracking_supervisor: boolean
@@ -53,7 +53,7 @@ export interface UserUpdate {
   percent?: number
 
   admin?: boolean
-  organization_manager?: boolean
+  manager?: boolean
   dispatcher_supervisor?: boolean
   dispatcher?: boolean
   tracking_supervisor?: boolean

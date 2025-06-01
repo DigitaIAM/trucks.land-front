@@ -15,7 +15,6 @@ const email = ref('')
 
 const group = ref('')
 
-// const password = ref('')
 const organization = ref(null)
 
 const less_ten = ref<number>()
@@ -23,7 +22,7 @@ const more_ten = ref<number>()
 const percent = ref<number>()
 
 const admin = ref(false)
-const organization_manager = ref(false)
+const manager = ref(false)
 const dispatcher_supervisor = ref(false)
 const dispatcher = ref(false)
 const tracking_supervisor = ref(false)
@@ -56,14 +55,14 @@ function resetAndShow(user: User | null) {
   phone.value = user?.phone || ''
   email.value = user?.email || ''
   group.value = user?.group || ''
-  // password.value = user?.password || ''
+
   organization.value = user ? { id: user.organization } : null
   less_ten.value = user?.less_ten
   more_ten.value = user?.more_ten
   percent.value = user?.percent
 
   admin.value = user?.admin || false
-  organization_manager.value = user?.organization_manager || false
+  manager.value = user?.manager || false
   dispatcher_supervisor.value = user?.dispatcher_supervisor || false
   dispatcher.value = user?.dispatcher || false
   tracking_supervisor.value = user?.tracking_supervisor || false
@@ -87,14 +86,14 @@ function saveUser() {
         phone: phone.value,
         email: email.value,
         group: group.value,
-        // password: password.value,
-        organization: organization?.value.id,
+
+        organization: organization.value?.id,
         less_ten: less_ten.value,
         more_ten: more_ten.value,
         percent: percent.value,
 
         admin: admin.value,
-        organization_manager: organization_manager.value,
+        manager: manager.value,
         dispatcher_supervisor: dispatcher_supervisor.value,
         dispatcher: dispatcher.value,
         tracking_supervisor: tracking_supervisor.value,
@@ -113,14 +112,14 @@ function saveUser() {
         phone: phone.value,
         email: email.value,
         group: group.value,
-        // password: password.value,
-        organization: organization?.value.id,
+
+        organization: organization.value?.id,
         less_ten: less_ten.value,
         more_ten: more_ten.value,
         percent: percent.value,
 
         admin: admin.value,
-        organization_manager: organization_manager.value,
+        manager: manager.value,
         dispatcher_supervisor: dispatcher_supervisor.value,
         dispatcher: dispatcher.value,
         tracking_supervisor: tracking_supervisor.value,
@@ -216,7 +215,7 @@ function saveUser() {
               <span class="ml-3 mr-3">Admin</span>
             </label>
             <label class="label mb-2">
-              <Toggle v-model="organization_manager"></Toggle>
+              <Toggle v-model="manager"></Toggle>
               <span class="ml-3">Organization manager</span>
             </label>
             <label class="label mb-2">

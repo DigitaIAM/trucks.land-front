@@ -33,7 +33,7 @@ function resetAndShow(organization: Organization | null) {
   name.value = organization?.name || ''
   code2.value = organization?.code2 || ''
   code3.value = organization?.code3 || ''
-  address1.value = organization?.address || ''
+  address1.value = organization?.address1 || ''
   address2.value = organization?.address2 || ''
   billing_email.value = organization?.billing_email || ''
 
@@ -84,7 +84,7 @@ function saveOrganization() {
     <ModalBox>
       <Text size="2xl">Organization</Text>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
+      <div class="flex space-x-3 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <TextInput placeholder="Code2" v-model="code2" />
         </div>
@@ -93,7 +93,7 @@ function saveOrganization() {
         </div>
       </div>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
+      <div class="flex space-x-3 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <TextInput placeholder="Code3" v-model="code3" />
         </div>
@@ -101,12 +101,12 @@ function saveOrganization() {
           <TextInput placeholder="Address2" v-model="address2" />
         </div>
       </div>
-      <TextInput placeholder="Name" v-model="name" class="w-full"></TextInput>
+      <TextInput placeholder="Name" v-model="name" class="w-full mb-6"></TextInput>
       <TextInput
         type="email"
         placeholder="Billing email"
         v-model="billing_email"
-        class="w-full"
+        class="w-full mb-6"
       ></TextInput>
       <selector v-model="owner" :store="owners" label="Owner"></selector>
       <ModalAction>

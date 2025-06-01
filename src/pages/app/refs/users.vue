@@ -35,7 +35,7 @@ const cols = [
   {
     label: 'Phone',
     value: (v) => v.phone,
-    size: 120,
+    size: 300,
   },
   {
     label: 'Email',
