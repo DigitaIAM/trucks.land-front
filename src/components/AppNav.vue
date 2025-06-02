@@ -5,7 +5,7 @@
 // import LoginIcon from '~icons/feather/log-in'
 
 import LoginIcon from 'virtual:icons/mdi/store-24-hour'
-import Sidebar from '@/components/widgets/Sidebar.vue'
+import Sidebar from '@/components/windowElements/sidebar.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()

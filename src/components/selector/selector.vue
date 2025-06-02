@@ -104,9 +104,9 @@ function setResult(suggestion: Suggestion | null) {
         class="block w-full disabled:opacity-50 disabled:pointer-events-none"
       ></TextInput>
 
-      <div v-if="isNotFound" class="absolute top-1/2 end-7 -translate-y-1/2" aria-expanded="false">
-        <WarningIcon />
-      </div>
+      <!--      <div v-if="isNotFound" class="absolute top-1/2 end-7 -translate-y-1/2" aria-expanded="false">-->
+      <!--        <WarningIcon />-->
+      <!--      </div>-->
 
       <div class="absolute top-1/2 end-3 -translate-y-1/2" aria-expanded="false">
         <svg

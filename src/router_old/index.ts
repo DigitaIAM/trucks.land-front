@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import OrderView from '../views/OrderView.vue'
+import OrderView from '../views/orderView.vue'
 import LoginPage from '@/views/LoginPage.vue'
 
 const router = createRouter({
@@ -21,42 +21,42 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/DayBook.vue'),
+      component: () => import('../pages/app/nav/orders.vue'),
     },
     {
       path: '/dispatcher',
       name: 'dispatcher',
-      component: () => import('../views/DispatcherLog.vue'),
+      component: () => import('../pages/app/nav/dispatcher.vue'),
     },
     {
       path: '/tracking',
       name: 'tracking',
-      component: () => import('../views/TrackingLog.vue'),
+      component: () => import('../pages/app/nav/tracking.vue'),
     },
     {
       path: '/checkout',
       name: 'checkout',
-      component: () => import('../views/CheckOut.vue'),
+      component: () => import('../pages/app/nav/check-out.vue'),
     },
     {
       path: '/income',
       name: 'income',
-      component: () => import('../views/IncomeLog.vue'),
+      component: () => import('../pages/app/nav/income.vue'),
     },
     {
       path: '/quickpay',
       name: 'quickpay',
-      component: () => import('../views/QuickPay.vue'),
+      component: () => import('../pages/app/nav/quick_pay.vue'),
     },
     {
       path: '/reference',
       name: 'reference',
-      component: () => import('../views/ReferenceBooks.vue'),
+      component: () => import('../pages/app/nav/referenceBooks.vue'),
     },
     {
       path: '/reports',
       name: 'reports',
-      component: () => import('../views/ReportsPage.vue'),
+      component: () => import('../pages/app/nav/reports.vue'),
     },
     {
       path: '/brokers',
@@ -91,7 +91,7 @@ const router = createRouter({
     {
       path: '/finances',
       name: 'finances',
-      component: () => import('../views/Finances.vue'),
+      component: () => import('../pages/app/nav/finances.vue'),
     },
   ],
 })
