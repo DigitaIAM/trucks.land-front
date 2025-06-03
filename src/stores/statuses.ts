@@ -73,7 +73,10 @@ export const useStatusesStore = defineStore('status', () => {
   }
 
   function resolve(id: number) {
-    return mapping.value.get(id)
+    console.log('resolve', id)
+    const o = mapping.value.get(id)
+    console.log('obj', o)
+    return o
   }
 
   return { listing, initialized, loading, create, update, resolve }

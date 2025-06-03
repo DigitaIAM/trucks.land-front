@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import DriverIcon from '../../../assets/icons/driver.svg?url'
-import OwnerIcon from '../../../assets/icons/bussness_center.svg?url'
-import DispatcherIcon from '../../../assets/icons/dispatcher.svg?url'
+import DriverIcon from '../../assets/icons/driver.svg?url'
+import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
+import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
 const buttons = [
   {

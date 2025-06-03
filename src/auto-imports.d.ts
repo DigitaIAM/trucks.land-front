@@ -232,6 +232,7 @@ declare global {
   const useObjectUrl: typeof import('@vueuse/core')['useObjectUrl']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
+  const useOrdersStore: typeof import('./stores/orders')['useOrdersStore']
   const useOrganizationsStore: typeof import('./stores/organizations')['useOrganizationsStore']
   const useOwnersStore: typeof import('./stores/owners')['useOwnersStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
@@ -343,6 +344,12 @@ declare global {
   // @ts-ignore
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
+  // @ts-ignore
+  export type { Form, FormUpdate } from './stores/form'
+  import('./stores/form')
+  // @ts-ignore
+  export type { Order, OrderCreate, OrderUpdate } from './stores/orders'
+  import('./stores/orders')
   // @ts-ignore
   export type { Organization, OrganizationCreate, OrganizationUpdate } from './stores/organizations'
   import('./stores/organizations')
@@ -582,6 +589,7 @@ declare module 'vue' {
     readonly useObjectUrl: UnwrapRef<typeof import('@vueuse/core')['useObjectUrl']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOrdersStore: UnwrapRef<typeof import('./stores/orders')['useOrdersStore']>
     readonly useOrganizationsStore: UnwrapRef<typeof import('./stores/organizations')['useOrganizationsStore']>
     readonly useOwnersStore: UnwrapRef<typeof import('./stores/owners')['useOwnersStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>

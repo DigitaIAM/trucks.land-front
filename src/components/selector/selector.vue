@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import WarningIcon from '~icons/mdi/warning'
-
 export type Suggestion = {
   id: number
   name: string

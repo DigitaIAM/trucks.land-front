@@ -3,15 +3,15 @@ const router = useRouter()
 const route = useRoute()
 
 const links = [
-  { name: 'Orders', path: '/app/nav/orders' },
-  { name: 'Dispatcher', path: '/app/nav/dispatcher' },
-  { name: 'Tracking', path: '/app/nav/tracking' },
-  { name: 'Check out', path: '/app/nav/check-out' },
-  { name: 'Income', path: '/app/nav/income' },
-  { name: 'Quick pay', path: '/app/nav/quick_pay' },
-  { name: 'Reference books', path: '/app/nav/referenceBooks' },
-  { name: 'Reports', path: '/app/nav/reports' },
-  { name: 'Finances', path: '/app/nav/finances' },
+  { name: 'Orders', path: '/app/journals/ordersView' },
+  { name: 'Dispatcher', path: '/app/journals/dispatcherView' },
+  { name: 'Tracking', path: '/app/journals/trackingView' },
+  { name: 'Check out', path: '/app/journals/check-outView' },
+  { name: 'Income', path: '/app/journals/incomeView' },
+  { name: 'Quick pay', path: '/app/journals/quick_payView' },
+  { name: 'Reference books', path: '/app/referenceBooks' },
+  { name: 'Reports', path: '/app/reportsView' },
+  { name: 'Finances', path: '/app/financesView' },
 ]
 </script>
 

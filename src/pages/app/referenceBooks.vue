@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import BrokerIcon from '../../../assets/icons/handshake.svg?url'
-import DriverIcon from '../../../assets/icons/driver.svg?url'
-import VehicleIcon from '../../../assets/icons/vehicle.svg?url'
-import OwnerIcon from '../../../assets/icons/bussness_center.svg?url'
-import UsersIcon from '../../../assets/icons/users.svg?url'
-import StatusIcon from '../../../assets/icons/status.svg?url'
-import OrganizationsIcon from '../../../assets/icons/organizations.svg?url'
+import BrokerIcon from '../../assets/icons/handshake.svg?url'
+import DriverIcon from '../../assets/icons/driver.svg?url'
+import VehicleIcon from '../../assets/icons/vehicle.svg?url'
+import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
+import UsersIcon from '../../assets/icons/users.svg?url'
+import StatusIcon from '../../assets/icons/status.svg?url'
+import OrganizationsIcon from '../../assets/icons/organizations.svg?url'
 
 const router = useRouter()
 

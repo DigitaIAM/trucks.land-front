@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import OrderView from '../views/orderView.vue'
+import OrderView from '../components/order/OrderFullView.vue'
 import LoginPage from '@/views/LoginPage.vue'
 
 const router = createRouter({
@@ -21,42 +21,42 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../pages/app/nav/orders.vue'),
+      component: () => import('@/pages/app/journals/ordersView.vue'),
     },
     {
       path: '/dispatcher',
       name: 'dispatcher',
-      component: () => import('../pages/app/nav/dispatcher.vue'),
+      component: () => import('@/pages/app/journals/dispatcherView.vue'),
     },
     {
       path: '/tracking',
       name: 'tracking',
-      component: () => import('../pages/app/nav/tracking.vue'),
+      component: () => import('@/pages/app/journals/trackingView.vue'),
     },
     {
       path: '/checkout',
       name: 'checkout',
-      component: () => import('../pages/app/nav/check-out.vue'),
+      component: () => import('@/pages/app/journals/check-outView.vue'),
     },
     {
       path: '/income',
       name: 'income',
-      component: () => import('../pages/app/nav/income.vue'),
+      component: () => import('@/pages/app/journals/incomeView.vue'),
     },
     {
       path: '/quickpay',
       name: 'quickpay',
-      component: () => import('../pages/app/nav/quick_pay.vue'),
+      component: () => import('@/pages/app/journals/quick_payView.vue'),
     },
     {
       path: '/reference',
       name: 'reference',
-      component: () => import('../pages/app/nav/referenceBooks.vue'),
+      component: () => import('@/pages/app/referenceBooks.vue'),
     },
     {
       path: '/reports',
       name: 'reports',
-      component: () => import('../pages/app/nav/reports.vue'),
+      component: () => import('@/pages/app/reportsView.vue'),
     },
     {
       path: '/brokers',
@@ -91,7 +91,7 @@ const router = createRouter({
     {
       path: '/finances',
       name: 'finances',
-      component: () => import('../pages/app/nav/finances.vue'),
+      component: () => import('@/pages/app/financesView.vue'),
     },
   ],
 })

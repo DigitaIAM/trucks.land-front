@@ -1,8 +1,3 @@
-<route lang="yaml">
-meta:
-layout: app
-</route>
-
 <script setup lang="ts">
 const cols = [
   {
@@ -160,11 +155,7 @@ const orders = [
 </script>
 
 <template>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search></Search>
-    <Button class="btn" @click="resetAndShow(null)">Create</Button>
-  </div>
-  <table class="w-full text-left table-auto min-w-max">
+  <table class="w-full mt-10 text-left table-auto min-w-max">
     <thead>
       <tr>
         <th

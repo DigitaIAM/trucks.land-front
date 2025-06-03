@@ -5,7 +5,7 @@ import type { Status } from '@/stores/statuses.ts'
 export interface StatusNext {
   id: number
   createAt: string
-  status: number
+  status?: number
   next: number
 }
 
@@ -19,11 +19,11 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     response.data?.forEach((json) => {
       const link = json as StatusNext
 
-      const m = map.get(link.status) ?? new Map<number, StatusNext>()
+      const m = map.get(link.status ?? -1) ?? new Map<number, StatusNext>()
 
       m.set(link.next, link)
 
-      map.set(link.status, m)
+      map.set(link.status ?? -1, m)
     })
 
     mapping.value = map
@@ -39,10 +39,15 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     return list
   })
 
-  function nextFor(status: Status) {
-    const l = Array.from(mapping.value.get(status.id)?.keys() ?? [])
-
-    return l
+  function nextFor(status?: Status) {
+    console.log('nextFor', status)
+    if (status == null) {
+      const l = Array.from(mapping.value.get(-1)?.keys() ?? [])
+      console.log('list', l)
+      return l
+    } else {
+      return Array.from(mapping.value.get(status.id)?.keys() ?? [])
+    }
   }
 
   async function update(status: Status, next: []) {
