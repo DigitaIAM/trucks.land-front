@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Organization } from '@/stores/organizations.ts'
 
 export interface User extends UserCreate {
   id: number
@@ -124,7 +125,24 @@ export const useUsersStore = defineStore('user', () => {
       })
   }
 
-  return { initialized, loading, listing, create, update }
+  function resolve(id: number) {
+    return mapping.value.get(id)
+  }
+
+  async function search(text: string) {
+    const response = await supabase
+      .from('users')
+      .select()
+      .ilike('name', '%' + text + '%')
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as User)
+    }
+
+    return []
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search }
 })
 
 if (import.meta.hot) {

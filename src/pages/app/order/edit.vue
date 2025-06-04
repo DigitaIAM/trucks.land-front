@@ -57,22 +57,27 @@ async function saveOrder(status: Status) {
 </script>
 
 <template>
-  <div class="flex flex-col-2">
+  <div class="flex flex-col-2 mt-4 ml-4">
     <div class="flex flex-col w-full h-full">
-      <div class="flex space-x-3 mb-2 mt-6 w-full">
-        <Button v-for="status in next" :key="status.id" @click="saveOrder(status)">
-          {{ status.name }}
-        </Button>
-      </div>
+      <!--      <div class="flex space-x-3 mb-2 mt-6 w-full">-->
+      <!--        <Button v-for="status in next" :key="status.id" @click="saveOrder(status)">-->
+      <!--          {{ status.name }}-->
+      <!--        </Button>-->
+      <!--      </div>-->
 
-      <div class="flex space-x-76 w-full">
+      <div class="flex space-x-30 w-full">
         <Text semibold size="2xl">Order</Text>
-        <div class="flex-1/60">
+        <div class="flex space-x-3 w-full">
+          <Button v-for="status in next" :key="status.id" @click="saveOrder(status)">
+            {{ status.name }}
+          </Button>
+        </div>
+        <div class="flex-1/60 ml-16">
           <StepperUploading></StepperUploading>
         </div>
       </div>
 
-      <div class="flex mb-6 mt-4 w-full">
+      <div class="flex mb-6 w-full">
         <form class="rounded-xl shadow w-[90vw] md:w-[50vw] p-4">
           <div class="flex space-x-3 mb-2 mt-6 w-full">
             <div class="md:w-1/4 md:mb-0">
@@ -103,31 +108,45 @@ async function saveOrder(status: Status) {
           </div>
 
           <div class="flex space-x-3 mb-2 mt-6 w-full">
-            <div class="md:w-1/5 md:mb-0">
+            <div class="md:w-1/4 md:mb-0">
               <TextInput placeholder="Total pieces" v-model="total_pieces" />
             </div>
-            <div class="md:w-1/5 md:mb-0">
+            <div class="md:w-1/4 md:mb-0">
               <TextInput placeholder="Total weight" v-model="total_weight" />
             </div>
-            <div class="md:w-1/5 md:mb-0">
+            <div class="md:w-1/4 md:mb-0">
               <TextInput placeholder="Total miles" v-model="total_miles" />
             </div>
-            <div class="md:w-1/5 md:mb-0">
+            <div class="md:w-1/4 md:mb-0">
               <TextInput placeholder="Cost $" v-model="cost" />
+            </div>
+          </div>
+          <div class="flex space-x-3 mb-2 mt-6 w-full">
+            <div class="md:w-3/5 md:mb-0">
+              <TextInput placeholder="Driver" v-model="driver" />
+            </div>
+            <div class="md:w-3/5 md:mb-0">
+              <TextInput placeholder="Vehicle" v-model="vehicle" />
+            </div>
+            <div class="md:w-1/3 md:mb-0">
+              <TextInput placeholder="Driver payment $" v-model="driver_payment" />
+            </div>
+            <div class="md:w-1/15 md:mb-0">
+              <Button>+</Button>
             </div>
           </div>
         </form>
       </div>
-    </div>
-
-    <div class="w-full flex-col">
-      <div class="px-10">
-        <StepperStates></StepperStates>
-      </div>
       <div class="w-full">
-        <div class="px-10">
+        <div class="px-2">
           <Comments></Comments>
         </div>
+      </div>
+    </div>
+
+    <div class="w-full flex-col mt-16">
+      <div class="px-20 mt-4">
+        <StepperStates></StepperStates>
       </div>
     </div>
   </div>

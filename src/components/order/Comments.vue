@@ -4,7 +4,7 @@
   <section class="relative">
     <div class="w-full max-w-7xl">
       <div class="w-full flex-col justify-start items-start gap-5 inline-flex">
-        <h2 class="w-full text-gray-700 text-xl font-bold leading-normal">Comments</h2>
+        <h2 class="w-full text-xl font-bold leading-normal">Comments</h2>
         <div
           class="w-full flex-row rounded-xl border-2 border-gray-500 justify-start items-start gap-4 inline-flex p-3"
         >

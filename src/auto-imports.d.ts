@@ -345,9 +345,6 @@ declare global {
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
   // @ts-ignore
-  export type { Form, FormUpdate } from './stores/form'
-  import('./stores/form')
-  // @ts-ignore
   export type { Order, OrderCreate, OrderUpdate } from './stores/orders'
   import('./stores/orders')
   // @ts-ignore
