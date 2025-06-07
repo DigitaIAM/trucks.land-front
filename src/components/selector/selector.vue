@@ -1,17 +1,6 @@
 <script setup lang="ts">
-export type Suggestion = {
-  id: number
-  name: string
-}
-
-interface Searchable {
-  resolve(id: number): Suggestion
-
-  search(query: string): Suggestion[]
-}
-
 const props = defineProps<{
-  modelValue?: Suggestion | null
+  modelValue?: Reference | Suggestion | null
   store: Searchable
   label?: string
 }>()
@@ -25,22 +14,7 @@ const isNotFound = ref(false)
 const valueAsText = ref(props.modelValue?.name || '')
 const label = ref(props.label)
 
-watch(
-  () => props.modelValue,
-  (suggestion) => {
-    console.log('modelValue', suggestion)
-    if (suggestion) {
-      const obj = props.store.resolve(suggestion.id)
-      isNotFound.value = obj ? false : true
-      isSetResult.value = true
-      valueAsText.value = obj?.name || ''
-    } else {
-      isNotFound.value = false
-      valueAsText.value = ''
-    }
-  },
-)
-
+watch(() => props.modelValue, init)
 watch(
   () => valueAsText.value,
   (value: string) => {
@@ -54,8 +28,26 @@ watch(
   },
 )
 
+async function init(suggestion: Reference | Suggestion) {
+  // console.log('modelValue', suggestion)
+  // if (suggestion instanceof Reference) {
+  if (suggestion) {
+    const obj = await props.store.resolve(suggestion.id)
+    isNotFound.value = obj ? false : true
+    isSetResult.value = true
+    valueAsText.value = obj?.name || ''
+    // } else if (suggestion instanceof Suggestion) {
+    //   const obj = suggestion
+    //   isNotFound.value = obj ? false : true
+    //   isSetResult.value = true
+    //   valueAsText.value = obj?.name || ''
+  } else {
+    isNotFound.value = false
+    valueAsText.value = ''
+  }
+}
+
 function onFocusLost() {
-  console.log('onFocusLost', valueAsText.value, props.modelValue?.name)
   if (valueAsText.value !== props.modelValue?.name) {
     emit('update:modelValue', null)
   }
@@ -83,7 +75,6 @@ const querying = (query: string) => {
 }
 
 function setResult(suggestion: Suggestion | null) {
-  console.log('setResult', suggestion)
   isOpen.value = false
   isSetResult.value = true
   valueAsText.value = suggestion?.name ?? ''

@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Organization } from '@/stores/organizations.ts'
 
 export interface Status extends StatusCreate {
   id: number
@@ -72,11 +73,22 @@ export const useStatusesStore = defineStore('status', () => {
       })
   }
 
-  function resolve(id: number) {
-    console.log('resolve', id)
-    const o = mapping.value.get(id)
-    console.log('obj', o)
-    return o
+  async function resolve(id: number) {
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('statuses').select().eq('id', id)
+
+    const map = new Map<number, Status>()
+    response.data?.forEach((json) => {
+      const status = json as Status
+      map.set(status.id, status)
+      mapping.value.set(status.id, status)
+    })
+
+    return map.get(id)
   }
 
   return { listing, initialized, loading, create, update, resolve }

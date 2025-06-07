@@ -9,6 +9,7 @@ export interface Owner extends OwnerCreate {
 export interface OwnerCreate {
   is_active: boolean
   is_person: boolean
+  name: string
   ein: string
   email: string
   phone: string
@@ -21,8 +22,8 @@ export interface OwnerCreate {
 export interface OwnerUpdate {
   is_active?: boolean
   is_person?: boolean
+  name?: string
   ein?: string
-  user?: string
   email?: string
   phone?: string
   street?: string
@@ -88,7 +89,7 @@ export const useOwnersStore = defineStore('owner', () => {
       })
   }
 
-  function resolve(id: number) {
+  async function resolve(id: number) {
     return mapping.value.get(id)
   }
 

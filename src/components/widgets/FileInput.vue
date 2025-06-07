@@ -55,5 +55,5 @@ const classes = computed(() => {
     class="file-input"
     :class="classes"
     @input="$emit('files', ($event.target as any).value)"
-  >
+  />
 </template>

@@ -7,9 +7,8 @@ export interface Order extends OrderCreate {
 }
 
 export interface OrderCreate {
-  order_number: number
   dispatcher: number
-  posted_loads_id: string
+  posted_loads: string
   refs: string
   organization: number
   broker: number
@@ -17,12 +16,12 @@ export interface OrderCreate {
   total_weight: number
   total_miles: number
   cost: number
+  status: number
 }
 
 export interface OrderUpdate {
-  order_number?: number
   dispatcher?: number
-  posted_loads_id?: string
+  posted_loads?: string
   refs?: string
   organization?: number
   broker?: number
@@ -30,45 +29,46 @@ export interface OrderUpdate {
   total_weight?: number
   total_miles?: number
   cost?: number
+  status?: number
 }
 
 export const useOrdersStore = defineStore('order', () => {
   const mapping = ref(new Map<number, Order>())
 
-  // const { initialized, loading } = useInitializeStore(async () => {
-  //   const response = await supabase.from('orders').select()
-  //
-  //   const map = new Map<number, Order>()
-  //   response.data?.forEach((json) => {
-  //     const order = json as Order
-  //     map.set(order.id, order)
-  //   })
-  //
-  //   mapping.value = map
-  // })
+  const { initialized, loading } = useInitializeStore(async () => {
+    const response = await supabase.from('orders').select().order('created_at').limit(50)
 
-  // const listing = computed(() => {
-  //   const list = [] as Order[]
-  //
-  //   mapping.value.forEach((v) => {
-  //     list.push(v)
-  //   })
-  //
-  //   return list
-  // })
+    const map = new Map<number, Order>()
+    response.data?.forEach((json) => {
+      const order = json as Order
+      map.set(order.id, order)
+    })
+
+    mapping.value = map
+  })
+
+  const listing = computed(() => {
+    const list = [] as Order[]
+
+    mapping.value.forEach((v) => {
+      list.push(v)
+    })
+
+    return list
+  })
 
   async function create(order: OrderCreate) {
     console.log('create', order)
-    // const response = await supabase.from('orders').insert(order).select() // .throwOnError()
-    //
-    // if (response.status == 201 && response.data?.length == 1) {
-    //   const order = response.data[0] as Order
-    //   // mapping.value.set(order.id, order)
-    //   return order.id
-    // } else {
-    //   throw 'unexpended response status: ' + response.status
-    // }
-    return 1
+    const response = await supabase.from('orders').insert(order).select() // .throwOnError()
+    console.log(response)
+
+    if (response.status == 201 && response.data?.length == 1) {
+      const order = response.data[0] as Order
+      // mapping.value.set(order.id, order)
+      return order.id
+    } else {
+      throw 'unexpended response status: ' + response.status
+    }
   }
 
   function update(id: number, order: OrderUpdate) {
@@ -95,13 +95,13 @@ export const useOrdersStore = defineStore('order', () => {
 
     const response = await supabase.from('orders').select().eq('id', id)
 
-    const map = mapping.value
+    const map = new Map<number, Order>()
     response.data?.forEach((json) => {
       const order = json as Order
       map.set(order.id, order)
     })
 
-    return mapping.value.get(id)
+    return map.get(id)
   }
 
   async function search(text: string) {
@@ -117,7 +117,7 @@ export const useOrdersStore = defineStore('order', () => {
     return []
   }
 
-  return { create, update, resolve, search }
+  return { initialized, loading, create, listing, update, resolve, search }
 })
 
 if (import.meta.hot) {

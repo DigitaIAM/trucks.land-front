@@ -29,6 +29,14 @@ const cols = [
   },
   {
     label: 'Owner',
+    // value: (v: Vehicle) =>
+    //   resolve(
+    //     v,
+    //     'owner',
+    //     () => ({ name: '?' }),
+    //     () => ownersStores.resolve(v.owner),
+    //     (map) => map.name,
+    //   ),
     value: (v: Vehicle) => ownersStore.resolve(v.owner)?.name || '???',
     size: 300,
   },

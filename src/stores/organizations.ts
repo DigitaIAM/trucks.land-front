@@ -86,8 +86,22 @@ export const useOrganizationsStore = defineStore('organization', () => {
       })
   }
 
-  function resolve(id: number) {
-    return mapping.value.get(id)
+  async function resolve(id: number) {
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('organizations').select().eq('id', id)
+
+    const map = new Map<number, Organization>()
+    response.data?.forEach((json) => {
+      const organization = json as Organization
+      map.set(organization.id, organization)
+      mapping.value.set(organization.id, organization)
+    })
+
+    return map.get(id)
   }
 
   async function search(text: string) {

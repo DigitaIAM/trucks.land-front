@@ -3,7 +3,7 @@ const router = useRouter()
 const route = useRoute()
 
 const links = [
-  { name: 'Orders', path: '/app/journals/ordersView' },
+  { name: 'Orders', path: '/app/order/all' },
   { name: 'Dispatcher', path: '/app/journals/dispatcherView' },
   { name: 'Tracking', path: '/app/journals/trackingView' },
   { name: 'Check out', path: '/app/journals/check-outView' },

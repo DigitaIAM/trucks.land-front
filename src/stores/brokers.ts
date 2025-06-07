@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Organization } from '@/stores/organizations.ts'
 
 export interface Broker extends BrokerCreate {
   id: number
@@ -91,8 +90,22 @@ export const useBrokersStore = defineStore('broker', () => {
       })
   }
 
-  function resolve(id: number) {
-    return mapping.value.get(id)
+  async function resolve(id: number) {
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('brokers').select().eq('id', id)
+
+    const map = new Map<number, Broker>()
+    response.data?.forEach((json) => {
+      const broker = json as Broker
+      map.set(broker.id, broker)
+      mapping.value.set(broker.id, broker)
+    })
+
+    return map.get(id)
   }
 
   async function search(text: string) {

@@ -36,17 +36,14 @@ const selectedStatus = ref(null)
 const selectedNextStatus = ref(null)
 
 function editStatus(status: Status) {
-  console.log('editStatus', status)
   selectedStatus.value = status
 }
 
 function selectNextStatus(status: Status) {
-  console.log('nextStatus', status)
   selectedNextStatus.value = status
 }
 
 function onClose() {
-  console.log('closed')
   selectedStatus.value = null
 }
 </script>

@@ -105,7 +105,7 @@ export const useVehiclesStore = defineStore('vehicle', () => {
       })
   }
 
-  function resolve(id: number) {
+  async function resolve(id: number) {
     return mapping.value.get(id)
   }
 

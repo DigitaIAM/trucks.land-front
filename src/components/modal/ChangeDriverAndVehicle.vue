@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+layout: app
+</route>
+
 <script setup lang="ts">
 import { defineProps, defineEmits, ref } from 'vue'
 import FormInputField from '@/components/order/FormInputField.vue'

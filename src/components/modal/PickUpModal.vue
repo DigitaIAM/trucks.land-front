@@ -1,177 +1,163 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, ref } from 'vue'
-import FormInputField from '@/components/order/FormInputField.vue'
-import FormComboField from '@/components/order/FormComboField.vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
 
-import TimePicker from '@/components/picker/TimePicker.vue'
-import DatePicker from '@/components/picker/DatePicker.vue'
-import RadioButton from '@/components/buttons/RadioButton.vue'
-// import { onClickOutside } from '@vueuse/core'
+const listOfPriorites = ['normal', 'ASAP']
+const listOfTimeliness = ['early', 'on time', 'behind']
 
-const props = defineProps({
-  isOpen: Boolean,
-})
+const props = defineProps<{
+  order: number
+  edit: PickUp | null
+}>()
 
-const emit = defineEmits(['modal-close'])
+const id = ref(null)
+const note = ref('')
+const address1 = ref('')
+const address2 = ref('')
+const city = ref('')
+const state = ref('')
+const zip = ref('')
+const datetime = ref(new Date() as Date | undefined)
 
-// const target = ref(null)
-// onClickOutside(target, () => emit('modal-close'))
+const priority = ref<string>()
+const timeliness = ref<string>()
+
+const emit = defineEmits(['closed'])
+
+watch(
+  () => props.edit,
+  (pickUp) => {
+    console.log('watch', pickUp)
+    resetAndShow(pickUp)
+  },
+  { deep: true },
+)
+
+const pickUpStore = usePickUpStore()
+
+function resetAndShow(pickUp: PickUp | null) {
+  id.value = pickUp?.id
+  note.value = pickUp?.note || ''
+  address1.value = pickUp?.address1 || ''
+  address2.value = pickUp?.address2 || ''
+  city.value = pickUp?.city || ''
+  state.value = pickUp?.state || ''
+  zip.value = pickUp?.zip
+  datetime.value = pickUp?.datetime || ''
+
+  priority.value = pickUp?.priority ?? 'normal'
+  timeliness.value = pickUp?.timeliness ?? 'on time'
+
+  create_pickUp.showModal()
+}
+
+async function saveAndEdit() {
+  try {
+    await pickUpStore.create({
+      order: props.order,
+      note: note.value,
+      address1: address1.value,
+      address2: address2.value,
+      city: city.value,
+      state: state.value,
+      zip: zip.value,
+      datetime: datetime.value,
+
+      priority: priority.value,
+      timeliness: timeliness.value,
+    } as PickUpCreate)
+
+    close()
+  } catch (e) {
+    console.log('error', e)
+  }
+}
+
+function close() {
+  create_pickUp.close()
+  // emit('closed')
+}
 </script>
 
 <template>
-  <div v-if="isOpen" class="modal-mask">
-    <div class="modal-wrapper">
-      <div
-        ref="target"
-        class="relative m-auto my-50 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white shadow-sm"
-      >
-        <div class="flex items-start justify-between p-2">
-          <div>
-            <h5 class="text-gray-700 text-xl font-bold">Pick up</h5>
-          </div>
-          <div class="flex items-center justify-between">
-            <RadioButton id="radio-1" label="Normal" value="" name="group-1"></RadioButton>
-            <RadioButton id="radio-2" label="ASAP" value="" name="group-1"></RadioButton>
-          </div>
-          <button
-            @click="() => emit('modal-close')"
-            data-ripple-dark="true"
-            data-dialog-close="true"
-            class="relative h-8 max-h-[32px] w-8 max-w-[32px] select-none rounded-lg text-center align-middle font-sans text-xs font-medium uppercase text-blue-gray-500 transition-all hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-            type="button"
+  <Modal id="create_pickUp">
+    <ModalBox class="max-w-[calc(40vw-6.25rem)]">
+      <div class="flex items-start justify-between">
+        <div>
+          <Text size="2xl">Pick up</Text>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <Button
+            sm
+            class="mr-1 mb-2"
+            v-for="ft in listOfPriorites"
+            :key="ft"
+            :class="{ 'bg-accent': priority == ft }"
+            @click="priority = ft"
           >
-            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-                class="h-5 w-5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
-            </span>
-          </button>
-        </div>
-
-        <div class="w-full px-3">
-          <FormInputField id="note" label="Note" value="Must check in as CNU / PU#621772623" />
-        </div>
-
-        <div class="flex flex-wrap mb-2 mt-6 w-full">
-          <div class="md:w-1/2 px-3 md:mb-0">
-            <FormInputField id="address1" label="Address 1" value="EXHIBIT CONCEPTS" />
-          </div>
-          <div class="md:w-1/2 px-3 md:mb-0">
-            <FormInputField id="address2" label="Address 2" value="700 CROSSROADS CT" />
-          </div>
-        </div>
-        <div class="flex flex-wrap mb-2 mt-6 w-full">
-          <div class="md:w-1/2 px-3 md:mb-0">
-            <FormInputField id="city" label="City / town" value="VANDALIA" />
-          </div>
-          <div class="md:w-1/4 px-3 md:mb-0">
-            <FormInputField id="state" label="State" value="OH" />
-          </div>
-          <div class="md:w-1/4 px-3 md:mb-0">
-            <FormInputField id="zip" label="Zip" value="59837" />
-          </div>
-        </div>
-
-        <div class="flex flex-wrap mb-2 mt-6 w-full">
-          <div class="md:w-1/3 px-3 md:mb-0">
-            <DatePicker></DatePicker>
-          </div>
-          <div class="md:w-1/3 px-3 md:mb-0">
-            <TimePicker></TimePicker>
-          </div>
-          <div class="md:w-1/3 px-3 md:mb-0">
-            <p class="">Completed</p>
-            <div class="flex justify-items-start">
-              <RadioButton id="radio-3" label="on time" value="" name="group-2"></RadioButton>
-              <RadioButton id="radio-4" label="behind time" value="" name="group-2"></RadioButton>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap mb-2 mt-3 w-full">
-          <div class="md:w-2/3 px-3 md:mb-0">
-            <FormComboField
-              id="driver"
-              label="Driver"
-              :value="{ label: 'MOHAMMEDAL-MANDALAWI' }"
-              :options="[
-                { label: 'MOHAMMEDAL-MANDALAWI' },
-                { label: 'Oleksandr Strelbitskyi' },
-                { label: 'Andriy Mykhaylivskyy' },
-                { label: 'Andriy Mykhaylivskyy' },
-              ]"
-            />
-          </div>
-          <div class="md:w-1/3 px-3 md:mb-0">
-            <FormInputField id="driverPayment" label="Driver payment $" value="350" />
-          </div>
-        </div>
-
-        <div class="flex flex-wrap mb-2 mt-6 w-full">
-          <div class="md:w-2/3 px-3 md:mb-0">
-            <FormComboField
-              id="vehicle"
-              label="Vehicle"
-              :value="{ label: 'V24567' }"
-              :options="[
-                { label: 'V24567' },
-                { label: 'V2609' },
-                { label: 'V883 Amy Trans LLC' },
-                { label: 'V2335 LODABELL ' },
-              ]"
-            />
-          </div>
-          <!--          <div class="md:w-1/3 px-3 md:mb-0">-->
-          <!--            <p class="">Completed</p>-->
-          <!--            <div class="flex justify-items-start">-->
-          <!--              <RadioButton id="radio-1" label="Normal" value=""></RadioButton>-->
-          <!--              <RadioButton id="radio-2" label="ASAP" value=""></RadioButton>-->
-          <!--            </div>-->
-          <!--          </div>-->
-        </div>
-
-        <div class="grid grid-cols-1 place-items-end px-3 mb-2">
-          <button
-            @click="() => emit('modal-close')"
-            class="w-20 h-10 bg-[#68C3A8] hover:bg-[#059669] text-white rounded-xl transition duration-300"
-          >
-            Done
-          </button>
+            {{ ft }}
+          </Button>
         </div>
       </div>
-    </div>
-  </div>
+
+      <Label>Note</Label>
+      <TextInput class="w-full px-3" v-model="note" />
+
+      <div class="flex space-x-3 mb-2 mt-4">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Address 1</Label>
+          <TextInput v-model="address1" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Address 2</Label>
+          <TextInput v-model="address2" />
+        </div>
+      </div>
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>City / town</Label>
+          <TextInput v-model="city" />
+        </div>
+        <div class="md:w-1/4 md:mb-0">
+          <Label>State</Label>
+          <TextInput v-model="state" />
+        </div>
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Zip</Label>
+          <TextInput v-model="zip" />
+        </div>
+      </div>
+
+      <div class="flex space-x-3 mb-2 w-full">
+        <Label class="mt-2 mr-4">Completed</Label>
+        <div class="flex items-center justify-between mt-4">
+          <Button
+            sm
+            class="mr-1 mb-2"
+            v-for="item in listOfTimeliness"
+            :key="item"
+            :class="{ 'bg-accent': timeliness == item }"
+            @click="timeliness = item"
+          >
+            {{ item }}
+          </Button>
+        </div>
+        <div class="w-1/2 mt-4">
+          <VueDatePicker
+            teleport-center
+            :enable-time-picker="true"
+            v-model="datetime"
+          ></VueDatePicker>
+        </div>
+      </div>
+
+      <ModalAction>
+        <Button @click="saveAndEdit">Create</Button>
+        <Button class="ml-3" @click="close">Close</Button>
+      </ModalAction>
+    </ModalBox>
+  </Modal>
 </template>
 
-<style scoped>
-.modal-mask {
-  position: fixed;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  //background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(var(--blur-2xl));
-}
-
-.modal-container {
-  width: 600px;
-  margin: 150px auto;
-  padding: 20px 30px;
-  background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-</style>
+<style scoped></style>

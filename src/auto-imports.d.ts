@@ -188,7 +188,7 @@ declare global {
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFeathers: (typeof import('./composables/use-feathers'))['useFeathers']
-  const useFeathersPiniaConfig: (typeof import('@/model/feathers-pinia-config'))['useFeathersPiniaConfig']
+  const useFeathersPiniaConfig: (typeof import('@/models/feathers-pinia-config'))['useFeathersPiniaConfig']
   const useFeathersService: (typeof import('./composables/use-feathers'))['useFeathersService']
   const useFetch: typeof import('@vueuse/core')['useFetch']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
@@ -240,6 +240,7 @@ declare global {
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
+  const usePickUpStore: typeof import('./stores/pick_up')['usePickUpStore']
   const usePointer: typeof import('@vueuse/core')['usePointer']
   const usePointerLock: typeof import('@vueuse/core')['usePointerLock']
   const usePointerSwipe: typeof import('@vueuse/core')['usePointerSwipe']
@@ -299,9 +300,9 @@ declare global {
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
-  const useUserModel: (typeof import('@/model/user'))['useUserModel']
+  const useUserModel: (typeof import('@/models/user'))['useUserModel']
   const useUserStore: (typeof import('./stores/service.users'))['useUserStore']
-  const useUsersConfig: (typeof import('@/model/user'))['useUsersConfig']
+  const useUsersConfig: (typeof import('@/models/user'))['useUsersConfig']
   const useUsersStore: typeof import('./stores/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
@@ -339,6 +340,15 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { Reference } from './models/reference'
+  import('./models/reference')
+  // @ts-ignore
+  export type { Searchable } from './models/searchable'
+  import('./models/searchable')
+  // @ts-ignore
+  export type { Suggestion } from './models/suggestion'
+  import('./models/suggestion')
+  // @ts-ignore
   export type { Broker, BrokerCreate, BrokerUpdate } from './stores/brokers'
   import('./stores/brokers')
   // @ts-ignore
@@ -353,6 +363,9 @@ declare global {
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
+  // @ts-ignore
+  export type { PickUp, PickUpCreate, PickUpUpdate } from './stores/pick_up'
+  import('./stores/pick_up')
   // @ts-ignore
   export type { Status, StatusCreate, StatusUpdate } from './stores/statuses'
   import('./stores/statuses')
@@ -594,6 +607,7 @@ declare module 'vue' {
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
+    readonly usePickUpStore: UnwrapRef<typeof import('./stores/pick_up')['usePickUpStore']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
     readonly usePointerLock: UnwrapRef<typeof import('@vueuse/core')['usePointerLock']>
     readonly usePointerSwipe: UnwrapRef<typeof import('@vueuse/core')['usePointerSwipe']>

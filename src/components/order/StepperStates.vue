@@ -1,27 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import OrderStep from '@/components/modal/PickUpModal.vue'
-import DropDownButton from '@/components/buttons/DropDownButton.vue'
-// import OrderStep from '@/components/order/modal/DeliveryModal.vue'
-// import OrderStep from '@/components/order/modal/ChangeDriverAndVehicle.vue'
+const props = defineProps<{
+  order: number
+}>()
 
-const isModalOpened = ref(false)
+const links = [
+  { name: 'Pick up', modal: 'pickUp' },
+  { name: 'Delivery', modal: 'delivery' },
+  { name: 'Change of driver and vehicle', modal: 'change' },
+]
 
-const openModal = () => {
-  console.log('openModal')
-  isModalOpened.value = true
-}
-
-const closeModal = () => {
-  isModalOpened.value = false
-}
-
-const submitHandler = () => {
-  //here you do whatever
-}
+const selectedPickup = ref(null)
+const selectedDelivery = ref(null)
 </script>
 
 <template>
+  <PickUpModal :order="props.order" :edit="selectedPickup"></PickUpModal>
+  <DeliveryModal :order="props.order" :edit="selectedDelivery"></DeliveryModal>
+
   <div class="flex mb-2 w-full">
     <div class="grow">
       <ol class="relative text-gray-500 border-l-2 border-gray-500">
@@ -97,29 +92,18 @@ const submitHandler = () => {
       </ol>
     </div>
     <div class="flex-none">
-      <DropDownButton @pick-up="openModal"></DropDownButton>
-      <!--      <DropDownButton @delivery="openModal"></DropDownButton>-->
-      <!--      <button-->
-      <!--        @click="openModal"-->
-      <!--        class="w-16 h-10 grow-0 bg-[#313EC6] hover:bg-blue-500 text-white rounded-xl transition duration-300"-->
-      <!--      >-->
-      <!--        Add-->
-      <!--      </button>-->
+      <div class="dropdown dropdown-bottom dropdown-end">
+        <div tabindex="0" role="button" class="btn m-1">Add️</div>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box z-1 w-70 p-2 shadow-sm text-base"
+        >
+          <li><a @click="selectedPickup = { id: -1 }">Pick Up</a></li>
+          <li><a @click="selectedDelivery = { id: -1 }">Delivery</a></li>
+          <li><a>Change of driver and vehicle</a></li>
+        </ul>
+      </div>
     </div>
-    <OrderStep
-      :isOpen="isModalOpened"
-      @modal-close="closeModal"
-      @submit="submitHandler"
-      name="first-modal"
-    >
-    </OrderStep>
-    <!--    <OrderStep-->
-    <!--      :isOpen="isModalOpened"-->
-    <!--      @modal-close="closeModal"-->
-    <!--      @submit="submitHandler"-->
-    <!--      name="second-modal"-->
-    <!--    >-->
-    <!--    </OrderStep>-->
   </div>
 </template>
 
