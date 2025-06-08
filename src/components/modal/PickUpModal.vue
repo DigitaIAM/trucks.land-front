@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
+import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 
 const listOfPriorites = ['normal', 'ASAP']
 const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{
   order: number
-  edit: PickUp | null
+  edit: Event | null
 }>()
 
 const id = ref(null)
-const note = ref('')
-const address1 = ref('')
-const address2 = ref('')
+const address = ref('')
 const city = ref('')
 const state = ref('')
 const zip = ref('')
 const datetime = ref(new Date() as Date | undefined)
 
+const note = ref('')
 const priority = ref<string>()
 const timeliness = ref<string>()
 
@@ -26,46 +26,49 @@ const emit = defineEmits(['closed'])
 
 watch(
   () => props.edit,
-  (pickUp) => {
-    console.log('watch', pickUp)
-    resetAndShow(pickUp)
+  (event) => {
+    console.log('watch', event)
+    resetAndShow(event)
   },
   { deep: true },
 )
 
-const pickUpStore = usePickUpStore()
+const eventsStore = useEventsStore()
 
-function resetAndShow(pickUp: PickUp | null) {
-  id.value = pickUp?.id
-  note.value = pickUp?.note || ''
-  address1.value = pickUp?.address1 || ''
-  address2.value = pickUp?.address2 || ''
-  city.value = pickUp?.city || ''
-  state.value = pickUp?.state || ''
-  zip.value = pickUp?.zip
-  datetime.value = pickUp?.datetime || ''
+function resetAndShow(event: Event | null) {
+  if (event?.kind != 'pick-up') {
+    throw 'incorrect kind "' + event?.kind + '" expected "pick-up"'
+  }
 
-  priority.value = pickUp?.priority ?? 'normal'
-  timeliness.value = pickUp?.timeliness ?? 'on time'
+  id.value = event?.id
+  address.value = event?.address || ''
+  city.value = event?.city || ''
+  state.value = event?.state || ''
+  zip.value = event?.zip
+  datetime.value = event?.datetime || ''
+  note.value = event?.details?.note || ''
+  priority.value = event?.details?.priority ?? 'normal'
+  timeliness.value = event?.details?.timeliness ?? 'on time'
 
   create_pickUp.showModal()
 }
 
 async function saveAndEdit() {
   try {
-    await pickUpStore.create({
+    await eventsStore.create({
       order: props.order,
-      note: note.value,
-      address1: address1.value,
-      address2: address2.value,
+      kind: 'pick-up',
+      address: address.value,
       city: city.value,
       state: state.value,
       zip: zip.value,
       datetime: datetime.value,
-
-      priority: priority.value,
-      timeliness: timeliness.value,
-    } as PickUpCreate)
+      details: {
+        note: note.value,
+        priority: priority.value,
+        timeliness: timeliness.value,
+      },
+    } as EventCreate)
 
     close()
   } catch (e) {
@@ -104,16 +107,9 @@ function close() {
       <Label>Note</Label>
       <TextInput class="w-full px-3" v-model="note" />
 
-      <div class="flex space-x-3 mb-2 mt-4">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Address 1</Label>
-          <TextInput v-model="address1" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Address 2</Label>
-          <TextInput v-model="address2" />
-        </div>
-      </div>
+      <Label class="mt-4">Address</Label>
+      <TextInput class="w-full px-3" v-model="address" />
+
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label>City / town</Label>

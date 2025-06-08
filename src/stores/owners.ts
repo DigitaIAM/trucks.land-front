@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Broker } from '@/stores/brokers.ts'
 
 export interface Owner extends OwnerCreate {
   id: number
@@ -90,7 +91,21 @@ export const useOwnersStore = defineStore('owner', () => {
   }
 
   async function resolve(id: number) {
-    return mapping.value.get(id)
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('owners').select().eq('id', id)
+
+    const map = new Map<number, Owner>()
+    response.data?.forEach((json) => {
+      const owner = json as Owner
+      map.set(owner.id, owner)
+      mapping.value.set(owner.id, owner)
+    })
+
+    return map.get(id)
   }
 
   async function search(text: string) {

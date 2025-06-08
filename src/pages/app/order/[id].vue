@@ -124,7 +124,7 @@ async function saveOrder(status: Status) {
           <div class="flex space-x-3 mb-2 mt-2 w-full">
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Number</Label>
-              <TextInput disabled placeholder="Number" :modelValue="_id" />
+              <TextInput disabled :modelValue="_id" />
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Dispatcher</Label>
@@ -132,11 +132,11 @@ async function saveOrder(status: Status) {
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Posted loads ID</Label>
-              <TextInput placeholder="Posted loads ID" v-model="posted_loads" />
+              <TextInput v-model="posted_loads" />
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Refs</Label>
-              <TextInput placeholder="Refs" v-model="refs" />
+              <TextInput v-model="refs" />
             </div>
           </div>
 
@@ -158,36 +158,33 @@ async function saveOrder(status: Status) {
           <div class="flex space-x-3 mb-2 mt-6 w-full">
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total pieces</Label>
-              <TextInput placeholder="Total pieces" v-model="total_pieces" />
+              <TextInput v-model="total_pieces" />
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total weight</Label>
-              <TextInput placeholder="Total weight" v-model="total_weight" />
+              <TextInput v-model="total_weight" />
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total miles</Label>
-              <TextInput placeholder="Total miles" v-model="total_miles" />
+              <TextInput v-model="total_miles" />
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Cost $</Label>
-              <TextInput placeholder="Cost $" v-model="cost" />
+              <TextInput v-model="cost" />
             </div>
           </div>
           <div class="flex space-x-3 mb-2 mt-6 w-full">
-            <div class="md:w-3/5 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Driver</Label>
-              <TextInput placeholder="Driver" v-model="driver" />
+              <TextInput v-model="driver" />
             </div>
-            <div class="md:w-3/5 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Vehicle</Label>
-              <TextInput placeholder="Vehicle" v-model="vehicle" />
+              <TextInput v-model="vehicle" />
             </div>
             <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Driver payment $</Label>
-              <TextInput placeholder="Driver payment $" v-model="driver_payment" />
-            </div>
-            <div class="mt-7 md:w-1/15 md:mb-0">
-              <Button>+</Button>
+              <TextInput v-model="driver_payment" />
             </div>
           </div>
         </form>
@@ -201,7 +198,7 @@ async function saveOrder(status: Status) {
 
     <div class="w-full flex-col mt-16">
       <div class="px-20 mt-4">
-        <StepperStates :order="_id"></StepperStates>
+        <StepperStates :orderId="_id"></StepperStates>
       </div>
     </div>
   </div>

@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     Accordion: typeof import('./components/widgets/Accordion.vue')['default']
     Account: typeof import('./components/Account.vue')['default']
+    AgreementModal: typeof import('./components/modal/AgreementModal.vue')['default']
     Alert: typeof import('./components/widgets/Alert.vue')['default']
     AppNav: typeof import('./components/AppNav.vue')['default']
     Artboard: typeof import('./components/widgets/Artboard.vue')['default']

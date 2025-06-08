@@ -59,14 +59,14 @@ function resetAndShow(order: Order | null) {
 }
 
 async function saveAndEdit(status: Status | null) {
-  console.log('organization', organization.value)
+  console.log('order_number', order_number)
   if (status == null) return
   try {
     const id = await ordersStore.create({
       status: status.id,
       order_number: order_number.value,
       dispatcher: dispatcher.value?.id,
-      posted_loads_id: posted_loads.value,
+      posted_loads: posted_loads.value,
       refs: refs.value,
       organization: organization.value?.id,
       broker: broker.value?.id,

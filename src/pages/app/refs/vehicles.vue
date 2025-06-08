@@ -8,6 +8,28 @@ const selectedVehicle = ref(null)
 const vehiclesStore = useVehiclesStore()
 const ownersStore = useOwnersStore()
 
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
 function editVehicle(vehicle: Vehicle) {
   selectedVehicle.value = vehicle
 }
@@ -29,15 +51,14 @@ const cols = [
   },
   {
     label: 'Owner',
-    // value: (v: Vehicle) =>
-    //   resolve(
-    //     v,
-    //     'owner',
-    //     () => ({ name: '?' }),
-    //     () => ownersStores.resolve(v.owner),
-    //     (map) => map.name,
-    //   ),
-    value: (v: Vehicle) => ownersStore.resolve(v.owner)?.name || '???',
+    value: (v: Vehicle) =>
+      resolve(
+        v,
+        'owner',
+        () => ({ name: '?' }),
+        () => ownersStore.resolve(v.owner),
+        (map) => map.name,
+      ),
     size: 300,
   },
 ]

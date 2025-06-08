@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import { numeric } from '@vuelidate/validators'
 
 export interface Driver extends DriverCreate {
   id: number
@@ -87,7 +88,49 @@ export const useDriversStore = defineStore('driver', () => {
       })
   }
 
-  return { initialized, loading, listing, create, update }
+  async function resolve(id: number) {
+    console.log('driver resolve', id)
+    if (!(id && id >= 0)) {
+      console.log('id is not number')
+      return null
+    }
+
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('drivers').select().eq('id', id)
+
+    const map = new Map<number, Driver>()
+    response.data?.forEach((json) => {
+      const driver = json as Driver
+      map.set(driver.id, driver)
+      mapping.value.set(driver.id, driver)
+    })
+
+    return map.get(id)
+  }
+
+  async function search(text: string) {
+    console.log('driver search', text)
+
+    const response = await supabase
+      .from('drivers')
+      .select()
+      .ilike('name', '%' + text + '%')
+      .limit(10)
+
+    console.log('response', response)
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as Driver)
+    }
+
+    return []
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search }
 })
 
 if (import.meta.hot) {

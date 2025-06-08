@@ -106,10 +106,38 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   }
 
   async function resolve(id: number) {
-    return mapping.value.get(id)
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('vehicles').select().eq('id', id)
+
+    const map = new Map<number, Vehicle>()
+    response.data?.forEach((json) => {
+      const vehicle = json as Vehicle
+      map.set(vehicle.id, vehicle)
+      mapping.value.set(vehicle.id, vehicle)
+    })
+
+    return map.get(id)
   }
 
-  return { initialized, loading, listing, create, update, resolve }
+  async function search(text: string) {
+    const response = await supabase
+      .from('vehicles')
+      .select()
+      .ilike('unit_id', '%' + text + '%')
+      .limit(10)
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as Vehicle)
+    }
+
+    return []
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search }
 })
 
 if (import.meta.hot) {

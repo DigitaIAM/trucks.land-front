@@ -88,7 +88,7 @@ function onClose() {
             :style="{ width: col.size + 'px' }"
           >
             <span v-for="id in statusesNextStore.nextFor(status)" :key="id" class="mr-4">
-              {{ statusesStore.resolve(id).name }}
+              {{ statusesStore.resolve(id) }}
             </span>
             <Button ghost sm @click.stop="selectNextStatus(status)">+</Button>
           </p>

@@ -33,9 +33,15 @@ async function init(suggestion: Reference | Suggestion) {
   // if (suggestion instanceof Reference) {
   if (suggestion) {
     const obj = await props.store.resolve(suggestion.id)
-    isNotFound.value = obj ? false : true
-    isSetResult.value = true
-    valueAsText.value = obj?.name || ''
+    if (obj) {
+      isNotFound.value = obj ? false : true
+      isSetResult.value = true
+      valueAsText.value = obj?.name || ''
+    } else {
+      console.log('init reset obj', suggestion)
+      isNotFound.value = false
+      valueAsText.value = ''
+    }
     // } else if (suggestion instanceof Suggestion) {
     //   const obj = suggestion
     //   isNotFound.value = obj ? false : true
@@ -56,7 +62,7 @@ function onFocusLost() {
 const suggestions = ref([])
 
 let timer: ReturnType<typeof setTimeout>
-const delay = 300
+const delay = 250
 
 const querying = (query: string) => {
   clearTimeout(timer)

@@ -185,6 +185,7 @@ declare global {
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
   const useEventSource: typeof import('@vueuse/core')['useEventSource']
+  const useEventsStore: typeof import('./stores/events')['useEventsStore']
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFeathers: (typeof import('./composables/use-feathers'))['useFeathers']
@@ -355,6 +356,9 @@ declare global {
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
   // @ts-ignore
+  export type { Event, EventCreate, EventUpdate } from './stores/events'
+  import('./stores/events')
+  // @ts-ignore
   export type { Order, OrderCreate, OrderUpdate } from './stores/orders'
   import('./stores/orders')
   // @ts-ignore
@@ -363,9 +367,6 @@ declare global {
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
-  // @ts-ignore
-  export type { PickUp, PickUpCreate, PickUpUpdate } from './stores/pick_up'
-  import('./stores/pick_up')
   // @ts-ignore
   export type { Status, StatusCreate, StatusUpdate } from './stores/statuses'
   import('./stores/statuses')
@@ -557,6 +558,7 @@ declare module 'vue' {
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
     readonly useEventSource: UnwrapRef<typeof import('@vueuse/core')['useEventSource']>
+    readonly useEventsStore: UnwrapRef<typeof import('./stores/events')['useEventsStore']>
     readonly useEyeDropper: UnwrapRef<typeof import('@vueuse/core')['useEyeDropper']>
     readonly useFavicon: UnwrapRef<typeof import('@vueuse/core')['useFavicon']>
     readonly useFetch: UnwrapRef<typeof import('@vueuse/core')['useFetch']>
@@ -607,7 +609,6 @@ declare module 'vue' {
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
-    readonly usePickUpStore: UnwrapRef<typeof import('./stores/pick_up')['usePickUpStore']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
     readonly usePointerLock: UnwrapRef<typeof import('@vueuse/core')['usePointerLock']>
     readonly usePointerSwipe: UnwrapRef<typeof import('@vueuse/core')['usePointerSwipe']>

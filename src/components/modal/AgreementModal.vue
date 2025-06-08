@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineEmits, defineProps, ref } from 'vue'
 import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
 
@@ -14,9 +14,6 @@ const note = ref('')
 const driver = ref(null)
 const vehicle = ref(null)
 const cost = ref(null)
-const city = ref('')
-const state = ref('')
-const zip = ref('')
 
 const emit = defineEmits(['closed'])
 
@@ -30,32 +27,29 @@ watch(
 )
 
 const eventsStore = useEventsStore()
-const driversStore = useDriversStore()
+const driversStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 
 function resetAndShow(event: Event | null) {
-  if (event?.kind != 'change') {
-    throw 'incorrect kind "' + event?.kind + '" expected "change"'
+  if (event?.kind != 'agreement') {
+    throw 'incorrect kind "' + event?.kind + '" expected "agreement"'
   }
 
   id.value = event?.id
   datetime.value = event?.datetime || ''
   note.value = event?.details?.note || ''
-  driver.value = event.driver ? { id: event.driver } : null
-  vehicle.value = event.vehicle ? { id: event.vehicle } : null
+  driver.value = event ? { id: event.driver } : null
+  vehicle.value = event ? { id: event.vehicle } : null
   cost.value = event?.cost
-  city.value = event?.city || ''
-  state.value = event?.state || ''
-  zip.value = event?.zip
 
-  create_change.showModal()
+  create_agreement.showModal()
 }
 
 async function saveAndEdit() {
   try {
     await eventsStore.create({
       order: props.order,
-      kind: 'change',
+      kind: 'agreement',
       datetime: datetime.value,
       driver: driver.value?.id,
       vehicle: vehicle.value?.id,
@@ -63,9 +57,6 @@ async function saveAndEdit() {
       details: {
         note: note.value,
       },
-      city: city.value,
-      state: state.value,
-      zip: zip.value,
     } as EventCreate)
 
     close()
@@ -75,17 +66,17 @@ async function saveAndEdit() {
 }
 
 function close() {
-  create_change.close()
+  create_agreement.close()
   // emit('closed')
 }
 </script>
 
 <template>
-  <Modal id="create_change">
+  <Modal id="create_agreement">
     <ModalBox class="max-w-[calc(40vw-6.25rem)]">
       <div class="flex items-start justify-between">
         <div class="md:w-1/2 md:mb-0">
-          <Text size="2xl">Change of driver and vehicle</Text>
+          <Text size="2xl">Agreement</Text>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <VueDatePicker
@@ -113,20 +104,6 @@ function close() {
       <Label class="mt-2">Vehicle</Label>
       <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>City / town</Label>
-          <TextInput v-model="city" />
-        </div>
-        <div class="md:w-1/4 md:mb-0">
-          <Label>State</Label>
-          <TextInput v-model="state" />
-        </div>
-        <div class="md:w-1/4 md:mb-0">
-          <Label>Zip</Label>
-          <TextInput v-model="zip" />
-        </div>
-      </div>
       <ModalAction>
         <Button @click="saveAndEdit">Create</Button>
         <Button class="ml-3" @click="close">Close</Button>
