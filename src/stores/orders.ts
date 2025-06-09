@@ -109,6 +109,7 @@ export const useOrdersStore = defineStore('order', () => {
       .from('orders')
       .select()
       .ilike('name', '%' + text + '%')
+      .limit(10)
 
     if (response.status == 200) {
       return response.data?.map((json) => json as Order)

@@ -13,8 +13,6 @@ const props = defineProps<{
   id: string
 }>()
 
-console.log('id', props.id)
-
 const _id = ref(null)
 const status = ref(null)
 const dispatcher = ref<User | Reference>()
@@ -47,7 +45,7 @@ const next = computed(() => {
 watch(
   () => props.id,
   (id) => {
-    console.log('watch id', id, props.id)
+    // console.log('watch id', id, props.id)
     resetAndShow(id)
   },
   { deep: true },
@@ -56,12 +54,12 @@ watch(
 resetAndShow(props.id)
 
 async function resetAndShow(str: string) {
-  console.log('resetAndShow', str, props.id, typeof str)
+  // console.log('resetAndShow', str, props.id, typeof str)
 
   const id = Number(str)
 
   const order = await ordersStore.resolve(id)
-  console.log('order', order)
+  // console.log('order', order)
   if (order) {
     // resetAndShow(order)
     _id.value = order.id
@@ -79,7 +77,7 @@ async function resetAndShow(str: string) {
     // TODO show error
   }
 
-  console.log('done', _id.value)
+  // console.log('done', _id.value)
 }
 
 async function saveOrder(status: Status) {
@@ -115,7 +113,7 @@ async function saveOrder(status: Status) {
           </Button>
         </div>
         <div class="flex-1/60 ml-16 mt-4">
-          <StepperUploading :order="_id"></StepperUploading>
+          <StepperUploading :orderId="_id"></StepperUploading>
         </div>
       </div>
 

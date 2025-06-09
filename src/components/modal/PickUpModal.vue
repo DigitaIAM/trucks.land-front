@@ -7,7 +7,7 @@ const listOfPriorites = ['normal', 'ASAP']
 const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{
-  order: number
+  order: number | null
   edit: Event | null
 }>()
 

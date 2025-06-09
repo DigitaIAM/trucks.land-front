@@ -146,6 +146,7 @@ export const useUsersStore = defineStore('user', () => {
       .from('users')
       .select()
       .ilike('name', '%' + text + '%')
+      .limit(10)
 
     if (response.status == 200) {
       return response.data?.map((json) => json as User)

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+const props = defineProps<{
+  orderId: number | null
+}>()
 
 const stages = ref([
   { label: 'RC', check: false },

@@ -31,8 +31,8 @@ const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
 function resetAndShow(event: Event | null) {
-  if (event?.kind != 'agreement') {
-    throw 'incorrect kind "' + event?.kind + '" expected "agreement"'
+  if (event?.kind != 'expenses') {
+    throw 'incorrect kind "' + event?.kind + '" expected "expenses"'
   }
 
   id.value = event?.id
@@ -42,14 +42,14 @@ function resetAndShow(event: Event | null) {
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
   cost.value = event?.cost
 
-  create_agreement.showModal()
+  create_expenses.showModal()
 }
 
 async function saveAndEdit() {
   try {
     await eventsStore.create({
       order: props.order,
-      kind: 'agreement',
+      kind: 'expenses',
       datetime: datetime.value,
       driver: driver.value?.id,
       vehicle: vehicle.value?.id,
@@ -66,17 +66,17 @@ async function saveAndEdit() {
 }
 
 function close() {
-  create_agreement.close()
+  create_expenses.close()
   // emit('closed')
 }
 </script>
 
 <template>
-  <Modal id="create_agreement">
+  <Modal id="create_expenses">
     <ModalBox class="max-w-[calc(40vw-6.25rem)]">
       <div class="flex items-start justify-between">
         <div class="md:w-1/2 md:mb-0">
-          <Text size="2xl">Agreement</Text>
+          <Text size="2xl">Expenses</Text>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <VueDatePicker
@@ -87,22 +87,26 @@ function close() {
         </div>
       </div>
 
-      <Label class="mt-2">Note</Label>
-      <TextInput class="w-full" v-model="note" />
-
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-2/3 md:mb-0">
+        <div class="md:w-1/2 md:mb-0">
           <Label>Driver</Label>
           <selector v-model="driver" :store="driversStore"></selector>
         </div>
-        <div class="md:w-1/3 md:mb-0">
-          <Label>Driver payment $</Label>
-          <TextInput v-model="cost" />
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Vehicle</Label>
+          <selector v-model="vehicle" :store="vehiclesStore"></selector>
         </div>
       </div>
 
-      <Label class="mt-2">Vehicle</Label>
-      <selector v-model="vehicle" :store="vehiclesStore"></selector>
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Expenses $</Label>
+          <TextInput class="w-full" v-model="cost" />
+        </div>
+      </div>
+
+      <Label class="mt-2">Note</Label>
+      <TextInput class="w-full" v-model="note" />
 
       <ModalAction>
         <Button @click="saveAndEdit">Create</Button>

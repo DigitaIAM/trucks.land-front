@@ -70,6 +70,7 @@ const querying = (query: string) => {
     const text = query
     timer = setTimeout(() => {
       props.store.search(query).then((list) => {
+        console.log('search result', text === valueAsText.value, list)
         if (text === valueAsText.value) {
           suggestions.value = list
         }

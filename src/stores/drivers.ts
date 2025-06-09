@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import { numeric } from '@vuelidate/validators'
 
 export interface Driver extends DriverCreate {
   id: number

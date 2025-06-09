@@ -35,29 +35,34 @@ export interface EventUpdate {
 }
 
 export const useEventsStore = defineStore('event', () => {
-  const mapping = ref(new Map<number, Event>())
+  async function listing(orderId: number) {
+    console.log('query -', orderId, '-')
 
-  const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('events').select()
+    if (orderId) {
+      const response = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', orderId)
+        .order('datetime', { ascending: false })
+      // .order('datetime') // .throwOnError()
+      console.log(response)
 
-    const map = new Map<number, Event>()
-    response.data?.forEach((json) => {
-      const event = json as Event
-      map.set(event.id, event)
-    })
+      if (response.status == 200) {
+        const list = []
 
-    mapping.value = map
-  })
+        response.data?.forEach((json) => {
+          const event = json as Event
+          list.push(event)
+        })
 
-  const listing = computed(() => {
-    const list = [] as Event[]
-
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
-
-    return list
-  })
+        return list
+      } else {
+        throw 'unexpended response status: ' + response.status
+      }
+    } else {
+      return []
+    }
+  }
 
   async function create(event: EventCreate) {
     console.log('create', event)
@@ -66,8 +71,8 @@ export const useEventsStore = defineStore('event', () => {
 
     if (response.status == 201) {
       response.data?.forEach((json) => {
-        const event = json as Event
-        mapping.value.set(event.id, event)
+        // const event = json as Event
+        // mapping.value.set(event.id, event)
       })
     } else {
       throw 'unexpended response status: ' + response.status
@@ -83,32 +88,14 @@ export const useEventsStore = defineStore('event', () => {
       .then((response) => {
         if (response.status == 200) {
           response.data?.forEach((json) => {
-            const event = json as Event
-            mapping.value.set(event.id, event)
+            // const event = json as Event
+            // mapping.value.set(event.id, event)
           })
         }
       })
   }
 
-  async function resolve(id: number) {
-    const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
-
-    const response = await supabase.from('events').select().eq('id', id)
-
-    const map = new Map<number, Event>()
-    response.data?.forEach((json) => {
-      const event = json as Event
-      map.set(event.id, event)
-      mapping.value.set(event.id, event)
-    })
-
-    return map.get(id)
-  }
-
-  return { initialized, loading, listing, create, update, resolve }
+  return { listing, create, update }
 })
 
 if (import.meta.hot) {

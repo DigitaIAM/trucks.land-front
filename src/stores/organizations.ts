@@ -109,6 +109,7 @@ export const useOrganizationsStore = defineStore('organization', () => {
       .from('organizations')
       .select()
       .ilike('name', '%' + text + '%')
+      .limit(10)
 
     if (response.status == 200) {
       return response.data?.map((json) => json as Organization)

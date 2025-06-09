@@ -4,33 +4,32 @@ layout: app
 </route>
 
 <script setup lang="ts">
-import type { StatusNext } from '@/stores/statuses_next.ts'
-
 const statusesStore = useStatusesStore()
 const statusesNextStore = useStatusesNextStore()
 
-function generateStyle(col, status: Status | null) {
+const state = reactive({})
+
+function resolveStatus(id: number) {
+  const s = state[id]
+  if (s) {
+    return s
+  } else {
+    const ns = { id: id, name: '?' }
+    state[id] = ns
+    statusesStore.resolve(id).then((obj) => {
+      if (obj) state[id] = obj
+    })
+    return ns
+  }
+}
+
+function generateStyle(status: Status | null) {
   const style = {} // width: col.size + 'px'
   if (status?.color) {
     style['background-color'] = status.color // col.color(order)
   }
   return style
 }
-
-const cols = [
-  {
-    label: 'Name',
-    value: (v: Status) => v.name,
-    color: (v: Status) => v.color,
-    size: 300,
-  },
-  {
-    label: 'Next',
-    value: (v: StatusNext) => v.next,
-    color: (v: Status) => v.color,
-    size: 300,
-  },
-]
 
 const selectedStatus = ref(null)
 const selectedNextStatus = ref(null)
@@ -55,42 +54,45 @@ function onClose() {
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
-        <th
-          v-for="col in cols"
-          class="p-4 border-b border-b-gray-300"
-          :style="{ width: col.size + 'px' }"
-          :key="col.label"
-        >
-          <p class="block text-sm antialiasing font-bold leading-none">
-            {{ col.label }}
-          </p>
+        <th class="p-4 border-b border-b-gray-300" :style="{ width: 100 + 'px' }">
+          <p class="block text-sm antialiasing font-bold leading-none">Name</p>
+        </th>
+        <th class="p-4 border-b border-b-gray-300" :style="{ width: 300 + 'px' }">
+          <p class="block text-sm antialiasing font-bold leading-none">Next</p>
+        </th>
+        <th class="p-4 border-b border-b-gray-300" :style="{ width: 50 + 'px' }">
+          <p class="block text-sm antialiasing font-bold leading-none">Add next</p>
         </th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="status in statusesStore.listing" :key="status.id" @click="editStatus(status)">
-        <td
-          v-for="col in cols"
-          :key="col.label"
-          class="py-3 px-4"
-          :style="generateStyle(col, status)"
-        >
+        <td class="py-3 px-4" :style="generateStyle(status)">
           <p
-            v-if="col.label != 'Next'"
             class="block text-sm antialiasing font-normal leading-normal truncate"
-            :style="{ width: col.size + 'px' }"
+            :style="{ width: 100 + 'px' }"
           >
-            {{ col.value(status) }}
+            {{ status.name }}
           </p>
+        </td>
+        <td class="py-3 px-4" :style="generateStyle(status)">
           <p
-            v-else
             class="block text-sm antialiasing font-normal leading-normal truncate"
-            :style="{ width: col.size + 'px' }"
+            :style="{ width: 300 + 'px' }"
           >
             <span v-for="id in statusesNextStore.nextFor(status)" :key="id" class="mr-4">
-              {{ statusesStore.resolve(id) }}
+              {{ resolveStatus(id).name }}
             </span>
-            <Button ghost sm @click.stop="selectNextStatus(status)">+</Button>
+          </p>
+        </td>
+        <td class="py-3 px-4" :style="generateStyle(status)">
+          <p
+            class="block text-sm antialiasing font-normal leading-normal truncate"
+            :style="{ width: 50 + 'px' }"
+          >
+            <span class="mr-4">
+              <Button ghost sm @click.stop="selectNextStatus(status)">+</Button>
+            </span>
           </p>
         </td>
       </tr>

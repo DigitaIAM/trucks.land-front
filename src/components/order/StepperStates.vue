@@ -2,83 +2,52 @@
 import { useEventsStore } from '@/stores/events.ts'
 
 const props = defineProps<{
-  orderId: number
+  orderId: number | null
 }>()
 
-const events = useEventsStore()
+const eventsStore = useEventsStore()
+const driversStore = useDriversStore()
+const vehiclesStore = useVehiclesStore()
 
-// const events = ref([
-//   {
-//     id: 1,
-//     mode: 'delivery',
-//     datetime: '15 Feb, 2025 11:00',
-//     city: 'Saint Paul',
-//     state: 'MN',
-//     zip: '55121',
-//   },
-//   {
-//     id: 2,
-//     mode: 'change',
-//     datetime: '12 Feb, 2025 15:00',
-//     city: 'Saint Paul',
-//     state: 'MN',
-//     zip: '55121',
-//     driver: 'Norval Forrester',
-//     vehicle: 'V2909',
-//     cost: '500',
-//   },
-//   {
-//     id: 3,
-//     mode: 'expenses',
-//     datetime: '09 Feb, 2025 14:00',
-//     driver: 'driver',
-//     vehicle: 'vehicle',
-//     cost: '56',
-//     note: 'Сhange of tires',
-//   },
-//   {
-//     id: 4,
-//     mode: 'pick-up',
-//     datetime: '10 Feb, 2025 20:00',
-//     city: 'West Walley City',
-//     state: 'UT',
-//     zip: '84128',
-//   },
-//   {
-//     id: 5,
-//     mode: 'agreement',
-//     datetime: '09 Feb, 2025 14:00',
-//     driver: 'Norval Forrester',
-//     vehicle: 'V2909',
-//     cost: '1200',
-//   },
-// ])
+const events = ref([])
 
-// watch(
-//   () => props.orderId,
-//   (orderId) => {
-//     useEventsStore()
-//       .list(orderId)
-//       .then((list) => (events.value = list))
-//   },
-//   { deep: true },
-// )
+watch(
+  () => props.orderId,
+  (id) => {
+    // console.log('watch id', id, props.id)
+    resetAndShow(id)
+  },
+  { deep: true },
+)
+
+resetAndShow(props.orderId)
+
+async function resetAndShow(id: number) {
+  console.log('resetAndShow', id)
+
+  events.value = await eventsStore.listing(id)
+
+  console.log('done', events.value)
+}
 
 const selectedPickup = ref(null)
 const selectedDelivery = ref(null)
 const selectedChange = ref(null)
 const selectedAgreement = ref(null)
+const selectedExpenses = ref(null)
 </script>
 
 <template>
   <PickUpModal :order="props.orderId" :edit="selectedPickup"></PickUpModal>
   <DeliveryModal :order="props.orderId" :edit="selectedDelivery"></DeliveryModal>
   <ChangeDriverAndVehicle :order="props.orderId" :edit="selectedChange"></ChangeDriverAndVehicle>
+  <AgreementModal :order="props.orderId" :edit="selectedAgreement"></AgreementModal>
+  <ExpensesModal :order="props.orderId" :edit="selectedExpenses"></ExpensesModal>
 
   <div class="flex mb-2 w-full">
     <div class="grow">
       <ol class="relative text-gray-500 border-l-2 border-gray-500">
-        <li class="mb-10 ms-6" v-for="event in events.listing" :key="event.id">
+        <li class="mb-10 ms-6" v-for="event in events" :key="event.id">
           <template v-if="event.kind == 'delivery'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full -start-4"
@@ -147,8 +116,12 @@ const selectedAgreement = ref(null)
             </span>
             <h3 class="font-bold text-[#F08A34] leading-tight">Change of driver and vehicle</h3>
             <p class="text-md">{{ event.datetime }}</p>
-            <p class="text-md">{{ event.driver }}</p>
-            <p class="text-md">{{ event.vehicle }}</p>
+            <p class="text-md">
+              <QueryAndShow :id="event.driver" :store="driversStore" />
+            </p>
+            <p class="text-md">
+              <QueryAndShow :id="event.vehicle" :store="vehiclesStore" />
+            </p>
           </template>
           <template v-if="event.kind == 'agreement'">
             <span
@@ -167,8 +140,12 @@ const selectedAgreement = ref(null)
               </svg>
             </span>
             <h3 class="font-bold text-[#e35e87] leading-tight">Agreement</h3>
-            <p class="text-md">{{ event.driver }}</p>
-            <p class="text-md">{{ event.vehicle }}</p>
+            <p class="text-md">
+              <QueryAndShow :id="event.driver" :store="driversStore" />
+            </p>
+            <p class="text-md">
+              <QueryAndShow :id="event.vehicle" :store="vehiclesStore" />
+            </p>
             <p class="text-md">${{ event.cost }}</p>
           </template>
           <template v-if="event.kind == 'expenses'">
@@ -207,7 +184,7 @@ const selectedAgreement = ref(null)
           <li>
             <a @click="selectedChange = { id: -1, kind: 'change' }">Change of driver and vehicle</a>
           </li>
-          <li><a>Expenses</a></li>
+          <li><a @click="selectedExpenses = { id: -1, kind: 'expenses' }">Expenses</a></li>
           <li><a @click="selectedDelivery = { id: -1, kind: 'delivery' }">Delivery</a></li>
         </ul>
       </div>

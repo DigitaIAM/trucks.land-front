@@ -4,7 +4,7 @@ import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
 
 const props = defineProps<{
-  order: number
+  order: number | null
   edit: Event | null
 }>()
 

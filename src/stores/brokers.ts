@@ -113,6 +113,7 @@ export const useBrokersStore = defineStore('broker', () => {
       .from('brokers')
       .select()
       .ilike('name', '%' + text + '%')
+      .limit(10)
 
     if (response.status == 200) {
       return response.data?.map((json) => json as Broker)
