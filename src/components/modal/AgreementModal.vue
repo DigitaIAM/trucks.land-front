@@ -4,7 +4,7 @@ import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
 
 const props = defineProps<{
-  order: number | null
+  document: number | null
   edit: Event | null
 }>()
 
@@ -36,7 +36,7 @@ function resetAndShow(event: Event | null) {
   }
 
   id.value = event?.id
-  datetime.value = event?.datetime || ''
+  datetime.value = event?.datetime
   note.value = event?.details?.note || ''
   driver.value = event.driver ? { id: event.driver } : null
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
@@ -48,7 +48,7 @@ function resetAndShow(event: Event | null) {
 async function saveAndEdit() {
   try {
     await eventsStore.create({
-      order: props.order,
+      document: props.document,
       kind: 'agreement',
       datetime: datetime.value,
       driver: driver.value?.id,

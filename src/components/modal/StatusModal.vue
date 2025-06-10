@@ -63,7 +63,10 @@ function saveStatus() {
     <ModalBox class="w-4/5">
       <Text size="2xl">Status</Text>
 
-      <TextInput class="flex mb-4 mt-4 w-full" placeholder="Name" v-model="name" />
+      <div>
+        <Label class="mt-2">Name</Label>
+        <TextInput class="w-full" v-model="name" />
+      </div>
 
       <div class="flex space-x-3 mb-6 mt-6 w-full">
         <TwitterPicker

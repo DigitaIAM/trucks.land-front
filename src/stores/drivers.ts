@@ -88,9 +88,9 @@ export const useDriversStore = defineStore('driver', () => {
   }
 
   async function resolve(id: number) {
-    console.log('driver resolve', id)
+    // console.log('driver resolve', id)
     if (!(id && id >= 0)) {
-      console.log('id is not number')
+      // console.log('id is not number')
       return null
     }
 

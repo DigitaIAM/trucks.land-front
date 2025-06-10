@@ -28,10 +28,18 @@ const ordersStore = useOrdersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
 
-const next = computed(() => {
+const next = computedAsync(async () => {
+  const list = []
+
   const ids = nextStatusStore.nextFor(null)
-  return Array.from(ids.map((id) => statusesStore.resolve(id)))
-})
+  for (const idx in ids) {
+    const id = ids[idx]
+    const status = await statusesStore.resolve(id)
+    list.push(status)
+  }
+
+  return list
+}, [])
 
 const emit = defineEmits(['closed'])
 
@@ -75,11 +83,13 @@ async function saveAndEdit(status: Status | null) {
       total_miles: total_miles.value,
       cost: cost.value,
     } as OrderCreate)
-    await router.replace({ path: '/app/order/edit?id=1', query: { id: id } })
+    create_draft.close()
+
+    await router.replace({ path: '/app/order/' + id })
   } catch (e) {
     console.log('error', e)
+    console.log('status', status.id)
   }
-  create_draft.close()
   emit('closed')
 }
 </script>

@@ -17,7 +17,7 @@ export interface EventCreate {
   driver: number
   vehicle: number
   details: object
-  order: number
+  document: number
 }
 
 export interface EventUpdate {
@@ -31,7 +31,7 @@ export interface EventUpdate {
   driver?: number
   vehicle?: number
   details?: object
-  order?: number
+  document?: number
 }
 
 export const useEventsStore = defineStore('event', () => {
@@ -66,7 +66,7 @@ export const useEventsStore = defineStore('event', () => {
 
   async function create(event: EventCreate) {
     console.log('create', event)
-    const response = await supabase.from('events').insert(event).select() // .throwOnError()
+    const response = await supabase.from('order_events').insert(event).select() // .throwOnError()
     console.log(response)
 
     if (response.status == 201) {
@@ -81,7 +81,7 @@ export const useEventsStore = defineStore('event', () => {
 
   function update(id: number, event: EventUpdate) {
     supabase
-      .from('events')
+      .from('order_events')
       .update(event)
       .eq('id', id)
       .select()

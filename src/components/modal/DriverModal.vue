@@ -91,25 +91,33 @@ function saveDriver() {
     <ModalBox class="w-2/5">
       <Text size="2xl">Driver</Text>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
+      <div class="flex space-x-3 mb-2 mt-2 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Name" v-model="name" />
+          <Label>Name</Label>
+          <TextInput v-model="name" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="User" v-model="user" />
-        </div>
-      </div>
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Email" v-model="email" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Phone" v-model="phone" />
+          <Label>User</Label>
+          <TextInput v-model="user" />
         </div>
       </div>
-      <div class="flex space-x-3 mb-6 mt-6 w-full">
-        <TextInput class="md:w-2/3 md:mb-0" placeholder="Driver licence" v-model="licence" />
-        <div class="w-1/3">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Email</Label>
+          <TextInput type="email" v-model="email" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Phone</Label>
+          <TextInput type="phone" v-model="phone" />
+        </div>
+      </div>
+      <div class="flex space-x-3 mb-4 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Driver licence</Label>
+          <TextInput v-model="licence" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Expiry date</Label>
           <VueDatePicker
             teleport-center
             :enable-time-picker="false"
@@ -118,13 +126,17 @@ function saveDriver() {
         </div>
       </div>
 
-      <TextInput class="w-full" placeholder="Company" v-model="company" />
+      <Label>Company</Label>
+      <TextInput class="w-full" v-model="company" />
+
       <div class="flex space-x-3 mb-6 mt-6 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Weekly fix payments" v-model="fix_payments" />
+          <Label>Weekly fix payments</Label>
+          <TextInput v-model="fix_payments" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Profit percentage" v-model="percentage" />
+          <Label>Profit percentage</Label>
+          <TextInput v-model="percentage" />
         </div>
       </div>
       <ModalAction>

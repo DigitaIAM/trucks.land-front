@@ -61,6 +61,7 @@ declare module 'vue' {
     Drawer: typeof import('./components/widgets/Drawer.vue')['default']
     DrawerContent: typeof import('./components/widgets/DrawerContent.vue')['default']
     DrawerSide: typeof import('./components/widgets/DrawerSide.vue')['default']
+    DriverAndVehicle: typeof import('./components/order/DriverAndVehicle.vue')['default']
     DriverModal: typeof import('./components/modal/DriverModal.vue')['default']
     Dropdown: typeof import('./components/widgets/Dropdown.vue')['default']
     DropdownButton: typeof import('./components/widgets/DropdownButton.vue')['default']

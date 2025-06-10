@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Organization } from '@/stores/organizations.ts'
 
 export interface Status extends StatusCreate {
   id: number

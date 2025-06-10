@@ -7,7 +7,7 @@ const listOfPriorites = ['normal', 'ASAP']
 const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{
-  order: number | null
+  document: number | null
   edit: Event | null
 }>()
 
@@ -22,7 +22,7 @@ const note = ref('')
 const priority = ref<string>()
 const timeliness = ref<string>()
 
-const emit = defineEmits(['closed'])
+const emit = defineEmits(['on-update'])
 
 watch(
   () => props.edit,
@@ -56,7 +56,7 @@ function resetAndShow(event: Event | null) {
 async function saveAndEdit() {
   try {
     await eventsStore.create({
-      order: props.order,
+      document: props.document,
       kind: 'pick-up',
       address: address.value,
       city: city.value,
@@ -78,7 +78,7 @@ async function saveAndEdit() {
 
 function close() {
   create_pickUp.close()
-  // emit('closed')
+  emit('on-update')
 }
 </script>
 

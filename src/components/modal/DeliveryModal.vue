@@ -7,7 +7,7 @@ const listOfPriorites = ['normal', 'direct']
 const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{
-  order: number | null
+  document: number | null
   edit: Event | null
 }>()
 
@@ -56,7 +56,7 @@ function resetAndShow(event: Event | null) {
 async function saveAndEdit() {
   try {
     await eventsStore.create({
-      order: props.order,
+      document: props.document,
       kind: 'delivery',
       address: address.value,
       city: city.value,

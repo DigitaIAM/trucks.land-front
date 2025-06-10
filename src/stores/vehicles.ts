@@ -18,6 +18,7 @@ export interface VehicleCreate {
 
   model: string
   type: string
+  kind: string
 
   color: string
   year: number
@@ -40,6 +41,7 @@ export interface VehicleUpdate {
 
   model?: string
   type?: string
+  kind?: string
 
   color?: string
   year?: number
@@ -115,9 +117,9 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   }
 
   async function resolve(id: number) {
-    console.log('vehicle resolve', id)
+    // console.log('vehicle resolve', id)
     if (!(id && id >= 0)) {
-      console.log('id is not number')
+      // console.log('id is not number')
       return null
     }
 

@@ -148,29 +148,32 @@ function saveUser() {
 
   <Modal id="edit_user">
     <ModalBox class="w-4/5">
-      <div class="flex space-x-76 mb-4 w-full">
+      <div class="flex space-x-76 w-full">
         <Text size="2xl">User</Text>
-
         <label class="label">
           <Toggle v-model="disabled"></Toggle>
           <span class="ml-1 mr-3">disabled</span>
         </label>
       </div>
 
-      <div class="flex space-x-5 mb-6 mt-4 w-full">
+      <div class="flex space-x-5 mb-4 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Name" v-model="name" />
+          <Label>Name</Label>
+          <TextInput v-model="name" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Real name" v-model="real_name" />
+          <Label>Real name</Label>
+          <TextInput v-model="real_name" />
         </div>
       </div>
-      <div class="flex space-x-3 mb-6 mt-4 w-full">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput type="email" placeholder="Email" v-model="email" />
+          <Label>Email</Label>
+          <TextInput type="email" v-model="email" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput type="phone" placeholder="Phone" v-model="phone" />
+          <Label>Phone</Label>
+          <TextInput type="phone" v-model="phone" />
         </div>
       </div>
 
@@ -183,10 +186,12 @@ function saveUser() {
 
       <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Group" v-model="group" />
+          <Label>Group</Label>
+          <TextInput v-model="group" />
         </div>
         <div class="md:w-3/4 md:mb-0">
-          <selector label="Organization" v-model="organization" :store="organizations"></selector>
+          <Label>Organization</Label>
+          <selector v-model="organization" :store="organizations"></selector>
         </div>
       </div>
 
@@ -197,13 +202,16 @@ function saveUser() {
 
       <div class="flex space-x-3 mb-4 mt-2 w-full">
         <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="<= 10%" v-model="less_ten" />
+          <Label><=10%</Label>
+          <TextInput v-model="less_ten" />
         </div>
         <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="> 10%" v-model="more_ten" />
+          <Label> >10% </Label>
+          <TextInput v-model="more_ten" />
         </div>
         <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="%" v-model="percent" />
+          <Label> % </Label>
+          <TextInput v-model="percent" />
         </div>
       </div>
 

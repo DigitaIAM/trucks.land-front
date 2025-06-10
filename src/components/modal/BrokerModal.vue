@@ -104,11 +104,12 @@ function saveBroker() {
     <ModalBox class="w-2/5">
       <Text size="2xl">Broker</Text>
 
-      <div class="flex space-x-5 mb-4 mt-4 w-full">
-        <div class="md:w-3/5 md:mb-0">
-          <TextInput placeholder="Name" v-model="name" />
+      <div class="flex space-x-5 mb-4 mt-2 w-full">
+        <div class="md:w-3/4 md:mb-0">
+          <Label>Name</Label>
+          <TextInput v-model="name" />
         </div>
-        <div class="md:w-1/5 md:mb-0">
+        <div class="md:w-1/4 md:mb-0 mt-8">
           <label class="label">
             <Toggle v-model="is_active"></Toggle>
             <span class="ml-3">active</span>
@@ -116,36 +117,45 @@ function saveBroker() {
         </div>
       </div>
 
-      <TextInput class="mt-2 w-full" placeholder="Person" v-model="person" />
+      <Label>Person</Label>
+      <TextInput class="w-full" v-model="person" />
 
-      <div class="flex flex-wrap mb-2 mt-6 w-full">
+      <div class="flex flex-wrap mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="City/town" v-model="city" />
+          <Label>City/town</Label>
+          <TextInput v-model="city" />
         </div>
         <div class="md:w-1/4 px-3 md:mb-0">
-          <TextInput placeholder="State" v-model="state" />
+          <Label>State</Label>
+          <TextInput v-model="state" />
         </div>
         <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="ZIP" v-model="zip" />
+          <Label>ZIP</Label>
+          <TextInput v-model="zip" />
         </div>
       </div>
-      <div class="flex space-x-3 mb-2 mt-6 w-full">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Street" v-model="street" />
+          <Label>Street</Label>
+          <TextInput v-model="street" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Phone" v-model="phone" />
+          <Label>Phone</Label>
+          <TextInput type="phone" v-model="phone" />
         </div>
       </div>
-      <div class="flex flex-wrap mb-6 mt-6 w-full">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Email" v-model="email" />
+          <Label>Email</Label>
+          <TextInput type="email" v-model="email" />
         </div>
         <div class="md:w-1/4 px-3 md:mb-0">
-          <TextInput placeholder="MS" v-model="ms" />
+          <Label>MS</Label>
+          <TextInput v-model="ms" />
         </div>
         <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="DOT" v-model="dot" />
+          <Label>DOT</Label>
+          <TextInput v-model="dot" />
         </div>
       </div>
       <ModalAction>

@@ -2,7 +2,7 @@
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
-const vanTypes = ['cargo van', 'small straight', 'large straight']
+const listOfVanTypes = ['cargo van', 'small straight', 'large straight']
 
 const owners = useOwnersStore()
 
@@ -20,6 +20,7 @@ const unit_id = ref('')
 const vin = ref('')
 const expiry_date = ref(new Date() as Date | undefined)
 const model = ref('')
+const kind = ref('')
 
 const color = ref('')
 const year = ref<number>()
@@ -53,6 +54,7 @@ function resetAndShow(vehicle: Vehicle | null) {
   vin.value = vehicle?.vin
   expiry_date.value = vehicle?.expiry_date
   model.value = vehicle?.model
+  kind.value = vehicle?.kind
 
   color.value = vehicle?.color
   year.value = vehicle?.year
@@ -65,7 +67,7 @@ function resetAndShow(vehicle: Vehicle | null) {
   door_height.value = vehicle?.door_height
 
   is_active.value = vehicle?.is_active || false
-  vanType.value = vehicle?.type
+  vanType.value = vehicle?.type ?? 'cargo van'
 
   edit_vehicle.showModal()
 }
@@ -79,6 +81,7 @@ async function saveVehicle() {
         vin: vin.value,
         expiry_date: expiry_date.value,
         model: model.value,
+        kind: kind.value,
 
         color: color.value,
         year: year.value,
@@ -100,6 +103,7 @@ async function saveVehicle() {
         vin: vin.value,
         expiry_date: expiry_date.value,
         model: model.value,
+        kind: kind.value,
 
         color: color.value,
         year: year.value,
@@ -129,14 +133,31 @@ async function saveVehicle() {
     <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_vehicle">
-    <ModalBox>
-      <Text size="2xl">Vehicle</Text>
+    <ModalBox class="w-4/5">
+      <div class="flex space-x-3 mb-2 mt-2 w-full">
+        <div class="md:w-1/5 md:mb-0 mr-12">
+          <Text size="2xl">Vehicle</Text>
+        </div>
+        <div class="md:w-4/5 md:mb-0">
+          <Button
+            class="mr-3"
+            sm
+            v-for="ft in listOfVanTypes"
+            :key="ft"
+            :class="{ 'bg-accent': ft == vanType }"
+            @click="vanType = ft"
+          >
+            {{ ft }}
+          </Button>
+        </div>
+      </div>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-4/5 md:mb-0">
-          <TextInput placeholder="Unit ID" v-model="unit_id" />
+          <Label>Unit ID</Label>
+          <TextInput v-model="unit_id" />
         </div>
-        <div class="md:w-1/5 md:mb-0">
+        <div class="md:w-1/5 md:mb-0 mt-8">
           <label class="label">
             <Toggle v-model="is_active"></Toggle>
             <span>active</span>
@@ -144,21 +165,16 @@ async function saveVehicle() {
         </div>
       </div>
 
-      <RadioGroup name="Type" v-model="vanType">
-        <div class="flex flex-row justify-between mb-4 mt-4 w-full">
-          <div class="flex-col space-x-2" v-for="vanType in vanTypes" :key="vanType">
-            <Radio xs :id="'vt-' + vanType" :value="vanType"></Radio>
-            <label class="truncate" :for="'vt-' + vanType">{{ vanType }}</label>
-          </div>
-        </div>
-      </RadioGroup>
-      <selector v-model="owner" :store="owners" label="Owner"></selector>
+      <Label class="mt-2">Owner</Label>
+      <selector v-model="owner" :store="owners"></selector>
 
-      <div class="flex space-x-3 mb-2 mt-6 w-full">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="VIN" v-model="vin" />
+          <Label>VIN</Label>
+          <TextInput v-model="vin" />
         </div>
         <div class="md:w-1/2 md:mb-0">
+          <Label>Expiry date</Label>
           <VueDatePicker
             teleport-center
             :enable-time-picker="false"
@@ -166,48 +182,61 @@ async function saveVehicle() {
           ></VueDatePicker>
         </div>
       </div>
-      <div class="flex space-x-3 mb-4 mt-6 w-full">
-        <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="Model" v-model="model" />
+      <div class="flex space-x-3 mb-4 mt-4 w-full">
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Model</Label>
+          <TextInput v-model="model" />
         </div>
-        <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="Color" v-model="color" />
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Type</Label>
+          <TextInput v-model="kind" />
         </div>
-        <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="Year" v-model="year" />
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Color</Label>
+          <TextInput v-model="color" />
+        </div>
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Year</Label>
+          <TextInput v-model="year" />
         </div>
       </div>
-      <div class="flex space-x-3 mb-4 mt-4 w-full">
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Text>Cargo compartment</Text>
         </div>
-        <div class="md:w-1/2 px-3 md:mb-0">
+        <div class="md:w-1/2 md:mb-0">
           <Text>it's dimensions</Text>
         </div>
       </div>
-      <div class="flex space-x-3 mb-4 mt-4 w-full">
-        <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Load capacity" v-model="load_capacity" />
+      <div class="flex space-x-3 mb-4 mt-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>load capacity</Label>
+          <TextInput v-model="load_capacity" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Length" v-model="length" />
+        <div class="md:w-1/6 md:mb-0">
+          <Label>length</Label>
+          <TextInput v-model="length" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Width" v-model="width" />
+        <div class="md:w-1/6 md:mb-0">
+          <Label>width</Label>
+          <TextInput v-model="width" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
-          <TextInput placeholder="Height" v-model="height" />
+        <div class="md:w-1/6 md:mb-0">
+          <Label>height</Label>
+          <TextInput v-model="height" />
         </div>
       </div>
       <div class="flex space-x-3 mb-4 mt-4 w-full">
-        <div class="md:w-1/5 md:mb-0">
+        <div class="md:w-1/5 md:mb-0 mt-6">
           <Text>and door</Text>
         </div>
         <div class="md:w-2/5 md:mb-0">
-          <TextInput placeholder="Width" v-model="door_width" />
+          <Label>width</Label>
+          <TextInput v-model="door_width" />
         </div>
         <div class="md:w-2/5 md:mb-0">
-          <TextInput placeholder="Height" v-model="door_height" />
+          <Label>height</Label>
+          <TextInput v-model="door_height" />
         </div>
       </div>
       <ModalAction>

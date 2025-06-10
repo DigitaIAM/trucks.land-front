@@ -87,42 +87,54 @@ function saveOwner() {
     <ModalBox class="w-2/5">
       <Text size="2xl">Owner</Text>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <TextInput class="md:w-3/5 md:mb-0" placeholder="Name" v-model="name" />
-        <div>
+      <div class="flex space-x-5 mb-2 mt-2 w-full">
+        <div class="md:w-3/4 md:mb-0">
+          <Label>Name</Label>
+          <TextInput v-model="name" />
+        </div>
+        <div class="md:w-1/4 md:mb-0 mt-8">
           <label class="label">
             <Toggle v-model="is_active"></Toggle>
             <span class="ml-3">active</span>
           </label>
         </div>
       </div>
-      <TextInput class="mt-2 w-full" placeholder="EIN" v-model="ein"></TextInput>
+
+      <Label class="mt-2">EIN</Label>
+      <TextInput class="w-full" v-model="ein"></TextInput>
       <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Email" v-model="email" />
+          <Label>Email</Label>
+          <TextInput type="email" v-model="email" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Phone" v-model="phone" />
+          <Label>Phone</Label>
+          <TextInput type="phone" v-model="phone" />
         </div>
       </div>
       <label class="label">
         <Toggle v-model="is_person"></Toggle>
         <span class="ml-3">person</span>
       </label>
+
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Street" v-model="street" />
+          <Label>City/town</Label>
+          <TextInput v-model="city" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="City / town" v-model="city" />
+          <Label>Street</Label>
+          <TextInput v-model="street" />
         </div>
       </div>
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="State" v-model="state" />
+        <div class="md:w-1/2 md:mb-0">
+          <Label>State</Label>
+          <TextInput v-model="state" />
         </div>
-        <div class="md:w-1/3 md:mb-0">
-          <TextInput placeholder="Zip" v-model="zip" />
+        <div class="md:w-1/2 md:mb-0">
+          <Label>ZIP</Label>
+          <TextInput v-model="zip" />
         </div>
       </div>
 

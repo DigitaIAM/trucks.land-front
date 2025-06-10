@@ -8,6 +8,7 @@ import StepperUploading from '@/components/order/StepperUploading.vue'
 import Comments from '@/components/order/Comments.vue'
 import StepperStates from '@/components/order/StepperStates.vue'
 import type { Broker } from '@/stores/brokers.ts'
+import DriverAndVehicle from '@/components/order/DriverAndVehicle.vue'
 
 const props = defineProps<{
   id: string
@@ -171,19 +172,8 @@ async function saveOrder(status: Status) {
               <TextInput v-model="cost" />
             </div>
           </div>
-          <div class="flex space-x-3 mb-2 mt-6 w-full">
-            <div class="md:w-1/3 md:mb-0">
-              <Label class="mb-1">Driver</Label>
-              <TextInput v-model="driver" />
-            </div>
-            <div class="md:w-1/3 md:mb-0">
-              <Label class="mb-1">Vehicle</Label>
-              <TextInput v-model="vehicle" />
-            </div>
-            <div class="md:w-1/3 md:mb-0">
-              <Label class="mb-1">Driver payment $</Label>
-              <TextInput v-model="driver_payment" />
-            </div>
+          <div class="mb-2 mt-6 w-full">
+            <DriverAndVehicle :orderId="_id" />
           </div>
         </form>
       </div>

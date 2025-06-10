@@ -1,16 +1,17 @@
 <script setup lang="ts">
-const state = ref(null)
+const state = ref('')
 
 const props = defineProps<{
   id: string | number | null
   store: Searchable
+  asTextField: boolean
 }>()
 
 watch(
   () => props.id,
   (id) => {
     try {
-      console.log('watch id', id, props.id)
+      // console.log('watch id', id, props.id)
       if (id) {
         resetAndShow(id)
       }
@@ -39,10 +40,13 @@ function resetAndShow(id: number) {
     return ns
   }
 }
+
+const label = computed(() => state.value?.name)
 </script>
 
 <template>
-  <span>{{ state?.name }}</span>
+  <TextInput v-if="props.asTextField" disabled v-model:modelValue="label" />
+  <span v-else>{{ label }}</span>
 </template>
 
 <style scoped></style>

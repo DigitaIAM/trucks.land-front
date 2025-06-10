@@ -81,34 +81,36 @@ function saveOrganization() {
     <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_organization">
-    <ModalBox>
+    <ModalBox class="w-2/5">
       <Text size="2xl">Organization</Text>
 
-      <div class="flex space-x-3 mb-6 mt-4 w-full">
+      <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Code2" v-model="code2" />
+          <Label>Code2</Label>
+          <TextInput v-model="code2" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Address1" v-model="address1" />
+          <Label>Address1</Label>
+          <TextInput v-model="address1" />
         </div>
       </div>
 
-      <div class="flex space-x-3 mb-6 mt-4 w-full">
+      <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Code3" v-model="code3" />
+          <Label>Code3</Label>
+          <TextInput v-model="code3" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Address2" v-model="address2" />
+          <Label>Address2</Label>
+          <TextInput v-model="address2" />
         </div>
       </div>
-      <TextInput placeholder="Name" v-model="name" class="w-full mb-6"></TextInput>
-      <TextInput
-        type="email"
-        placeholder="Billing email"
-        v-model="billing_email"
-        class="w-full mb-6"
-      ></TextInput>
-      <selector v-model="owner" :store="owners" label="Owner"></selector>
+      <Label>Name</Label>
+      <TextInput v-model="name" class="w-full mb-4"></TextInput>
+      <Label>Billing email</Label>
+      <TextInput type="email" v-model="billing_email" class="w-full mb-4"></TextInput>
+      <Label>Owner</Label>
+      <selector v-model="owner" :store="owners"></selector>
       <ModalAction>
         <form method="dialog">
           <Button @click="saveOrganization">
