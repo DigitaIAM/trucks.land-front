@@ -18,7 +18,7 @@ const city = ref('')
 const state = ref('')
 const zip = ref('')
 
-const emit = defineEmits(['closed'])
+const emit = defineEmits(['on-update'])
 
 watch(
   () => props.edit,
@@ -76,7 +76,7 @@ async function saveAndEdit() {
 
 function close() {
   create_change.close()
-  // emit('closed')
+  emit('on-update')
 }
 </script>
 

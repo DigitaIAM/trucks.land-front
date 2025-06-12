@@ -4,7 +4,7 @@ const state = ref('')
 const props = defineProps<{
   id: string | number | null
   store: Searchable
-  asTextField: boolean
+  asTextField?: boolean
 }>()
 
 watch(
@@ -45,7 +45,7 @@ const label = computed(() => state.value?.name)
 </script>
 
 <template>
-  <TextInput v-if="props.asTextField" disabled v-model:modelValue="label" />
+  <TextInput v-if="props.asTextField" disabled v-model:modelValue="label" class="flex w-full" />
   <span v-else>{{ label }}</span>
 </template>
 

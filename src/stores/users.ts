@@ -9,6 +9,7 @@ export interface User extends UserCreate {
 export interface UserCreate {
   name: string
   real_name: string
+  uuid: string
 
   phone: string
   email: string
@@ -39,6 +40,7 @@ export interface UserCreate {
 export interface UserUpdate {
   name?: string
   real_name?: string
+  uuid?: string
 
   phone?: string
   email?: string
@@ -69,6 +71,7 @@ export interface UserUpdate {
 
 export const useUsersStore = defineStore('user', () => {
   const mapping = ref(new Map<number, User>())
+  const uuids = ref(new Map<string, User>())
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('users').select()
@@ -141,6 +144,22 @@ export const useUsersStore = defineStore('user', () => {
     return map.get(id)
   }
 
+  async function resolveUUID(uuid: string) {
+    const v = uuids.value.get(uuid)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('users').select().eq('uuid', uuid)
+
+    response.data?.forEach((json) => {
+      const user = json as User
+      uuids.value.set(user.uuid, user)
+    })
+
+    return uuids.value.get(uuid)
+  }
+
   async function search(text: string) {
     const response = await supabase
       .from('users')
@@ -155,7 +174,7 @@ export const useUsersStore = defineStore('user', () => {
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  return { initialized, loading, listing, create, update, resolve, resolveUUID, search }
 })
 
 if (import.meta.hot) {

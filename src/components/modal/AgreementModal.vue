@@ -15,7 +15,7 @@ const driver = ref(null)
 const vehicle = ref(null)
 const cost = ref(null)
 
-const emit = defineEmits(['closed'])
+const emit = defineEmits(['on-update'])
 
 watch(
   () => props.edit,
@@ -67,7 +67,7 @@ async function saveAndEdit() {
 
 function close() {
   create_agreement.close()
-  // emit('closed')
+  emit('on-update')
 }
 </script>
 

@@ -26,11 +26,7 @@ watch(
 resetAndShow(props.orderId)
 
 async function resetAndShow(id: number) {
-  console.log('resetAndShow', id)
-
   events.value = await eventsStore.listing(id)
-
-  console.log('done', events.value)
 }
 
 function onUpdate() {
@@ -92,7 +88,9 @@ const selectedExpenses = ref(null)
               </svg>
             </span>
             <Text bold>Delivery</Text>
-            <p class="text-md">{{ event.datetime }}</p>
+            <p class="text-md">
+              {{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}
+            </p>
             <p class="text-md">{{ event.city }} / {{ event.state }} / {{ event.zip }}</p>
           </template>
           <template v-if="event.kind == 'pick-up'">
@@ -115,7 +113,7 @@ const selectedExpenses = ref(null)
               </svg>
             </span>
             <h3 class="font-bold text-[#68C3A8] leading-tight">Pick up</h3>
-            <p class="text-md">{{ event.datetime }}</p>
+            <p class="text-md">{{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}</p>
             <p class="text-md">{{ event.city }} / {{ event.state }} / {{ event.zip }}</p>
           </template>
           <template v-if="event.kind == 'change'">
@@ -139,7 +137,7 @@ const selectedExpenses = ref(null)
               </svg>
             </span>
             <h3 class="font-bold text-[#F08A34] leading-tight">Change of driver and vehicle</h3>
-            <p class="text-md">{{ event.datetime }}</p>
+            <p class="text-md">{{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}</p>
             <p class="text-md">
               <QueryAndShow :id="event.driver" :store="driversStore" />
             </p>
@@ -164,6 +162,7 @@ const selectedExpenses = ref(null)
               </svg>
             </span>
             <h3 class="font-bold text-[#e35e87] leading-tight">Agreement</h3>
+            <p class="text-md">{{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}</p>
             <p class="text-md">
               <QueryAndShow :id="event.driver" :store="driversStore" />
             </p>

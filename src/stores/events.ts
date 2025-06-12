@@ -36,8 +36,6 @@ export interface EventUpdate {
 
 export const useEventsStore = defineStore('event', () => {
   async function listing(orderId: number) {
-    console.log('query -', orderId, '-')
-
     if (orderId) {
       const response = await supabase
         .from('order_events')
@@ -45,7 +43,7 @@ export const useEventsStore = defineStore('event', () => {
         .eq('document', orderId)
         .order('datetime', { ascending: false })
       // .order('datetime') // .throwOnError()
-      console.log(response)
+      // console.log(response)
 
       if (response.status == 200) {
         const list = []
@@ -65,9 +63,9 @@ export const useEventsStore = defineStore('event', () => {
   }
 
   async function create(event: EventCreate) {
-    console.log('create', event)
+    // console.log('create', event)
     const response = await supabase.from('order_events').insert(event).select() // .throwOnError()
-    console.log(response)
+    // console.log(response)
 
     if (response.status == 201) {
       response.data?.forEach((json) => {

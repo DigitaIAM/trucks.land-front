@@ -17,7 +17,6 @@ const city = ref('')
 const state = ref('')
 const zip = ref('')
 const datetime = ref(new Date() as Date | undefined)
-
 const note = ref('')
 const priority = ref<string>()
 const timeliness = ref<string>()
@@ -127,7 +126,7 @@ function close() {
 
       <div class="flex space-x-3 mb-2 w-full">
         <Label class="mt-2 mr-4">Completed</Label>
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex items-center justify-between mt-4 mr-4">
           <Button
             sm
             class="mr-1 mb-2"
@@ -139,7 +138,7 @@ function close() {
             {{ item }}
           </Button>
         </div>
-        <div class="w-1/2 mt-4">
+        <div class="w-1/2 mt-4 ml-4">
           <VueDatePicker
             teleport-center
             :enable-time-picker="true"

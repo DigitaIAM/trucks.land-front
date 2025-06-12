@@ -23,8 +23,6 @@ watch(
 resetAndShow(props.orderId)
 
 async function resetAndShow(id: number) {
-  console.log('resetAndShow', id)
-
   const map = new Map()
 
   const events = await eventsStore.listing(id)
@@ -53,18 +51,26 @@ async function resetAndShow(id: number) {
 </script>
 
 <template>
-  <div v-for="record in records" class="flex space-x-3 w-full mb-6">
+  <div class="flex space-x-3">
     <div class="md:w-1/3 md:mb-0">
-      <Label class="mb-1">Driver</Label>
+      <Label class="mt-4 mb-1">Driver</Label>
+    </div>
+    <div class="md:w-1/3 md:mb-0">
+      <Label class="mt-4 mb-1">Vehicle</Label>
+    </div>
+    <div class="md:w-1/3 md:mb-0">
+      <Label class="mt-4 mb-1">Driver payment $</Label>
+    </div>
+  </div>
+  <div v-for="record in records" class="flex space-x-3 mb-3">
+    <div class="md:w-1/3 md:mb-0">
       <QueryAndShow asTextField :id="record.driver" :store="driversStore" />
     </div>
     <div class="md:w-1/3 md:mb-0">
-      <Label class="mb-1">Vehicle</Label>
       <QueryAndShow asTextField :id="record.vehicle" :store="vehiclesStore" />
     </div>
     <div class="md:w-1/3 md:mb-0">
-      <Label class="mb-1">Driver payment $</Label>
-      <TextInput disabled v-model="record.cost" />
+      <TextInput disabled v-model="record.cost" class="flex w-full" />
     </div>
   </div>
 </template>

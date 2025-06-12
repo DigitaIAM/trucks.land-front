@@ -55,6 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
       .signOut()
       .then((response: any) => {
         console.log('logout success', response)
+        session.value = null
         // userId.value = null
         // isAuthenticated.value = false
         return response

@@ -54,7 +54,7 @@ function onClose() {
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
-        <th class="p-4 border-b border-b-gray-300" :style="{ width: 100 + 'px' }">
+        <th class="p-4 border-b border-b-gray-300" :style="{ width: 300 + 'px' }">
           <p class="block text-sm antialiasing font-bold leading-none">Name</p>
         </th>
         <th class="p-4 border-b border-b-gray-300" :style="{ width: 300 + 'px' }">
@@ -70,7 +70,7 @@ function onClose() {
         <td class="py-3 px-4" :style="generateStyle(status)">
           <p
             class="block text-sm antialiasing font-normal leading-normal truncate"
-            :style="{ width: 100 + 'px' }"
+            :style="{ width: 300 + 'px' }"
           >
             {{ status.name }}
           </p>

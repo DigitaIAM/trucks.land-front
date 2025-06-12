@@ -23,14 +23,18 @@ const themes = useThemes()
   <Navbar>
     <NavbarStart>
       <Sidebar></Sidebar>
-    </NavbarStart>
-
-    <NavbarCenter>
       <RouterLink to="/" class="flex flex-row gap-2 items-center">
         <img src="./../assets/logoTL.svg" />
         <Text size="xl">Trucks.land</Text>
       </RouterLink>
-    </NavbarCenter>
+    </NavbarStart>
+
+    <!--    <NavbarCenter>-->
+    <!--      <RouterLink to="/" class="flex flex-row gap-2 items-center">-->
+    <!--        <img src="./../assets/logoTL.svg" />-->
+    <!--        <Text size="xl">Trucks.land</Text>-->
+    <!--      </RouterLink>-->
+    <!--    </NavbarCenter>-->
 
     <NavbarEnd>
       <FormControl class="mx-auto w-60">

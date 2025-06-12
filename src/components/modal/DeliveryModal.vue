@@ -22,7 +22,7 @@ const note = ref('')
 const priority = ref<string>()
 const timeliness = ref<string>()
 
-const emit = defineEmits(['closed'])
+const emit = defineEmits(['on-update'])
 
 watch(
   () => props.edit,
@@ -78,7 +78,7 @@ async function saveAndEdit() {
 
 function close() {
   create_delivery.close()
-  // emit('closed')
+  emit('on-update')
 }
 </script>
 

@@ -4,6 +4,8 @@ layout: app
 </route>
 
 <script setup lang="ts">
+const router = useRouter()
+
 import StepperUploading from '@/components/order/StepperUploading.vue'
 import Comments from '@/components/order/Comments.vue'
 import StepperStates from '@/components/order/StepperStates.vue'
@@ -26,10 +28,6 @@ const total_weight = ref<number>()
 const total_miles = ref<number>()
 const cost = ref<number>()
 
-const driver = ref('')
-const vehicle = ref('')
-const driver_payment = ref('')
-
 const ordersStore = useOrdersStore()
 const usersStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
@@ -37,11 +35,18 @@ const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
 
-const next = computed(() => {
-  // const ids = nextStatusStore.nextFor(status.value)
-  // return Array.from(ids.map((id) => statusesStore.resolve(id)))
-  return []
-})
+const nexts = computedAsync(async () => {
+  const list = []
+
+  const ids = nextStatusStore.nextFor(status.value)
+  for (const idx in ids) {
+    const id = ids[idx]
+    const status = await statusesStore.resolve(id)
+    list.push(status)
+  }
+
+  return list
+}, [])
 
 watch(
   () => props.id,
@@ -81,10 +86,10 @@ async function resetAndShow(str: string) {
   // console.log('done', _id.value)
 }
 
-async function saveOrder(status: Status) {
+async function saveOrder(next: Status | null) {
   try {
     await ordersStore.update(_id.value, {
-      status: status.id,
+      status: next?.id ?? status.value.id,
       dispatcher: dispatcher.value?.id,
       posted_loads: posted_loads.value,
       refs: refs.value,
@@ -95,6 +100,8 @@ async function saveOrder(status: Status) {
       total_miles: total_miles.value,
       cost: cost.value,
     } as OrderUpdate)
+
+    await router.replace({ path: '/app/order/all' })
   } catch (e) {
     console.log('error', e)
   }
@@ -104,22 +111,24 @@ async function saveOrder(status: Status) {
 <template>
   <div class="flex flex-col-2 mt-4 ml-4">
     <div class="flex flex-col w-full h-full">
-      <div class="flex space-x-30 w-full">
-        <div class="flex space-x-3 w-full">
-          <!--          <Button v-for="status in next" :key="status.id" @click="saveOrder(status)">-->
-          <!--            {{ status.name }}-->
-          <!--          </Button>-->
-          <Button v-for="id in next" :key="id">
-            {{ statusesStore.resolve(id).name }}
+      <div class="flex w-full">
+        <div class="flex space-x-4 w-full">
+          <Button @click="saveOrder(null)">Update</Button>
+          <Text class="mt-2">or change to</Text>
+          <Button
+            v-for="next in nexts"
+            :key="id"
+            @click="saveOrder(next)"
+            :style="'background-color: ' + next.color"
+          >
+            {{ next.name }}
           </Button>
         </div>
-        <div class="flex-1/60 ml-16 mt-4">
-          <StepperUploading :orderId="_id"></StepperUploading>
-        </div>
+        <StepperUploading :orderId="_id" class="ml-10"></StepperUploading>
       </div>
 
-      <div class="flex mb-6 mt-6 w-full">
-        <form class="rounded-xl shadow w-[90vw] md:w-[50vw] p-4">
+      <div class="flex w-full mt-4">
+        <form class="w-[90vw] md:w-[50vw]">
           <div class="flex space-x-3 mb-2 mt-2 w-full">
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Number</Label>
@@ -172,15 +181,13 @@ async function saveOrder(status: Status) {
               <TextInput v-model="cost" />
             </div>
           </div>
-          <div class="mb-2 mt-6 w-full">
+          <div class="mb-6">
             <DriverAndVehicle :orderId="_id" />
           </div>
         </form>
       </div>
       <div class="w-full">
-        <div class="px-2">
-          <Comments></Comments>
-        </div>
+        <Comments :orderId="_id"></Comments>
       </div>
     </div>
 

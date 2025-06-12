@@ -154,6 +154,8 @@ declare global {
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
   const useCloned: typeof import('@vueuse/core')['useCloned']
   const useColorMode: typeof import('./composables/use-themes')['useColorMode']
+  const useCommentsStore: typeof import('./stores/comments')['useCommentsStore']
+  const useCommentsStores: typeof import('./stores/comments')['useCommentsStores']
   const useConfirmDialog: typeof import('@vueuse/core')['useConfirmDialog']
   const useCountdown: typeof import('@vueuse/core')['useCountdown']
   const useCounter: typeof import('@vueuse/core')['useCounter']
@@ -353,6 +355,9 @@ declare global {
   export type { Broker, BrokerCreate, BrokerUpdate } from './stores/brokers'
   import('./stores/brokers')
   // @ts-ignore
+  export type { Comment, CommentCreate, CommentUpdate } from './stores/comments'
+  import('./stores/comments')
+  // @ts-ignore
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
   // @ts-ignore
@@ -528,6 +533,7 @@ declare module 'vue' {
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>
     readonly useCloned: UnwrapRef<typeof import('@vueuse/core')['useCloned']>
     readonly useColorMode: UnwrapRef<typeof import('./composables/use-themes')['useColorMode']>
+    readonly useCommentsStore: UnwrapRef<typeof import('./stores/comments')['useCommentsStore']>
     readonly useConfirmDialog: UnwrapRef<typeof import('@vueuse/core')['useConfirmDialog']>
     readonly useCountdown: UnwrapRef<typeof import('@vueuse/core')['useCountdown']>
     readonly useCounter: UnwrapRef<typeof import('@vueuse/core')['useCounter']>
