@@ -156,6 +156,11 @@ const cols = [
     size: 300,
   },
 ]
+
+function openOrder(id: number) {
+  console.log('openOrder', id)
+  window.open('/app/order/' + id, '_blank')
+}
 </script>
 
 <template>
@@ -176,11 +181,7 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-for="order in ordersStore.listing"
-        :key="order.id"
-        @click="router.replace({ path: '/app/order/' + order.id })"
-      >
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"

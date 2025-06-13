@@ -106,6 +106,18 @@ async function saveOrder(next: Status | null) {
     console.log('error', e)
   }
 }
+
+function closeOrder() {
+  window.close()
+}
+
+const handleKeyDown = (event) => {
+  if (event.key === 'Escape') {
+    console.log('Escape key pressed!')
+    closeOrder()
+  }
+}
+useEventListener(document, 'keydown', handleKeyDown)
 </script>
 
 <template>
@@ -113,6 +125,7 @@ async function saveOrder(next: Status | null) {
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full">
         <div class="flex space-x-4 w-full">
+          <Button @click="closeOrder()">Close</Button>
           <Button @click="saveOrder(null)">Update</Button>
           <Text class="mt-2">or change to</Text>
           <Button
