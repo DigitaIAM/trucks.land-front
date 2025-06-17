@@ -1,18 +1,67 @@
 <script setup lang="ts">
+import { useUsersStore } from '@/stores/users.ts'
+import Create from '@/pages/app/order/create.vue'
+
+const orders = useOrdersStore()
+const brokersStore = useBrokersStore()
+const usersStore = useUsersStore()
+
+const state = reactive({})
+
+const selectedOrder = ref(null)
+
+function onClose() {
+  selectedOrder.value = null
+}
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
 const cols = [
   {
     label: '#',
-    value: (v) => v.num,
+    value: (v: Order) => v.id,
     size: 90,
   },
   {
     label: 'Dispatcher',
-    value: (v) => v.dispatcher,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'dispatcher',
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.dispatcher),
+        (map) => map.name,
+      ),
     size: 120,
   },
   {
     label: 'Broker',
-    value: (v) => v.broker,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'broker',
+        () => ({ name: '?' }),
+        () => brokersStore.resolve(v.broker),
+        (map) => map.name,
+      ),
     size: 180,
   },
   {
@@ -23,94 +72,48 @@ const cols = [
   {
     label: 'Vehicle',
     value: (v) => v.vehicle,
-    size: 100,
+    size: 120,
   },
   {
     label: 'Cost',
-    value: (v) => '$' + v.cost,
+    value: (v: Order) => '$ ' + v.cost,
     size: 100,
   },
   {
     label: 'Total miles',
-    value: (v) => v.miles,
+    value: (v: Order) => v.total_miles,
     size: 100,
   },
 ]
 
-// const orders = useOrdersStore()
-
-const orders = [
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    broker: 'Am Trans Expedite',
-    driver: 'Oleksandr Strelbitskyi',
-    vehicle: 'V58902',
-    cost: 1200,
-    miles: '2802',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    broker: 'MPV LOGISTICS INC',
-    driver: 'Andriy Mykhaylivskyy',
-    vehicle: 'V2335',
-    cost: 1700,
-    miles: '1104',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Tim White',
-    broker: 'Wicker Park Logistics',
-    driver: 'Gellerman Barat',
-    vehicle: 'V58902 ',
-    cost: 700,
-    miles: '661',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    broker: 'Am Trans Expedite',
-    driver: 'Oleksandr Strelbitskyi',
-    vehicle: 'V58902',
-    cost: 1200,
-    miles: '2802',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    broker: 'MPV LOGISTICS INC',
-    driver: 'Andriy Mykhaylivskyy',
-    vehicle: 'V2335',
-    cost: 1700,
-    miles: '1104',
-  },
-]
+function openOrder(id: number) {
+  console.log('openOrder', id)
+  window.open('/app/order/' + id, '_blank')
+}
 </script>
 
 <template>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search></Search>
-    <Button class="btn" @click="resetAndShow(null)">Create</Button>
-  </div>
+  <create :edit="selectedOrder" @closed="onClose"></create>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
         <th
           v-for="col in cols"
+          :key="'head_' + col.label"
           class="p-4 border-b border-b-gray-300"
           :style="{ width: col.size + 'px' }"
         >
-          <p class="block text-sm antialiasing font-bold leading-none opacity-70">
+          <p class="block text-sm antialiasing font-bold leading-none">
             {{ col.label }}
           </p>
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders">
+      <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
+          :key="'row_' + col.label + '_' + order.id"
           class="py-3 px-4 border-b border-b-gray-300"
           :style="{ width: col.size + 'px' }"
         >

@@ -39,26 +39,39 @@ const selectedDelivery = ref(null)
 const selectedChange = ref(null)
 const selectedAgreement = ref(null)
 const selectedExpenses = ref(null)
+
+const editEvent = () => {
+  console.log('editEvent')
+}
 </script>
 
 <template>
-  <PickUpModal :document="props.orderId" :edit="selectedPickup" @on-update="onUpdate"></PickUpModal>
+  <PickUpModal
+    id="create_pickUp"
+    :document="props.orderId"
+    :edit="selectedPickup"
+    @on-update="onUpdate"
+  ></PickUpModal>
   <DeliveryModal
+    id="create_delivery"
     :document="props.orderId"
     :edit="selectedDelivery"
     @on-update="onUpdate"
   ></DeliveryModal>
   <ChangeDriverAndVehicle
+    id="create_change"
     :document="props.orderId"
     :edit="selectedChange"
     @on-update="onUpdate"
   ></ChangeDriverAndVehicle>
   <AgreementModal
+    id="create_agreement"
     :document="props.orderId"
     :edit="selectedAgreement"
     @on-update="onUpdate"
   ></AgreementModal>
   <ExpensesModal
+    id="create_expenses"
     :document="props.orderId"
     :edit="selectedExpenses"
     @on-update="onUpdate"
@@ -71,6 +84,7 @@ const selectedExpenses = ref(null)
           <template v-if="event.kind == 'delivery'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full -start-4"
+              onclick="create_delivery.showModal()"
             >
               <svg
                 class="w-5 h-5 text-white"
@@ -92,10 +106,12 @@ const selectedExpenses = ref(null)
               {{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}
             </p>
             <p class="text-md">{{ event.city }} / {{ event.state }} / {{ event.zip }}</p>
+            <p class="text-md">{{ event.address }}</p>
           </template>
           <template v-if="event.kind == 'pick-up'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 bg-[#68C3A8]"
+              onclick="create_pickUp.showModal()"
             >
               <svg
                 class="w-5 h-5 text-white"
@@ -115,10 +131,12 @@ const selectedExpenses = ref(null)
             <h3 class="font-bold text-[#68C3A8] leading-tight">Pick up</h3>
             <p class="text-md">{{ useDateFormat(event.datetime, 'MMM DD, HH:mm') }}</p>
             <p class="text-md">{{ event.city }} / {{ event.state }} / {{ event.zip }}</p>
+            <p class="text-md">{{ event.address }}</p>
           </template>
           <template v-if="event.kind == 'change'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 bg-[#F08A34]"
+              onclick="create_change.showModal()"
             >
               <svg
                 class="w-5 h-5 text-white"
@@ -148,6 +166,7 @@ const selectedExpenses = ref(null)
           <template v-if="event.kind == 'agreement'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 bg-[#e35e87]"
+              onclick="create_agreement.showModal()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -174,6 +193,7 @@ const selectedExpenses = ref(null)
           <template v-if="event.kind == 'expenses'">
             <span
               class="absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 bg-[#60A5FA]"
+              onclick="create_expenses.showModal()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

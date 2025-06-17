@@ -1,5 +1,4 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 
 export interface Event extends EventCreate {
   id: number

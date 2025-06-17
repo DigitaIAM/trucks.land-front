@@ -22,7 +22,7 @@ function upload() {
   <Button link onclick="modal.showModal()">
     <div class="flex">
       <label for="dropzone-file" class="flex">
-        <div class="w-40 pb-10">
+        <div class="w-40 pb-10 mt-8">
           <div class="relative flex justify-between w-full">
             <div class="absolute top-2/4 h-0.5 w-full bg-gray-500"></div>
             <div
@@ -85,14 +85,6 @@ function upload() {
       </ModalAction>
     </ModalBox>
   </Modal>
-  <!--      <input-->
-  <!--        id="dropzone-file"-->
-  <!--        type="file"-->
-  <!--        class="hidden"-->
-  <!--        @input="$emit('files', ($event.target as any).value)"-->
-  <!--      />-->
-  <!--    </label>-->
-  <!--  </div>-->
 </template>
 
 <style scoped></style>

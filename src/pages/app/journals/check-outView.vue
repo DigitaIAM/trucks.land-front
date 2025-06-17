@@ -1,13 +1,51 @@
 <script setup lang="ts">
+import { useStatusesStore } from '@/stores/statuses.ts'
+import { useEventsStore } from '@/stores/events.ts'
+
+const ordersStore = useOrdersStore()
+const statusesStore = useStatusesStore()
+const eventsStore = useEventsStore()
+const usersStore = useUsersStore()
+const brokersStore = useBrokersStore()
+
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
 const cols = [
   {
     label: '#',
-    value: (v) => v.num,
+    value: (v: Order) => v.id,
     size: 100,
   },
   {
     label: 'Dispatcher',
-    value: (v) => v.dispatcher,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'dispatcher',
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.dispatcher),
+        (map) => map.name,
+      ),
     size: 120,
   },
   {
@@ -17,7 +55,14 @@ const cols = [
   },
   {
     label: 'Status',
-    value: (v) => v.stage,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
     size: 150,
   },
   {
@@ -27,12 +72,12 @@ const cols = [
   },
   {
     label: 'Refs',
-    value: (v) => v.ref,
+    value: (v: Order) => v.refs,
     size: 90,
   },
   {
     label: 'Cost',
-    value: (v) => '$' + v.cost,
+    value: (v: Order) => '$ ' + v.cost,
     size: 80,
   },
   {
@@ -42,7 +87,14 @@ const cols = [
   },
   {
     label: 'Broker',
-    value: (v) => v.broker,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'broker',
+        () => ({ name: '?' }),
+        () => brokersStore.resolve(v.broker),
+        (map) => map.name,
+      ),
     size: 150,
   },
   {
@@ -52,106 +104,10 @@ const cols = [
   },
 ]
 
-// const orders = useOrdersStore()
-
-const orders = [
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1200,
-    spend: 900,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1700,
-    spend: 1100,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1200,
-    spend: 900,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1700,
-    spend: 1100,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1200,
-    spend: 900,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1700,
-    spend: 1100,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1200,
-    spend: 900,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-  {
-    num: 'T2-37778',
-    dispatcher: 'Sean Turner',
-    week: 2,
-    stage: 'Delivered',
-    invoices: '',
-    ref: '2006721',
-    cost: 1700,
-    spend: 1100,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-]
+function openOrder(id: number) {
+  console.log('openOrder', id)
+  window.open('/app/order/' + id, '_blank')
+}
 </script>
 
 <template>
@@ -160,6 +116,7 @@ const orders = [
       <tr>
         <th
           v-for="col in cols"
+          :key="'head_' + col.label"
           class="p-4 border-b border-b-gray-300"
           :style="{ width: col.size + 'px' }"
         >
@@ -170,9 +127,10 @@ const orders = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders">
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
+          :key="'row_' + col.label + '_' + order.id"
           class="py-3 px-4 border-b border-b-gray-300"
           :style="{ width: col.size + 'px' }"
         >

@@ -124,7 +124,7 @@ useEventListener(document, 'keydown', handleKeyDown)
   <div class="flex flex-col-2 mt-4 ml-4">
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full">
-        <div class="flex space-x-4 w-full">
+        <div class="flex space-x-3 w-full">
           <Button @click="closeOrder()">Close</Button>
           <Button @click="saveOrder(null)">Update</Button>
           <Text class="mt-2">or change to</Text>
@@ -137,7 +137,7 @@ useEventListener(document, 'keydown', handleKeyDown)
             {{ next.name }}
           </Button>
         </div>
-        <StepperUploading :orderId="_id" class="ml-10"></StepperUploading>
+        <StepperUploading :orderId="_id"></StepperUploading>
       </div>
 
       <div class="flex w-full mt-4">

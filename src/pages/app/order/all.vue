@@ -17,7 +17,6 @@ const organizationsStore = useOrganizationsStore()
 const state = reactive({})
 
 const selectedOrder = ref(null)
-const router = useRouter()
 
 function onClose() {
   selectedOrder.value = null
