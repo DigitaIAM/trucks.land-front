@@ -129,7 +129,7 @@ function close() {
         <div class="flex items-center justify-between mt-4 mr-4">
           <Button
             sm
-            class="mr-1 mb-2"
+            class="mr-2 mb-2"
             v-for="item in listOfTimeliness"
             :key="item"
             :class="{ 'bg-accent': timeliness == item }"
@@ -147,11 +147,15 @@ function close() {
         </div>
       </div>
       <ModalAction>
-        <Button @click="saveAndEdit">Create</Button>
+        <Button @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
         <Button class="ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>
   </Modal>
 </template>
 
-<style scoped></style>
+<style scoped>
+.dp__theme_light {
+  --dp-background-color: gray-500;
+}
+</style>

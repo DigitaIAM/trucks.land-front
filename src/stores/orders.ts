@@ -4,6 +4,7 @@ import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 export interface Order extends OrderCreate {
   id: number
   created_at: string
+  driver_cost: number
 }
 
 export interface OrderCreate {
@@ -36,7 +37,7 @@ export const useOrdersStore = defineStore('order', () => {
   const mapping = ref(new Map<number, Order>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('orders').select().order('created_at').limit(50)
+    const response = await supabase.from('orders_journal').select().order('created_at').limit(50)
 
     const map = new Map<number, Order>()
     response.data?.forEach((json) => {

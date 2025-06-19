@@ -54,13 +54,13 @@ function onClose() {
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
-        <th class="p-4 border-b border-b-gray-300" :style="{ width: 300 + 'px' }">
+        <th class="p-4" :style="{ width: 300 + 'px' }">
           <p class="block text-sm antialiasing font-bold leading-none">Name</p>
         </th>
-        <th class="p-4 border-b border-b-gray-300" :style="{ width: 300 + 'px' }">
+        <th class="p-4" :style="{ width: 300 + 'px' }">
           <p class="block text-sm antialiasing font-bold leading-none">Next</p>
         </th>
-        <th class="p-4 border-b border-b-gray-300" :style="{ width: 50 + 'px' }">
+        <th class="p-4" :style="{ width: 50 + 'px' }">
           <p class="block text-sm antialiasing font-bold leading-none">Add next</p>
         </th>
       </tr>

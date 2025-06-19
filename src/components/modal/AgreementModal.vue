@@ -2,6 +2,7 @@
 import { defineEmits, defineProps, ref } from 'vue'
 import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps<{
   document: number | null
@@ -80,6 +81,7 @@ function close() {
         </div>
         <div class="md:w-1/2 md:mb-0">
           <VueDatePicker
+            class="my-custom-datepicker"
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
@@ -105,11 +107,15 @@ function close() {
       <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
       <ModalAction>
-        <Button @click="saveAndEdit">Create</Button>
+        <Button @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
         <Button class="ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>
   </Modal>
 </template>
 
-<style scoped></style>
+<style scoped>
+.dp__theme_light {
+  --dp-background-color: gray-500;
+}
+</style>

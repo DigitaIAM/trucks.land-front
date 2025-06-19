@@ -121,7 +121,7 @@ useEventListener(document, 'keydown', handleKeyDown)
 </script>
 
 <template>
-  <div class="flex flex-col-2 mt-4 ml-4">
+  <div class="flex flex-col-2 mt-10 ml-4">
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full">
         <div class="flex space-x-3 w-full">
@@ -140,7 +140,7 @@ useEventListener(document, 'keydown', handleKeyDown)
         <StepperUploading :orderId="_id"></StepperUploading>
       </div>
 
-      <div class="flex w-full mt-4">
+      <div class="flex w-full mt-10">
         <form class="w-[90vw] md:w-[50vw]">
           <div class="flex space-x-3 mb-2 mt-2 w-full">
             <div class="md:w-1/4 md:mb-0">
@@ -199,14 +199,17 @@ useEventListener(document, 'keydown', handleKeyDown)
           </div>
         </form>
       </div>
-      <div class="w-full">
+      <div class="w-full mt-4">
         <Comments :orderId="_id"></Comments>
       </div>
     </div>
 
-    <div class="w-full flex-col mt-16">
-      <div class="px-20 mt-4">
+    <div class="w-full flex-col">
+      <div class="px-20 mt-1">
         <StepperStates :orderId="_id"></StepperStates>
+      </div>
+      <div class="place-self-end mr-20">
+        <Button>Create invoice</Button>
       </div>
     </div>
   </div>

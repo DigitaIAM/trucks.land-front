@@ -43,7 +43,7 @@ function onClose() {
       <tr>
         <th
           v-for="col in cols"
-          class="p-4 border-b border-b-gray-300"
+          class="p-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
           <p class="block text-sm antialiasing font-bold leading-none">
@@ -56,7 +56,7 @@ function onClose() {
       <tr v-for="owner in ownersStore.listing" :key="owner.id" @click="editOwner(owner)">
         <td
           v-for="col in cols"
-          class="py-3 px-4 border-b border-b-gray-300"
+          class="py-3 px-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
           <p

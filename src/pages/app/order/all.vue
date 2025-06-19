@@ -13,6 +13,8 @@ const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const usersStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
+const vehiclesStore = useVehiclesStore()
+const driversStore = useDriversStore()
 
 const state = reactive({})
 
@@ -113,13 +115,27 @@ const cols = [
   },
   {
     label: 'Driver',
-    value: (v) => v.driver,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'driver',
+        () => ({ name: '-' }),
+        () => driversStore.resolve(v.driver),
+        (map) => map.name,
+      ),
     color: (v: Status) => v.color,
     size: 180,
   },
   {
     label: 'Vehicle',
-    value: (v) => v.vehicle,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'vehicle',
+        () => ({ name: '-' }),
+        () => vehiclesStore.resolve(v.vehicle),
+        (map) => map.name,
+      ),
     color: (v: Status) => v.color,
     size: 120,
   },
@@ -131,7 +147,7 @@ const cols = [
   },
   {
     label: 'Spend',
-    value: (v) => v.spend,
+    value: (v) => '$' + v.driver_cost,
     color: (v: Status) => v.color,
     size: 80,
   },
@@ -170,10 +186,10 @@ function openOrder(id: number) {
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
-          class="p-4 border-b border-b-gray-300"
+          class="p-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
-          <p class="block text-sm antialiasing font-bold leading-none">
+          <p class="block antialiasing font-bold leading-none">
             {{ col.label }}
           </p>
         </th>
@@ -184,11 +200,11 @@ function openOrder(id: number) {
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
-          class="py-3 px-4 border-b border-b-gray-300"
+          class="py-3 px-4 border-b border-b-gray-400"
           :style="generateStyle(col, order)"
         >
           <p
-            class="block text-sm antialiasing font-normal leading-normal truncate"
+            class="block antialiasing font-normal leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
             {{ col.value(order) }}

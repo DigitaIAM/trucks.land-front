@@ -3,18 +3,23 @@ import DriverIcon from '../../assets/icons/driver.svg?url'
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
 import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
+const router = useRouter()
+
 const buttons = [
   {
     label: 'Owner',
     icon: OwnerIcon,
+    link: '',
   },
   {
     label: 'Driver',
     icon: DriverIcon,
+    link: '',
   },
   {
     label: 'Dispatcher',
     icon: DispatcherIcon,
+    link: '/app/paymentsAndExpenses/paymentsToDispatchers',
   },
 ]
 </script>
@@ -25,7 +30,11 @@ const buttons = [
   </div>
 
   <div class="flex space-x-8 px-5">
-    <div v-for="button in buttons" class="">
+    <div
+      v-for="button in buttons"
+      :key="button.label"
+      @click="router.replace({ path: button.link })"
+    >
       <div
         class="size-32 place-items-center p-6 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105"
       >

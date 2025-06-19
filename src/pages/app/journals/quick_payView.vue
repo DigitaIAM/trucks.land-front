@@ -1,99 +1,152 @@
 <script setup lang="ts">
-import Search from '@/components/windowElements/Search.vue'
+import { useUsersStore } from '@/stores/users.ts'
+import { useStatusesStore } from '@/stores/statuses.ts'
+
+const orders = useOrdersStore()
+const brokersStore = useBrokersStore()
+const usersStore = useUsersStore()
+const statusesStore = useStatusesStore()
+const vehiclesStore = useVehiclesStore()
+
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
 
 const cols = [
   {
     label: '#',
-    value: (v) => v.num,
-    size: 100,
+    value: (v: Order) => v.id,
+    size: 50,
   },
   {
     label: 'Dispatcher',
-    value: (v) => v.dispatcher,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'dispatcher',
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.dispatcher),
+        (map) => map.name,
+      ),
     size: 120,
   },
   {
     label: 'Week',
     value: (v) => v.week,
-    size: 50,
+    size: 100,
   },
   {
     label: 'Status',
-    value: (v) => v.stage,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
     size: 150,
   },
   {
     label: 'Invoices',
     value: (v) => v.invoices,
-    size: 150,
+    size: 100,
   },
   {
     label: 'Refs',
-    value: (v) => v.ref,
+    value: (v: Order) => v.refs,
     size: 90,
   },
   {
     label: 'Cost',
-    value: (v) => '$' + v.cost,
+    value: (v: Order) => '$ ' + v.cost,
     size: 80,
   },
   {
     label: 'D/payment',
-    value: (v) => '$' + v.spend,
+    value: (v) => '$' + v.driver_cost,
     size: 80,
   },
   {
     label: 'Broker',
-    value: (v) => v.broker,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'broker',
+        () => ({ name: '?' }),
+        () => brokersStore.resolve(v.broker),
+        (map) => map.name,
+      ),
     size: 150,
   },
   {
     label: 'Vehicle',
-    value: (v) => v.vehicle,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'vehicle',
+        () => ({ name: '-' }),
+        () => vehiclesStore.resolve(v.vehicle),
+        (map) => map.name,
+      ),
     size: 80,
   },
 ]
 
-const orders = [
-  {
-    num: 'T2-37778',
-    dispatcher: 'Nate Riviera',
-    week: 2,
-    stage: 'Request quick pay',
-    invoices: '',
-    ref: '2006721',
-    cost: 1200,
-    spend: 900,
-    broker: 'Am Trans Expedite',
-    vehicle: 'V58902',
-  },
-]
+function openOrder(id: number) {
+  console.log('openOrder', id)
+  window.open('/app/order/' + id, '_blank')
+}
 </script>
 
 <template>
-  <table class="w-full mt-10 text-left table-auto min-w-max">
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Text size="2xl">Payments</Text>
+    <Search></Search>
+  </div>
+  <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>
         <th
           v-for="col in cols"
-          class="p-4 border-b border-b-gray-300"
+          :key="'head_' + col.label"
+          class="p-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
-          <p class="block font-sans text-sm antialiasing font-bold leading-none opacity-70">
+          <p class="block antialiasing font-bold leading-none">
             {{ col.label }}
           </p>
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders">
+      <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
-          class="py-3 px-4 border-b border-b-gray-300"
+          :key="'row_' + col.label + '_' + order.id"
+          class="py-3 px-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
           <p
-            class="block text-sm antialiasing font-normal leading-normal truncate"
+            class="block antialiasing font-normal leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
             {{ col.value(order) }}

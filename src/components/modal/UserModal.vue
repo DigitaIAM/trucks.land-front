@@ -143,7 +143,7 @@ function saveUser() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search></Search>
-    <Button class="btn" @click="resetAndShow(null)">Create</Button>
+    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
   </div>
 
   <Modal id="edit_user">

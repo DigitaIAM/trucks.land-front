@@ -13,14 +13,14 @@ const name = ref('')
 
 const palette = [
   '#00000000',
-  '#29f0d5',
-  '#5bc8aC',
-  '#98dbc6',
-  '#FDE68A',
-  '#DC2626',
-  '#00ff00',
-  '#a6a737',
-  '#1D4ED8',
+  'rgba(41,240,213,0.8)',
+  'rgba(91,200,172,0.8)',
+  'rgba(94,252,194,0.8)',
+  'rgba(247,200,0,0.8)',
+  'rgba(240,36,25,0.8)',
+  'rgba(0,255,0,0.8)',
+  'rgba(166,167,55,0.8)',
+  'rgba(29,78,216,0.8)',
 ]
 const color = defineModel({
   default: '#00000000',
@@ -57,7 +57,7 @@ function saveStatus() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search></Search>
-    <Button class="btn" @click="resetAndShow(null)">Create</Button>
+    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_status">
     <ModalBox class="w-4/5">

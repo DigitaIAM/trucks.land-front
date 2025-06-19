@@ -25,7 +25,6 @@ const themes = useThemes()
       <Sidebar></Sidebar>
       <RouterLink to="/" class="flex flex-row gap-2 items-center">
         <img src="./../assets/logoTL.svg" />
-        <Text size="xl">Trucks.land</Text>
       </RouterLink>
     </NavbarStart>
 
