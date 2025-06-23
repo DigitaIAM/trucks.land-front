@@ -14,7 +14,7 @@ const buttons = [
   {
     label: 'Driver',
     icon: DriverIcon,
-    link: '',
+    link: '/app/paymentsAndExpenses/driver_expenses',
   },
   {
     label: 'Dispatcher',

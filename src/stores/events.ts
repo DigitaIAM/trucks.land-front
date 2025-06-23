@@ -15,6 +15,7 @@ export interface EventCreate {
   cost: number
   driver: number
   vehicle: number
+  owner: number
   details: object
   document: number
 }
@@ -29,6 +30,7 @@ export interface EventUpdate {
   cost?: number
   driver?: number
   vehicle?: number
+  owner?: number
   details?: object
   document?: number
 }

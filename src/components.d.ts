@@ -57,6 +57,7 @@ declare module 'vue' {
     DaisyText: typeof import('daisy-ui-kit')['DaisyText']
     DatePicker: typeof import('./components/picker/DatePicker.vue')['default']
     DeliveryModal: typeof import('./components/modal/DeliveryModal.vue')['default']
+    DispatcherPayment: typeof import('./components/modal/DispatcherPayment.vue')['default']
     Divider: typeof import('./components/widgets/Divider.vue')['default']
     Drawer: typeof import('./components/widgets/Drawer.vue')['default']
     DrawerContent: typeof import('./components/widgets/DrawerContent.vue')['default']

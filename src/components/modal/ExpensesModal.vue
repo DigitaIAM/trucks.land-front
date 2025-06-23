@@ -13,6 +13,7 @@ const datetime = ref(new Date() as Date | undefined)
 const note = ref('')
 const driver = ref(null)
 const vehicle = ref(null)
+const owner = ref(null)
 const cost = ref(null)
 
 const emit = defineEmits(['on-update'])
@@ -29,6 +30,7 @@ watch(
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const ownersStore = useOwnersStore()
 
 function resetAndShow(event: Event | null) {
   if (event?.kind != 'expenses') {
@@ -40,6 +42,7 @@ function resetAndShow(event: Event | null) {
   note.value = event?.details?.note || ''
   driver.value = event.driver ? { id: event.driver } : null
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
+  owner.value = event.owner ? { id: event.owner } : null
   cost.value = event?.cost
 
   create_expenses.showModal()
@@ -54,6 +57,7 @@ async function saveAndEdit() {
       driver: driver.value?.id,
       vehicle: vehicle.value?.id,
       cost: cost.value,
+      owner: owner.value?.id,
       details: {
         note: note.value,
       },
@@ -89,16 +93,20 @@ function close() {
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <Label>Driver</Label>
-          <selector v-model="driver" :store="driversStore"></selector>
+          <Label>Owner</Label>
+          <selector v-model="owner" :store="ownersStore" />
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <Label>Vehicle</Label>
-          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+          <Label>Driver</Label>
+          <selector v-model="driver" :store="driversStore"></selector>
         </div>
       </div>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Vehicle</Label>
+          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+        </div>
         <div class="md:w-1/2 md:mb-0">
           <Label>Expenses $</Label>
           <TextInput class="w-full" v-model="cost" />

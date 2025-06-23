@@ -16,6 +16,7 @@ const props = defineProps<{
   id: string
 }>()
 
+const _order = ref(null)
 const _id = ref(null)
 const status = ref(null)
 const dispatcher = ref<User | Reference>()
@@ -68,6 +69,7 @@ async function resetAndShow(str: string) {
   // console.log('order', order)
   if (order) {
     // resetAndShow(order)
+    _order.value = order
     _id.value = order.id
     status.value = { id: order.status }
     posted_loads.value = order.posted_loads
@@ -137,7 +139,7 @@ useEventListener(document, 'keydown', handleKeyDown)
             {{ next.name }}
           </Button>
         </div>
-        <StepperUploading :orderId="_id"></StepperUploading>
+        <StepperUploading :order="_order"></StepperUploading>
       </div>
 
       <div class="flex w-full mt-10">

@@ -4,22 +4,14 @@ layout: app
 </route>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
+import { useEventsStore } from '@/stores/events.ts'
 
 const ordersStore = useOrdersStore()
-const usersStore = useUsersStore()
+const eventsStore = useEventsStore()
+const driversStore = useDriversStore()
+const vehiclesStore = useVehiclesStore()
 
 const state = reactive({})
-
-const selectedDispatcher = ref(null)
-
-function openPayment(payment: Payment) {
-  selectedDispatcher.value = payment
-}
-
-function onClose() {
-  selectedDispatcher.value = null
-}
 
 function resolve(
   order: Order,
@@ -43,20 +35,8 @@ function resolve(
 
 const cols = [
   {
-    label: 'Dispatcher',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'dispatcher',
-        () => ({ name: '?' }),
-        () => usersStore.resolve(v.dispatcher),
-        (map) => map.real_name,
-      ),
-    size: 200,
-  },
-  {
-    label: 'Amount',
-    value: (v) => v.amount,
+    label: 'Event',
+    value: (v: Order) => v.kind,
     size: 100,
   },
   {
@@ -65,27 +45,50 @@ const cols = [
     size: 100,
   },
   {
-    label: 'Created at',
-    value: (v) => v.created_at,
+    label: 'Order',
+    value: (v: Order) => v.id,
+    size: 100,
+  },
+  {
+    label: 'Vehicle',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'vehicle',
+        () => ({ name: '-' }),
+        () => vehiclesStore.resolve(v.vehicle),
+        (map) => map.name,
+      ),
+    size: 100,
+  },
+  {
+    label: 'Driver',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'driver',
+        () => ({ name: '-' }),
+        () => driversStore.resolve(v.driver),
+        (map) => map.name,
+      ),
     size: 200,
   },
   {
-    label: 'Note',
+    label: 'Total',
+    value: (v: Order) => '$' + v.cost,
+    size: 100,
+  },
+  {
+    label: 'Notes',
     value: (v) => v.note,
     size: 200,
-  },
-  {
-    label: 'Created by',
-    value: (v) => v.created_by,
-    size: 150,
   },
 ]
 </script>
 
 <template>
-  <DispatcherPayment :edit="selectedDispatcher" @closed="onClose"></DispatcherPayment>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments to dispatchers</Text>
+    <Text size="2xl">Driver expenses</Text>
     <Search></Search>
     <Button class="btn-accent">Create</Button>
   </div>
@@ -105,10 +108,10 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="document in ordersStore.listing" :key="document.id" @click="openPayment(payment)">
+      <tr v-for="order in ordersStore.listing" :key="order.id">
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + document.id"
+          :key="'row_' + col.label + '_' + order.id"
           class="py-3 px-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >
@@ -116,7 +119,7 @@ const cols = [
             class="block antialiasing font-normal leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(document) }}
+            {{ col.value(order) }}
           </p>
         </td>
       </tr>

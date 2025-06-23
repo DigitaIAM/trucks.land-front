@@ -23,7 +23,7 @@ const props = defineProps<{
   sm?: boolean
   xs?: boolean
 }>()
-defineEmits(['files'])
+const emit = defineEmits(['file'])
 
 const classes = computed(() => {
   return {
@@ -46,6 +46,17 @@ const classes = computed(() => {
     'file-input-ghost': props.ghost,
   }
 })
+
+function onFileChanged($event: Event) {
+  console.log('$event', $event)
+  const target = $event.target as HTMLInputElement
+  console.log('target', target)
+  if (target && target.files) {
+    console.log('target.files[0]', target.files[0])
+    emit('file', target.files[0])
+    console.log('done')
+  }
+}
 </script>
 
 <template>
@@ -54,6 +65,8 @@ const classes = computed(() => {
     :disabled="disabled"
     class="file-input"
     :class="classes"
-    @input="$emit('files', ($event.target as any).value)"
+    @change="onFileChanged($event)"
+    capture="user"
   />
+  <!--  @input="$emit('files', $event.target.files)"-->
 </template>

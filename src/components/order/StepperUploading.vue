@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { Order } from '@/stores/orders.ts'
+
 const props = defineProps<{
-  orderId: number | null
+  order: Order | null
 }>()
 
 const stages = ref([
@@ -10,11 +12,49 @@ const stages = ref([
 ])
 
 const fileType = ref('RC')
-const files = ref([])
+const fileInfo = ref<File | null>(null)
 
-function upload() {
-  console.log('upload happens here', fileType.value, files.value)
-  stages.value[2].check = true
+async function upload() {
+  console.log('upload happens here', fileType.value, fileInfo.value)
+
+  const type = fileType.value
+  const file = fileInfo.value
+
+  if (file) {
+    const createAt = props.order?.created_at
+    if (createAt) {
+      const path =
+        '/' +
+        createAt.substring(0, 4) +
+        '/' +
+        createAt.substring(5, 7) +
+        '/' +
+        type +
+        '/' +
+        file.name
+
+      console.log('path', path)
+      const result = await supabase.storage.from('orders').upload(path, file)
+
+      console.log('result', result)
+
+      if (result.data) {
+        const sl = stages.value
+        for (const idx in sl) {
+          if (fileType.value == sl[idx].label) {
+            sl[idx].check = true
+            break
+          }
+        }
+      } else {
+        // TODO show error
+      }
+    } else {
+      throw 'no order creation date'
+    }
+  } else {
+    throw 'one file expected'
+  }
 }
 </script>
 
@@ -73,7 +113,7 @@ function upload() {
           <TextInput placeholder="signed by"></TextInput>
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <FileInput @files="(list) => (files.value = list)"></FileInput>
+          <FileInput @file="(f) => (fileInfo = f)"></FileInput>
         </div>
       </div>
 
