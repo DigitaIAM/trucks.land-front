@@ -176,6 +176,7 @@ async function saveVehicle() {
         <div class="md:w-1/2 md:mb-0">
           <Label>Expiry date</Label>
           <VueDatePicker
+            class="my-custom-datepicker"
             teleport-center
             :enable-time-picker="false"
             v-model="expiry_date"
@@ -251,4 +252,9 @@ async function saveVehicle() {
   </Modal>
 </template>
 
-<style scoped></style>
+<style scoped>
+.dp__theme_light {
+  --dp-background-color: gray-500;
+  --dp-text-color: gray-200;
+}
+</style>

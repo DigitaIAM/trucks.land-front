@@ -196,6 +196,7 @@ declare global {
   const useFetch: typeof import('@vueuse/core')['useFetch']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
+  const useFilesStore: typeof import('./stores/order_files')['useFilesStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
   const useFps: typeof import('@vueuse/core')['useFps']
@@ -363,6 +364,9 @@ declare global {
   // @ts-ignore
   export type { Event, EventCreate, EventUpdate } from './stores/events'
   import('./stores/events')
+  // @ts-ignore
+  export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
+  import('./stores/order_files')
   // @ts-ignore
   export type { Order, OrderCreate, OrderUpdate } from './stores/orders'
   import('./stores/orders')
@@ -570,6 +574,7 @@ declare module 'vue' {
     readonly useFetch: UnwrapRef<typeof import('@vueuse/core')['useFetch']>
     readonly useFileDialog: UnwrapRef<typeof import('@vueuse/core')['useFileDialog']>
     readonly useFileSystemAccess: UnwrapRef<typeof import('@vueuse/core')['useFileSystemAccess']>
+    readonly useFilesStore: UnwrapRef<typeof import('./stores/order_files')['useFilesStore']>
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>

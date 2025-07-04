@@ -89,6 +89,7 @@ function close() {
         </div>
         <div class="md:w-1/2 md:mb-0">
           <VueDatePicker
+            class="my-custom-datepicker"
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
@@ -138,5 +139,6 @@ function close() {
 <style scoped>
 .dp__theme_light {
   --dp-background-color: gray-500;
+  --dp-text-color: gray-200;
 }
 </style>

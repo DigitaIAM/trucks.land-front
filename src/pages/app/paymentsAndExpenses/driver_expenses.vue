@@ -36,7 +36,7 @@ function resolve(
 const cols = [
   {
     label: 'Event',
-    value: (v: Order) => v.kind,
+    value: (v: Event) => v.kind,
     size: 100,
   },
   {

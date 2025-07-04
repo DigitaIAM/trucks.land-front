@@ -117,5 +117,6 @@ function close() {
 <style scoped>
 .dp__theme_light {
   --dp-background-color: gray-500;
+  --dp-text-color: gray-200;
 }
 </style>

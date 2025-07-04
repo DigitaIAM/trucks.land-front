@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import type { Order } from '@/stores/orders.ts'
+import { type FileRecord, useFilesStore } from '@/stores/order_files.ts'
+import { defineEmits } from 'vue'
 
 const props = defineProps<{
   order: Order | null
 }>()
+
+const authStore = useAuthStore()
+const usersStore = useUsersStore()
+const filesStore = useFilesStore()
 
 const stages = ref([
   { label: 'RC', check: false },
@@ -13,9 +19,20 @@ const stages = ref([
 
 const fileType = ref('RC')
 const fileInfo = ref<File | null>(null)
+const signedBy = ref('')
 
 async function upload() {
   console.log('upload happens here', fileType.value, fileInfo.value)
+
+  const user = authStore.user
+  if (user == null) {
+    throw 'authorize first'
+  }
+
+  const cUser = await usersStore.resolveUUID(user.id)
+  if (cUser == null) {
+    throw 'authorize first'
+  }
 
   const type = fileType.value
   const file = fileInfo.value
@@ -38,6 +55,14 @@ async function upload() {
 
       console.log('result', result)
 
+      await filesStore.create({
+        document: props.order?.id,
+        file_type: fileType.value,
+        signed_by: signedBy.value,
+        path: path,
+        created_by: cUser.id,
+      })
+
       if (result.data) {
         const sl = stages.value
         for (const idx in sl) {
@@ -56,6 +81,34 @@ async function upload() {
     throw 'one file expected'
   }
 }
+
+const files = ref(<FileRecord>[])
+
+watch(
+  () => props.order,
+  (order) => {
+    console.log('watch id', order, props.order)
+    resetAndShow(order?.id)
+  },
+  { deep: true },
+)
+
+resetAndShow(props.order?.id)
+
+async function resetAndShow(id: number | null) {
+  files.value = await filesStore.listing(id)
+}
+
+function isPresent(file_type: string) {
+  const list = files.value
+  for (const idx in list) {
+    const file = list[idx]
+    if (file.file_type == file_type) {
+      return true
+    }
+  }
+  return false
+}
 </script>
 
 <template>
@@ -70,7 +123,7 @@ async function upload() {
               class="relative z-8 grid w-8 h-8 font-bold text-white transition-all duration-300 bg-gray-500 rounded-full place-items-center"
             >
               <svg
-                v-if="stage.check"
+                v-if="isPresent(stage.label)"
                 class="w-5 h-5"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -110,11 +163,15 @@ async function upload() {
 
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="signed by"></TextInput>
+          <TextInput placeholder="signed by" v-model="signedBy"></TextInput>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <FileInput @file="(f) => (fileInfo = f)"></FileInput>
         </div>
+      </div>
+
+      <div v-for="file in files" :key="file.path" class="mt-2 mb-2">
+        <Text>{{ file.path }}</Text>
       </div>
 
       <ModalAction>

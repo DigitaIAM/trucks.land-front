@@ -31,7 +31,6 @@ export const useCommentsStore = defineStore('comment', () => {
         table: 'comments',
       },
       (payload) => {
-        console.log(payload)
         if (payload.eventType == 'INSERT') {
           listing.value.unshift(payload.new as Comment)
         }
@@ -40,7 +39,6 @@ export const useCommentsStore = defineStore('comment', () => {
     .subscribe()
 
   async function setOrderId(id: number) {
-    console.log('setOrderId', id)
     orderId.value = id
 
     const response = await supabase
@@ -49,7 +47,6 @@ export const useCommentsStore = defineStore('comment', () => {
       .eq('document', id)
       .order('created_at', { ascending: false })
 
-    console.log('comments', response)
     if (response.status == 200) {
       response.data?.forEach((json) => {
         const comment = json as Comment
@@ -59,13 +56,11 @@ export const useCommentsStore = defineStore('comment', () => {
   }
 
   function create(comment: CommentCreate) {
-    console.log('create comment', comment)
     supabase
       .from('comments')
       .insert(comment)
       .select()
       .then((response) => {
-        console.log('comments', response)
         if (response.status == 201) {
           response.data?.forEach((json) => {
             const comment = json as Comment
