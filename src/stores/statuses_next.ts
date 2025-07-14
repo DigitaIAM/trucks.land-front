@@ -39,13 +39,12 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     return list
   })
 
-  function nextFor(status?: Status) {
+  function nextFor(status?: int) {
+    console.log('')
     if (status) {
-      const l = Array.from(mapping.value.get(status.id)?.keys() ?? [])
-      return l
+      return Array.from(mapping.value.get(status)?.keys() ?? [])
     } else {
-      const l = Array.from(mapping.value.get(-1)?.keys() ?? [])
-      return l
+      return Array.from(mapping.value.get(-1)?.keys() ?? [])
     }
   }
 

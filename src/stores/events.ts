@@ -63,6 +63,64 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
+  async function pickUp(orderId: number) {
+    if (orderId) {
+      const response = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', orderId)
+        .eq('kind', 'pick-up')
+        .order('datetime', { ascending: false })
+      // .order('datetime') // .throwOnError()
+      // console.log(response)
+
+      if (response.status == 200) {
+        const list = []
+
+        response.data?.forEach((json) => {
+          const event = json as Event
+          list.push(event)
+        })
+
+        // console.log('list', list)
+
+        return list
+      } else {
+        throw 'unexpended response status: ' + response.status
+      }
+    } else {
+      return []
+    }
+  }
+
+  async function delivery(orderId: number) {
+    if (orderId) {
+      const response = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', orderId)
+        .eq('kind', 'delivery')
+        .order('datetime', { ascending: false })
+      // .order('datetime') // .throwOnError()
+      // console.log(response)
+
+      if (response.status == 200) {
+        const list = []
+
+        response.data?.forEach((json) => {
+          const event = json as Event
+          list.push(event)
+        })
+
+        return list
+      } else {
+        throw 'unexpended response status: ' + response.status
+      }
+    } else {
+      return []
+    }
+  }
+
   async function create(event: EventCreate) {
     // console.log('create', event)
     const response = await supabase.from('order_events').insert(event).select() // .throwOnError()
@@ -94,7 +152,7 @@ export const useEventsStore = defineStore('event', () => {
       })
   }
 
-  return { listing, create, update }
+  return { listing, create, update, pickUp, delivery }
 })
 
 if (import.meta.hot) {

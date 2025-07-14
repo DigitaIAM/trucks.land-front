@@ -116,6 +116,7 @@ function selectExpenses(data) {
                 {{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}
               </p>
               <p class="text-md">{{ eventDate.address }}</p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
           <template v-if="eventDate.kind == 'pick-up'">
@@ -144,6 +145,7 @@ function selectExpenses(data) {
                 {{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}
               </p>
               <p class="text-md">{{ eventDate.address }}</p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
           <template v-if="eventDate.kind == 'change'">
@@ -175,6 +177,7 @@ function selectExpenses(data) {
               <p class="text-md">
                 <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
               </p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
           <template v-if="eventDate.kind == 'agreement'">
@@ -203,6 +206,7 @@ function selectExpenses(data) {
                 <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
               </p>
               <p class="text-md">${{ eventDate.cost }}</p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
           <template v-if="eventDate.kind == 'expenses'">
@@ -230,6 +234,7 @@ function selectExpenses(data) {
               <p class="text-md">
                 <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
               </p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
         </li>

@@ -72,8 +72,8 @@ export const useOrdersStore = defineStore('order', () => {
     }
   }
 
-  function update(id: number, order: OrderUpdate) {
-    supabase
+  async function update(id: number, order: OrderUpdate) {
+    await supabase
       .from('orders')
       .update(order)
       .eq('id', id)

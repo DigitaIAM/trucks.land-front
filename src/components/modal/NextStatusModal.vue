@@ -6,7 +6,7 @@ const props = defineProps<{
 watch(
   () => props.edit,
   (status) => {
-    selectedStatus.value = statusesNext.nextFor(status)
+    selectedStatus.value = statusesNext.nextFor(status?.id)
     next_status.showModal()
   },
   { deep: true },

@@ -4,6 +4,8 @@ layout: app
 </route>
 
 <script setup lang="ts">
+import type { Status } from '@/stores/statuses.ts'
+
 const router = useRouter()
 
 import StepperUploading from '@/components/order/StepperUploading.vue'
@@ -16,9 +18,8 @@ const props = defineProps<{
   id: string
 }>()
 
-const _order = ref(null)
+const _order = ref<Order | null>(null)
 const _id = ref(null)
-const status = ref(null)
 const dispatcher = ref<User | Reference>()
 const posted_loads = ref('')
 const refs = ref('')
@@ -36,10 +37,10 @@ const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
 
-const nexts = computedAsync(async () => {
-  const list = []
+const nextStatuses = computedAsync(async () => {
+  const list = [] as List<Status>
 
-  const ids = nextStatusStore.nextFor(status.value)
+  const ids = nextStatusStore.nextFor(_order.value?.status)
   for (const idx in ids) {
     const id = ids[idx]
     const status = await statusesStore.resolve(id)
@@ -47,7 +48,11 @@ const nexts = computedAsync(async () => {
   }
 
   return list
-}, [])
+}, [] as List<Status>)
+
+const currentStatus = computedAsync(async () => {
+  return await statusesStore.resolve(_order.value?.status)
+}, {})
 
 watch(
   () => props.id,
@@ -71,7 +76,6 @@ async function resetAndShow(str: string) {
     // resetAndShow(order)
     _order.value = order
     _id.value = order.id
-    status.value = { id: order.status }
     posted_loads.value = order.posted_loads
     dispatcher.value = { id: order.dispatcher }
     organization.value = { id: order.organization }
@@ -84,14 +88,13 @@ async function resetAndShow(str: string) {
   } else {
     // TODO show error
   }
-
   // console.log('done', _id.value)
 }
 
-async function saveOrder(next: Status | null) {
+async function saveOrder(next: Status | null | undefined) {
   try {
     await ordersStore.update(_id.value, {
-      status: next?.id ?? status.value.id,
+      status: next?.id ?? _order.value.status,
       dispatcher: dispatcher.value?.id,
       posted_loads: posted_loads.value,
       refs: refs.value,
@@ -129,17 +132,25 @@ useEventListener(document, 'keydown', handleKeyDown)
         <div class="flex space-x-3 w-full">
           <Button @click="closeOrder()">Close</Button>
           <Button @click="saveOrder(null)">Update</Button>
-          <Text class="mt-2">or change to</Text>
+        </div>
+        <StepperUploading :order="_order"></StepperUploading>
+      </div>
+
+      <div class="flex w-full h-full mt-6">
+        <div class="flex space-x-3 w-full">
+          <Button disabled :style="'background-color: ' + currentStatus?.color"
+            >{{ currentStatus?.name }}
+          </Button>
+          <Text class="mt-2">change to</Text>
           <Button
-            v-for="next in nexts"
-            :key="id"
+            v-for="next in nextStatuses"
+            :key="next?.id"
             @click="saveOrder(next)"
-            :style="'background-color: ' + next.color"
+            :style="'background-color: ' + next?.color"
           >
             {{ next.name }}
           </Button>
         </div>
-        <StepperUploading :order="_order"></StepperUploading>
       </div>
 
       <div class="flex w-full mt-10">

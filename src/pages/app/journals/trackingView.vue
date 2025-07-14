@@ -101,20 +101,51 @@ const cols = [
   },
   {
     label: 'Pick up',
-    value: (v: Event) => v.zip,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'pick_up',
+        () => [],
+        () => eventsStore.pickUp(v.id),
+        (l) => {
+          let str = ''
+          l.forEach((v) => {
+            if (str) {
+              str += ', '
+            }
+            str += v.zip + ' ' + v.state + ' ' + v.city
+          })
+          return str
+        },
+      ),
     color: (v: Status) => v.color,
     size: 300,
   },
   {
     label: 'Delivery',
-    value: (v: Event) => v.zip,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'delivery',
+        () => [],
+        () => eventsStore.delivery(v.id),
+        (l) => {
+          let str = ''
+          l.forEach((v) => {
+            if (str) {
+              str += ', '
+            }
+            str += v.zip + ' ' + v.state + ' ' + v.city
+          })
+          return str
+        },
+      ),
     color: (v: Status) => v.color,
     size: 300,
   },
 ]
 
 function openOrder(id: number) {
-  console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
 </script>

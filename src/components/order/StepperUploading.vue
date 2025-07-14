@@ -171,7 +171,7 @@ function isPresent(file_type: string) {
       </div>
 
       <div v-for="file in files" :key="file.path" class="mt-2 mb-2">
-        <Text>{{ file.path }}</Text>
+        <Button>{{ file.path }}</Button>
       </div>
 
       <ModalAction>

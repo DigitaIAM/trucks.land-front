@@ -80,7 +80,7 @@ function onClose() {
             class="block text-sm antialiasing font-normal leading-normal truncate"
             :style="{ width: 300 + 'px' }"
           >
-            <span v-for="id in statusesNextStore.nextFor(status)" :key="id" class="mr-4">
+            <span v-for="id in statusesNextStore.nextFor(status.id)" :key="id" class="mr-4">
               {{ resolveStatus(id).name }}
             </span>
           </p>
