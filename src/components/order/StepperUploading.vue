@@ -15,11 +15,44 @@ const stages = ref([
   { label: 'RC', check: false },
   { label: 'BOL', check: false },
   { label: 'POD', check: false },
+  { label: 'INV', check: false },
 ])
 
 const fileType = ref('RC')
 const fileInfo = ref<File | null>(null)
 const signedBy = ref('')
+
+const state = reactive({})
+
+function resolve(
+  file: File,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[file.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[file.id] = s
+    request().then((obj) => {
+      if (obj) state[file.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
+function resolveAccount(file: File) {
+  return resolve(
+    file,
+    'createdBy',
+    () => ({ name: '' }),
+    async () => usersStore.resolve(file.created_by),
+    (account) => account.name,
+  )
+}
 
 async function upload() {
   console.log('upload happens here', fileType.value, fileInfo.value)
@@ -36,9 +69,10 @@ async function upload() {
 
   const type = fileType.value
   const file = fileInfo.value
+  const order = props.order
 
-  if (file) {
-    const createAt = props.order?.created_at
+  if (file && order) {
+    const createAt = order.created_at
     if (createAt) {
       const path =
         '/' +
@@ -46,8 +80,12 @@ async function upload() {
         '/' +
         createAt.substring(5, 7) +
         '/' +
-        type +
+        createAt.substring(8, 10) +
         '/' +
+        order.id +
+        '/' +
+        type +
+        '_' +
         file.name
 
       console.log('path', path)
@@ -82,7 +120,7 @@ async function upload() {
   }
 }
 
-const files = ref(<FileRecord>[])
+const files = ref<Array<FileRecord>>([])
 
 watch(
   () => props.order,
@@ -109,18 +147,30 @@ function isPresent(file_type: string) {
   }
   return false
 }
+
+async function download(file) {
+  console.log('download', file)
+  try {
+    const { data, error } = await supabase.storage.from('orders').createSignedUrl(file.path, 2)
+    if (error) throw error
+    window.open(data.signedUrl, '_blank')
+  } catch (error) {
+    console.error('Error downloading image: ', error.message)
+  }
+}
 </script>
 
 <template>
-  <Button link onclick="modal.showModal()">
+  <Button link>
     <div class="flex">
       <label for="dropzone-file" class="flex">
-        <div class="w-40 pb-10 mt-8">
+        <div class="w-60 pb-10 mt-8">
           <div class="relative flex justify-between w-full">
             <div class="absolute top-2/4 h-0.5 w-full bg-gray-500"></div>
             <div
               v-for="stage in stages"
-              class="relative z-8 grid w-8 h-8 font-bold text-white transition-all duration-300 bg-gray-500 rounded-full place-items-center"
+              class="relative z-8 grid w-8 h-8 font-bold text-white transition-all duration-300 bg-gray-500 rounded-full place-items-center cursor-pointer"
+              onclick="modal.showModal()"
             >
               <svg
                 v-if="isPresent(stage.label)"
@@ -163,20 +213,46 @@ function isPresent(file_type: string) {
 
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="signed by" v-model="signedBy"></TextInput>
+          <TextInput placeholder="Signed by" v-model="signedBy"></TextInput>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <FileInput @file="(f) => (fileInfo = f)"></FileInput>
         </div>
       </div>
 
-      <div v-for="file in files" :key="file.path" class="mt-2 mb-2">
-        <Button>{{ file.path }}</Button>
-      </div>
-
       <ModalAction>
         <form method="dialog">
-          <Button class="mr-4" @click="upload">Upload</Button>
+          <Button @click="upload">Upload</Button>
+        </form>
+      </ModalAction>
+
+      <div class="mt-6 mb-2">
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr>
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Created by</th>
+              <th class="py-2 px-3">Signed by</th>
+              <th class="py-2 px-3">Created at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="file in files"
+              :key="file.path"
+              @click="download(file)"
+              class="cursor-pointer"
+            >
+              <td class="py-2 px-3">{{ file.file_type }}</td>
+              <td class="py-2 px-3">{{ resolveAccount(file) }}</td>
+              <td class="py-2 px-3">{{ file.signed_by }}</td>
+              <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ModalAction>
+        <form method="dialog">
           <Button>Close</Button>
         </form>
       </ModalAction>

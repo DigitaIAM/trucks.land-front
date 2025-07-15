@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import SideBar from '@/components/windowElements/SideBar.vue'
-import TopBar from '@/components/windowElements/TopBar.vue'
 
 // import { useHead } from '@unhead/vue'
 //

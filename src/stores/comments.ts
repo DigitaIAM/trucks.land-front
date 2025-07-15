@@ -55,6 +55,25 @@ export const useCommentsStore = defineStore('comment', () => {
     }
   }
 
+  async function commentsForOrder(orderId: number) {
+    const response = await supabase
+      .from('comments')
+      .select()
+      .eq('document', orderId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (response.status == 200) {
+      const list = []
+      response.data?.forEach((json) => {
+        const comment = json as Comment
+        list.push(comment)
+      })
+      return list
+    }
+    return []
+  }
+
   function create(comment: CommentCreate) {
     supabase
       .from('comments')
@@ -104,7 +123,7 @@ export const useCommentsStore = defineStore('comment', () => {
     return map.get(id)
   }
 
-  return { setOrderId, listing, create, update, resolve }
+  return { setOrderId, listing, create, update, resolve, commentsForOrder }
 })
 
 if (import.meta.hot) {

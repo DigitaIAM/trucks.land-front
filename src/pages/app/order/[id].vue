@@ -128,11 +128,14 @@ useEventListener(document, 'keydown', handleKeyDown)
 <template>
   <div class="flex flex-col-2 mt-10 ml-4">
     <div class="flex flex-col w-full h-full">
-      <div class="flex w-full">
+      <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
           <Button @click="closeOrder()">Close</Button>
           <Button @click="saveOrder(null)">Update</Button>
         </div>
+        <Button ghost class="cursor-pointer text-gray-500"
+          >excluded from calculations with the dispatcher
+        </Button>
         <StepperUploading :order="_order"></StepperUploading>
       </div>
 
@@ -212,6 +215,9 @@ useEventListener(document, 'keydown', handleKeyDown)
           </div>
         </form>
       </div>
+      <!--      <Button ghost class="mt-4 cursor-pointer"-->
+      <!--        >excluded from calculations with the dispatcher-->
+      <!--      </Button>-->
       <div class="w-full mt-4">
         <Comments :orderId="_id"></Comments>
       </div>
@@ -220,9 +226,6 @@ useEventListener(document, 'keydown', handleKeyDown)
     <div class="w-full flex-col">
       <div class="px-20 mt-1">
         <StepperStates :orderId="_id"></StepperStates>
-      </div>
-      <div class="place-self-end mr-20">
-        <Button>Create invoice</Button>
       </div>
     </div>
   </div>

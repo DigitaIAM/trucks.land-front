@@ -7,6 +7,7 @@ layout: app
 import Create from '@/pages/app/order/create.vue'
 import { useStatusesStore } from '@/stores/statuses.ts'
 import { useUsersStore } from '@/stores/users.ts'
+import { type Comment, useCommentsStore } from '@/stores/comments.ts'
 
 const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
@@ -15,14 +16,15 @@ const usersStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
-
-const state = reactive({})
+const commentsStore = useCommentsStore()
 
 const selectedOrder = ref(null)
 
 function onClose() {
   selectedOrder.value = null
 }
+
+const state = reactive({})
 
 function resolve(
   order: Order,
@@ -166,7 +168,14 @@ const cols = [
   },
   {
     label: 'Notes',
-    value: (v) => v.notes,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
     color: (v: Status) => v.color,
     size: 300,
   },

@@ -7,9 +7,9 @@ export interface FileRecord extends FileRecordCreate {
 
 export interface FileRecordCreate {
   document: number
+  path: string
   file_type: string
   signed_by: string
-  path: string
   created_by: number
 }
 
