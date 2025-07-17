@@ -95,10 +95,7 @@ async function saveAndEdit(status: Status | null) {
 </script>
 
 <template>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search></Search>
-    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
-  </div>
+  <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
   <Modal id="create_draft">
     <ModalBox class="max-w-[calc(80vw-6.25rem)]">
       <Text semibold size="2xl">Order</Text>

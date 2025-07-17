@@ -18,6 +18,7 @@ export interface OrderCreate {
   total_miles: number
   cost: number
   status: number
+  excluded: boolean
 }
 
 export interface OrderUpdate {
@@ -31,13 +32,19 @@ export interface OrderUpdate {
   total_miles?: number
   cost?: number
   status?: number
+  excluded?: boolean
 }
 
 export const useOrdersStore = defineStore('order', () => {
+  const activeFilters = ref([])
   const mapping = ref(new Map<number, Order>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('orders_journal').select().order('created_at').limit(50)
+    let query = supabase.from('orders_journal').select()
+
+    activeFilters.value.map((f) => (query = query.eq(f.key, f.val.id)))
+
+    const response = await query.order('created_at').limit(50)
 
     const map = new Map<number, Order>()
     response.data?.forEach((json) => {
@@ -58,6 +65,24 @@ export const useOrdersStore = defineStore('order', () => {
     return list
   })
 
+  async function setFilters(filters: Array) {
+    activeFilters.value = filters
+
+    let query = supabase.from('orders_journal').select()
+
+    activeFilters.value.forEach((f) => (query = query.eq(f.key, f.val.id)))
+
+    const response = await query.order('created_at').limit(50)
+
+    const map = new Map<number, Order>()
+    response.data?.forEach((json) => {
+      const order = json as Order
+      map.set(order.id, order)
+    })
+
+    mapping.value = map
+  }
+
   async function create(order: OrderCreate) {
     console.log('create', order)
     const response = await supabase.from('orders').insert(order).select() // .throwOnError()
@@ -73,6 +98,7 @@ export const useOrdersStore = defineStore('order', () => {
   }
 
   async function update(id: number, order: OrderUpdate) {
+    console.log('order', order)
     await supabase
       .from('orders')
       .update(order)
@@ -119,7 +145,7 @@ export const useOrdersStore = defineStore('order', () => {
     return []
   }
 
-  return { initialized, loading, create, listing, update, resolve, search }
+  return { initialized, loading, setFilters, create, listing, update, resolve, search }
 })
 
 if (import.meta.hot) {

@@ -109,7 +109,10 @@ function openOrder(id: number) {
 </script>
 
 <template>
-  <create :edit="selectedOrder" @closed="onClose"></create>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Search @search="handleSearch"></Search>
+    <create :edit="selectedOrder" @closed="onClose"></create>
+  </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>

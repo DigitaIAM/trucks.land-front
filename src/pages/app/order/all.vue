@@ -7,7 +7,7 @@ layout: app
 import Create from '@/pages/app/order/create.vue'
 import { useStatusesStore } from '@/stores/statuses.ts'
 import { useUsersStore } from '@/stores/users.ts'
-import { type Comment, useCommentsStore } from '@/stores/comments.ts'
+import { useCommentsStore } from '@/stores/comments.ts'
 
 const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
@@ -18,6 +18,7 @@ const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 const commentsStore = useCommentsStore()
 
+const filters = ref([])
 const selectedOrder = ref(null)
 
 function onClose() {
@@ -185,10 +186,43 @@ function openOrder(id: number) {
   console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
+
+function setFilter(key, val) {
+  console.log('setFilter', key, val)
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index < 0) {
+    filters.value.push({ key: key, val: val })
+  } else {
+    filters.value[index] = { key: key, val: val }
+  }
+
+  ordersStore.setFilters(filters.value)
+}
+
+function delFilter(key) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index >= 0) {
+    filters.value.splice(index, 1)
+  }
+
+  ordersStore.setFilters(filters.value)
+}
+
+function capitalizeFirstLetter(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
 </script>
 
 <template>
-  <create :edit="selectedOrder" @closed="onClose"></create>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <SearchAll @selected="setFilter"></SearchAll>
+    <create :edit="selectedOrder" @closed="onClose"></create>
+  </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Badge lg primary v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
+      >{{ capitalizeFirstLetter(filter.key) }}: {{ filter.val.name }}
+    </Badge>
+  </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr>

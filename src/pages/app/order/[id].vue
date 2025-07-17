@@ -29,6 +29,7 @@ const total_pieces = ref<number>()
 const total_weight = ref<number>()
 const total_miles = ref<number>()
 const cost = ref<number>()
+const excluded = ref(false)
 
 const ordersStore = useOrdersStore()
 const usersStore = useUsersStore()
@@ -85,6 +86,7 @@ async function resetAndShow(str: string) {
     total_weight.value = order.total_weight
     total_miles.value = order.total_miles
     cost.value = order.cost
+    excluded.value = order.excluded ?? true
   } else {
     // TODO show error
   }
@@ -104,12 +106,17 @@ async function saveOrder(next: Status | null | undefined) {
       total_weight: total_weight.value,
       total_miles: total_miles.value,
       cost: cost.value,
+      excluded: excluded.value,
     } as OrderUpdate)
 
     await router.replace({ path: '/app/order/all' })
   } catch (e) {
     console.log('error', e)
   }
+}
+
+function handleClick() {
+  excluded.value = !excluded.value
 }
 
 function closeOrder() {
@@ -133,7 +140,12 @@ useEventListener(document, 'keydown', handleKeyDown)
           <Button @click="closeOrder()">Close</Button>
           <Button @click="saveOrder(null)">Update</Button>
         </div>
-        <Button ghost class="cursor-pointer text-gray-500"
+        <Button
+          ghost
+          class="cursor-pointer text-gray-500"
+          :class="{ 'text-white': excluded }"
+          @click="handleClick"
+          :accent="excluded"
           >excluded from calculations with the dispatcher
         </Button>
         <StepperUploading :order="_order"></StepperUploading>

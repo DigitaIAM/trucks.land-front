@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Broker } from '@/stores/brokers.ts'
 
 export interface Status extends StatusCreate {
   id: number
@@ -90,7 +91,21 @@ export const useStatusesStore = defineStore('status', () => {
     return map.get(id)
   }
 
-  return { listing, initialized, loading, create, update, resolve }
+  async function search(text: string) {
+    const response = await supabase
+      .from('statuses')
+      .select()
+      .ilike('name', '%' + text + '%')
+      .limit(10)
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as Status)
+    }
+
+    return []
+  }
+
+  return { listing, initialized, loading, create, update, resolve, search }
 })
 
 if (import.meta.hot) {

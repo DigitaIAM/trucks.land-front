@@ -18,8 +18,8 @@ export interface CommentUpdate {
 export const useCommentsStore = defineStore('comment', () => {
   const mapping = ref(new Map<number, Comment>())
 
-  const orderId = ref(null)
-  const listing = ref([])
+  const orderId = ref<number | null>(null)
+  const listing = ref<Array<Comment>>([])
 
   const changes = supabase
     .channel('table-db-changes')
@@ -40,6 +40,7 @@ export const useCommentsStore = defineStore('comment', () => {
 
   async function setOrderId(id: number) {
     orderId.value = id
+    listing.value = []
 
     const response = await supabase
       .from('comments')
