@@ -171,41 +171,65 @@ function select(field, value) {
           <Card v-if="vehicles.length > 0">
             <CardBody>
               <CardTitle>Vehicle</CardTitle>
-              <ul>
-                <li v-for="item in vehicles" :key="item.id">
-                  {{ item.name }}
-                </li>
-              </ul>
+              <div
+                class="cursor-pointer py-2 px-4 w-full text-sm rounded-lg focus:outline-hidden"
+                v-for="(item, index) in vehicles"
+                :key="'vehicle_' + item.id"
+                :tabindex="index"
+                @click="select('vehicle', item)"
+              >
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ item.name }}</span>
+                </div>
+              </div>
             </CardBody>
           </Card>
           <Card v-if="owners.length > 0">
             <CardBody>
               <CardTitle>Owner</CardTitle>
-              <ul>
-                <li v-for="item in owners" :key="item.id">
-                  {{ item.name }}
-                </li>
-              </ul>
+              <div
+                class="cursor-pointer py-2 px-4 w-full text-sm rounded-lg focus:outline-hidden"
+                v-for="(item, index) in owners"
+                :key="'owner_' + item.id"
+                :tabindex="index"
+                @click="select('owner', item)"
+              >
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ item.name }}</span>
+                </div>
+              </div>
             </CardBody>
           </Card>
           <Card v-if="dispatchers.length > 0">
             <CardBody>
               <CardTitle>Dispatcher</CardTitle>
-              <ul>
-                <li v-for="item in dispatchers" :key="item.id">
-                  {{ item.name }}
-                </li>
-              </ul>
+              <div
+                class="cursor-pointer py-2 px-4 w-full text-sm rounded-lg focus:outline-hidden"
+                v-for="(item, index) in dispatchers"
+                :key="'dispatcher_' + item.id"
+                :tabindex="index"
+                @click="select('dispatcher', item)"
+              >
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ item.name }}</span>
+                </div>
+              </div>
             </CardBody>
           </Card>
           <Card v-if="statuses.length > 0">
             <CardBody>
               <CardTitle>Status</CardTitle>
-              <ul>
-                <li v-for="item in statuses" :key="item.id">
-                  {{ item.name }}
-                </li>
-              </ul>
+              <div
+                class="cursor-pointer py-2 px-4 w-full text-sm rounded-lg focus:outline-hidden"
+                v-for="(item, index) in statuses"
+                :key="'status_' + item.id"
+                :tabindex="index"
+                @click="select('status', item)"
+              >
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ item.name }}</span>
+                </div>
+              </div>
             </CardBody>
           </Card>
         </div>
