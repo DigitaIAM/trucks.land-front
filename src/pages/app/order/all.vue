@@ -219,8 +219,18 @@ function capitalizeFirstLetter(val) {
     <create :edit="selectedOrder" @closed="onClose"></create>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Badge lg primary v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
+    <Badge lg outline v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
       >{{ capitalizeFirstLetter(filter.key) }}: {{ filter.val.name }}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
     </Badge>
   </div>
   <table class="w-full text-left table-auto min-w-max">

@@ -37,6 +37,30 @@ function editDriver(driver: Driver) {
 function onClose() {
   selectedDriver.value = null
 }
+
+const searchQuery = ref('')
+const queryStr = ref('')
+
+let timer: ReturnType<typeof setTimeout>
+const delay = 250
+
+watch(
+  () => searchQuery.value,
+  (query: string) => {
+    clearTimeout(timer)
+    if (query) {
+      const text = query
+      timer = setTimeout(() => {
+        const query = searchQuery.value
+        if (text === query) {
+          queryStr.value = query.toString().trim().toLowerCase()
+        }
+      }, delay)
+    } else {
+      queryStr.value = ''
+    }
+  },
+)
 </script>
 
 <template>

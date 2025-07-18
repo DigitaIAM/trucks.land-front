@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Broker } from '@/stores/brokers.ts'
 
 export interface User extends UserCreate {
   id: number
@@ -73,6 +74,8 @@ export const useUsersStore = defineStore('user', () => {
   const mapping = ref(new Map<number, User>())
   const uuids = ref(new Map<string, User>())
 
+  const searchResult = ref<Array<User> | null>(null)
+
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('users').select()
 
@@ -86,13 +89,17 @@ export const useUsersStore = defineStore('user', () => {
   })
 
   const listing = computed(() => {
-    const list = [] as User[]
+    if (searchResult.value == null) {
+      const list = [] as User[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+      mapping.value.forEach((v) => {
+        list.push(v)
+      })
 
-    return list
+      return list
+    } else {
+      return searchResult.value
+    }
   })
 
   function create(user: UserCreate) {
@@ -168,13 +175,31 @@ export const useUsersStore = defineStore('user', () => {
       .limit(10)
 
     if (response.status == 200) {
-      return response.data?.map((json) => json as User)
+      return response.data?.map((json) => json as User) ?? []
     }
 
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, resolveUUID, search }
+  async function searchAndListing(text: string | null) {
+    if (text) {
+      searchResult.value = await search(text)
+    } else {
+      searchResult.value = null
+    }
+  }
+
+  return {
+    initialized,
+    loading,
+    listing,
+    create,
+    update,
+    resolve,
+    resolveUUID,
+    search,
+    searchAndListing,
+  }
 })
 
 if (import.meta.hot) {

@@ -36,6 +36,8 @@ export interface OwnerUpdate {
 export const useOwnersStore = defineStore('owner', () => {
   const mapping = ref(new Map<number, Owner>())
 
+  const searchResult = ref<Array<Owner> | null>(null)
+
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('owners').select()
 
@@ -49,13 +51,17 @@ export const useOwnersStore = defineStore('owner', () => {
   })
 
   const listing = computed(() => {
-    const list = [] as Owner[]
+    if (searchResult.value == null) {
+      const list = [] as Owner[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+      mapping.value.forEach((v) => {
+        list.push(v)
+      })
 
-    return list
+      return list
+    } else {
+      return searchResult.value
+    }
   })
 
   function create(owner: OwnerCreate) {
@@ -116,13 +122,21 @@ export const useOwnersStore = defineStore('owner', () => {
       .limit(10)
 
     if (response.status == 200) {
-      return response.data?.map((json) => json as Owner)
+      return response.data?.map((json) => json as Owner) ?? []
     }
 
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  async function searchAndListing(text: string | null) {
+    if (text) {
+      searchResult.value = await search(text)
+    } else {
+      searchResult.value = null
+    }
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search, searchAndListing }
 })
 
 if (import.meta.hot) {

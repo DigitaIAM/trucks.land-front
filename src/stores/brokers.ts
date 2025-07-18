@@ -37,6 +37,8 @@ export interface BrokerUpdate {
 export const useBrokersStore = defineStore('broker', () => {
   const mapping = ref(new Map<number, Broker>())
 
+  const searchResult = ref<Array<Broker> | null>(null)
+
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('brokers').select()
 
@@ -50,13 +52,17 @@ export const useBrokersStore = defineStore('broker', () => {
   })
 
   const listing = computed(() => {
-    const list = [] as Broker[]
+    if (searchResult.value == null) {
+      const list = [] as Broker[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+      mapping.value.forEach((v) => {
+        list.push(v)
+      })
 
-    return list
+      return list
+    } else {
+      return searchResult.value
+    }
   })
 
   function create(broker: BrokerCreate) {
@@ -108,7 +114,7 @@ export const useBrokersStore = defineStore('broker', () => {
     return map.get(id)
   }
 
-  async function search(text: string) {
+  async function search(text: string): Promise<Array<Broker>> {
     const response = await supabase
       .from('brokers')
       .select()
@@ -116,13 +122,21 @@ export const useBrokersStore = defineStore('broker', () => {
       .limit(10)
 
     if (response.status == 200) {
-      return response.data?.map((json) => json as Broker)
+      return response.data?.map((json) => json as Broker) ?? []
     }
 
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  async function searchAndListing(text: string | null) {
+    if (text) {
+      searchResult.value = await search(text)
+    } else {
+      searchResult.value = null
+    }
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search, searchAndListing }
 })
 
 if (import.meta.hot) {

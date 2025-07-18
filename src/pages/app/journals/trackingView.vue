@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { useStatusesStore } from '@/stores/statuses.ts'
 import { useEventsStore } from '@/stores/events.ts'
+import Create from '@/pages/app/order/create.vue'
 
 const ordersStore = useOrdersStore()
 const statusesStore = useStatusesStore()
 const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
+
+const filters = ref([])
+const selectedOrder = ref(null)
+
+function onClose() {
+  selectedOrder.value = null
+}
 
 const state = reactive({})
 
@@ -148,11 +156,52 @@ const cols = [
 function openOrder(id: number) {
   window.open('/app/order/' + id, '_blank')
 }
+
+function setFilter(key, val) {
+  console.log('setFilter', key, val)
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index < 0) {
+    filters.value.push({ key: key, val: val })
+  } else {
+    filters.value[index] = { key: key, val: val }
+  }
+
+  ordersStore.setFilters(filters.value)
+}
+
+function delFilter(key) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index >= 0) {
+    filters.value.splice(index, 1)
+  }
+
+  ordersStore.setFilters(filters.value)
+}
+
+function capitalizeFirstLetter(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
 </script>
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search></Search>
+    <SearchAll @selected="setFilter"></SearchAll>
+    <create :edit="selectedOrder" @closed="onClose"></create>
+  </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Badge lg outline v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
+      >{{ capitalizeFirstLetter(filter.key) }}: {{ filter.val.name }}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </Badge>
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>

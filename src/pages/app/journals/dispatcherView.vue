@@ -8,13 +8,14 @@ const usersStore = useUsersStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
-const state = reactive({})
-
+const filters = ref([])
 const selectedOrder = ref(null)
 
 function onClose() {
   selectedOrder.value = null
 }
+
+const state = reactive({})
 
 function resolve(
   order: Order,
@@ -106,12 +107,52 @@ function openOrder(id: number) {
   console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
+
+function setFilter(key, val) {
+  console.log('setFilter', key, val)
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index < 0) {
+    filters.value.push({ key: key, val: val })
+  } else {
+    filters.value[index] = { key: key, val: val }
+  }
+
+  orders.setFilters(filters.value)
+}
+
+function delFilter(key) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index >= 0) {
+    filters.value.splice(index, 1)
+  }
+
+  orders.setFilters(filters.value)
+}
+
+function capitalizeFirstLetter(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
 </script>
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search @search="handleSearch"></Search>
+    <SearchAll @selected="setFilter"></SearchAll>
     <create :edit="selectedOrder" @closed="onClose"></create>
+  </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Badge lg outline v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
+      >{{ capitalizeFirstLetter(filter.key) }}: {{ filter.val.name }}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </Badge>
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>

@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Broker } from '@/stores/brokers.ts'
 
 export interface Vehicle extends VehicleCreate {
   id: number
@@ -62,6 +63,8 @@ function convert(vehicle: Vehicle): Vehicle {
 export const useVehiclesStore = defineStore('vehicle', () => {
   const mapping = ref(new Map<number, Vehicle>())
 
+  const searchResult = ref<Array<Vehicle> | null>(null)
+
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('vehicles').select()
 
@@ -75,13 +78,17 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   })
 
   const listing = computed(() => {
-    const list = [] as Vehicle[]
+    if (searchResult.value == null) {
+      const list = [] as Vehicle[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+      mapping.value.forEach((v) => {
+        list.push(v)
+      })
 
-    return list
+      return list
+    } else {
+      return searchResult.value
+    }
   })
 
   function create(vehicle: VehicleCreate) {
@@ -141,24 +148,28 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   }
 
   async function search(text: string) {
-    console.log('driver search', text)
-
     const response = await supabase
       .from('vehicles')
       .select()
       .ilike('unit_id', '%' + text + '%')
       .limit(10)
 
-    console.log('response', response)
-
     if (response.status == 200) {
-      return response.data?.map((json) => convert(json as Vehicle))
+      return response.data?.map((json) => convert(json as Vehicle)) ?? []
     }
 
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  async function searchAndListing(text: string | null) {
+    if (text) {
+      searchResult.value = await search(text)
+    } else {
+      searchResult.value = null
+    }
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search, searchAndListing }
 })
 
 if (import.meta.hot) {

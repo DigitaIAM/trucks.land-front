@@ -1,84 +1,30 @@
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: Reference | Suggestion | null
   store: Searchable
 }>()
 
-const emit = defineEmits(['update:modelValue', 'build'])
-
-const isOpen = ref(false)
-const isSetResult = ref(false)
-const isNotFound = ref(false)
-
-const valueAsText = ref(props.modelValue?.name || '')
-
-watch(() => props.modelValue, init)
-watch(
-  () => valueAsText.value,
-  (value: string) => {
-    if (isSetResult.value) {
-      isSetResult.value = false
-      suggestions.value = []
-    } else {
-      querying(value)
-      isOpen.value = value !== ''
-    }
-  },
-)
-
-async function init(suggestion: Reference | Suggestion) {
-  // console.log('modelValue', suggestion)
-  if (suggestion) {
-    const obj = await props.store.resolve(suggestion.id)
-    if (obj) {
-      isNotFound.value = obj ? false : true
-      isSetResult.value = true
-      valueAsText.value = obj?.name || ''
-    } else {
-      console.log('init reset obj', suggestion)
-      isNotFound.value = false
-      valueAsText.value = ''
-    }
-  } else {
-    isNotFound.value = false
-    valueAsText.value = ''
-  }
-}
-
-function onFocusLost() {
-  if (valueAsText.value !== props.modelValue?.name) {
-    emit('update:modelValue', null)
-  }
-}
-
-const suggestions = ref([])
+const searchQuery = ref('')
 
 let timer: ReturnType<typeof setTimeout>
 const delay = 250
 
-const querying = (query: string) => {
-  clearTimeout(timer)
-  if (query) {
-    const text = query
-    timer = setTimeout(() => {
-      props.store.search(query).then((list) => {
-        console.log('search result', text === valueAsText.value, list)
-        if (text === valueAsText.value) {
-          suggestions.value = list
+watch(
+  () => searchQuery.value,
+  (query: string) => {
+    clearTimeout(timer)
+    if (query) {
+      const text = query
+      timer = setTimeout(() => {
+        const query = searchQuery.value
+        if (text === query) {
+          props.store.searchAndListing(query.toString().trim().toLowerCase())
         }
-      })
-    }, delay)
-  } else {
-    suggestions.value = []
-  }
-}
-
-function setResult(suggestion: Suggestion | null) {
-  isOpen.value = false
-  isSetResult.value = true
-  valueAsText.value = suggestion?.name ?? ''
-  emit('update:modelValue', suggestion)
-}
+      }, delay)
+    } else {
+      props.store.searchAndListing(null)
+    }
+  },
+)
 </script>
 
 <template>
@@ -109,26 +55,8 @@ function setResult(suggestion: Suggestion | null) {
         type="text"
         aria-expanded="false"
         aria-autocomplete="list"
-        v-model="valueAsText"
-        v-on:blur="onFocusLost"
+        v-model="searchQuery"
       />
-    </div>
-    <div
-      v-if="isOpen && !isSetResult && suggestions"
-      class="absolute z-50 w-full max-h-72 p-1 glass border rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full"
-      style="display: block; margin-bottom: 5px"
-    >
-      <div
-        class="cursor-pointer py-2 px-4 w-full text-sm rounded-lg focus:outline-hidden"
-        v-for="(suggestion, index) in suggestions"
-        :key="suggestion.id"
-        :tabindex="index"
-        @click="setResult(suggestion)"
-      >
-        <div class="flex justify-between items-center w-full">
-          <span>{{ suggestion.name }}</span>
-        </div>
-      </div>
     </div>
   </div>
 </template>

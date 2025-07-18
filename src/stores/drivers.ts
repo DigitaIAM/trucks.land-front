@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import type { Broker } from '@/stores/brokers.ts'
 
 export interface Driver extends DriverCreate {
   id: number
@@ -33,6 +34,8 @@ export interface DriverUpdate {
 export const useDriversStore = defineStore('driver', () => {
   const mapping = ref(new Map<number, Driver>())
 
+  const searchResult = ref<Array<Driver> | null>(null)
+
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('drivers').select()
 
@@ -46,13 +49,17 @@ export const useDriversStore = defineStore('driver', () => {
   })
 
   const listing = computed(() => {
-    const list = [] as Driver[]
+    if (searchResult.value == null) {
+      const list = [] as Driver[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+      mapping.value.forEach((v) => {
+        list.push(v)
+      })
 
-    return list
+      return list
+    } else {
+      return searchResult.value
+    }
   })
 
   function create(driver: DriverCreate) {
@@ -112,24 +119,28 @@ export const useDriversStore = defineStore('driver', () => {
   }
 
   async function search(text: string) {
-    console.log('driver search', text)
-
     const response = await supabase
       .from('drivers')
       .select()
       .ilike('name', '%' + text + '%')
       .limit(10)
 
-    console.log('response', response)
-
     if (response.status == 200) {
-      return response.data?.map((json) => json as Driver)
+      return response.data?.map((json) => json as Driver) ?? []
     }
 
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  async function searchAndListing(text: string | null) {
+    if (text) {
+      searchResult.value = await search(text)
+    } else {
+      searchResult.value = null
+    }
+  }
+
+  return { initialized, loading, listing, create, update, resolve, search, searchAndListing }
 })
 
 if (import.meta.hot) {
