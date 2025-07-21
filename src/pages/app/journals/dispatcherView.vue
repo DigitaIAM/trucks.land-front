@@ -104,12 +104,10 @@ const cols = [
 ]
 
 function openOrder(id: number) {
-  console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {
-  console.log('setFilter', key, val)
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
     filters.value.push({ key: key, val: val })

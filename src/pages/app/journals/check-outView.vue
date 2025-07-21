@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import { useStatusesStore } from '@/stores/statuses.ts'
-import { useEventsStore } from '@/stores/events.ts'
-
 const ordersStore = useOrdersStore()
 const statusesStore = useStatusesStore()
-const eventsStore = useEventsStore()
 const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
 const vehiclesStore = useVehiclesStore()
+const commentsStore = useCommentsStore()
+
+ordersStore.setContext([{ key: 'status', val: '13' } as KV])
 
 const filters = ref([])
-const selectedOrder = ref(null)
-
-function onClose() {
-  selectedOrder.value = null
-}
 
 const state = reactive({})
 
@@ -57,11 +51,6 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Week',
-    value: (v) => v.week,
-    size: 100,
-  },
-  {
     label: 'Status',
     value: (v: Order) =>
       resolve(
@@ -71,11 +60,6 @@ const cols = [
         () => statusesStore.resolve(v.status),
         (map) => map.name,
       ),
-    size: 150,
-  },
-  {
-    label: 'Invoices',
-    value: (v) => v.invoices,
     size: 150,
   },
   {
@@ -117,15 +101,26 @@ const cols = [
       ),
     size: 80,
   },
+  {
+    label: 'Notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
+    color: (v: Status) => v.color,
+    size: 300,
+  },
 ]
 
 function openOrder(id: number) {
-  console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {
-  console.log('setFilter', key, val)
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
     filters.value.push({ key: key, val: val })

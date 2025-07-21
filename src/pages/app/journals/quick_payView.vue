@@ -7,13 +7,11 @@ const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
 const statusesStore = useStatusesStore()
 const vehiclesStore = useVehiclesStore()
+const commentsStore = useCommentsStore()
+
+orders.setContext([{ key: 'status', val: '22' } as KV])
 
 const filters = ref([])
-const selectedOrder = ref(null)
-
-function onClose() {
-  selectedOrder.value = null
-}
 
 const state = reactive({})
 
@@ -56,11 +54,6 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Week',
-    value: (v) => v.week,
-    size: 100,
-  },
-  {
     label: 'Status',
     value: (v: Order) =>
       resolve(
@@ -71,11 +64,6 @@ const cols = [
         (map) => map.name,
       ),
     size: 150,
-  },
-  {
-    label: 'Invoices',
-    value: (v) => v.invoices,
-    size: 100,
   },
   {
     label: 'Refs',
@@ -116,15 +104,26 @@ const cols = [
       ),
     size: 80,
   },
+  {
+    label: 'Notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
+    color: (v: Status) => v.color,
+    size: 300,
+  },
 ]
 
 function openOrder(id: number) {
-  console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {
-  console.log('setFilter', key, val)
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
     filters.value.push({ key: key, val: val })

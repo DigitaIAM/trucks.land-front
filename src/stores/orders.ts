@@ -35,25 +35,32 @@ export interface OrderUpdate {
   excluded?: boolean
 }
 
+export interface KV {
+  key: string
+  val: never
+}
+
 export const useOrdersStore = defineStore('order', () => {
-  const activeFilters = ref([])
+  const contextFilters = ref<Array<KV>>([])
+  const searchFilters = ref<Array<KV>>([])
+
   const mapping = ref(new Map<number, Order>())
 
-  const { initialized, loading } = useInitializeStore(async () => {
-    let query = supabase.from('orders_journal').select()
-
-    activeFilters.value.map((f) => (query = query.eq(f.key, f.val.id)))
-
-    const response = await query.order('created_at').limit(50)
-
-    const map = new Map<number, Order>()
-    response.data?.forEach((json) => {
-      const order = json as Order
-      map.set(order.id, order)
-    })
-
-    mapping.value = map
-  })
+  // const { initialized, loading } = useInitializeStore(async () => {
+  //   let query = supabase.from('orders_journal').select()
+  //
+  //   activeFilters.value.map((f) => (query = query.eq(f.key, f.val.id)))
+  //
+  //   const response = await query.order('created_at').limit(50)
+  //
+  //   const map = new Map<number, Order>()
+  //   response.data?.forEach((json) => {
+  //     const order = json as Order
+  //     map.set(order.id, order)
+  //   })
+  //
+  //   mapping.value = map
+  // })
 
   const listing = computed(() => {
     const list = [] as Order[]
@@ -65,12 +72,31 @@ export const useOrdersStore = defineStore('order', () => {
     return list
   })
 
-  async function setFilters(filters: Array) {
-    activeFilters.value = filters
+  async function setContext(filters: Array<KV>) {
+    contextFilters.value = filters
 
+    await _setFilters()
+  }
+
+  async function setFilters(filters: Array<KV>) {
+    searchFilters.value = filters
+
+    await _setFilters()
+  }
+
+  async function _setFilters() {
     let query = supabase.from('orders_journal').select()
 
-    activeFilters.value.forEach((f) => (query = query.eq(f.key, f.val.id)))
+    contextFilters.value.concat(searchFilters.value).forEach((f) => {
+      const x = f.val
+      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+        query = query.eq(f.key, x.id)
+      } else if (Array.isArray(x)) {
+        query = query.in(f.key, x)
+      } else {
+        query = query.eq(f.key, x)
+      }
+    })
 
     const response = await query.order('created_at').limit(50)
 
@@ -84,9 +110,7 @@ export const useOrdersStore = defineStore('order', () => {
   }
 
   async function create(order: OrderCreate) {
-    console.log('create', order)
     const response = await supabase.from('orders').insert(order).select() // .throwOnError()
-    console.log(response)
 
     if (response.status == 201 && response.data?.length == 1) {
       const order = response.data[0] as Order
@@ -98,7 +122,6 @@ export const useOrdersStore = defineStore('order', () => {
   }
 
   async function update(id: number, order: OrderUpdate) {
-    console.log('order', order)
     await supabase
       .from('orders')
       .update(order)
@@ -145,7 +168,7 @@ export const useOrdersStore = defineStore('order', () => {
     return []
   }
 
-  return { initialized, loading, setFilters, create, listing, update, resolve, search }
+  return { setContext, setFilters, create, listing, update, resolve, search } // initialized, loading,
 })
 
 if (import.meta.hot) {

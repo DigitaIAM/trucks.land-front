@@ -9,6 +9,8 @@ import { useUsersStore } from '@/stores/users.ts'
 const ordersStore = useOrdersStore()
 const usersStore = useUsersStore()
 
+ordersStore.setContext([])
+
 const state = reactive({})
 
 const selectedDispatcher = ref(null)
@@ -86,7 +88,7 @@ const cols = [
   <DispatcherPayment :edit="selectedDispatcher" @closed="onClose"></DispatcherPayment>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments to dispatchers</Text>
-    <Search></Search>
+    <Search store=""></Search>
     <Button class="btn-accent">Create</Button>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">

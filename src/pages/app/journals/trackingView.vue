@@ -9,6 +9,9 @@ const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
+ordersStore.setContext([{ key: 'status', val: ['3', '5', '8', '21'] } as KV])
+//3 - Loading stage, 5 - Delivery stage, 8 - Loading on site, 21 - Delivery on site
+
 const filters = ref([])
 const selectedOrder = ref(null)
 
@@ -158,7 +161,6 @@ function openOrder(id: number) {
 }
 
 function setFilter(key, val) {
-  console.log('setFilter', key, val)
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
     filters.value.push({ key: key, val: val })

@@ -368,7 +368,7 @@ declare global {
   export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
   import('./stores/order_files')
   // @ts-ignore
-  export type { Order, OrderCreate, OrderUpdate } from './stores/orders'
+  export type { Order, OrderCreate, OrderUpdate, KV } from './stores/orders'
   import('./stores/orders')
   // @ts-ignore
   export type { Organization, OrganizationCreate, OrganizationUpdate } from './stores/organizations'

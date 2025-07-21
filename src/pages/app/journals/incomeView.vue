@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
 import { useStatusesStore } from '@/stores/statuses.ts'
+import { useCommentsStore } from '@/stores/comments.ts'
 
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
 const statusesStore = useStatusesStore()
 const vehiclesStore = useVehiclesStore()
+const commentsStore = useCommentsStore()
+
+orders.setContext([{ key: 'status', val: '25' } as KV])
 
 const filters = ref([])
-const selectedOrder = ref(null)
-
-function onClose() {
-  selectedOrder.value = null
-}
 
 const state = reactive({})
 
@@ -41,7 +40,7 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.id,
-    size: 90,
+    size: 50,
   },
   {
     label: 'Dispatcher',
@@ -55,28 +54,16 @@ const cols = [
       ),
     size: 120,
   },
-  {
-    label: 'Week',
-    value: (v) => v.week,
-    size: 50,
-  },
-  {
-    label: 'Status',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'status',
-        () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
-        (map) => map.name,
-      ),
-    size: 150,
-  },
-  {
-    label: 'Invoices',
-    value: (v) => v.invoices,
-    size: 150,
-  },
+  // {
+  //   label: 'Week',
+  //   value: (v) => v.week,
+  //   size: 50,
+  // },
+  // {
+  //   label: 'Invoices',
+  //   value: (v) => v.invoices,
+  //   size: 150,
+  // },
   {
     label: 'Refs',
     value: (v: Order) => v.refs,
@@ -93,6 +80,18 @@ const cols = [
     size: 80,
   },
   {
+    label: 'Vehicle',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'vehicle',
+        () => ({ name: '-' }),
+        () => vehiclesStore.resolve(v.vehicle),
+        (map) => map.name,
+      ),
+    size: 80,
+  },
+  {
     label: 'Broker',
     value: (v: Order) =>
       resolve(
@@ -105,26 +104,37 @@ const cols = [
     size: 150,
   },
   {
-    label: 'Vehicle',
+    label: 'Status',
     value: (v: Order) =>
       resolve(
         v,
-        'vehicle',
-        () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
         (map) => map.name,
       ),
-    size: 80,
+    size: 200,
+  },
+  {
+    label: 'Notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
+    color: (v: Status) => v.color,
+    size: 300,
   },
 ]
 
 function openOrder(id: number) {
-  console.log('openOrder', id)
   window.open('/app/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {
-  console.log('setFilter', key, val)
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
     filters.value.push({ key: key, val: val })

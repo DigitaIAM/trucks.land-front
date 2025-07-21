@@ -18,6 +18,8 @@ const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 const commentsStore = useCommentsStore()
 
+ordersStore.setContext([])
+
 const filters = ref([])
 const selectedOrder = ref(null)
 
