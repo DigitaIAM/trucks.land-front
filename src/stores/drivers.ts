@@ -95,9 +95,9 @@ export const useDriversStore = defineStore('driver', () => {
   }
 
   async function resolve(id: number) {
-    // console.log('driver resolve', id)
+    console.log('driver resolve', id)
     if (!(id && id >= 0)) {
-      // console.log('id is not number')
+      console.log('id is not number')
       return null
     }
 
@@ -108,6 +108,8 @@ export const useDriversStore = defineStore('driver', () => {
 
     const response = await supabase.from('drivers').select().eq('id', id)
 
+    console.log('response', response)
+    
     const map = new Map<number, Driver>()
     response.data?.forEach((json) => {
       const driver = json as Driver

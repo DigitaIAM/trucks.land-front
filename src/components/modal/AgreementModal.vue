@@ -21,7 +21,6 @@ const emit = defineEmits(['on-update'])
 watch(
   () => props.edit,
   (event) => {
-    console.log('watch', event)
     resetAndShow(event)
   },
   { deep: true },

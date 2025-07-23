@@ -5,13 +5,29 @@ layout: app
 
 <script setup lang="ts">
 import { useEventsStore } from '@/stores/events.ts'
+import {
+  type DriverPaymentRecord,
+  type DriverPaymentSummary,
+  useReportDriver,
+} from '@/stores/report_driver.ts'
 
-const ordersStore = useOrdersStore()
+const reportDriverStore = useReportDriver()
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const commentsStore = useCommentsStore()
 
 const state = reactive({})
+
+const selectedDriver = ref(null)
+
+function openPayment(record: DriverPaymentRecord) {
+  selectedDriver.value = record.driver
+}
+
+function onClose() {
+  selectedDriver.value = null
+}
 
 function resolve(
   order: Order,
@@ -35,35 +51,8 @@ function resolve(
 
 const cols = [
   {
-    label: 'Event',
-    value: (v: Event) => v.kind,
-    size: 100,
-  },
-  {
-    label: 'Payed',
-    value: (v) => v.payed,
-    size: 100,
-  },
-  {
-    label: 'Order',
-    value: (v: Order) => v.id,
-    size: 100,
-  },
-  {
-    label: 'Vehicle',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'vehicle',
-        () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
-        (map) => map.name,
-      ),
-    size: 100,
-  },
-  {
     label: 'Driver',
-    value: (v: Order) =>
+    value: (v: DriverPaymentSummary) =>
       resolve(
         v,
         'driver',
@@ -74,22 +63,44 @@ const cols = [
     size: 200,
   },
   {
-    label: 'Total',
-    value: (v: Order) => '$' + v.cost,
+    label: 'Orders',
+    value: (v: DriverPaymentSummary) => v.number_of_orders,
     size: 100,
   },
   {
-    label: 'Notes',
-    value: (v) => v.note,
-    size: 200,
+    label: 'Orders Amount',
+    value: (v: DriverPaymentSummary) => '$' + v.amount_in_orders,
+    size: 100,
+  },
+  {
+    label: 'Payment',
+    value: (v: DriverPaymentSummary) => '$' + v.payments,
+    size: 100,
+  },
+  {
+    label: 'Expenses',
+    value: (v: DriverPaymentSummary) => '$' + v.expenses,
+    size: 100,
+  },
+  {
+    label: 'Profit',
+    value: (v: DriverPaymentSummary) => '$' + (v.amount_in_orders - v.payments - v.expenses),
+    size: 100,
+  },
+  {
+    label: 'Profit',
+    value: (v: DriverPaymentSummary) =>
+      Math.floor(((v.amount_in_orders - v.payments - v.expenses) / v.amount_in_orders) * 100) + '%',
+    size: 100,
   },
 ]
 </script>
 
 <template>
+  <DriverPayment :driver-id="selectedDriver" @closed="onClose"></DriverPayment>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Driver expenses</Text>
-    <Search></Search>
+    <Search store=""></Search>
     <Button class="btn-accent">Create</Button>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
@@ -108,10 +119,14 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in ordersStore.listing" :key="order.id">
+      <tr
+        v-for="order in reportDriverStore.drivers"
+        :key="order.driver"
+        @click="openPayment(order)"
+      >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
+          :key="'row_' + col.label + '_' + order.driver"
           class="py-3 px-4 border-b border-b-gray-400"
           :style="{ width: col.size + 'px' }"
         >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const state = ref('')
+const state = ref(null)
 
 const props = defineProps<{
   id: string | number | null
@@ -11,7 +11,7 @@ watch(
   () => props.id,
   (id) => {
     try {
-      // console.log('watch id', id, props.id)
+      console.log('watch id', id, props.id)
       if (id) {
         resetAndShow(id)
       }
@@ -26,19 +26,11 @@ resetAndShow(props.id)
 
 function resetAndShow(id: number) {
   // console.log('resetAndShow', id)
-  const s = state.value
-  if (s) {
-    // console.log('return', s)
-    return s
-  } else {
-    const ns = { id: id, name: '?' }
-    state.value = ns
-    props.store.resolve(id).then((obj) => {
-      // console.log('resolve', obj)
-      if (obj) state.value = obj
-    })
-    return ns
-  }
+  state.value = { id: id, name: '?' }
+  props.store.resolve(id).then((obj) => {
+    // console.log('resolve', obj, obj.name)
+    if (obj) state.value = obj
+  })
 }
 
 const label = computed(() => state.value?.name)

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Order } from '@/stores/orders.ts'
 import { type FileRecord, useFilesStore } from '@/stores/order_files.ts'
-import { defineEmits } from 'vue'
 
 const props = defineProps<{
   order: Order | null
@@ -88,10 +87,7 @@ async function upload() {
         '_' +
         file.name
 
-      console.log('path', path)
       const result = await supabase.storage.from('orders').upload(path, file)
-
-      console.log('result', result)
 
       await filesStore.create({
         document: props.order?.id,
@@ -125,7 +121,6 @@ const files = ref<Array<FileRecord>>([])
 watch(
   () => props.order,
   (order) => {
-    console.log('watch id', order, props.order)
     resetAndShow(order?.id)
   },
   { deep: true },
@@ -149,7 +144,6 @@ function isPresent(file_type: string) {
 }
 
 async function download(file) {
-  console.log('download', file)
   try {
     const { data, error } = await supabase.storage.from('orders').createSignedUrl(file.path, 2)
     if (error) throw error
