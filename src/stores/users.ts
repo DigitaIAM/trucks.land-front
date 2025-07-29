@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Broker } from '@/stores/brokers.ts'
 
 export interface User extends UserCreate {
   id: number
@@ -135,6 +134,10 @@ export const useUsersStore = defineStore('user', () => {
   }
 
   async function resolve(id: number) {
+    if (!(id && id >= 0)) {
+      return null
+    }
+
     const v = mapping.value.get(id)
     if (v) {
       return v
@@ -146,6 +149,7 @@ export const useUsersStore = defineStore('user', () => {
     response.data?.forEach((json) => {
       const user = json as User
       map.set(user.id, user)
+      mapping.value.set(user.id, user)
     })
 
     return map.get(id)

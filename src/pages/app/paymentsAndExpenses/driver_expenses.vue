@@ -4,7 +4,6 @@ layout: app
 </route>
 
 <script setup lang="ts">
-import { useEventsStore } from '@/stores/events.ts'
 import {
   type DriverPaymentRecord,
   type DriverPaymentSummary,
@@ -12,10 +11,7 @@ import {
 } from '@/stores/report_driver.ts'
 
 const reportDriverStore = useReportDriver()
-const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
-const vehiclesStore = useVehiclesStore()
-const commentsStore = useCommentsStore()
 
 const state = reactive({})
 

@@ -5,6 +5,7 @@ const props = defineProps<{
   id: string | number | null
   store: Searchable
   asTextField?: boolean
+  name: string | null
 }>()
 
 watch(
@@ -33,7 +34,7 @@ function resetAndShow(id: number) {
   })
 }
 
-const label = computed(() => state.value?.name)
+const label = computed(() => state.value[props.name ?? 'name'])
 </script>
 
 <template>

@@ -38,8 +38,10 @@ export const useReportDriver = defineStore('report_current_driver_payments', () 
       } as DriverPaymentRecord
 
       const key = record.driver
+
       const list = map.get(key) ?? []
       list.push(record)
+
       map.set(key, list)
     })
 

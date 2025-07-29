@@ -61,7 +61,7 @@ const cols = [
         () => organizationsStore.resolve(v.order.organization),
         (map) => map.code3,
       ),
-    size: 50,
+    size: 40,
   },
   {
     label: '#',
@@ -143,7 +143,7 @@ const cols = [
         () => statusesStore.resolve(v.order.status),
         (map) => map.name,
       ),
-    size: 150,
+    size: 200,
   },
 ]
 
@@ -183,8 +183,8 @@ const orders = computed(() => {
           </Text>
         </div>
       </div>
-      <div class="mt-4 mb-4">
-        <Text bold size="lg">Orders</Text>
+      <div class="mb-4 mt-4">
+        <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
@@ -217,6 +217,13 @@ const orders = computed(() => {
           </tr>
         </tbody>
       </table>
+      <div class="grid grid-cols-5 mt-10">
+        <Text bold size="lg">Total</Text>
+        <Text size="lg">Orders {{ summary?.number_of_orders }}</Text>
+        <Text size="lg">Orders amount $ {{ summary?.amount_in_orders }}</Text>
+        <Text size="lg">Payment $ {{ summary?.payments }}</Text>
+        <Text size="lg">Expenses $ {{ summary?.expenses }}</Text>
+      </div>
       <ModalAction>
         <form method="dialog">
           <Button>Close</Button>

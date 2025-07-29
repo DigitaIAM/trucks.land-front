@@ -1,115 +1,145 @@
 <script setup lang="ts">
+import { useUsersStore } from '@/stores/users.ts'
+import { useStatusesStore } from '@/stores/statuses.ts'
+import { useReportDispatcher } from '@/stores/report_dispatcher.ts'
+
 const props = defineProps<{
-  edit: Payment | null
+  dispatcherId: number | null
 }>()
 
-const dispatcher = ref('')
-const payed = ref(false)
-
-const emit = defineEmits(['closed'])
+const reportStore = useReportDispatcher()
+const usersStore = useUsersStore()
+const brokersStore = useBrokersStore()
+const statusesStore = useStatusesStore()
+const organizationsStore = useOrganizationsStore()
 
 watch(
-  () => props.edit,
-  (payment) => {
-    resetAndShow(payment)
+  () => props.dispatcherId,
+  (id) => {
+    resetAndShow(id)
   },
   { deep: true },
 )
 
-function resetAndShow(payment: Payment | null) {
-  dispatcher.value = payment?.name || ''
-  payed.value = payment?.payed || false
+function resetAndShow(id: number) {
+  payment_dispatcher.showModal(id)
+}
 
-  payment_dispatcher.showModal()
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
 }
 
 const cols = [
   {
+    label: '',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'organization',
+        () => ({ code3: '?' }),
+        () => organizationsStore.resolve(v.organization),
+        (map) => map.code3,
+      ),
+    size: 50,
+  },
+  {
     label: '#',
-    value: (v) => v.num,
+    value: (v: Order) => v.id,
+    size: 20,
+  },
+  {
+    label: 'Refs',
+    value: (v: Order) => v.refs,
+    size: 90,
+  },
+  {
+    label: 'Broker',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'broker',
+        () => ({ name: '?' }),
+        () => brokersStore.resolve(v.broker),
+        (map) => map.name,
+      ),
+    size: 150,
+  },
+  {
+    label: 'Cost',
+    value: (v: Order) => '$' + v.cost,
     size: 100,
   },
   {
-    label: 'Driver payments',
-    value: (v) => v.driver_cost,
-    size: 150,
-  },
-  {
-    label: 'Profit',
-    value: (v) => v.profit,
-    size: 150,
-  },
-  {
-    label: 'Direct profit',
-    value: (v) => v.direct_profit,
-    size: 150,
+    label: 'Payments to driver',
+    value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
+    size: 100,
   },
   {
     label: 'Status',
-    value: (v) => v.status,
-    size: 150,
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
+    size: 100,
   },
 ]
 
-const details = [
-  {
-    num: 'T2-37778',
-    driver_cost: '1140',
-    profit: '60',
-    direct_profit: '0',
-    status: 'Completed',
-  },
-  {
-    num: 'CF-00407',
-    driver_cost: '825',
-    profit: '40',
-    direct_profit: '0',
-    status: 'Completed',
-  },
-  {
-    num: 'CF-00408',
-    driver_cost: '2250',
-    profit: '125',
-    direct_profit: '0',
-    status: 'Completed',
-  },
-  {
-    num: 'CF-00406',
-    driver_cost: '1000',
-    profit: '50',
-    direct_profit: '0',
-    status: 'Completed',
-  },
-]
+const summary = computed(() => {
+  for (const summary of reportStore.dispatchers) {
+    if (summary.dispatcher == props.dispatcherId) {
+      return summary
+    }
+  }
+})
+
+const orders = computed(() => {
+  const data = summary.value
+
+  if (data) {
+    return data.orders.values().toArray()
+  } else {
+    return []
+  }
+})
 </script>
 
 <template>
   <Modal id="payment_dispatcher">
-    <ModalBox class="max-w-[calc(60vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(90vw-6.25rem)]">
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <Text size="2xl">Payment # 1227 to Timur Adashov - $ 14</Text>
+          <Text size="2xl">
+            <QueryAndShow name="real_name" :id="props.dispatcherId" :store="usersStore" />
+          </Text>
         </div>
         <Button sm class="place-self-end">payed</Button>
-        <!--            <label class="label">-->
-        <!--              <Toggle v-model="payed"></Toggle>-->
-        <!--              <span class="ml-3">payed</span>-->
-        <!--            </label>-->
       </div>
 
-      <Label class="mt-4">Note</Label>
-      <TextInput class="w-full mb-4" v-model="note" />
-      <div class="mb-4">
-        <Text bold size="lg">Orders</Text>
+      <div class="mb-4 mt-4">
+        <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
-
-      <div class="grid grid-cols-4 gap-4 items-center">
-        <Text size="lg">Total</Text>
-        <Text size="lg">5215</Text>
-        <Text size="lg">275</Text>
-        <Text size="lg">275*5% = 14</Text>
-      </div>
-      <Divider></Divider>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
           <tr>
@@ -125,7 +155,7 @@ const details = [
           </tr>
         </thead>
         <tbody>
-          <tr v-for="line in details">
+          <tr v-for="order in orders">
             <td
               v-for="col in cols"
               class="py-3 px-4 border-b border-b-gray-400"
@@ -135,12 +165,20 @@ const details = [
                 class="block antialiasing font-normal leading-normal truncate"
                 :style="{ width: col.size + 'px' }"
               >
-                {{ col.value(line) }}
+                {{ col.value(order) }}
               </p>
             </td>
           </tr>
         </tbody>
       </table>
+      <div class="grid grid-cols-6 mt-10">
+        <Text bold size="lg">Total</Text>
+        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
+        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
+        <Text size="lg" class="px-10">Payments $ {{ summary?.orders_driver }}</Text>
+        <Text size="lg" class="px-10">Profit $ {{ summary?.orders_profit }}</Text>
+        <Text size="lg" class="px-10">To pay $ {{ summary?.toPayment }}</Text>
+      </div>
       <ModalAction>
         <form method="dialog">
           <Button class="ml-6">Close</Button>
