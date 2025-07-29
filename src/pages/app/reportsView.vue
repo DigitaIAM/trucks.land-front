@@ -25,14 +25,12 @@ const buttons = [
   </div>
 
   <div class="flex space-x-8 px-5">
-    <div v-for="button in buttons" class="">
+    <div v-for="button in buttons" :key="button.label">
       <div
-        class="size-32 place-items-center p-6 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105 hover:text-blue-500"
+        class="size-32 place-items-center p-6 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105"
       >
         <img class="size-12" :src="button.icon" alt="" />
-        <a href="#">
-          <h5 class="text-lg text-gray-600">{{ button.label }}</h5>
-        </a>
+        <h5 class="text-lg text-gray-600">{{ button.label }}</h5>
       </div>
     </div>
   </div>
