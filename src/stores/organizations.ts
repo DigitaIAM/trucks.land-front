@@ -1,6 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Owner } from '@/stores/owners.ts'
 
 export interface Organization extends OrganizationCreate {
   id: number
@@ -53,7 +52,6 @@ export const useOrganizationsStore = defineStore('organization', () => {
   })
 
   async function create(organization: OrganizationCreate) {
-    console.log('create', organization)
     const response = await supabase
       .from('organizations')
       .insert(organization)
@@ -104,6 +102,19 @@ export const useOrganizationsStore = defineStore('organization', () => {
     return map.get(id)
   }
 
+  async function resolve3(id3: string) {
+    const response = await supabase.from('organizations').select().ilike('code3', id3)
+
+    const list = [] as Array<Organization>
+    response.data?.forEach((json) => {
+      const organization = json as Organization
+      list.push(organization)
+      mapping.value.set(organization.id, organization)
+    })
+
+    return list[0]
+  }
+
   async function search(text: string) {
     const response = await supabase
       .from('organizations')
@@ -118,7 +129,7 @@ export const useOrganizationsStore = defineStore('organization', () => {
     return []
   }
 
-  return { initialized, loading, listing, create, update, resolve, search }
+  return { initialized, loading, listing, create, update, resolve, resolve3, search }
 })
 
 if (import.meta.hot) {

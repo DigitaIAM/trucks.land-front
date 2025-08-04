@@ -14,9 +14,9 @@ import StepperStates from '@/components/order/StepperStates.vue'
 import type { Broker } from '@/stores/brokers.ts'
 import DriverAndVehicle from '@/components/order/DriverAndVehicle.vue'
 
-const props = defineProps<{
-  id: string
-}>()
+// const props = defineProps<{
+//   id: string
+// }>()
 
 const _order = ref<Order | null>(null)
 const _id = ref(null)
@@ -55,8 +55,10 @@ const currentStatus = computedAsync(async () => {
   return await statusesStore.resolve(_order.value?.status)
 }, {})
 
+const route = useRoute()
+
 watch(
-  () => props.id,
+  () => route.params.id,
   (id) => {
     // console.log('watch id', id, props.id)
     resetAndShow(id)
@@ -64,7 +66,7 @@ watch(
   { deep: true },
 )
 
-resetAndShow(props.id)
+resetAndShow(route.params.id)
 
 async function resetAndShow(str: string) {
   // console.log('resetAndShow', str, props.id, typeof str)
@@ -90,7 +92,7 @@ async function resetAndShow(str: string) {
   } else {
     // TODO show error
   }
-  // console.log('done', _id.value)
+  console.log('done', _id.value, dispatcher.value)
 }
 
 async function saveOrder(next: Status | null | undefined) {
@@ -227,9 +229,6 @@ useEventListener(document, 'keydown', handleKeyDown)
           </div>
         </form>
       </div>
-      <!--      <Button ghost class="mt-4 cursor-pointer"-->
-      <!--        >excluded from calculations with the dispatcher-->
-      <!--      </Button>-->
       <div class="w-full mt-4">
         <Comments :orderId="_id"></Comments>
       </div>

@@ -1,13 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { setupLayouts } from 'virtual:generated-layouts'
-import generatedRoutes from '~pages'
-
-// const routes = generatedRoutes
-const routes = setupLayouts(generatedRoutes)
+import { routes, handleHotUpdate } from 'vue-router/auto-routes'
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: setupLayouts(routes),
 })
 
 router.beforeEach(async (to, from) => {
@@ -28,3 +25,7 @@ router.beforeEach(async (to, from) => {
   }
   return true
 })
+
+if (import.meta.hot) {
+  handleHotUpdate(router)
+}

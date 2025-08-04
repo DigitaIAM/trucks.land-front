@@ -1,12 +1,50 @@
-<script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
-import Create from '@/pages/app/order/create.vue'
+<route lang="yaml">
+meta:
+layout: app
+</route>
 
-const orders = useOrdersStore()
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.oid = org.id
+    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
+<script setup lang="ts">
+import Create from '@/pages/[oid]/order/create.vue'
+import { useStatusesStore } from '@/stores/statuses.ts'
+import { useUsersStore } from '@/stores/users.ts'
+import { useCommentsStore } from '@/stores/comments.ts'
+
+const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
+const statusesStore = useStatusesStore()
 const usersStore = useUsersStore()
+// const organizationsStore = useOrganizationsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
+const commentsStore = useCommentsStore()
+
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const orgData = useOrgData()
+
+// ordersStore.setContext([{ key: 'organization', val: null } as KV])
 
 const filters = ref([])
 const selectedOrder = ref(null)
@@ -37,10 +75,41 @@ function resolve(
   }
 }
 
+function generateStyle(col, order) {
+  const color = resolve(
+    order,
+    'status',
+    () => ({
+      name: '?',
+      color: '',
+    }),
+    () => statusesStore.resolve(order?.status),
+    (obj) => obj.color,
+  )
+  if (color) {
+    return { 'background-color': color }
+  }
+  return {}
+}
+
 const cols = [
+  // {
+  //   label: '',
+  //   value: (v: Order) =>
+  //     resolve(
+  //       v,
+  //       'organization',
+  //       () => ({ code3: '?' }),
+  //       () => organizationsStore.resolve(v.organization),
+  //       (map) => map.code3,
+  //     ),
+  //   color: (v: Status) => v.color,
+  //   size: 50,
+  // },
   {
     label: '#',
     value: (v: Order) => v.id,
+    color: (v: Status) => v.color,
     size: 50,
   },
   {
@@ -53,7 +122,14 @@ const cols = [
         () => usersStore.resolve(v.dispatcher),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 120,
+  },
+  {
+    label: 'Refs',
+    value: (v: Order) => v.refs,
+    color: (v: Status) => v.color,
+    size: 90,
   },
   {
     label: 'Broker',
@@ -65,6 +141,7 @@ const cols = [
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 180,
   },
   {
@@ -77,6 +154,7 @@ const cols = [
         () => driversStore.resolve(v.driver),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 180,
   },
   {
@@ -89,22 +167,51 @@ const cols = [
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 120,
   },
   {
     label: 'Cost',
-    value: (v: Order) => '$ ' + v.cost,
-    size: 100,
+    value: (v: Order) => '$' + v.cost,
+    color: (v: Status) => v.color,
+    size: 80,
   },
   {
-    label: 'Total miles',
-    value: (v: Order) => v.total_miles,
-    size: 100,
+    label: 'Spend',
+    value: (v) => '$' + v.driver_cost,
+    color: (v: Status) => v.color,
+    size: 80,
+  },
+  {
+    label: 'Status',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
+    label: 'Notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
+    color: (v: Status) => v.color,
+    size: 300,
   },
 ]
 
 function openOrder(id: number) {
-  window.open('/app/order/' + id, '_blank')
+  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {
@@ -115,7 +222,7 @@ function setFilter(key, val) {
     filters.value[index] = { key: key, val: val }
   }
 
-  orders.setFilters(filters.value)
+  ordersStore.setFilters(filters.value)
 }
 
 function delFilter(key) {
@@ -124,7 +231,7 @@ function delFilter(key) {
     filters.value.splice(index, 1)
   }
 
-  orders.setFilters(filters.value)
+  ordersStore.setFilters(filters.value)
 }
 
 function capitalizeFirstLetter(val) {
@@ -168,12 +275,12 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
           class="py-3 px-4 border-b border-b-gray-400"
-          :style="{ width: col.size + 'px' }"
+          :style="generateStyle(col, order)"
         >
           <p
             class="block antialiasing font-normal leading-normal truncate"

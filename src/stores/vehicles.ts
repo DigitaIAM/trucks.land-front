@@ -97,7 +97,7 @@ export const useVehiclesStore = defineStore('vehicle', () => {
       .insert(vehicle)
       .select()
       .then((response) => {
-        console.log('response', response)
+        // console.log('response', response)
         if (response.status == 201) {
           response.data?.forEach((json) => {
             const vehicle = convert(json as Vehicle)
@@ -124,9 +124,9 @@ export const useVehiclesStore = defineStore('vehicle', () => {
   }
 
   async function resolve(id: number) {
-    console.log('vehicle resolve', id)
+    // console.log('vehicle resolve', id)
     if (!(id && id >= 0)) {
-      console.log('id is not number')
+      // console.log('id is not number')
       return null
     }
 

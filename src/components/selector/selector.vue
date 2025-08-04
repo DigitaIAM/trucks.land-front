@@ -38,7 +38,7 @@ async function init(suggestion: Reference | Suggestion) {
       isSetResult.value = true
       valueAsText.value = obj?.name || ''
     } else {
-      console.log('init reset obj', suggestion)
+      // console.log('init reset obj', suggestion)
       isNotFound.value = false
       valueAsText.value = ''
     }
@@ -70,7 +70,7 @@ const querying = (query: string) => {
     const text = query
     timer = setTimeout(() => {
       props.store.search(query).then((list) => {
-        console.log('search result', text === valueAsText.value, list)
+        // console.log('search result', text === valueAsText.value, list)
         if (text === valueAsText.value) {
           suggestions.value = list
         }

@@ -21,42 +21,42 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('@/pages/app/order/all.vue'),
+      component: () => import('@/pages/[oid]/order/all.vue'),
     },
     {
       path: '/dispatcher',
       name: 'dispatcher',
-      component: () => import('@/pages/app/journals/dispatcherView.vue'),
+      component: () => import('@/pages/[oid]/journals/dispatcherView.vue'),
     },
     {
       path: '/tracking',
       name: 'tracking',
-      component: () => import('@/pages/app/journals/trackingView.vue'),
+      component: () => import('@/pages/[oid]/journals/trackingView.vue'),
     },
     {
       path: '/checkout',
       name: 'checkout',
-      component: () => import('@/pages/app/journals/check-outView.vue'),
+      component: () => import('@/pages/[oid]/journals/check-outView.vue'),
     },
     {
       path: '/income',
       name: 'income',
-      component: () => import('@/pages/app/journals/incomeView.vue'),
+      component: () => import('@/pages/[oid]/journals/incomeView.vue'),
     },
     {
       path: '/quickpay',
       name: 'quickpay',
-      component: () => import('@/pages/app/journals/quick_payView.vue'),
+      component: () => import('@/pages/[oid]/journals/quick_payView.vue'),
     },
     {
       path: '/reference',
       name: 'reference',
-      component: () => import('@/pages/app/referenceBooks.vue'),
+      component: () => import('@/pages/[oid]/referenceBooks.vue'),
     },
     {
       path: '/reports',
       name: 'reports',
-      component: () => import('@/pages/app/reportsView.vue'),
+      component: () => import('@/pages/[oid]/reportsView.vue'),
     },
     {
       path: '/brokers',
@@ -91,7 +91,7 @@ const router = createRouter({
     {
       path: '/finances',
       name: 'finances',
-      component: () => import('@/pages/app/financesView.vue'),
+      component: () => import('@/pages/[oid]/financesView.vue'),
     },
   ],
 })

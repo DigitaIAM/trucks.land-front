@@ -17,15 +17,32 @@ const logout = async () => {
 
 const colorMode = useColorMode()
 const themes = useThemes()
+const useOrganizations = useOrganizationsStore()
 </script>
 
 <template>
   <Navbar>
     <NavbarStart>
       <Sidebar></Sidebar>
-      <RouterLink to="/" class="flex flex-row gap-2 items-center">
-        <img src="./../assets/logoTL.svg" />
-      </RouterLink>
+      <img src="./../assets/logoTL.svg" />
+      <FormControl class="px-10 mt-3">
+        <!--        v-model="authStore.oid"-->
+        <Select
+          :modelValue="authStore.oid"
+          @update:modelValue="
+            async (oid) => {
+              console.log('oid', oid)
+              authStore.oid = oid
+
+              const org = await useOrganizations.resolve(oid)
+
+              router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
+            }
+          "
+          :options="useOrganizations.listing"
+          class="select-ghost select-lg w-full max-w-xs"
+        />
+      </FormControl>
     </NavbarStart>
 
     <!--    <NavbarCenter>-->

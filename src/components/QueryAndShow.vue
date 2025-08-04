@@ -5,7 +5,7 @@ const props = defineProps<{
   id: string | number | null
   store: Searchable
   asTextField?: boolean
-  name: string | null
+  name?: string | null
 }>()
 
 watch(

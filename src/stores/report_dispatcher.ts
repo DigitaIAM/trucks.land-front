@@ -89,7 +89,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
       } as DispatcherPaymentSummary)
     }
 
-    console.log('list', list)
+    // console.log('list', list)
     return list
   })
 

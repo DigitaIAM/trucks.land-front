@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const session = ref<Session | null>(null)
   const user = computed(() => session.value?.user)
+  const oid = ref<int | null>(null)
   const isInitDone = ref(false)
 
   const loginRedirect = ref<RouteLocationNormalized | null>(null)
@@ -70,6 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    oid,
     isInitDone,
     signInWithEmail,
     loginRedirect,

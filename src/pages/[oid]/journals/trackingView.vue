@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStatusesStore } from '@/stores/statuses.ts'
 import { useEventsStore } from '@/stores/events.ts'
-import Create from '@/pages/app/order/create.vue'
+import Create from '@/pages/[oid]/order/create.vue'
 
 const ordersStore = useOrdersStore()
 const statusesStore = useStatusesStore()
