@@ -117,6 +117,7 @@ export const useOrdersStore = defineStore('order', () => {
       // mapping.value.set(order.id, order)
       return order.id
     } else {
+      console.log('error', response)
       throw 'unexpended response status: ' + response.status
     }
   }

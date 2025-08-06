@@ -3,6 +3,23 @@ meta:
 layout: app
 </route>
 
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
 import type { Status } from '@/stores/statuses.ts'
 
@@ -14,6 +31,12 @@ import StepperStates from '@/components/order/StepperStates.vue'
 import type { Broker } from '@/stores/brokers.ts'
 import DriverAndVehicle from '@/components/order/DriverAndVehicle.vue'
 
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const cOrg = useOrgData()
+
 // const props = defineProps<{
 //   id: string
 // }>()
@@ -23,7 +46,6 @@ const _id = ref(null)
 const dispatcher = ref<User | Reference>()
 const posted_loads = ref('')
 const refs = ref('')
-const organization = ref<Organization | Reference>()
 const broker = ref<Broker | Reference>()
 const total_pieces = ref<number>()
 const total_weight = ref<number>()
@@ -33,7 +55,6 @@ const excluded = ref(false)
 
 const ordersStore = useOrdersStore()
 const usersStore = useUsersStore()
-const organizationsStore = useOrganizationsStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
@@ -81,7 +102,6 @@ async function resetAndShow(str: string) {
     _id.value = order.id
     posted_loads.value = order.posted_loads
     dispatcher.value = { id: order.dispatcher }
-    organization.value = { id: order.organization }
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs
@@ -97,12 +117,13 @@ async function resetAndShow(str: string) {
 
 async function saveOrder(next: Status | null | undefined) {
   try {
+    const org = cOrg.data.value
     await ordersStore.update(_id.value, {
+      organization: org.id,
       status: next?.id ?? _order.value.status,
       dispatcher: dispatcher.value?.id,
       posted_loads: posted_loads.value,
       refs: refs.value,
-      organization: organization.value?.id,
       broker: broker.value?.id,
       total_pieces: total_pieces.value,
       total_weight: total_weight.value,
@@ -111,7 +132,7 @@ async function saveOrder(next: Status | null | undefined) {
       excluded: excluded.value,
     } as OrderUpdate)
 
-    await router.replace({ path: '/app/order/all' })
+    await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
   } catch (e) {
     console.log('error', e)
   }
@@ -173,19 +194,15 @@ useEventListener(document, 'keydown', handleKeyDown)
       <div class="flex w-full mt-10">
         <form class="w-[90vw] md:w-[50vw]">
           <div class="flex space-x-3 mb-2 mt-2 w-full">
-            <div class="md:w-1/4 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Number</Label>
               <TextInput disabled :modelValue="_id" />
             </div>
-            <div class="md:w-1/4 md:mb-0">
-              <Label class="mb-1">Dispatcher</Label>
-              <selector label="Dispatcher" v-model="dispatcher" :store="usersStore"></selector>
-            </div>
-            <div class="md:w-1/4 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Posted loads ID</Label>
               <TextInput v-model="posted_loads" />
             </div>
-            <div class="md:w-1/4 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Refs</Label>
               <TextInput v-model="refs" />
             </div>
@@ -193,11 +210,12 @@ useEventListener(document, 'keydown', handleKeyDown)
 
           <div class="flex space-x-3 mb-2 mt-6 w-full">
             <div class="md:w-1/2 md:mb-0">
-              <Label class="mb-1">Organization</Label>
+              <Label class="mb-1">Dispatcher</Label>
               <selector
-                label="Organization"
-                v-model="organization"
-                :store="organizationsStore"
+                disabled
+                label="Dispatcher"
+                v-model="dispatcher"
+                :store="usersStore"
               ></selector>
             </div>
             <div class="md:w-1/2 md:mb-0">

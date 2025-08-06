@@ -3,6 +3,7 @@ const props = defineProps<{
   modelValue?: Reference | Suggestion | null
   store: Searchable
   label?: string
+  disabled?: boolean
 }>()
 
 const emit = defineEmits(['update:modelValue', 'build'])
@@ -93,6 +94,7 @@ function setResult(suggestion: Suggestion | null) {
   <div class="relative">
     <div class="relative">
       <TextInput
+        :disabled="disabled"
         :placeholder="label"
         v-model="valueAsText"
         v-on:blur="onFocusLost"

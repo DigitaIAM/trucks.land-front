@@ -7,7 +7,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   const session = ref<Session | null>(null)
   const user = computed(() => session.value?.user)
-  const oid = ref<int | null>(null)
+  const account = computedAsync(async () => {
+    const uuid = user.value?.id
+    if (uuid) {
+      return await useUsersStore().resolveUUID(uuid)
+    } else {
+      return null
+    }
+  }, null)
+
+  const org = ref<Organization | null>(null)
+  const oid = computed<int | null>(() => org.value?.id)
+  
   const isInitDone = ref(false)
 
   const loginRedirect = ref<RouteLocationNormalized | null>(null)
@@ -71,7 +82,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    account,
     oid,
+    org,
     isInitDone,
     signInWithEmail,
     loginRedirect,

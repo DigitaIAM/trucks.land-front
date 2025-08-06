@@ -14,7 +14,7 @@ export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.oid = org.id
+    authStore.org = org
     ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
@@ -212,6 +212,7 @@ const cols = [
 
 function openOrder(id: number) {
   window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+  console.log('org.code3', orgData.data.value.code3)
 }
 
 function setFilter(key, val) {

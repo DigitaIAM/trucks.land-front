@@ -34,7 +34,7 @@ export default defineConfig({
     }),
     tailwindcss(),
     vue(),
-    vueDevTools(),
+    // vueDevTools(),
     svgLoader(),
 
     // https://github.com/hannoeru/vite-plugin-pages

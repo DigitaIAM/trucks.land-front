@@ -18,7 +18,7 @@ router.beforeEach(async (to, from) => {
 
   // for non-public routes, check auth and apply login redirect
   await authStore.getPromise()
-  console.log('authStore.user', authStore.user)
+  // console.log('authStore.user', authStore.user)
   if (!authStore.user) {
     authStore.loginRedirect = to
     return { path: '/login' }
