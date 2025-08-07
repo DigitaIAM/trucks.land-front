@@ -5,7 +5,6 @@ import { defineConfig } from 'vite'
 
 import VueRouter from 'unplugin-vue-router/vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 
 import tailwindcss from '@tailwindcss/vite'
 import svgLoader from 'vite-svg-loader'
@@ -41,7 +40,11 @@ export default defineConfig({
     Pages(),
 
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
-    Layouts(),
+    Layouts({
+      layoutsDirs: 'src/layouts',
+      pagesDirs: 'src/pages',
+      // defaultLayout: 'default',
+    }),
 
     // https://github.com/antfu/unplugin-auto-import
     AutoImport({

@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-layout: app
+  layout: order-view
 </route>
 
 <script lang="ts">
@@ -42,7 +42,7 @@ const cOrg = useOrgData()
 // }>()
 
 const _order = ref<Order | null>(null)
-const _id = ref(null)
+const _id = ref<number | null>(null)
 const dispatcher = ref<User | Reference>()
 const posted_loads = ref('')
 const refs = ref('')
@@ -156,7 +156,7 @@ useEventListener(document, 'keydown', handleKeyDown)
 </script>
 
 <template>
-  <div class="flex flex-col-2 mt-10 ml-4">
+  <div class="flex flex-col-2 m-6">
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">

@@ -48,18 +48,18 @@ function resolve(
 }
 
 const cols = [
-  {
-    label: '',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'organization',
-        () => ({ code3: '?' }),
-        () => organizationsStore.resolve(v.organization),
-        (map) => map.code3,
-      ),
-    size: 50,
-  },
+  // {
+  //   label: '',
+  //   value: (v: Order) =>
+  //     resolve(
+  //       v,
+  //       'organization',
+  //       () => ({ code3: '?' }),
+  //       () => organizationsStore.resolve(v.organization),
+  //       (map) => map.code3,
+  //     ),
+  //   size: 50,
+  // },
   {
     label: '#',
     value: (v: Order) => v.id,
@@ -68,7 +68,7 @@ const cols = [
   {
     label: 'Refs',
     value: (v: Order) => v.refs,
-    size: 90,
+    size: 150,
   },
   {
     label: 'Broker',
@@ -171,13 +171,13 @@ const orders = computed(() => {
           </tr>
         </tbody>
       </table>
-      <div class="grid grid-cols-6 mt-10">
+      <div class="grid grid-cols-6 gap-4 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ summary?.orders_number }}</Text>
         <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
-        <Text size="lg" class="px-10">Payments $ {{ summary?.orders_driver }}</Text>
-        <Text size="lg" class="px-10">Profit $ {{ summary?.orders_profit }}</Text>
-        <Text size="lg" class="px-10">To pay $ {{ summary?.toPayment }}</Text>
+        <Text size="lg">Payments $ {{ summary?.orders_driver }}</Text>
+        <Text size="lg">Profit $ {{ summary?.orders_profit }}</Text>
+        <Text size="lg">To pay $ {{ summary?.toPayment }}</Text>
       </div>
       <ModalAction>
         <form method="dialog">

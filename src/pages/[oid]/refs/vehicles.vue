@@ -1,7 +1,7 @@
-<route lang="yaml">
-meta:
-layout: app
-</route>
+<!--<route lang="yaml">-->
+<!--meta:-->
+<!--layout: app-->
+<!--</route>-->
 
 <script setup lang="ts">
 const selectedVehicle = ref(null)

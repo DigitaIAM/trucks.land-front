@@ -1,3 +1,23 @@
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
 const ordersStore = useOrdersStore()
 const statusesStore = useStatusesStore()
@@ -5,6 +25,12 @@ const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
 const vehiclesStore = useVehiclesStore()
 const commentsStore = useCommentsStore()
+
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const orgData = useOrgData()
 
 ordersStore.setContext([{ key: 'status', val: '13' } as KV])
 
@@ -117,7 +143,7 @@ const cols = [
 ]
 
 function openOrder(id: number) {
-  window.open('/app/order/' + id, '_blank')
+  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
 }
 
 function setFilter(key, val) {

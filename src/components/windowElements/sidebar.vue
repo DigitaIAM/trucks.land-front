@@ -132,10 +132,16 @@ function openNav(mode: string | null) {
         :class="{ active: route.path.endsWith(link.path) }"
         :key="link.path"
         @click="generateAndGo(link.path)"
-        class="px-6 hover:ml-4 pr-5 text-white hover:text-purple-500 dark:hover:text-blue-500 w-full bg-[#1E293B] p-3 rounded-full transform ease-in-out duration-300 flex"
+        class="flex-row items-center px-6 hover:ml-4 pr-5 text-white hover:text-purple-500 dark:hover:text-blue-500 w-full bg-[#1E293B] p-3 rounded-full transform ease-in-out duration-300 flex"
       >
-        <component :is="link.icon"></component>
-        <Text class="px-3">{{ link.name }}</Text>
+        <div class="flex-none">
+          <component :is="link.icon"></component>
+        </div>
+        <Text
+          :class="{ active: route.path.endsWith(link.path) }"
+          class="grow px-3 font-thin tracking-wider"
+          >{{ link.name }}
+        </Text>
       </div>
       <div
         class="fixed flex items-center mb-4 right-5 sm:bottom-5 w-full px-12 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none"

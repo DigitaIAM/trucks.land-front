@@ -34,11 +34,11 @@ function onUpdate() {
   emit('on-update')
 }
 
-const selectedPickup = ref(null)
-const selectedDelivery = ref(null)
-const selectedChange = ref(null)
-const selectedAgreement = ref(null)
-const selectedExpenses = ref(null)
+const selectedPickup = ref<object | null>(null)
+const selectedDelivery = ref<object | null>(null)
+const selectedChange = ref<object | null>(null)
+const selectedAgreement = ref<object | null>(null)
+const selectedExpenses = ref<object | null>(null)
 
 function selectPickup(data) {
   selectedPickup.value = data
@@ -85,8 +85,47 @@ function selectExpenses(data) {
   ></ExpensesModal>
 
   <div class="flex mb-2 w-full">
-    <div class="grow">
+    <!-- class="grow" -->
+    <div class="flex-col">
       <ol class="relative text-gray-500 border-l-2 border-gray-500">
+        <li class="mb-8 ms-6">
+          <div class="absolute flex items-center justify-center w-8 h-8 rounded-full -start-4">
+            <div class="dropdown dropdown-bottom dropdown-start">
+              <div tabindex="0" role="button" class="btn rounded-full bg-accent-content">+</div>
+              <ul
+                tabindex="0"
+                class="dropdown-content menu rounded-box z-1 w-70 p-2 shadow-sm text-base bg-accent-content"
+              >
+                <li>
+                  <a class="text-white" @click="selectedPickup = { id: -1, kind: 'pick-up' }"
+                    >Pick Up</a
+                  >
+                </li>
+                <li>
+                  <a class="text-white" @click="selectedDelivery = { id: -1, kind: 'delivery' }"
+                    >Delivery</a
+                  >
+                </li>
+                <li>
+                  <a class="text-white" @click="selectedAgreement = { id: -1, kind: 'agreement' }"
+                    >Agreement</a
+                  >
+                </li>
+                <li>
+                  <a class="text-white" @click="selectedChange = { id: -1, kind: 'change' }"
+                    >Change of driver and vehicle</a
+                  >
+                </li>
+                <li>
+                  <a class="text-white" @click="selectedExpenses = { id: -1, kind: 'expenses' }"
+                    >Expenses</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+          <span>&nbsp;</span>
+        </li>
         <li class="mb-8 ms-6" v-for="eventDate in events" :key="eventDate.id">
           <template v-if="eventDate.kind == 'delivery'">
             <span class="cursor-pointer" @click="selectDelivery(eventDate)">
@@ -239,23 +278,6 @@ function selectExpenses(data) {
           </template>
         </li>
       </ol>
-    </div>
-    <div class="flex-none">
-      <div class="dropdown dropdown-bottom dropdown-end">
-        <div tabindex="0" role="button" class="btn m-1">Add️</div>
-        <ul
-          tabindex="0"
-          class="dropdown-content menu bg-base-100 rounded-box z-1 w-70 p-2 shadow-sm text-base"
-        >
-          <li><a @click="selectedAgreement = { id: -1, kind: 'agreement' }">Agreement</a></li>
-          <li><a @click="selectedPickup = { id: -1, kind: 'pick-up' }">Pick Up</a></li>
-          <li>
-            <a @click="selectedChange = { id: -1, kind: 'change' }">Change of driver and vehicle</a>
-          </li>
-          <li><a @click="selectedExpenses = { id: -1, kind: 'expenses' }">Expenses</a></li>
-          <li><a @click="selectedDelivery = { id: -1, kind: 'delivery' }">Delivery</a></li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>

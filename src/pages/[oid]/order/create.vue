@@ -1,8 +1,3 @@
-<route lang="yaml">
-meta:
-layout: app
-</route>
-
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
@@ -117,7 +112,7 @@ async function saveAndEdit(status: Status | null) {
 </script>
 
 <template>
-  <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
+  <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   <Modal id="create_draft">
     <ModalBox class="max-w-[calc(60vw-6.25rem)]">
       <div class="grid grid-cols-2 gap-4">

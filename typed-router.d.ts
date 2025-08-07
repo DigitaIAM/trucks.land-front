@@ -19,6 +19,7 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
+    '/_index': RouteRecordInfo<'/_index', '/_index', Record<never, never>, Record<never, never>>,
     '/[...NotFound]': RouteRecordInfo<'/[...NotFound]', '/:NotFound(.*)', { NotFound: ParamValue<true> }, { NotFound: ParamValue<false> }>,
     '/[oid]/': RouteRecordInfo<'/[oid]/', '/:oid', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/financesView': RouteRecordInfo<'/[oid]/financesView', '/:oid/financesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -43,7 +44,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/refs/vehicles': RouteRecordInfo<'/[oid]/refs/vehicles', '/:oid/refs/vehicles', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reminders': RouteRecordInfo<'/[oid]/reminders', '/:oid/reminders', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reportsView': RouteRecordInfo<'/[oid]/reportsView', '/:oid/reportsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
+    '/organisation': RouteRecordInfo<'/organisation', '/organisation', Record<never, never>, Record<never, never>>,
   }
 
   /**
@@ -59,6 +60,10 @@ declare module 'vue-router/auto-routes' {
   export interface _RouteFileInfoMap {
     'src/pages/index.vue': {
       routes: '/'
+      views: never
+    }
+    'src/pages/_index.vue': {
+      routes: '/_index'
       views: never
     }
     'src/pages/[...NotFound].vue': {
@@ -157,8 +162,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/reportsView'
       views: never
     }
-    'src/pages/login.vue': {
-      routes: '/login'
+    'src/pages/organisation.vue': {
+      routes: '/organisation'
       views: never
     }
   }

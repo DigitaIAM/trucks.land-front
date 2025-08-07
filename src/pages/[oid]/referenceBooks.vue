@@ -1,11 +1,35 @@
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
-import BrokerIcon from '../../assets/icons/handshake.svg?url'
-import DriverIcon from '../../assets/icons/driver.svg?url'
-import VehicleIcon from '../../assets/icons/vehicle.svg?url'
-import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
-import UsersIcon from '../../assets/icons/users.svg?url'
-import StatusIcon from '../../assets/icons/status.svg?url'
-import OrganizationsIcon from '../../assets/icons/organizations.svg?url'
+import BrokerIcon from '~/assets/icons/handshake.svg?url'
+import DriverIcon from '~/assets/icons/driver.svg?url'
+import VehicleIcon from '~/assets/icons/vehicle.svg?url'
+import OwnerIcon from '~/assets/icons/bussness_center.svg?url'
+import UsersIcon from '~/assets/icons/users.svg?url'
+import StatusIcon from '~/assets/icons/status.svg?url'
+import OrganizationsIcon from '~/assets/icons/organizations.svg?url'
+
+defineOptions({
+  __loaders: [useOrgData],
+})
 
 const router = useRouter()
 

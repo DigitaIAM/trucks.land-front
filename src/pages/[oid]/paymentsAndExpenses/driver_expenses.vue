@@ -1,7 +1,7 @@
-<route lang="yaml">
-meta:
-layout: app
-</route>
+<!--<route lang="yaml">-->
+<!--meta:-->
+<!--layout: app-->
+<!--</route>-->
 
 <script setup lang="ts">
 import {
@@ -97,7 +97,7 @@ const cols = [
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Driver expenses</Text>
     <Search store=""></Search>
-    <Button class="btn-accent">Create</Button>
+<!--    <Button class="btn-accent">Create</Button>-->
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
