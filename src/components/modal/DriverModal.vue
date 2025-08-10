@@ -85,7 +85,7 @@ function saveDriver() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search :store="driversStore"></Search>
-    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
+    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_driver">
     <ModalBox class="w-2/5">
@@ -142,10 +142,10 @@ function saveDriver() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveDriver()">
+          <Button @click="saveDriver()" class="btn-soft font-light tracking-wider">
             <span v-if="id > 0">Update</span><span v-else>Create</span>
           </Button>
-          <Button class="ml-6">Close</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

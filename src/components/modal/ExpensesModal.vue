@@ -105,8 +105,8 @@ function close() {
       <TextInput class="w-full" v-model="note" />
 
       <ModalAction>
-        <Button @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
-        <Button class="ml-3" @click="close">Close</Button>
+        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
+        <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>
   </Modal>

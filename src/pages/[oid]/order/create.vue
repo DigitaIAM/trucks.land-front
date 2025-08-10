@@ -170,10 +170,11 @@ async function saveAndEdit(status: Status | null) {
 
       <ModalAction>
         <form method="dialog">
-          <Button v-for="status in next" :key="status?.id ?? -1" @click.stop="saveAndEdit(status)">
+          <Button class="btn-soft font-light tracking-wider"
+                  v-for="status in next" :key="status?.id ?? -1" @click.stop="saveAndEdit(status)">
             Create as {{ status?.name }}
           </Button>
-          <Button class="ml-6">Close</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

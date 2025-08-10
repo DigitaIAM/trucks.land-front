@@ -93,19 +93,6 @@ function generateStyle(col, order) {
 }
 
 const cols = [
-  // {
-  //   label: '',
-  //   value: (v: Order) =>
-  //     resolve(
-  //       v,
-  //       'organization',
-  //       () => ({ code3: '?' }),
-  //       () => organizationsStore.resolve(v.organization),
-  //       (map) => map.code3,
-  //     ),
-  //   color: (v: Status) => v.color,
-  //   size: 50,
-  // },
   {
     label: '#',
     value: (v: Order) => v.id,
@@ -212,7 +199,7 @@ const cols = [
 
 function openOrder(id: number) {
   window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
-  console.log('org.code3', orgData.data.value.code3)
+  // console.log('org.code3', orgData.data.value.code3)
 }
 
 function setFilter(key, val) {
@@ -286,7 +273,6 @@ function capitalizeFirstLetter(val) {
         v-for="order in ordersStore.listing"
         :key="order.id"
         @click="openOrder(order.id)"
-        class="border-b dark:border-gray-700 border-gray-200"
       >
         <td
           v-for="col in cols"

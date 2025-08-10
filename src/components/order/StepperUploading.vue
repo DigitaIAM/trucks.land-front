@@ -216,7 +216,7 @@ async function download(file) {
 
       <ModalAction>
         <form method="dialog">
-          <Button @click="upload">Upload</Button>
+          <Button class="btn-soft font-light tracking-wider" @click="upload">Upload</Button>
         </form>
       </ModalAction>
 
@@ -247,7 +247,7 @@ async function download(file) {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button>Close</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

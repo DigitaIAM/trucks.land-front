@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const useOrganizations = useOrganizationsStore()
+
 </script>
 
 <template>

@@ -1,7 +1,27 @@
-<!--<route lang="yaml">-->
-<!--meta:-->
-<!--layout: app-->
-<!--</route>-->
+<route lang="yaml">
+meta:
+  layout: nav-view
+</route>
+
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
 
 <script setup lang="ts">
 const statusesStore = useStatusesStore()
@@ -34,6 +54,10 @@ function generateStyle(status: Status | null) {
 const selectedStatus = ref(null)
 const selectedNextStatus = ref(null)
 
+defineOptions({
+  __loaders: [useOrgData],
+})
+
 function editStatus(status: Status) {
   selectedStatus.value = status
 }
@@ -53,15 +77,17 @@ function onClose() {
 
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-      <tr>
+    <tr
+      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+    >
         <th class="p-4" :style="{ width: 300 + 'px' }">
-          <p class="block text-sm antialiasing font-bold leading-none">Name</p>
+          <p class="block antialiasing tracking-wider font-thin leading-none">Name</p>
         </th>
         <th class="p-4" :style="{ width: 300 + 'px' }">
-          <p class="block text-sm antialiasing font-bold leading-none">Next</p>
+          <p class="block antialiasing tracking-wider font-thin leading-none">Next</p>
         </th>
         <th class="p-4" :style="{ width: 50 + 'px' }">
-          <p class="block text-sm antialiasing font-bold leading-none">Add next</p>
+          <p class="block antialiasing tracking-wider font-thin leading-none">Add next</p>
         </th>
       </tr>
     </thead>

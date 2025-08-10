@@ -12,7 +12,7 @@ watch(
   () => props.id,
   (id) => {
     try {
-      console.log('watch id', id, props.id)
+      // console.log('watch id', id, props.id)
       if (id) {
         resetAndShow(id)
       }

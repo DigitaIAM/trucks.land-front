@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  layout: nav-view
+</route>
+
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 

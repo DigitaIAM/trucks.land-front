@@ -56,7 +56,7 @@ function saveStatus() {
 
 <template>
   <div class="place-self-end px-3 mb-2 mt-3">
-    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
+    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_status">
     <ModalBox class="w-4/5">
@@ -107,10 +107,10 @@ function saveStatus() {
 
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveStatus()">
+          <Button @click="saveStatus()" class="btn-soft font-light tracking-wider">
             <span v-if="id > 0">Update</span><span v-else>Create</span>
           </Button>
-          <Button class="ml-6">Close</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

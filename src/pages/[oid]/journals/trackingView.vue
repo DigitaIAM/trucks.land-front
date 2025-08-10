@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  layout: nav-view
+</route>
+
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
@@ -78,7 +83,7 @@ function generateStyle(col, order) {
     () => statusesStore.resolve(order?.status),
     (obj) => obj.color,
   )
-  if (color) {
+  if (color && col?.label === 'status') {
     return { 'background-color': color }
   }
   return {}
@@ -92,7 +97,7 @@ const cols = [
     size: 50,
   },
   {
-    label: 'Status',
+    label: 'status',
     value: (v: Order) =>
       resolve(
         v,
@@ -217,8 +222,12 @@ function capitalizeFirstLetter(val) {
     <create :edit="selectedOrder" @closed="onClose"></create>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Badge lg outline v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
-      >{{ capitalizeFirstLetter(filter.key) }}: {{ filter.val.name }}
+    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
+    >
+      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
+        {{ capitalizeFirstLetter(filter.key) }}:
+      </div>
+      <div>{{ filter.val.name }}</div>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -233,14 +242,16 @@ function capitalizeFirstLetter(val) {
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-      <tr>
+    <tr
+      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+    >
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
-          class="p-4 border-b border-b-gray-400"
+          class="p-4"
           :style="{ width: col.size + 'px' }"
         >
-          <p class="block antialiasing font-bold leading-none">
+          <p class="block antialiasing tracking-wider font-thin leading-none">
             {{ col.label }}
           </p>
         </th>
@@ -251,11 +262,11 @@ function capitalizeFirstLetter(val) {
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
-          class="py-3 px-4 border-b border-b-gray-400"
+          class="py-3 px-4 "
           :style="generateStyle(col, order)"
         >
           <p
-            class="block antialiasing font-normal leading-normal truncate"
+            class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
             {{ col.value(order) }}

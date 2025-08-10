@@ -129,8 +129,8 @@ function close() {
         </div>
       </div>
       <ModalAction>
-        <Button @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
-        <Button class="ml-3" @click="close">Close</Button>
+        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
+        <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>
   </Modal>

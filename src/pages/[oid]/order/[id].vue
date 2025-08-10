@@ -160,12 +160,12 @@ useEventListener(document, 'keydown', handleKeyDown)
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
-          <Button @click="closeOrder()">Close</Button>
-          <Button @click="saveOrder(null)">Update</Button>
+          <Button class="btn-soft font-light tracking-wider" @click="closeOrder()">Close</Button>
+          <Button class="btn-soft font-light tracking-wider" @click="saveOrder(null)">Update</Button>
         </div>
         <Button
           ghost
-          class="cursor-pointer text-gray-500"
+          class="cursor-pointer btn-soft font-light tracking-wider"
           :class="{ 'text-white': excluded }"
           @click="handleClick"
           :accent="excluded"
@@ -177,6 +177,7 @@ useEventListener(document, 'keydown', handleKeyDown)
       <div class="flex w-full h-full mt-6">
         <div class="flex space-x-3 w-full">
           <Button disabled :style="'background-color: ' + currentStatus?.color"
+                  class="btn-soft font-light tracking-wider"
             >{{ currentStatus?.name }}
           </Button>
           <Text class="mt-2">change to</Text>
@@ -185,6 +186,7 @@ useEventListener(document, 'keydown', handleKeyDown)
             :key="next?.id"
             @click="saveOrder(next)"
             :style="'background-color: ' + next?.color"
+            class="btn-soft font-light tracking-wider"
           >
             {{ next.name }}
           </Button>

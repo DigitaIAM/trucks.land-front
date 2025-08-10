@@ -130,7 +130,7 @@ async function saveVehicle() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Search :store="vehicleStore"></Search>
-    <Button class="btn-accent" @click="resetAndShow(null)">Create</Button>
+    <Button class="btn-soft font-light tracking-wider"  @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_vehicle">
     <ModalBox class="w-4/5">
@@ -242,10 +242,10 @@ async function saveVehicle() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveVehicle">
+          <Button @click="saveVehicle" class="btn-soft font-light tracking-wider">
             <span v-if="id > 0">Update</span><span v-else>Create</span>
           </Button>
-          <Button class="ml-6">Close</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  layout: nav-view
+</route>
+
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
@@ -31,43 +36,45 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
+const orgData = useOrgData()
+
 const router = useRouter()
 
 const buttons = [
   {
     label: 'Brokers',
     icon: BrokerIcon,
-    link: '/app/refs/brokers',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/brokers',
   },
   {
     label: 'Drivers',
     icon: DriverIcon,
-    link: '/app/refs/drivers',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/drivers',
   },
   {
     label: 'Vehicles',
     icon: VehicleIcon,
-    link: '/app/refs/vehicles',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/vehicles',
   },
   {
     label: 'Owners',
     icon: OwnerIcon,
-    link: '/app/refs/owners',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/owners',
   },
   {
     label: 'Users',
     icon: UsersIcon,
-    link: '/app/refs/users',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/users',
   },
   {
     label: 'Statuses',
     icon: StatusIcon,
-    link: '/app/refs/statuses',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/statuses',
   },
   {
     label: 'Organizations',
     icon: OrganizationsIcon,
-    link: '/app/refs/organizations',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/organizations',
   },
 ]
 </script>

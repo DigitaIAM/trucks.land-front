@@ -42,8 +42,8 @@ function saveNextStatus() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button @click="saveNextStatus()">Save</Button>
-          <Button class="ml-6">Close</Button>
+          <Button @click="saveNextStatus()" class="btn-soft font-light tracking-wider">Save</Button>
+          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
     </ModalBox>

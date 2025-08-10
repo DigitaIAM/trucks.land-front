@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  layout: nav-view
+</route>
+
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
@@ -27,6 +32,8 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
+const orgData = useOrgData()
+
 const router = useRouter()
 
 const buttons = [
@@ -38,12 +45,12 @@ const buttons = [
   {
     label: 'Driver',
     icon: DriverIcon,
-    link: '/app/paymentsAndExpenses/driver_expenses',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/driver_expenses',
   },
   {
     label: 'Dispatcher',
     icon: DispatcherIcon,
-    link: '/app/paymentsAndExpenses/paymentsToDispatchers',
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/paymentsToDispatchers',
   },
 ]
 </script>
