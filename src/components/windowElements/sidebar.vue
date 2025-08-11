@@ -15,11 +15,11 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
     path: '/journals/dispatcherView',
   },
-  // {
-  //   name: 'Tracking',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
-  //   path: '/journals/trackingView',
-  // },
+  {
+    name: 'Tracking',
+    icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
+    path: '/tracking',
+  },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
@@ -58,8 +58,12 @@ function generateAndGo(path: string) {
   // console.log('generateAndGo', path)
   openNav('min')
 
-  const link = '/' + authStore.org?.code3.toLowerCase() + path
-  router.replace({ path: link })
+  if (path === '/tracking') {
+    router.push({ path: path })
+  } else {
+    const link = '/' + authStore.org?.code3.toLowerCase() + path
+    router.replace({ path: link })
+  }
 }
 
 const colorMode = useColorMode()
@@ -151,7 +155,7 @@ function openNav(mode: string | null) {
           <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
         </div>
         <div class="flex flex-row-2">
-         <Text class="pl-2">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
+         <Text class="font-thin tracking-wider">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
         </div>
       </div>
 
@@ -249,16 +253,5 @@ function openNav(mode: string | null) {
 <style scoped>
 .active {
   color: #0269d1;
-}
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  font-weight: bold;
-  user-select: none;
 }
 </style>
