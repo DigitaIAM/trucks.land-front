@@ -45,6 +45,7 @@ export const useOrdersStore = defineStore('order', () => {
   const searchFilters = ref<Array<KV>>([])
 
   const mapping = ref(new Map<number, Order>())
+  const timestamp = ref(Date.now())
 
   // const { initialized, loading } = useInitializeStore(async () => {
   //   let query = supabase.from('orders_journal').select()
@@ -72,6 +73,10 @@ export const useOrdersStore = defineStore('order', () => {
     return list
   })
 
+  function reset() {
+    mapping.value = new Map<number, Order>()
+  }
+
   async function setContext(filters: Array<KV>) {
     contextFilters.value = filters
 
@@ -85,28 +90,48 @@ export const useOrdersStore = defineStore('order', () => {
   }
 
   async function _setFilters() {
+    console.trace()
+    console.log('contextFilters', contextFilters.value)
+    console.log('searchFilters', searchFilters.value)
+
+    mapping.value = new Map<number, Order>()
+
+    const localTime = Date.now()
+
+    if (timestamp.value > localTime) {
+      return
+    }
+    timestamp.value = localTime
+
     let query = supabase.from('orders_journal').select()
 
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
       if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+        console.log(f.key, '=', x.id)
         query = query.eq(f.key, x.id)
       } else if (Array.isArray(x)) {
+        console.log(f.key, 'in', x)
         query = query.in(f.key, x)
       } else {
+        console.log(f.key, '=', x)
         query = query.eq(f.key, x)
       }
     })
 
     const response = await query.order('created_at').limit(50)
 
-    const map = new Map<number, Order>()
-    response.data?.forEach((json) => {
-      const order = json as Order
-      map.set(order.id, order)
-    })
+    if (timestamp.value == localTime) {
+      const map = new Map<number, Order>()
+      response.data?.forEach((json) => {
+        const order = json as Order
+        map.set(order.id, order)
+      })
 
-    mapping.value = map
+      console.log('map', map.size)
+
+      mapping.value = map
+    }
   }
 
   async function create(order: OrderCreate) {
@@ -169,7 +194,7 @@ export const useOrdersStore = defineStore('order', () => {
     return []
   }
 
-  return { setContext, setFilters, create, listing, update, resolve, search } // initialized, loading,
+  return { reset, setContext, setFilters, create, listing, update, resolve, search } // initialized, loading,
 })
 
 if (import.meta.hot) {

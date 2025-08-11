@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AvatarUser from '@/components/AvatarUser.vue'
+
 const router = useRouter()
 const route = useRoute()
 
@@ -13,11 +15,11 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
     path: '/journals/dispatcherView',
   },
-  {
-    name: 'Tracking',
-    icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
-    path: '/journals/trackingView',
-  },
+  // {
+  //   name: 'Tracking',
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
+  //   path: '/journals/trackingView',
+  // },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
@@ -38,11 +40,11 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
   },
-  {
-    name: 'Reports',
-    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-    path: '/reportsView',
-  },
+  // {
+  //   name: 'Reports',
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+  //   path: '/reportsView',
+  // },
   {
     name: 'Finances',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
@@ -143,24 +145,16 @@ function openNav(mode: string | null) {
           >{{ link.name }}
         </Text>
       </div>
-      <div
-        class="fixed flex items-center mb-4 right-5 sm:bottom-5 w-full px-12 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none"
-      >
-        <img
-          class="object-cover w-8 h-8 rounded-full"
-          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=faceare&facepad=3&w=688&h=688&q=100"
-          alt=""
-        />
-
-        <div class="text-left rtl:text-right">
-          <h1 class="text-sm font-medium text-gray-700 capitalize dark:text-white">
-            {{ authStore.account?.name }}
-          </h1>
-
-          <p class="text-xs text-gray-500 dark:text-gray-400">{{ authStore.account?.email }}</p>
+    </div>
+      <div class="fixed flex flex-col-2 items-center right-5 sm:bottom-5 w-full px-10 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
+        <div>
+          <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
+        </div>
+        <div class="flex flex-row-2">
+         <Text class="pl-2">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
         </div>
       </div>
-    </div>
+
     <!-- MINI SIDEBAR-->
     <div class="mini mt-20 flex flex-col space-y-2 w-full h-[calc(100vh)]">
       <div
@@ -173,13 +167,9 @@ function openNav(mode: string | null) {
         <component :is="link.icon"></component>
       </div>
       <div
-        class="fixed flex mb-4 justify-end pr-3 sm:bottom-5 w-full transform ease-in-out duration-300"
+        class="fixed flex justify-end px-2 sm:bottom-5 w-full transform ease-in-out duration-300"
       >
-        <img
-          class="object-cover w-8 h-8 rounded-full"
-          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=faceare&facepad=3&w=688&h=688&q=100"
-          alt=""
-        />
+        <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
       </div>
     </div>
     <!-- open sidebar button -->
@@ -259,5 +249,16 @@ function openNav(mode: string | null) {
 <style scoped>
 .active {
   color: #0269d1;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  user-select: none;
 }
 </style>

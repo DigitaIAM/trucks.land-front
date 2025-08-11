@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const org = ref<Organization | null>(null)
   const oid = computed<int | null>(() => org.value?.id)
-  
+
   const isInitDone = ref(false)
 
   const loginRedirect = ref<RouteLocationNormalized | null>(null)

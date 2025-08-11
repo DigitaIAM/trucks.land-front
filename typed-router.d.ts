@@ -27,7 +27,6 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/incomeView': RouteRecordInfo<'/[oid]/journals/incomeView', '/:oid/journals/incomeView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/quick_payView': RouteRecordInfo<'/[oid]/journals/quick_payView', '/:oid/journals/quick_payView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/journals/trackingView': RouteRecordInfo<'/[oid]/journals/trackingView', '/:oid/journals/trackingView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/me': RouteRecordInfo<'/[oid]/me', '/:oid/me', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/[id]': RouteRecordInfo<'/[oid]/order/[id]', '/:oid/order/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -45,6 +44,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/reminders': RouteRecordInfo<'/[oid]/reminders', '/:oid/reminders', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reportsView': RouteRecordInfo<'/[oid]/reportsView', '/:oid/reportsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/organisation': RouteRecordInfo<'/organisation', '/organisation', Record<never, never>, Record<never, never>>,
+    '/tracking': RouteRecordInfo<'/tracking', '/tracking', Record<never, never>, Record<never, never>>,
   }
 
   /**
@@ -92,10 +92,6 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/journals/quick_payView.vue': {
       routes: '/[oid]/journals/quick_payView'
-      views: never
-    }
-    'src/pages/[oid]/journals/trackingView.vue': {
-      routes: '/[oid]/journals/trackingView'
       views: never
     }
     'src/pages/[oid]/me.vue': {
@@ -164,6 +160,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/organisation.vue': {
       routes: '/organisation'
+      views: never
+    }
+    'src/pages/tracking.vue': {
+      routes: '/tracking'
       views: never
     }
   }

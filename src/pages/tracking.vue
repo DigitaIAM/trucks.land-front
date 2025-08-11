@@ -1,41 +1,46 @@
 <route lang="yaml">
 meta:
-  layout: nav-view
+  layout: clean
 </route>
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
-const organizationsStore = useOrganizationsStore()
-const authStore = useAuthStore()
+// const organizationsStore = useOrganizationsStore()
+// const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
-    const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.org = org
-    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
-    // console.table(org)
-    return org
+    ordersStore.reset()
+
+    // const org = await organizationsStore.resolve3(route.params.oid)
+    // authStore.org = org
+
+    // 3 - Loading stage
+    // 5 - Delivery stage
+    // 8 - Loading on site
+    // 21 - Delivery on site
+    await ordersStore.setContext([
+      // { key: 'organization', val: org.id } as KV,
+      { key: 'status', val: ['3', '5', '8', '21'] } as KV,
+    ])
+    // return org
   },
   { key: 'org' },
 )
 </script>
 
 <script setup lang="ts">
-import { useStatusesStore } from '@/stores/statuses.ts'
-import { useEventsStore } from '@/stores/events.ts'
-import Create from '@/pages/[oid]/order/create.vue'
-
 const ordersStore = useOrdersStore()
+const organizationsStore = useOrganizationsStore()
 const statusesStore = useStatusesStore()
 const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
-ordersStore.setContext([{ key: 'status', val: ['3', '5', '8', '21'] } as KV])
-//3 - Loading stage, 5 - Delivery stage, 8 - Loading on site, 21 - Delivery on site
+// ordersStore.reset()
 
 const filters = ref([])
 const selectedOrder = ref(null)
@@ -187,8 +192,9 @@ const cols = [
   },
 ]
 
-function openOrder(id: number) {
-  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+async function openOrder(order: Order) {
+  const org = await organizationsStore.resolve(order.organization)
+  window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
 }
 
 function setFilter(key, val) {
@@ -219,7 +225,6 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter"></SearchAll>
-    <create :edit="selectedOrder" @closed="onClose"></create>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
@@ -258,7 +263,7 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"

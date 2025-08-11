@@ -37,11 +37,11 @@ const orgData = useOrgData()
 const router = useRouter()
 
 const buttons = [
-  {
-    label: 'Owner',
-    icon: OwnerIcon,
-    link: '',
-  },
+  // {
+  //   label: 'Owner',
+  //   icon: OwnerIcon,
+  //   link: '',
+  // },
   {
     label: 'Driver',
     icon: DriverIcon,

@@ -31,11 +31,11 @@ const buttons = [
 </script>
 
 <template>
-  <div class="flex text-3xl p-5 font-bold pb-10">
+  <div class="flex text-3xl p-8 font-bold pb-10">
     <h1>Organizations</h1>
   </div>
 
-  <div class="flex space-x-8 px-5">
+  <div class="flex space-x-8 px-8">
     <div
       v-for="button in buttons"
       :key="button.label"

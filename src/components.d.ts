@@ -19,6 +19,7 @@ declare module 'vue' {
     Auth: typeof import('./components/Auth.vue')['default']
     Avatar: typeof import('./components/widgets/Avatar.vue')['default']
     AvatarGroup: typeof import('./components/widgets/AvatarGroup.vue')['default']
+    AvatarUser: typeof import('./components/AvatarUser.vue')['default']
     Badge: typeof import('./components/widgets/Badge.vue')['default']
     BottomNav: typeof import('./components/widgets/BottomNav.vue')['default']
     Breadcrumbs: typeof import('./components/widgets/Breadcrumbs.vue')['default']

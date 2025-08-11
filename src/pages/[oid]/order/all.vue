@@ -100,6 +100,19 @@ const cols = [
     size: 50,
   },
   {
+    label: 'status',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status',
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
     label: 'dispatcher',
     value: (v: Order) =>
       resolve(
@@ -168,19 +181,6 @@ const cols = [
     value: (v) => '$' + v.driver_cost,
     color: (v: Status) => v.color,
     size: 80,
-  },
-  {
-    label: 'status',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'status',
-        () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
-        (map) => map.name,
-      ),
-    color: (v: Status) => v.color,
-    size: 150,
   },
   {
     label: 'notes',
