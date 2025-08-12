@@ -14,7 +14,7 @@ const bgColor = computed(() => {
   return `hsl(${hash % 360}, 50%, 70%)`
 })
 
-const textColor = '#fff'
+const textColor = '#E0E0E0'
 </script>
 
 <template>

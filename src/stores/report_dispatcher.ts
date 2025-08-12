@@ -66,7 +66,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
           orders_driver += p.driver_payment
           orders_profit += profit
 
-          const payment = (profit * 5.0) / 100.0
+          const payment = (profit * 3.0) / 100.0
           p.dispatcher_payment = payment
           toPayment += payment
         }

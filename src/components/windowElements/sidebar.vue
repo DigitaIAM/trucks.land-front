@@ -155,7 +155,7 @@ function openNav(mode: string | null) {
           <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
         </div>
         <div class="flex flex-row-2">
-         <Text class="font-thin tracking-wider">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
+         <Text primary-content class="font-thin tracking-wider">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
         </div>
       </div>
 
