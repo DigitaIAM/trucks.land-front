@@ -154,8 +154,8 @@ function openNav(mode: string | null) {
         <div>
           <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
         </div>
-        <div class="flex flex-row-2">
-         <Text primary-content class="font-thin tracking-wider">{{ authStore.account?.name ?? authStore.user?.email}}</Text>
+        <div>
+         <p class="truncate font-thin tracking-wider text-primary-300 dark: text-primary-300">{{authStore.account?.name ?? authStore.user?.email}}</p>
         </div>
       </div>
 
@@ -253,5 +253,12 @@ function openNav(mode: string | null) {
 <style scoped>
 .active {
   color: #0269d1;
+}
+.truncate {
+  width: 120px; /* Задайте желаемую ширину */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: lightgray;
 }
 </style>
