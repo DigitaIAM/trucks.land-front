@@ -90,10 +90,6 @@ export const useOrdersStore = defineStore('order', () => {
   }
 
   async function _setFilters() {
-    console.trace()
-    console.log('contextFilters', contextFilters.value)
-    console.log('searchFilters', searchFilters.value)
-
     mapping.value = new Map<number, Order>()
 
     const localTime = Date.now()
@@ -108,13 +104,10 @@ export const useOrdersStore = defineStore('order', () => {
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
       if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
-        console.log(f.key, '=', x.id)
         query = query.eq(f.key, x.id)
       } else if (Array.isArray(x)) {
-        console.log(f.key, 'in', x)
         query = query.in(f.key, x)
       } else {
-        console.log(f.key, '=', x)
         query = query.eq(f.key, x)
       }
     })
@@ -127,8 +120,6 @@ export const useOrdersStore = defineStore('order', () => {
         const order = json as Order
         map.set(order.id, order)
       })
-
-      console.log('map', map.size)
 
       mapping.value = map
     }

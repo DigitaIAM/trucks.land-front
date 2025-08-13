@@ -23,7 +23,6 @@ export const useFilesStore = defineStore('file', () => {
   async function listing(orderId: number | null) {
     if (orderId) {
       const response = await supabase.from('order_files').select().eq('document', orderId)
-      console.log(response)
 
       if (response.status == 200) {
         const list = <FileRecord>[]
@@ -43,9 +42,8 @@ export const useFilesStore = defineStore('file', () => {
   }
 
   async function create(file: FileRecordCreate) {
-    console.log('create', file)
     const response = await supabase.from('order_files').insert(file).select() // .throwOnError()
-    console.log(response)
+
 
     if (response.status == 201) {
       response.data?.forEach((json) => {})

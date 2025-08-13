@@ -150,7 +150,7 @@ function openNav(mode: string | null) {
         </Text>
       </div>
     </div>
-      <div class="fixed flex flex-col-2 items-center right-5 sm:bottom-5 w-full px-10 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
+      <div class="fixed flex flex-col-2 items-center right-5 sm:bottom-5 w-full px-10 gap-x-2 ">
         <div>
           <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
         </div>

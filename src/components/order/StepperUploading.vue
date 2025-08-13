@@ -54,8 +54,6 @@ function resolveAccount(file: File) {
 }
 
 async function upload() {
-  console.log('upload happens here', fileType.value, fileInfo.value)
-
   const user = authStore.user
   if (user == null) {
     throw 'authorize first'

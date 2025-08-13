@@ -21,16 +21,6 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import type { Status } from '@/stores/statuses.ts'
-
-const router = useRouter()
-
-import StepperUploading from '@/components/order/StepperUploading.vue'
-import Comments from '@/components/order/Comments.vue'
-import StepperStates from '@/components/order/StepperStates.vue'
-import type { Broker } from '@/stores/brokers.ts'
-import DriverAndVehicle from '@/components/order/DriverAndVehicle.vue'
-
 defineOptions({
   __loaders: [useOrgData],
 })
@@ -132,7 +122,8 @@ async function saveOrder(next: Status | null | undefined) {
       excluded: excluded.value,
     } as OrderUpdate)
 
-    await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
+    // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
+    closeOrder()
   } catch (e) {
     console.log('error', e)
   }

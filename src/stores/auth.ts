@@ -29,15 +29,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   // async function signInWithEmail(email: string, password: string) {
   const signInWithEmail = async (email: string, password: string) => {
-    console.log('signInWithEmail', email, password)
+    // console.log('signInWithEmail', email, password)
     promise.value = supabase.auth
       .signInWithPassword({
         email: email,
         password: password,
       })
       .then(({ data, error }) => {
-        console.log('signInWithEmail data', data)
-        console.log('signInWithEmail error', error)
+        // console.log('signInWithEmail data', data)
+        // console.log('signInWithEmail error', error)
 
         lastError.value = error
 
@@ -53,12 +53,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   promise.value = supabase.auth.getSession().then(({ data }) => {
-    console.log('supabase.auth.getSession()', data)
+    // console.log('supabase.auth.getSession()', data)
     isInitDone.value = true
     session.value = data.session
   })
   supabase.auth.onAuthStateChange((_, _session) => {
-    console.log('supabase.auth.onAuthStateChange', _session)
+    // console.log('supabase.auth.onAuthStateChange', _session)
     session.value = _session
   })
 

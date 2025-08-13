@@ -178,7 +178,7 @@ const cols = [
   },
   {
     label: 'spend',
-    value: (v) => '$' + v.driver_cost,
+    value: (v) => '$' + (v.driver_cost ?? 0),
     color: (v: Status) => v.color,
     size: 80,
   },

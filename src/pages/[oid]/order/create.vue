@@ -99,6 +99,7 @@ async function saveAndEdit(status: Status | null) {
       total_weight: total_weight.value,
       total_miles: total_miles.value,
       cost: cost.value,
+      excluded: false,
     } as OrderCreate)
     create_draft.close()
 
