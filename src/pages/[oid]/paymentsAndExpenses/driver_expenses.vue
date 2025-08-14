@@ -1,8 +1,8 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: nav-view
 </route>
-
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
@@ -125,9 +125,9 @@ const cols = [
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
-    <tr
-      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-    >
+      <tr
+        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+      >
         <th
           v-for="col in cols"
           :key="'head_' + col.label"

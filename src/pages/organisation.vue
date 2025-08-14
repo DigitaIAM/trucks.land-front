@@ -1,11 +1,10 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: clean
 </route>
 
 <script setup lang="ts">
-
-
 const authStore = useAuthStore()
 const router = useRouter()
 const useOrganizations = useOrganizationsStore()
@@ -27,7 +26,6 @@ const buttons = [
     link: '/cnu/order/all',
   },
 ]
-
 </script>
 
 <template>
@@ -44,7 +42,7 @@ const buttons = [
       <div
         class="size-36 place-items-center p-4 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105"
       >
-<!--        <component :is="button.icon" class="xl"></component>-->
+        <!--        <component :is="button.icon" class="xl"></component>-->
         <img class="size-28" :src="button.icon" alt="" />
       </div>
     </div>

@@ -1,4 +1,5 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: nav-view
 </route>
@@ -169,8 +170,7 @@ function capitalizeFirstLetter(val) {
     <create :edit="selectedOrder" @closed="onClose"></create>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
-    >
+    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
       <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
         {{ capitalizeFirstLetter(filter.key) }}:
       </div>
@@ -189,9 +189,9 @@ function capitalizeFirstLetter(val) {
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-    <tr
-      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-    >
+      <tr
+        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+      >
         <th
           v-for="col in cols"
           :key="'head_' + col.label"

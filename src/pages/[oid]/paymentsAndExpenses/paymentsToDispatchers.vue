@@ -1,6 +1,7 @@
 <route lang="yaml">
+# @formatter:off
 meta:
-   layout: nav-view
+  layout: nav-view
 </route>
 
 <script lang="ts">
@@ -120,13 +121,13 @@ const cols = [
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments to dispatchers</Text>
     <Search store=""></Search>
-<!--    <Button class="btn-accent">Create</Button>-->
+    <!--    <Button class="btn-accent">Create</Button>-->
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
-    <tr
-      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-    >
+      <tr
+        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+      >
         <th
           v-for="col in cols"
           :key="'head_' + col.label"

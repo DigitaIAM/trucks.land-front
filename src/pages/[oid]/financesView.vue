@@ -1,4 +1,5 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: nav-view
 </route>
@@ -50,7 +51,8 @@ const buttons = [
   {
     label: 'Dispatcher',
     icon: DispatcherIcon,
-    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/paymentsToDispatchers',
+    link:
+      '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/paymentsToDispatchers',
   },
 ]
 </script>

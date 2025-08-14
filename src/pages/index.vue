@@ -1,4 +1,5 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: clean
 </route>

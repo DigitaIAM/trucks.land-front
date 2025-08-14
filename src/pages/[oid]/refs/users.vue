@@ -1,4 +1,5 @@
 <route lang="yaml">
+# @formatter:off
 meta:
   layout: nav-view
 </route>
@@ -97,9 +98,9 @@ watch(
   <UserModal :edit="selectedUser" @closed="onClose"></UserModal>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-    <tr
-      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-    >
+      <tr
+        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+      >
         <th
           v-for="col in cols"
           class="p-4 border-b border-b-gray-400"
@@ -113,11 +114,7 @@ watch(
     </thead>
     <tbody>
       <tr v-for="user in usersStore.listing" :key="user.id" @click="editUser(user)">
-        <td
-          v-for="col in cols"
-          class="py-3 px-4"
-          :style="{ width: col.size + 'px' }"
-        >
+        <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
