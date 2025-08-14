@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-layout: nav-view
+  layout: nav-view
 </route>
 
 <script lang="ts">
