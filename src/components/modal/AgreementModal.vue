@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineEmits, defineProps, ref } from 'vue'
-import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
@@ -106,7 +104,9 @@ function close() {
       <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
       <ModalAction>
-        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
+        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">
+          {{ id > 0 ? 'Update' : 'Create' }}
+        </Button>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>

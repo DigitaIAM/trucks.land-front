@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import type { Order } from '@/stores/orders.ts'
 
 export interface FileRecord extends FileRecordCreate {
   id: number
@@ -18,57 +19,46 @@ export interface FileRecordUpdate {
 }
 
 export const useFilesStore = defineStore('file', () => {
-  const mapping = ref(new Map<number, FileRecord>())
+  const listing = ref<Array<FileRecord>>([])
 
-  async function listing(orderId: number | null) {
+  async function loading(orderId: number | null) {
     if (orderId) {
       const response = await supabase.from('order_files').select().eq('document', orderId)
 
       if (response.status == 200) {
-        const list = <FileRecord>[]
+        const list: Array<FileRecord> = []
 
         response.data?.forEach((json) => {
           const file = json as FileRecord
           list.push(file)
         })
 
-        return list
+        listing.value = list
       } else {
         throw 'unexpended response status: ' + response.status
       }
     } else {
-      return <FileRecord>[]
+      listing.value = [] as Array<FileRecord>
     }
   }
 
   async function create(file: FileRecordCreate) {
     const response = await supabase.from('order_files').insert(file).select() // .throwOnError()
 
+    if (response.status == 201 && response.data?.length == 1) {
+      const record = response.data[0] as FileRecord
 
-    if (response.status == 201) {
-      response.data?.forEach((json) => {})
+      const list = Array.from(listing.value)
+
+      list.push(record)
+
+      listing.value = list
     } else {
       throw 'unexpended response status: ' + response.status
     }
   }
 
-  function update(id: number, file: FileRecordUpdate) {
-    supabase
-      .from('order_files')
-      .update(file)
-      .eq('id', id)
-      .select()
-      .then((response) => {
-        if (response.status == 200) {
-          response.data?.forEach((json) => {
-            // const event = json as Event
-            // mapping.value.set(event.id, event)
-          })
-        }
-      })
-  }
-
-  return { listing, create, update }
+  return { listing, loading, create }
 })
 
 if (import.meta.hot) {

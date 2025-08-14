@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Order } from '@/stores/orders.ts'
-import { type FileRecord, useFilesStore } from '@/stores/order_files.ts'
+import * as tus from 'tus-js-client'
 
 const props = defineProps<{
   order: Order | null
@@ -17,40 +16,71 @@ const stages = ref([
   { label: 'INV', check: false },
 ])
 
+const uploadProgress = ref<number | null>(null)
+
+const isReadOnly = computed(() => uploadProgress.value != null)
+
 const fileType = ref('RC')
 const fileInfo = ref<File | null>(null)
 const signedBy = ref('')
 
-const state = reactive({})
-
-function resolve(
+async function uploadFile(
+  bucketName: string,
+  fileName: string,
   file: File,
-  name: string,
-  create: () => object,
-  request: () => Promise<object | null>,
-  label: (obj: object) => string,
+  onProgress: (percentage: number) => void,
 ) {
-  const s = state[file.id] ?? {}
-  if (s && s[name]) {
-    return label(s[name])
-  } else {
-    s[name] = create()
-    state[file.id] = s
-    request().then((obj) => {
-      if (obj) state[file.id][name] = obj
-    })
-    return label(s[name])
-  }
-}
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-function resolveAccount(file: File) {
-  return resolve(
-    file,
-    'createdBy',
-    () => ({ name: '' }),
-    async () => usersStore.resolve(file.created_by),
-    (account) => account.name,
-  )
+  return new Promise((resolve, reject) => {
+    const upload = new tus.Upload(file, {
+      // endpoint: `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`,
+      endpoint: `${supabase.supabaseUrl}/storage/v1/upload/resumable`,
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      headers: {
+        authorization: `Bearer ${session.access_token}`,
+        'x-upsert': 'true', // optionally set upsert to true to overwrite existing files
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true, // Important if you want to allow re-uploading the same file https://github.com/tus/tus-js-client/blob/main/docs/api.md#removefingerprintonsuccess
+      metadata: {
+        bucketName: bucketName,
+        objectName: fileName,
+        // contentType: contentType,
+        cacheControl: '3600',
+        metadata: JSON.stringify({
+          // custom metadata passed to the user_metadata column
+          yourCustomMetadata: true,
+        }),
+      },
+      chunkSize: 6 * 1024 * 1024, // NOTE: it must be set to 6MB (for now) do not change it
+      onError: function (error) {
+        console.log('Failed because: ' + error)
+        reject(error)
+      },
+      onProgress: function (bytesUploaded, bytesTotal) {
+        const percentage = (bytesUploaded / bytesTotal) * 100
+        // const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2)
+        console.log(bytesUploaded, bytesTotal, percentage + '%')
+        onProgress(percentage)
+      },
+      onSuccess: function () {
+        console.log('Download %s from %s', upload.file.name, upload.url)
+        resolve()
+      },
+    })
+    // Check if there are any previous uploads to continue.
+    return upload.findPreviousUploads().then(function (previousUploads) {
+      // Found previous uploads so we select the first one.
+      if (previousUploads.length) {
+        upload.resumeFromPreviousUpload(previousUploads[0])
+      }
+      // Start the upload
+      upload.start()
+    })
+  })
 }
 
 async function upload() {
@@ -72,7 +102,6 @@ async function upload() {
     const createAt = order.created_at
     if (createAt) {
       const path =
-        '/' +
         createAt.substring(0, 4) +
         '/' +
         createAt.substring(5, 7) +
@@ -85,27 +114,26 @@ async function upload() {
         '_' +
         file.name
 
-      const result = await supabase.storage.from('orders').upload(path, file)
+      await uploadFile('orders', path, file, (percentage) => (uploadProgress.value = percentage))
+      // const result = await supabase.storage.from('orders').upload(path, file)
 
       await filesStore.create({
-        document: props.order?.id,
+        document: order.id,
         file_type: fileType.value,
         signed_by: signedBy.value,
         path: path,
         created_by: cUser.id,
       })
 
-      if (result.data) {
-        const sl = stages.value
-        for (const idx in sl) {
-          if (fileType.value == sl[idx].label) {
-            sl[idx].check = true
-            break
-          }
+      const sl = stages.value
+      for (const idx in sl) {
+        if (fileType.value == sl[idx].label) {
+          sl[idx].check = true
+          break
         }
-      } else {
-        // TODO show error
       }
+
+      uploadProgress.value = null
     } else {
       throw 'no order creation date'
     }
@@ -113,8 +141,6 @@ async function upload() {
     throw 'one file expected'
   }
 }
-
-const files = ref<Array<FileRecord>>([])
 
 watch(
   () => props.order,
@@ -127,11 +153,11 @@ watch(
 resetAndShow(props.order?.id)
 
 async function resetAndShow(id: number | null) {
-  files.value = await filesStore.listing(id)
+  await filesStore.loading(id)
 }
 
 function isPresent(file_type: string) {
-  const list = files.value
+  const list = filesStore.listing
   for (const idx in list) {
     const file = list[idx]
     if (file.file_type == file_type) {
@@ -193,6 +219,7 @@ async function download(file) {
     <ModalBox>
       <Text size="2xl" class="mr-4">Files</Text>
       <Button
+        :disabled="isReadOnly"
         sm
         class="mr-4 mb-2"
         v-for="ft in ['RC', 'BOL', 'POD']"
@@ -205,17 +232,16 @@ async function download(file) {
 
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <TextInput placeholder="Signed by" v-model="signedBy"></TextInput>
+          <TextInput :disabled="isReadOnly" placeholder="Signed by" v-model="signedBy"></TextInput>
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <FileInput @file="(f) => (fileInfo = f)"></FileInput>
+          <FileInput :disabled="isReadOnly" @file="(f) => (fileInfo = f)"></FileInput>
         </div>
       </div>
 
       <ModalAction>
-        <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider" @click="upload">Upload</Button>
-        </form>
+        <Progress v-if="uploadProgress" :value="uploadProgress" :max="100" />
+        <Button v-else class="btn-soft font-light tracking-wider" @click="upload">Upload</Button>
       </ModalAction>
 
       <div class="mt-6 mb-2">
@@ -230,13 +256,15 @@ async function download(file) {
           </thead>
           <tbody>
             <tr
-              v-for="file in files"
+              v-for="file in filesStore.listing"
               :key="file.path"
               @click="download(file)"
               class="cursor-pointer"
             >
               <td class="py-2 px-3">{{ file.file_type }}</td>
-              <td class="py-2 px-3">{{ resolveAccount(file) }}</td>
+              <td class="py-2 px-3">
+                <QueryAndShow :id="file.created_by" :store="usersStore" />
+              </td>
               <td class="py-2 px-3">{{ file.signed_by }}</td>
               <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
             </tr>

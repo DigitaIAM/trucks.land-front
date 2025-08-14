@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { useEventsStore } from '@/stores/events.ts'
-import { defineEmits } from 'vue'
-
 const props = defineProps<{
   orderId: number | null
 }>()

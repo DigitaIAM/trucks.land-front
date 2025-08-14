@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineEmits, ref } from 'vue'
-
 const emit = defineEmits(['pick-up', 'delivery', 'changeDriver'])
 
 const dropdownToggle = ref(null)

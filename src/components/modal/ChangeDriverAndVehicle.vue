@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
-import { type EventCreate, useEventsStore } from '@/stores/events.ts'
 import VueDatePicker from '@vuepic/vue-datepicker'
 
 const props = defineProps<{
@@ -129,7 +127,9 @@ function close() {
         </div>
       </div>
       <ModalAction>
-        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">{{ id > 0 ? 'Update' : 'Create' }}</Button>
+        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">
+          {{ id > 0 ? 'Update' : 'Create' }}
+        </Button>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>
       </ModalAction>
     </ModalBox>

@@ -111,7 +111,7 @@ const cols = [
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
-    size: 150,
+    size: 100,
   },
   {
     label: 'dispatcher',
@@ -124,13 +124,13 @@ const cols = [
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
-    size: 120,
+    size: 100,
   },
   {
     label: 'refs',
     value: (v: Order) => v.refs,
     color: (v: Status) => v.color,
-    size: 90,
+    size: 150,
   },
   {
     label: 'broker',
@@ -143,7 +143,7 @@ const cols = [
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
-    size: 180,
+    size: 200,
   },
   {
     label: 'driver',
