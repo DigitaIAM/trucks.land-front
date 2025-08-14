@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-layout: order-view
+  layout: order-view
 </route>
 
 <script lang="ts">
