@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = computed(() => session.value?.user)
   const account = computedAsync(async () => {
     const uuid = user.value?.id
+    // console.log('uuid', uuid)
     if (uuid) {
       return await useUsersStore().resolveUUID(uuid)
     } else {

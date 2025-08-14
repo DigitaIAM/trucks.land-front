@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-  layout: nav-view
+layout: nav-view
 </route>
 
 <script lang="ts">
@@ -78,7 +78,7 @@ function resolve(
 function generateStyle(col, order) {
   const color = resolve(
     order,
-    'status',
+    'status_' + order?.status,
     () => ({
       name: '?',
       color: '',
@@ -104,7 +104,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'status',
+        'status_' + v.status,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.status),
         (map) => map.name,
@@ -117,7 +117,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'dispatcher',
+        'dispatcher_' + v.dispatcher,
         () => ({ name: '?' }),
         () => usersStore.resolve(v.dispatcher),
         (map) => map.name,
@@ -136,7 +136,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'broker',
+        'broker_' + v.broker,
         () => ({ name: '?' }),
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
@@ -149,7 +149,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'driver',
+        'driver_' + v.driver,
         () => ({ name: '-' }),
         () => driversStore.resolve(v.driver),
         (map) => map.name,
@@ -162,7 +162,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'vehicle',
+        'vehicle_' + v.vehicle,
         () => ({ name: '-' }),
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
@@ -230,11 +230,20 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter"></SearchAll>
+    <div class="flex items-center">
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': ordersStore.changes.state === 'joined',
+          'network-connecting': ordersStore.changes.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(ordersStore.changes.state),
+        }"
+      ></span>
+    </div>
     <create :edit="selectedOrder" @closed="onClose"></create>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)"
-    >
+    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
       <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
         {{ capitalizeFirstLetter(filter.key) }}:
       </div>
@@ -269,11 +278,7 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-for="order in ordersStore.listing"
-        :key="order.id"
-        @click="openOrder(order.id)"
-      >
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
@@ -292,4 +297,22 @@ function capitalizeFirstLetter(val) {
   </table>
 </template>
 
-<style scoped></style>
+<style scoped>
+.network-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.network-disconnected {
+  background-color: red;
+}
+
+.network-connecting {
+  background-color: yellow;
+}
+
+.network-connected {
+  background-color: green;
+}
+</style>

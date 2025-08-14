@@ -65,7 +65,7 @@ export const useCommentsStore = defineStore('comment', () => {
       .limit(1)
 
     if (response.status == 200) {
-      const list = []
+      const list: Array<Comment> = []
       response.data?.forEach((json) => {
         const comment = json as Comment
         list.push(comment)

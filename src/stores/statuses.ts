@@ -72,7 +72,11 @@ export const useStatusesStore = defineStore('status', () => {
       })
   }
 
-  async function resolve(id: number) {
+  async function resolve(id: number | null) {
+    if (!id) {
+      return {}
+    }
+
     const v = mapping.value.get(id)
     if (v) {
       return v

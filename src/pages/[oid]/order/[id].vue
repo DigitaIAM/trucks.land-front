@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-  layout: order-view
+layout: order-view
 </route>
 
 <script lang="ts">
@@ -52,11 +52,14 @@ const nextStatusStore = useStatusesNextStore()
 const nextStatuses = computedAsync(async () => {
   const list = [] as List<Status>
 
-  const ids = nextStatusStore.nextFor(_order.value?.status)
-  for (const idx in ids) {
-    const id = ids[idx]
-    const status = await statusesStore.resolve(id)
-    list.push(status)
+  const order = _order.value
+  if (order) {
+    const ids = nextStatusStore.nextFor(order.status)
+    for (const idx in ids) {
+      const id = ids[idx]
+      const status = await statusesStore.resolve(id)
+      list.push(status)
+    }
   }
 
   return list
@@ -102,28 +105,45 @@ async function resetAndShow(str: string) {
   } else {
     // TODO show error
   }
-  console.log('done', _id.value, dispatcher.value)
 }
 
 async function saveOrder(next: Status | null | undefined) {
   try {
-    const org = cOrg.data.value
-    await ordersStore.update(_id.value, {
-      organization: org.id,
-      status: next?.id ?? _order.value.status,
-      dispatcher: dispatcher.value?.id,
-      posted_loads: posted_loads.value,
-      refs: refs.value,
-      broker: broker.value?.id,
-      total_pieces: total_pieces.value,
-      total_weight: total_weight.value,
-      total_miles: total_miles.value,
-      cost: cost.value,
-      excluded: excluded.value,
-    } as OrderUpdate)
+    const account = authStore.account
+    const order = _order.value
+    if (account && order) {
+      if (
+        order.posted_loads != posted_loads.value ||
+        order.refs != refs.value ||
+        order.broker != broker.value?.id ||
+        order.total_pieces != total_pieces.value ||
+        order.total_weight != total_weight.value ||
+        order.total_miles != total_miles.value ||
+        order.cost != cost.value ||
+        order.excluded != excluded.value
+      ) {
+        // const org = cOrg.data.value
+        await ordersStore.update(order.id, {
+          // organization: org.id,
+          // status: next?.id ?? _order.value.status,
+          // dispatcher: dispatcher.value?.id,
+          posted_loads: posted_loads.value,
+          refs: refs.value,
+          broker: broker.value?.id,
+          total_pieces: total_pieces.value,
+          total_weight: total_weight.value,
+          total_miles: total_miles.value,
+          cost: cost.value,
+          excluded: excluded.value,
+        } as OrderUpdate)
+      }
 
-    // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
-    closeOrder()
+      if (next) {
+        await ordersStore.changeStatus(order, account, next)
+        // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
+      }
+      closeOrder()
+    }
   } catch (e) {
     console.log('error', e)
   }
@@ -152,7 +172,9 @@ useEventListener(document, 'keydown', handleKeyDown)
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
           <Button class="btn-soft font-light tracking-wider" @click="closeOrder()">Close</Button>
-          <Button class="btn-soft font-light tracking-wider" @click="saveOrder(null)">Update</Button>
+          <Button class="btn-soft font-light tracking-wider" @click="saveOrder(null)"
+            >Update
+          </Button>
         </div>
         <Button
           ghost
@@ -167,17 +189,19 @@ useEventListener(document, 'keydown', handleKeyDown)
 
       <div class="flex w-full h-full mt-6">
         <div class="flex space-x-3 w-full">
-          <Button disabled :style="'background-color: ' + currentStatus?.color"
-                  class="btn-soft font-light tracking-wider"
+          <Button
+            disabled
+            :style="'background-color: ' + (currentStatus?.color ?? '#333333')"
+            class="btn-soft font-light tracking-wider text-white"
             >{{ currentStatus?.name }}
           </Button>
-          <Text class="mt-2">change to</Text>
+          <Text class="mt-2" v-if="nextStatuses.length != 0">change to</Text>
           <Button
             v-for="next in nextStatuses"
             :key="next?.id"
             @click="saveOrder(next)"
-            :style="'background-color: ' + next?.color"
-            class="btn-soft font-light tracking-wider"
+            :style="'background-color: ' + (next?.color ?? '#333333')"
+            class="btn-soft font-light tracking-wider text-white"
           >
             {{ next.name }}
           </Button>

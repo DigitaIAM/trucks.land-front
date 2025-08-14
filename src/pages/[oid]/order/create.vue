@@ -82,28 +82,41 @@ function resetAndShow(order: Order | null) {
   create_draft.showModal()
 }
 
+function openOrder(order: Order, org: Organization) {
+  window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  // console.log('org.code3', orgData.data.value.code3)
+}
+
 async function saveAndEdit(status: Status | null) {
   // console.log('order_number', order_number)
   if (status == null) return
+
+  const account = authStore.account
+  if (account == null) return
+
   try {
     const org = cOrg.data.value
-    const id = await ordersStore.create({
-      organization: org.id,
-      status: status.id,
-      order_number: order_number.value,
-      dispatcher: authStore.account?.id,
-      posted_loads: posted_loads.value,
-      refs: refs.value,
-      broker: broker.value?.id,
-      total_pieces: total_pieces.value,
-      total_weight: total_weight.value,
-      total_miles: total_miles.value,
-      cost: cost.value,
-      excluded: false,
-    } as OrderCreate)
+    const order = await ordersStore.create(
+      {
+        organization: org.id,
+        order_number: order_number.value,
+        dispatcher: authStore.account?.id,
+        posted_loads: posted_loads.value,
+        refs: refs.value,
+        broker: broker.value?.id,
+        total_pieces: total_pieces.value,
+        total_weight: total_weight.value,
+        total_miles: total_miles.value,
+        cost: cost.value,
+        excluded: false,
+      } as OrderCreate,
+      account,
+      status,
+    )
     create_draft.close()
 
-    await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/' + id })
+    openOrder(order, org)
+    // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/' + id })
   } catch (e) {
     console.log('error', e)
     console.log('status', status.id)
@@ -171,8 +184,12 @@ async function saveAndEdit(status: Status | null) {
 
       <ModalAction>
         <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider"
-                  v-for="status in next" :key="status?.id ?? -1" @click.stop="saveAndEdit(status)">
+          <Button
+            class="btn-soft font-light tracking-wider"
+            v-for="status in next"
+            :key="status?.id ?? -1"
+            @click.stop="saveAndEdit(status)"
+          >
             Create as {{ status?.name }}
           </Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>

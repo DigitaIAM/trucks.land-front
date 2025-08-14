@@ -1,10 +1,10 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 
 export interface Order extends OrderCreate {
   id: number
   created_at: string
   driver_cost: number
+  status: number
 }
 
 export interface OrderCreate {
@@ -17,7 +17,6 @@ export interface OrderCreate {
   total_weight: number
   total_miles: number
   cost: number
-  status: number
   excluded: boolean
 }
 
@@ -31,8 +30,15 @@ export interface OrderUpdate {
   total_weight?: number
   total_miles?: number
   cost?: number
-  status?: number
   excluded?: boolean
+}
+
+export interface OrderStatus {
+  id: number
+  created_at: string
+  document: number
+  status: number
+  user: number
 }
 
 export interface KV {
@@ -47,28 +53,37 @@ export const useOrdersStore = defineStore('order', () => {
   const mapping = ref(new Map<number, Order>())
   const timestamp = ref(Date.now())
 
-  // const { initialized, loading } = useInitializeStore(async () => {
-  //   let query = supabase.from('orders_journal').select()
-  //
-  //   activeFilters.value.map((f) => (query = query.eq(f.key, f.val.id)))
-  //
-  //   const response = await query.order('created_at').limit(50)
-  //
-  //   const map = new Map<number, Order>()
-  //   response.data?.forEach((json) => {
-  //     const order = json as Order
-  //     map.set(order.id, order)
-  //   })
-  //
-  //   mapping.value = map
-  // })
+  const changes = supabase
+    .channel('realtime_order_statuses_channel')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'order_statuses',
+      },
+      (payload) => {
+        if (payload.eventType == 'INSERT') {
+          const nextStatus = payload.new as OrderStatus
+
+          const order = mapping.value.get(nextStatus.document)
+          if (order) {
+            const map = new Map<number, Order>(mapping.value)
+
+            order.status = nextStatus.status
+            map.set(order.id, order)
+
+            mapping.value = map
+          }
+        }
+      },
+    )
+    .subscribe()
 
   const listing = computed(() => {
     const list = [] as Order[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+    mapping.value.forEach((v) => list.push(v))
 
     return list
   })
@@ -125,13 +140,13 @@ export const useOrdersStore = defineStore('order', () => {
     }
   }
 
-  async function create(order: OrderCreate) {
+  async function create(order: OrderCreate, user: User, status: Status) {
     const response = await supabase.from('orders').insert(order).select() // .throwOnError()
-
     if (response.status == 201 && response.data?.length == 1) {
       const order = response.data[0] as Order
-      // mapping.value.set(order.id, order)
-      return order.id
+      mapping.value.set(order.id, order)
+
+      return await changeStatus(order, user, status)
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
@@ -154,13 +169,37 @@ export const useOrdersStore = defineStore('order', () => {
       })
   }
 
+  async function changeStatus(order: Order, user: User, status: Status) {
+    const response = await supabase
+      .from('order_statuses')
+      .insert({
+        document: order.id,
+        user: user.id,
+        status: status.id,
+      })
+      .select()
+
+    if (response.status == 201 && response.data?.length == 1) {
+      order.status = status.id
+
+      const map = new Map<number, Order>(mapping.value)
+      map.set(order.id, order)
+      mapping.value = map
+
+      return order
+    } else {
+      console.log('error', response)
+      throw 'unexpended response status: ' + response.status
+    }
+  }
+
   async function resolve(id: number) {
     const order = mapping.value.get(id)
     if (order) {
       return order
     }
 
-    const response = await supabase.from('orders').select().eq('id', id)
+    const response = await supabase.from('orders_journal').select().eq('id', id)
 
     const map = new Map<number, Order>()
     response.data?.forEach((json) => {
@@ -185,7 +224,18 @@ export const useOrdersStore = defineStore('order', () => {
     return []
   }
 
-  return { reset, setContext, setFilters, create, listing, update, resolve, search } // initialized, loading,
+  return {
+    reset,
+    setContext,
+    setFilters,
+    create,
+    listing,
+    update,
+    changeStatus,
+    resolve,
+    search,
+    changes,
+  }
 })
 
 if (import.meta.hot) {
