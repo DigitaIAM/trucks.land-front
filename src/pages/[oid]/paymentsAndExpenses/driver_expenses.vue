@@ -72,11 +72,11 @@ function resolve(
 
 const cols = [
   {
-    label: 'Driver',
+    label: 'driver',
     value: (v: DriverPaymentSummary) =>
       resolve(
         v,
-        'driver',
+        'driver_' + v.driver,
         () => ({ name: '-' }),
         () => driversStore.resolve(v.driver),
         (map) => map.name,
@@ -84,32 +84,32 @@ const cols = [
     size: 200,
   },
   {
-    label: 'Orders',
+    label: 'orders',
     value: (v: DriverPaymentSummary) => v.number_of_orders,
     size: 100,
   },
   {
-    label: 'Orders Amount',
+    label: 'orders Amount',
     value: (v: DriverPaymentSummary) => '$' + v.amount_in_orders,
     size: 100,
   },
   {
-    label: 'Payment',
+    label: 'payment',
     value: (v: DriverPaymentSummary) => '$' + v.payments,
     size: 100,
   },
   {
-    label: 'Expenses',
+    label: 'expenses',
     value: (v: DriverPaymentSummary) => '$' + v.expenses,
     size: 100,
   },
   {
-    label: 'Profit',
+    label: 'profit',
     value: (v: DriverPaymentSummary) => '$' + (v.amount_in_orders - v.payments - v.expenses),
     size: 100,
   },
   {
-    label: 'Profit',
+    label: '%',
     value: (v: DriverPaymentSummary) =>
       Math.floor(((v.amount_in_orders - v.payments - v.expenses) / v.amount_in_orders) * 100) + '%',
     size: 100,

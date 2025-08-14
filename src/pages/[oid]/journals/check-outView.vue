@@ -72,11 +72,11 @@ const cols = [
     size: 50,
   },
   {
-    label: 'Dispatcher',
+    label: 'dispatcher',
     value: (v: Order) =>
       resolve(
         v,
-        'dispatcher',
+        'dispatcher_' + v.dispatcher,
         () => ({ name: '?' }),
         () => usersStore.resolve(v.dispatcher),
         (map) => map.name,
@@ -84,11 +84,11 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Status',
+    label: 'status',
     value: (v: Order) =>
       resolve(
         v,
-        'status',
+        'status_' + v.status,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.status),
         (map) => map.name,
@@ -96,26 +96,26 @@ const cols = [
     size: 100,
   },
   {
-    label: 'Refs',
+    label: 'refs',
     value: (v: Order) => v.refs,
     size: 90,
   },
   {
-    label: 'Cost',
+    label: 'cost',
     value: (v: Order) => '$ ' + v.cost,
     size: 80,
   },
   {
-    label: 'D/payment',
+    label: 'd/payment',
     value: (v) => '$' + v.driver_cost,
     size: 80,
   },
   {
-    label: 'Broker',
+    label: 'broker',
     value: (v: Order) =>
       resolve(
         v,
-        'broker',
+        'broker_' + v.broker,
         () => ({ name: '?' }),
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
@@ -123,11 +123,11 @@ const cols = [
     size: 150,
   },
   {
-    label: 'Vehicle',
+    label: 'vehicle',
     value: (v: Order) =>
       resolve(
         v,
-        'vehicle',
+        'vehicle_' + v.vehicle,
         () => ({ name: '-' }),
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
@@ -135,7 +135,7 @@ const cols = [
     size: 80,
   },
   {
-    label: 'Notes',
+    label: 'notes',
     value: (v: Order) =>
       resolve(
         v,

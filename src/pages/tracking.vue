@@ -81,7 +81,7 @@ function resolve(
 function generateStyle(col, order) {
   const color = resolve(
     order,
-    'status',
+    'status_' + order?.status,
     () => ({
       name: '?',
       color: '',
@@ -107,7 +107,7 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'status',
+        'status_' + v.status,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.status),
         (map) => map.name,
@@ -116,17 +116,17 @@ const cols = [
     size: 150,
   },
   {
-    label: 'Refs',
+    label: 'refs',
     value: (v: Order) => v.refs,
     color: (v: Status) => v.color,
     size: 90,
   },
   {
-    label: 'Driver',
+    label: 'driver',
     value: (v: Order) =>
       resolve(
         v,
-        'driver',
+        'driver_' + v.driver,
         () => ({ name: '-' }),
         () => driversStore.resolve(v.driver),
         (map) => map.name,
@@ -135,11 +135,11 @@ const cols = [
     size: 180,
   },
   {
-    label: 'Vehicle',
+    label: 'vehicle',
     value: (v: Order) =>
       resolve(
         v,
-        'vehicle',
+        'vehicle_' + v.vehicle,
         () => ({ name: '-' }),
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
@@ -148,7 +148,7 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Pick up',
+    label: 'pick up',
     value: (v: Order) =>
       resolve(
         v,
@@ -170,7 +170,7 @@ const cols = [
     size: 300,
   },
   {
-    label: 'Delivery',
+    label: 'delivery',
     value: (v: Order) =>
       resolve(
         v,

@@ -147,6 +147,7 @@ declare module 'vue' {
     Pikaday: typeof import('./components/widgets/Pikaday.vue')['default']
     Progress: typeof import('./components/widgets/Progress.vue')['default']
     Prose: typeof import('./components/widgets/Prose.vue')['default']
+    QueryAnd: typeof import('./components/QueryAnd.vue')['default']
     QueryAndShow: typeof import('./components/QueryAndShow.vue')['default']
     RadialProgress: typeof import('./components/widgets/RadialProgress.vue')['default']
     Radio: typeof import('./components/widgets/Radio.vue')['default']

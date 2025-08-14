@@ -41,7 +41,6 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/refs/statuses': RouteRecordInfo<'/[oid]/refs/statuses', '/:oid/refs/statuses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/users': RouteRecordInfo<'/[oid]/refs/users', '/:oid/refs/users', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/vehicles': RouteRecordInfo<'/[oid]/refs/vehicles', '/:oid/refs/vehicles', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/reminders': RouteRecordInfo<'/[oid]/reminders', '/:oid/reminders', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reportsView': RouteRecordInfo<'/[oid]/reportsView', '/:oid/reportsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/organisation': RouteRecordInfo<'/organisation', '/organisation', Record<never, never>, Record<never, never>>,
     '/tracking': RouteRecordInfo<'/tracking', '/tracking', Record<never, never>, Record<never, never>>,
@@ -148,10 +147,6 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/refs/vehicles.vue': {
       routes: '/[oid]/refs/vehicles'
-      views: never
-    }
-    'src/pages/[oid]/reminders.vue': {
-      routes: '/[oid]/reminders'
       views: never
     }
     'src/pages/[oid]/reportsView.vue': {

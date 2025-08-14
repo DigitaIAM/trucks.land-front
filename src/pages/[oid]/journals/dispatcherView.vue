@@ -76,11 +76,11 @@ const cols = [
     size: 50,
   },
   {
-    label: 'Dispatcher',
+    label: 'dispatcher',
     value: (v: Order) =>
       resolve(
         v,
-        'dispatcher',
+        'dispatcher_' + v.dispatcher,
         () => ({ name: '?' }),
         () => usersStore.resolve(v.dispatcher),
         (map) => map.name,
@@ -88,11 +88,11 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Broker',
+    label: 'broker',
     value: (v: Order) =>
       resolve(
         v,
-        'broker',
+        'broker_' + v.broker,
         () => ({ name: '?' }),
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
@@ -100,11 +100,11 @@ const cols = [
     size: 180,
   },
   {
-    label: 'Driver',
+    label: 'driver',
     value: (v: Order) =>
       resolve(
         v,
-        'driver',
+        'driver_' + v.driver,
         () => ({ name: '-' }),
         () => driversStore.resolve(v.driver),
         (map) => map.name,
@@ -112,11 +112,11 @@ const cols = [
     size: 180,
   },
   {
-    label: 'Vehicle',
+    label: 'vehicle',
     value: (v: Order) =>
       resolve(
         v,
-        'vehicle',
+        'vehicle_' + v.vehicle,
         () => ({ name: '-' }),
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
@@ -124,12 +124,12 @@ const cols = [
     size: 120,
   },
   {
-    label: 'Cost',
+    label: 'cost',
     value: (v: Order) => '$ ' + v.cost,
     size: 100,
   },
   {
-    label: 'Total miles',
+    label: 'total miles',
     value: (v: Order) => v.total_miles,
     size: 100,
   },

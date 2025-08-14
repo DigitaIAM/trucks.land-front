@@ -79,7 +79,7 @@ const cols = [
     value: (v: Vehicle) =>
       resolve(
         v,
-        'owner',
+        'owner_' + v.owner,
         () => ({ name: '?' }),
         () => ownersStore.resolve(v.owner),
         (map) => map.name,

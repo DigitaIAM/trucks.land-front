@@ -68,7 +68,7 @@ function resolve(
 
 const cols = [
   {
-    label: 'Dispatcher',
+    label: 'dispatcher',
     value: (v: DispatcherPaymentSummary) =>
       resolve(
         v,
@@ -79,22 +79,27 @@ const cols = [
     size: 200,
   },
   {
-    label: 'Orders',
+    label: 'orders',
     value: (v: DispatcherPaymentSummary) => v.orders_number,
     size: 100,
   },
   {
-    label: 'Amount',
+    label: 'amount',
     value: (v: DispatcherPaymentSummary) => '$' + v.orders_amount,
     size: 100,
   },
   {
-    label: 'Profit',
+    label: 'profit',
     value: (v: DispatcherPaymentSummary) => '$' + v.orders_profit,
     size: 100,
   },
   {
-    label: 'To pay',
+    label: 'd/payments',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_driver,
+    size: 100,
+  },
+  {
+    label: 'to pay',
     value: (v: DispatcherPaymentSummary) => v.toPayment,
     size: 100,
   },

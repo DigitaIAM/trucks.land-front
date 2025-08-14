@@ -102,7 +102,7 @@ async function resetAndShow(str: string) {
     total_weight.value = order.total_weight
     total_miles.value = order.total_miles
     cost.value = order.cost
-    excluded.value = order.excluded ?? true
+    excluded.value = order.excluded
   } else {
     // TODO show error
   }
@@ -180,9 +180,8 @@ useEventListener(document, 'keydown', handleKeyDown)
         <Button
           ghost
           class="cursor-pointer btn-soft font-light tracking-wider"
-          :class="{ 'text-white': excluded }"
+          :class="{ 'exclude-active': excluded }"
           @click="handleClick"
-          :accent="excluded"
           >excluded from calculations with the dispatcher
         </Button>
         <StepperUploading :order="_order"></StepperUploading>
@@ -278,4 +277,8 @@ useEventListener(document, 'keydown', handleKeyDown)
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.exclude-active {
+  background-color: red;
+}
+</style>

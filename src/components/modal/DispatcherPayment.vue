@@ -11,7 +11,6 @@ const reportStore = useReportDispatcher()
 const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
-const organizationsStore = useOrganizationsStore()
 
 watch(
   () => props.dispatcherId,
@@ -48,56 +47,44 @@ function resolve(
 }
 
 const cols = [
-  // {
-  //   label: '',
-  //   value: (v: Order) =>
-  //     resolve(
-  //       v,
-  //       'organization',
-  //       () => ({ code3: '?' }),
-  //       () => organizationsStore.resolve(v.organization),
-  //       (map) => map.code3,
-  //     ),
-  //   size: 50,
-  // },
   {
     label: '#',
     value: (v: Order) => v.id,
     size: 20,
   },
   {
-    label: 'Refs',
+    label: 'refs',
     value: (v: Order) => v.refs,
-    size: 150,
+    size: 90,
   },
   {
-    label: 'Broker',
+    label: 'broker',
     value: (v: Order) =>
       resolve(
         v,
-        'broker',
+        'broker_' + v.broker,
         () => ({ name: '?' }),
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
       ),
-    size: 150,
+    size: 200,
   },
   {
-    label: 'Cost',
+    label: 'cost',
     value: (v: Order) => '$' + v.cost,
     size: 100,
   },
   {
-    label: 'Payments to driver',
+    label: 'payments to driver',
     value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
     size: 100,
   },
   {
-    label: 'Status',
+    label: 'status',
     value: (v: Order) =>
       resolve(
         v,
-        'status',
+        'status_' + v.status,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.status),
         (map) => map.name,
@@ -142,14 +129,10 @@ const orders = computed(() => {
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
-        <tr
-          class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-        >
-            <th
-              v-for="col in cols"
-              class="p-4"
-              :style="{ width: col.size + 'px' }"
-            >
+          <tr
+            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          >
+            <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
               <p class="block antialiasing tracking-wider font-thin leading-none">
                 {{ col.label }}
               </p>
@@ -158,11 +141,7 @@ const orders = computed(() => {
         </thead>
         <tbody>
           <tr v-for="order in orders">
-            <td
-              v-for="col in cols"
-              class="py-3 px-4"
-              :style="{ width: col.size + 'px' }"
-            >
+            <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"
                 :style="{ width: col.size + 'px' }"

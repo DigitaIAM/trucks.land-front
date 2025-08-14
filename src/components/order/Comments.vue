@@ -57,11 +57,7 @@ async function saveComments() {
         <div
           class="w-full flex-row rounded-xl border-2 border-gray-500 justify-start items-start gap-4 inline-flex p-3"
         >
-          <img
-            class="object-cover w-10 h-10 rounded-full"
-            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=faceare&facepad=3&w=688&h=688&q=100"
-            alt="Mia John"
-          />
+          <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
           <textarea
             v-model="note"
             name=""
@@ -95,11 +91,9 @@ async function saveComments() {
             :key="comment.id"
             class="w-full pb-6 inline-flex justify-start items-start gap-2.5"
           >
-            <img
-              class="w-10 h-10 rounded-full object-cover"
-              src="https://pagedone.io/asset/uploads/1710226776.png"
-              alt="Mia Thompson image"
-            />
+            <QueryAnd :id="comment.user" :store="usersStore" v-slot="slotProps">
+              <AvatarUser :username="slotProps.user?.email"></AvatarUser>
+            </QueryAnd>
             <div class="w-full flex-col justify-start items-start gap-3.5 inline-flex">
               <div class="w-full justify-start items-start flex-col flex gap-1">
                 <div class="w-full justify-between items-start gap-1 inline-flex">
