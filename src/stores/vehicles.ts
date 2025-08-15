@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Broker } from '@/stores/brokers.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Vehicle extends VehicleCreate {
   id: number
@@ -61,7 +61,7 @@ function convert(vehicle: Vehicle): Vehicle {
 }
 
 export const useVehiclesStore = defineStore('vehicle', () => {
-  const mapping = ref(new Map<number, Vehicle>())
+  const mapping = ref(new Map<number, Vehicle | Promise<Vehicle>>())
 
   const searchResult = ref<Array<Vehicle> | null>(null)
 
@@ -77,13 +77,13 @@ export const useVehiclesStore = defineStore('vehicle', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     if (searchResult.value == null) {
       const list = [] as Vehicle[]
 
-      mapping.value.forEach((v) => {
-        list.push(v)
-      })
+      for (const obj of mapping.value.values()) {
+        list.push(await obj)
+      }
 
       return list
     } else {
@@ -123,28 +123,29 @@ export const useVehiclesStore = defineStore('vehicle', () => {
       })
   }
 
-  async function resolve(id: number) {
-    // console.log('vehicle resolve', id)
-    if (!(id && id >= 0)) {
-      // console.log('id is not number')
-      return null
+  async function _fetching(id: number): Promise<Vehicle> {
+    const response = await supabase.from('vehicles').select().eq('id', id)
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Vehicle
+    }
+    return { id: id, name: 'error loading' } as Vehicle
+  }
+
+  async function resolve(id: number | null): Promise<Vehicle | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
     }
 
     const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
+    if (v) return v
 
-    const response = await supabase.from('vehicles').select().eq('id', id)
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
 
-    const map = new Map<number, Vehicle>()
-    response.data?.forEach((json) => {
-      const vehicle = convert(json as Vehicle)
-      map.set(vehicle.id, vehicle)
-      mapping.value.set(vehicle.id, vehicle)
-    })
-
-    return map.get(id)
+    return promise
   }
 
   async function search(text: string) {

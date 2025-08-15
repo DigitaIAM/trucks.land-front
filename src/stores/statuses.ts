@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Status extends StatusCreate {
   id: number
@@ -17,7 +18,7 @@ export interface StatusUpdate {
 }
 
 export const useStatusesStore = defineStore('status', () => {
-  const mapping = ref(new Map<number, Status>())
+  const mapping = ref(new Map<number, Status | Promise<Status>>())
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('statuses').select()
@@ -31,12 +32,12 @@ export const useStatusesStore = defineStore('status', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     const list = [] as Status[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+    for (const obj of mapping.value.values()) {
+      list.push(await obj)
+    }
 
     return list
   })
@@ -72,26 +73,29 @@ export const useStatusesStore = defineStore('status', () => {
       })
   }
 
-  async function resolve(id: number | null) {
-    if (!id) {
-      return {}
+  async function _fetching(id: number): Promise<Status> {
+    const response = await supabase.from('statuses').select().eq('id', id)
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Status
+    }
+    return { id: id, name: 'error loading' } as Status
+  }
+
+  async function resolve(id: number | null): Promise<Status | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
     }
 
     const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
+    if (v) return v
 
-    const response = await supabase.from('statuses').select().eq('id', id)
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
 
-    const map = new Map<number, Status>()
-    response.data?.forEach((json) => {
-      const status = json as Status
-      map.set(status.id, status)
-      mapping.value.set(status.id, status)
-    })
-
-    return map.get(id)
+    return promise
   }
 
   async function search(text: string) {

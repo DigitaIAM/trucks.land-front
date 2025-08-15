@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Broker } from '@/stores/brokers.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Driver extends DriverCreate {
   id: number
@@ -32,7 +32,7 @@ export interface DriverUpdate {
 }
 
 export const useDriversStore = defineStore('driver', () => {
-  const mapping = ref(new Map<number, Driver>())
+  const mapping = ref(new Map<number, Driver | Promise<Driver>>())
 
   const searchResult = ref<Array<Driver> | null>(null)
 
@@ -48,19 +48,19 @@ export const useDriversStore = defineStore('driver', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     if (searchResult.value == null) {
       const list = [] as Driver[]
 
-      mapping.value.forEach((v) => {
-        list.push(v)
-      })
+      for (const obj of mapping.value.values()) {
+        list.push(await obj)
+      }
 
       return list
     } else {
       return searchResult.value
     }
-  })
+  }, [])
 
   function create(driver: DriverCreate) {
     supabase
@@ -94,30 +94,29 @@ export const useDriversStore = defineStore('driver', () => {
       })
   }
 
-  async function resolve(id: number) {
-    // console.log('driver resolve', id)
-    if (!(id && id >= 0)) {
-      // console.log('id is not number')
-      return null
+  async function _fetching(id: number): Promise<Driver> {
+    const response = await supabase.from('drivers').select().eq('id', id)
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Driver
+    }
+    return { id: id, name: 'error loading' } as Driver
+  }
+
+  async function resolve(id: number | null): Promise<Driver | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
     }
 
     const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
+    if (v) return v
 
-    const response = await supabase.from('drivers').select().eq('id', id)
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
 
-    // console.log('response', response)
-
-    const map = new Map<number, Driver>()
-    response.data?.forEach((json) => {
-      const driver = json as Driver
-      map.set(driver.id, driver)
-      mapping.value.set(driver.id, driver)
-    })
-
-    return map.get(id)
+    return promise
   }
 
   async function search(text: string) {

@@ -127,7 +127,7 @@ export const useOrdersStore = defineStore('order', () => {
       }
     })
 
-    const response = await query.order('created_at').limit(50)
+    const response = await query.order('created_at', { ascending: false }).limit(50)
 
     if (timestamp.value == localTime) {
       const map = new Map<number, Order>()

@@ -32,9 +32,9 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
   const listing = computed(() => {
     const list = [] as StatusNext[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+    for (const obj of mapping.value.values()) {
+      list.push(obj)
+    }
 
     return list
   })

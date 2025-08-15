@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Broker } from '@/stores/brokers.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Owner extends OwnerCreate {
   id: number
@@ -34,7 +34,7 @@ export interface OwnerUpdate {
 }
 
 export const useOwnersStore = defineStore('owner', () => {
-  const mapping = ref(new Map<number, Owner>())
+  const mapping = ref(new Map<number, Owner | Promise<Owner>>())
 
   const searchResult = ref<Array<Owner> | null>(null)
 
@@ -50,13 +50,13 @@ export const useOwnersStore = defineStore('owner', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     if (searchResult.value == null) {
       const list = [] as Owner[]
 
-      mapping.value.forEach((v) => {
-        list.push(v)
-      })
+      for (const obj of mapping.value.values()) {
+        list.push(await obj)
+      }
 
       return list
     } else {
@@ -96,22 +96,29 @@ export const useOwnersStore = defineStore('owner', () => {
       })
   }
 
-  async function resolve(id: number) {
-    const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
-
+  async function _fetching(id: number): Promise<Owner> {
     const response = await supabase.from('owners').select().eq('id', id)
 
-    const map = new Map<number, Owner>()
-    response.data?.forEach((json) => {
-      const owner = json as Owner
-      map.set(owner.id, owner)
-      mapping.value.set(owner.id, owner)
-    })
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Owner
+    }
+    return { id: id, name: 'error loading' } as Owner
+  }
 
-    return map.get(id)
+  async function resolve(id: number | null): Promise<Owner | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
+    }
+
+    const v = mapping.value.get(id)
+    if (v) return v
+
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
+
+    return promise
   }
 
   async function search(text: string) {

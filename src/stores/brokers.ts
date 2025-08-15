@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Broker extends BrokerCreate {
   id: number
@@ -35,7 +36,7 @@ export interface BrokerUpdate {
 }
 
 export const useBrokersStore = defineStore('broker', () => {
-  const mapping = ref(new Map<number, Broker>())
+  const mapping = ref(new Map<number, Broker | Promise<Broker>>())
 
   const searchResult = ref<Array<Broker> | null>(null)
 
@@ -51,19 +52,19 @@ export const useBrokersStore = defineStore('broker', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     if (searchResult.value == null) {
       const list = [] as Broker[]
 
-      mapping.value.forEach((v) => {
-        list.push(v)
-      })
+      for (const obj of mapping.value.values()) {
+        list.push(await obj)
+      }
 
       return list
     } else {
       return searchResult.value
     }
-  })
+  }, [])
 
   function create(broker: BrokerCreate) {
     supabase
@@ -96,22 +97,29 @@ export const useBrokersStore = defineStore('broker', () => {
       })
   }
 
-  async function resolve(id: number) {
-    const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
-
+  async function _fetching(id: number): Promise<Broker> {
     const response = await supabase.from('brokers').select().eq('id', id)
 
-    const map = new Map<number, Broker>()
-    response.data?.forEach((json) => {
-      const broker = json as Broker
-      map.set(broker.id, broker)
-      mapping.value.set(broker.id, broker)
-    })
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Broker
+    }
+    return { id: id, name: 'error loading' } as Broker
+  }
 
-    return map.get(id)
+  async function resolve(id: number | null): Promise<Broker | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
+    }
+
+    const v = mapping.value.get(id)
+    if (v) return v
+
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
+
+    return promise
   }
 
   async function search(text: string): Promise<Array<Broker>> {

@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface User extends UserCreate {
   id: number
@@ -70,7 +71,7 @@ export interface UserUpdate {
 }
 
 export const useUsersStore = defineStore('user', () => {
-  const mapping = ref(new Map<number, User>())
+  const mapping = ref(new Map<number, User | Promise<User>>())
   const uuids = ref(new Map<string, User>())
 
   const searchResult = ref<Array<User> | null>(null)
@@ -87,13 +88,13 @@ export const useUsersStore = defineStore('user', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     if (searchResult.value == null) {
       const list = [] as User[]
 
-      mapping.value.forEach((v) => {
-        list.push(v)
-      })
+      for (const obj of mapping.value.values()) {
+        list.push(await obj)
+      }
 
       return list
     } else {
@@ -133,26 +134,29 @@ export const useUsersStore = defineStore('user', () => {
       })
   }
 
-  async function resolve(id: number) {
-    if (!(id && id >= 0)) {
-      return null
+  async function _fetching(id: number): Promise<User> {
+    const response = await supabase.from('users').select().eq('id', id)
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as User
+    }
+    return { id: id, name: 'error loading' } as User
+  }
+
+  async function resolve(id: number | null): Promise<User | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
     }
 
     const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
+    if (v) return v
 
-    const response = await supabase.from('users').select().eq('id', id)
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
 
-    const map = new Map<number, User>()
-    response.data?.forEach((json) => {
-      const user = json as User
-      map.set(user.id, user)
-      mapping.value.set(user.id, user)
-    })
-
-    return map.get(id)
+    return promise
   }
 
   async function resolveUUID(uuid: string) {

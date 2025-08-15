@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { debouncePromise } from '@/utils/cache.ts'
 
 export interface Comment extends CommentCreate {
   id: number
@@ -6,12 +7,12 @@ export interface Comment extends CommentCreate {
 }
 
 export interface CommentCreate {
+  document: number
   user: number
   note: string
 }
 
 export interface CommentUpdate {
-  user?: number
   note?: string
 }
 
@@ -56,13 +57,8 @@ export const useCommentsStore = defineStore('comment', () => {
     }
   }
 
-  async function commentsForOrder(orderId: number) {
-    const response = await supabase
-      .from('comments')
-      .select()
-      .eq('document', orderId)
-      .order('created_at', { ascending: false })
-      .limit(1)
+  async function _fetching(ids: Array<number>): Promise<Array<Comment>> {
+    const response = await supabase.from('comment_last_in_document').select().in('document', ids)
 
     if (response.status == 200) {
       const list: Array<Comment> = []
@@ -72,6 +68,19 @@ export const useCommentsStore = defineStore('comment', () => {
       })
       return list
     }
+    return []
+  }
+
+  const _resolver = debouncePromise<Comment>(_fetching, 10)
+
+  async function commentsForOrder(orderId: number): Promise<Array<Comment>> {
+    const list = await _resolver(orderId)
+    for (const comment of list) {
+      if (comment.document === orderId) {
+        return [comment]
+      }
+    }
+
     return []
   }
 

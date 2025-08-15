@@ -17,16 +17,20 @@ const useOrganizations = useOrganizationsStore()
   <Navbar>
     <NavbarStart>
       <div class="px-20">
-        <Button ghost @click="router.replace({ path: '/organisation' })"
-                class="font-thin tracking-wider rounded-full">
+        <Button
+          ghost
+          @click="router.replace({ path: '/organisation' })"
+          class="font-thin tracking-wider rounded-full"
+        >
           <QueryAndShow :id="authStore.oid" :store="useOrganizations" />
         </Button>
       </div>
     </NavbarStart>
 
     <NavbarEnd>
-      <div class="px-2">
-        <img src="./../assets/logoTL.svg" />
+      <div class="flex-col justify-items-center px-2">
+        <div><img src="./../assets/logoTL.svg" /></div>
+        <div class="text-xs font-thin antialiased text-gray-500">250814</div>
       </div>
     </NavbarEnd>
   </Navbar>

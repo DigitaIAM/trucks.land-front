@@ -26,3 +26,7 @@ export function timeAgo(value: Date | string) {
 
   return date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear()
 }
+
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
+import { sleep } from '@/utils/datetime.ts'
 
 export interface Organization extends OrganizationCreate {
   id: number
@@ -27,7 +28,7 @@ export interface OrganizationUpdate {
 }
 
 export const useOrganizationsStore = defineStore('organization', () => {
-  const mapping = ref(new Map<number, Organization>())
+  const mapping = ref(new Map<number, Organization | Promise<Organization>>())
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('organizations').select()
@@ -41,12 +42,12 @@ export const useOrganizationsStore = defineStore('organization', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
+  const listing = computedAsync(async () => {
     const list = [] as Organization[]
 
-    mapping.value.forEach((v) => {
-      list.push(v)
-    })
+    for (const obj of mapping.value.values()) {
+      list.push(await obj)
+    }
 
     return list
   })
@@ -84,22 +85,29 @@ export const useOrganizationsStore = defineStore('organization', () => {
       })
   }
 
-  async function resolve(id: number) {
-    const v = mapping.value.get(id)
-    if (v) {
-      return v
-    }
-
+  async function _fetching(id: number): Promise<Organization> {
     const response = await supabase.from('organizations').select().eq('id', id)
 
-    const map = new Map<number, Organization>()
-    response.data?.forEach((json) => {
-      const organization = json as Organization
-      map.set(organization.id, organization)
-      mapping.value.set(organization.id, organization)
-    })
+    if (response.data && response.data.length > 0) {
+      return response.data[0] as Organization
+    }
+    return { id: id, name: 'error loading' } as Organization
+  }
 
-    return map.get(id)
+  async function resolve(id: number | null): Promise<Organization | null> {
+    if (!id || id < 0) return null
+
+    while (loading.value) {
+      await sleep(10)
+    }
+
+    const v = mapping.value.get(id)
+    if (v) return v
+
+    const promise = _fetching(id)
+    mapping.value.set(id, promise)
+
+    return promise
   }
 
   async function resolve3(id3: string) {

@@ -36,28 +36,40 @@ export interface EventUpdate {
 }
 
 export const useEventsStore = defineStore('event', () => {
-  async function listing(orderId: number) {
-    if (orderId) {
-      const response = await supabase
-        .from('order_events')
-        .select()
-        .eq('document', orderId)
-        .order('datetime', { ascending: false })
-      // .order('datetime') // .throwOnError()
-      // console.log(response)
+  const mapping = ref(new Map<number, Event[] | Promise<Event[]>>())
 
-      if (response.status == 200) {
-        const list = []
+  async function _fetching(id: number): Promise<Array<Event>> {
+    const response = await supabase
+      .from('order_events')
+      .select()
+      .eq('document', id)
+      .order('datetime', { ascending: false })
+    // .order('datetime') // .throwOnError()
+    // console.log(response)
 
-        response.data?.forEach((json) => {
-          const event = json as Event
-          list.push(event)
-        })
+    if (response.status == 200) {
+      const list: Array<Event> = []
 
-        return list
-      } else {
-        throw 'unexpended response status: ' + response.status
-      }
+      response.data?.forEach((json) => {
+        const event = json as Event
+        list.push(event)
+      })
+
+      return list
+    } else {
+      throw 'unexpended response status: ' + response.status
+    }
+  }
+
+  async function listing(id: number) {
+    if (id) {
+      const v = mapping.value.get(id)
+      if (v) return v
+
+      const promise = _fetching(id)
+      mapping.value.set(id, promise)
+
+      return promise
     } else {
       return []
     }
