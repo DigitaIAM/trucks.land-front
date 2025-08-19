@@ -81,10 +81,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     const paymentOwnerStore = usePaymentOwnerStore()
 
     const data = owners.value.slice()
-    console.log('data', data)
     for (const summary of data) {
-      console.log('summary', summary)
-
       mapping.value.delete(processing.value[1])
 
       processing.value = [summary.owner, processing.value[0]]
@@ -103,9 +100,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
         } as PaymentOwnerCreate)
       }
 
-      console.log('records', records)
-
-      const payment = await paymentOwnerStore.create(
+      await paymentOwnerStore.create(
         {
           created_by: account.id,
           owner: summary.owner,
@@ -114,8 +109,6 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
         } as PaymentOwnerCreate,
         records,
       )
-
-      console.log('payment', payment)
     }
 
     mapping.value.clear()

@@ -33,7 +33,7 @@ const authStore = useAuthStore()
 
 const state = reactive({})
 
-const selectedOwner = ref(null)
+const selectedOwner = ref<number | null>(null)
 
 const ts = moment().subtract(3, 'days')
 const currentYear = ref(ts.year())
@@ -43,7 +43,7 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
-function openPayment(record: OwnerPaymentRecord) {
+function openPayment(record: OwnerPaymentSummary) {
   selectedOwner.value = record.owner
 }
 
@@ -115,7 +115,12 @@ async function createPayment() {
     <Search :store="ownersStore"></Search>
     <div>{{ currentYear }}</div>
     <div>#{{ currentWeek }}</div>
-    <Button class="btn-soft font-light tracking-wider" @click="createPayment(null)">Create</Button>
+    <Button
+      :disabled="reportOwnerStore.owners.length == 0"
+      class="btn-soft font-light tracking-wider"
+      @click="createPayment()"
+      >Close week</Button
+    >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
