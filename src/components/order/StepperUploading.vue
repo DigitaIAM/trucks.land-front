@@ -169,7 +169,7 @@ function isPresent(file_type: string) {
 
 async function download(file) {
   try {
-    const { data, error } = await supabase.storage.from('orders').createSignedUrl(file.path, 2)
+    const { data, error } = await supabase.storage.from('orders').createSignedUrl(file.path, 15)
     if (error) throw error
     window.open(data.signedUrl, '_blank')
   } catch (error) {
