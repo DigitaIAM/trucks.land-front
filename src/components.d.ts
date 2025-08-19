@@ -121,6 +121,7 @@ declare module 'vue' {
     OrderFullView: typeof import('./components/order/OrderFullView.vue')['default']
     OrganinizationModal: typeof import('./components/modal/OrganinizationModal.vue')['default']
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
+    OwnerPayment: typeof import('./components/modal/OwnerPayment.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
     PickUpModal: typeof import('./components/modal/PickUpModal.vue')['default']
     Progress: typeof import('./components/widgets/Progress.vue')['default']

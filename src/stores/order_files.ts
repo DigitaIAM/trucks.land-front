@@ -1,5 +1,4 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import type { Order } from '@/stores/orders.ts'
 
 export interface FileRecord extends FileRecordCreate {
   id: number

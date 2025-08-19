@@ -38,11 +38,11 @@ const orgData = useOrgData()
 const router = useRouter()
 
 const buttons = [
-  // {
-  //   label: 'Owner',
-  //   icon: OwnerIcon,
-  //   link: '',
-  // },
+  {
+    label: 'Owner',
+    icon: OwnerIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/ownerPayments',
+  },
   {
     label: 'Driver',
     icon: DriverIcon,

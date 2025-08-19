@@ -16,8 +16,6 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-const router = useRouter()
-
 defineOptions({
   __loaders: [useOrgData],
 })

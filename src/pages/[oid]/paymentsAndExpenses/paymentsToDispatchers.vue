@@ -89,13 +89,13 @@ const cols = [
     size: 100,
   },
   {
-    label: 'profit',
-    value: (v: DispatcherPaymentSummary) => '$' + v.orders_profit,
+    label: 'd/payments',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_driver,
     size: 100,
   },
   {
-    label: 'd/payments',
-    value: (v: DispatcherPaymentSummary) => '$' + v.orders_driver,
+    label: 'profit',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_profit,
     size: 100,
   },
   {

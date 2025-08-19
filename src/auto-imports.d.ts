@@ -242,6 +242,7 @@ declare global {
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
+  const usePaymentOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentOwnerStore']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
   const usePickUpStore: typeof import('./stores/pick_up')['usePickUpStore']
@@ -259,6 +260,7 @@ declare global {
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
   const useReportDispatcher: typeof import('./stores/report_dispatcher')['useReportDispatcher']
   const useReportDriver: typeof import('./stores/report_driver')['useReportDriver']
+  const useReportOwner: typeof import('./stores/report_owner')['useReportOwner']
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
@@ -379,11 +381,17 @@ declare global {
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
+  export type { PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerOrders, PaymentToOwnerOrdersCreate } from './stores/payment_to_owners'
+  import('./stores/payment_to_owners')
+  // @ts-ignore
   export type { DispatcherPaymentRecord, DispatcherPaymentSummary } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
   // @ts-ignore
   export type { DriverPaymentRecord, DriverPaymentSummary } from './stores/report_driver'
   import('./stores/report_driver')
+  // @ts-ignore
+  export type { OwnerPaymentRecord, OwnerPaymentSummary } from './stores/report_owner'
+  import('./stores/report_owner')
   // @ts-ignore
   export type { Status, StatusCreate, StatusUpdate } from './stores/statuses'
   import('./stores/statuses')
@@ -626,6 +634,7 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
+    readonly usePaymentOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentOwnerStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
@@ -642,6 +651,7 @@ declare module 'vue' {
     readonly useRefHistory: UnwrapRef<typeof import('@vueuse/core')['useRefHistory']>
     readonly useReportDispatcher: UnwrapRef<typeof import('./stores/report_dispatcher')['useReportDispatcher']>
     readonly useReportDriver: UnwrapRef<typeof import('./stores/report_driver')['useReportDriver']>
+    readonly useReportOwner: UnwrapRef<typeof import('./stores/report_owner')['useReportOwner']>
     readonly useResizeObserver: UnwrapRef<typeof import('@vueuse/core')['useResizeObserver']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
