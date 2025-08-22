@@ -148,8 +148,8 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  function update(id: number, event: EventUpdate) {
-    supabase
+  async function update(id: number, event: EventUpdate) {
+    await supabase
       .from('order_events')
       .update(event)
       .eq('id', id)
