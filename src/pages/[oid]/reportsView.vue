@@ -33,19 +33,26 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
+const orgData = useOrgData()
+
+const router = useRouter()
+
 const buttons = [
-  {
-    label: 'Broker',
-    icon: BrokerIcon,
-  },
-  {
-    label: 'Vehicle',
-    icon: VehicleIcon,
-  },
   {
     label: 'Owner',
     icon: OwnerIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/ownerReport',
   },
+  // {
+  //   label: 'Broker',
+  //   icon: BrokerIcon,
+  //   link: '',
+  // },
+  // {
+  //   label: 'Vehicle',
+  //   icon: VehicleIcon,
+  //   link: '',
+  // },
 ]
 </script>
 
@@ -55,7 +62,11 @@ const buttons = [
   </div>
 
   <div class="flex space-x-8 px-5">
-    <div v-for="button in buttons" :key="button.label">
+    <div
+      v-for="button in buttons"
+      :key="button.label"
+      @click="router.replace({ path: button.link })"
+    >
       <div
         class="size-32 place-items-center p-6 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105"
       >

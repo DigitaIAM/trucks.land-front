@@ -53,21 +53,38 @@ function resetAndShow(event: Event | null) {
 
 async function saveAndEdit() {
   try {
-    await eventsStore.create({
-      document: props.document,
-      kind: 'delivery',
-      address: address.value,
-      city: city.value,
-      state: state.value,
-      zip: zip.value,
-      datetime: datetime.value,
-      details: {
-        note: note.value,
-        priority: priority.value,
-        timeliness: timeliness.value,
-      },
-    } as EventCreate)
-
+    const id = props.edit?.id
+    if (id >= 0) {
+      await eventsStore.update(id, {
+        document: props.document,
+        kind: 'delivery',
+        address: address.value,
+        city: city.value,
+        state: state.value,
+        zip: zip.value,
+        datetime: datetime.value,
+        details: {
+          note: note.value,
+          priority: priority.value,
+          timeliness: timeliness.value,
+        },
+      } as EventUpdate)
+    } else {
+      await eventsStore.create({
+        document: props.document,
+        kind: 'delivery',
+        address: address.value,
+        city: city.value,
+        state: state.value,
+        zip: zip.value,
+        datetime: datetime.value,
+        details: {
+          note: note.value,
+          priority: priority.value,
+          timeliness: timeliness.value,
+        },
+      } as EventCreate)
+    }
     close()
   } catch (e) {
     console.log('error', e)
@@ -155,9 +172,4 @@ function close() {
   </Modal>
 </template>
 
-<style scoped>
-.dp__theme_light {
-  --dp-background-color: gray-500;
-  --dp-text-color: gray-200;
-}
-</style>
+<style scoped></style>

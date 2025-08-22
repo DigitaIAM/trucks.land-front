@@ -26,7 +26,7 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
-const cOrg = useOrgData()
+// const cOrg = useOrgData()
 
 // const props = defineProps<{
 //   id: string

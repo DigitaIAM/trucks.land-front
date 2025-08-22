@@ -123,6 +123,8 @@ declare module 'vue' {
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
     OwnerPayment: typeof import('./components/modal/OwnerPayment.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
+    PaymentsForOwner: typeof import('./components/modal/PaymentsForOwnerOrders.vue')['default']
+    PaymentsForOwnerOrders: typeof import('./components/modal/PaymentsForOwnerOrders.vue')['default']
     PickUpModal: typeof import('./components/modal/PickUpModal.vue')['default']
     Progress: typeof import('./components/widgets/Progress.vue')['default']
     Prose: typeof import('./components/widgets/Prose.vue')['default']

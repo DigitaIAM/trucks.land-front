@@ -8,10 +8,10 @@ const props = defineProps<{
 
 const id = ref(null)
 const datetime = ref(new Date() as Date | undefined)
-const note = ref('')
-const driver = ref(null)
-const vehicle = ref(null)
-const cost = ref(null)
+const note = ref<string>('')
+const driver = ref<Driver | null>(null)
+const vehicle = ref<Vehicle | null>(null)
+const cost = ref<number | null>(null)
 
 const emit = defineEmits(['on-update'])
 
@@ -44,17 +44,32 @@ function resetAndShow(event: Event | null) {
 
 async function saveAndEdit() {
   try {
-    await eventsStore.create({
-      document: props.document,
-      kind: 'expenses',
-      datetime: datetime.value,
-      driver: driver.value?.id,
-      vehicle: vehicle.value?.id,
-      cost: cost.value,
-      details: {
-        note: note.value,
-      },
-    } as EventCreate)
+    const id = props.edit?.id
+    if (id >= 0) {
+      await eventsStore.update(id, {
+        document: props.document,
+        kind: 'expenses',
+        datetime: datetime.value,
+        driver: driver.value?.id,
+        vehicle: vehicle.value?.id,
+        cost: cost.value,
+        details: {
+          note: note.value,
+        },
+      } as EventUpdate)
+    } else {
+      await eventsStore.create({
+        document: props.document,
+        kind: 'expenses',
+        datetime: datetime.value,
+        driver: driver.value?.id,
+        vehicle: vehicle.value?.id,
+        cost: cost.value,
+        details: {
+          note: note.value,
+        },
+      } as EventCreate)
+    }
 
     close()
   } catch (e) {
@@ -112,9 +127,4 @@ function close() {
   </Modal>
 </template>
 
-<style scoped>
-.dp__theme_light {
-  --dp-background-color: gray-500;
-  --dp-text-color: gray-200;
-}
-</style>
+<style scoped></style>

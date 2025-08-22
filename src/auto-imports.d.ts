@@ -155,7 +155,7 @@ declare global {
   const useCloned: typeof import('@vueuse/core')['useCloned']
   const useColorMode: typeof import('./composables/use-themes')['useColorMode']
   const useCommentsStore: typeof import('./stores/comments')['useCommentsStore']
-  const useCommentsStores: typeof import('./stores/comments')['useCommentsStores']
+  const useCommentsStores: (typeof import('./stores/comments'))['useCommentsStores']
   const useConfirmDialog: typeof import('@vueuse/core')['useConfirmDialog']
   const useCountdown: typeof import('@vueuse/core')['useCountdown']
   const useCounter: typeof import('@vueuse/core')['useCounter']
@@ -242,10 +242,12 @@ declare global {
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
-  const usePaymentOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentOwnerStore']
+  const usePaymentToOwnerJournalStore: (typeof import('./stores/payment_to_owners'))['usePaymentToOwnerJournalStore']
+  const usePaymentToOwnerOrdersStore: typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']
+  const usePaymentToOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
-  const usePickUpStore: typeof import('./stores/pick_up')['usePickUpStore']
+  const usePickUpStore: (typeof import('./stores/pick_up'))['usePickUpStore']
   const usePointer: typeof import('@vueuse/core')['usePointer']
   const usePointerLock: typeof import('@vueuse/core')['usePointerLock']
   const usePointerSwipe: typeof import('@vueuse/core')['usePointerSwipe']
@@ -381,8 +383,11 @@ declare global {
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
-  export type { PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerOrders, PaymentToOwnerOrdersCreate } from './stores/payment_to_owners'
+  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
+  // @ts-ignore
+  export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
+  import('./stores/payment_to_owners_orders')
   // @ts-ignore
   export type { DispatcherPaymentRecord, DispatcherPaymentSummary } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
@@ -634,7 +639,8 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
-    readonly usePaymentOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentOwnerStore']>
+    readonly usePaymentToOwnerOrdersStore: UnwrapRef<typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']>
+    readonly usePaymentToOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>

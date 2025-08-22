@@ -28,7 +28,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     response.data?.forEach((json) => {
       const record = {
         owner: json['owner'],
-        driver_payment: json['driver_payment'],
+        driver_payment: json['driver_cost'],
         order: json as Order,
       } as OwnerPaymentRecord
 
@@ -77,8 +77,8 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     return list
   })
 
-  async function createPayment(year: number, week: number, account: User) {
-    const paymentOwnerStore = usePaymentOwnerStore()
+  async function createPayment(org: number, year: number, week: number, account: User) {
+    const paymentToOwnerStore = usePaymentToOwnerStore()
 
     const data = owners.value.slice()
     for (const summary of data) {
@@ -94,19 +94,20 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
         records.push({
           created_by: account.id,
           document: -1,
-          order: order.id,
+          doc_order: order.id,
           amount: order.cost,
           payment: payment,
-        } as PaymentOwnerCreate)
+        } as PaymentToOwnerOrdersCreate)
       }
 
-      await paymentOwnerStore.create(
+      await paymentToOwnerStore.create(
         {
           created_by: account.id,
+          organization: org,
           owner: summary.owner,
           year: year,
           week: week,
-        } as PaymentOwnerCreate,
+        } as PaymentToOwnerCreate,
         records,
       )
     }

@@ -40,11 +40,11 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
   },
-  // {
-  //   name: 'Reports',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-  //   path: '/reportsView',
-  // },
+  {
+    name: 'Reports',
+    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+    path: '/reportsView',
+  },
   {
     name: 'Finances',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
@@ -150,14 +150,16 @@ function openNav(mode: string | null) {
         </Text>
       </div>
     </div>
-      <div class="fixed flex flex-col-2 items-center right-5 sm:bottom-5 w-full px-10 gap-x-2 ">
-        <div>
-          <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
-        </div>
-        <div>
-         <p class="truncate font-thin tracking-wider text-primary-300 dark: text-primary-300">{{authStore.account?.name ?? authStore.user?.email}}</p>
-        </div>
+    <div class="fixed flex flex-col-2 items-center right-5 sm:bottom-5 w-full px-10 gap-x-2">
+      <div>
+        <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
       </div>
+      <div>
+        <p class="truncate font-thin tracking-wider text-primary-300 dark: text-primary-300">
+          {{ authStore.account?.name ?? authStore.user?.email }}
+        </p>
+      </div>
+    </div>
 
     <!-- MINI SIDEBAR-->
     <div class="mini mt-20 flex flex-col space-y-2 w-full h-[calc(100vh)]">
@@ -254,6 +256,7 @@ function openNav(mode: string | null) {
 .active {
   color: #0269d1;
 }
+
 .truncate {
   width: 120px; /* Задайте желаемую ширину */
   white-space: nowrap;

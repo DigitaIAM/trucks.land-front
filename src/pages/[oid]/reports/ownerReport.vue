@@ -25,24 +25,30 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-const paymentToOwnerStore = usePaymentToOwnerStore()
+import moment from 'moment'
+
+const reportOwnerStore = useReportOwner()
 const ownersStore = useOwnersStore()
-const usersStore = useUsersStore()
+const authStore = useAuthStore()
 
 const state = reactive({})
 
-const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
+const selectedOwner = ref<number | null>(null)
+
+const ts = moment().subtract(3, 'days')
+const currentYear = ref(ts.year())
+const currentWeek = ref(ts.isoWeek())
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-function openPayment(record: PaymentToOwnerSummary) {
-  selectedDocument.value = record
+function openPayment(record: OwnerPaymentSummary) {
+  selectedOwner.value = record.owner
 }
 
 function onClose() {
-  selectedDocument.value = null
+  selectedOwner.value = null
 }
 
 function resolve(
@@ -67,13 +73,8 @@ function resolve(
 
 const cols = [
   {
-    label: '#',
-    value: (v: PaymentToOwnerSummary) => v.id,
-    size: 50,
-  },
-  {
     label: 'owner',
-    value: (v: PaymentToOwnerSummary) =>
+    value: (v: OwnerPaymentSummary) =>
       resolve(
         v,
         'owner_' + v.owner,
@@ -81,48 +82,51 @@ const cols = [
         () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
-    size: 300,
+    size: 200,
   },
   {
-    label: 'order amount',
-    value: (v: PaymentToOwnerSummary) => '$' + v.amount,
+    label: 'orders',
+    value: (v: OwnerPaymentSummary) => v.orders_number,
+    size: 100,
+  },
+  {
+    label: 'receive',
+    value: (v: OwnerPaymentSummary) => '$' + v.orders_driver,
     size: 100,
   },
   {
     label: 'payout',
-    value: (v: PaymentToOwnerSummary) => '$' + v.payment,
+    value: (v: OwnerPaymentSummary) => '$' + v.orders_driver,
     size: 100,
-  },
-  {
-    label: 'payed',
-    value: (v) => '',
-    size: 100,
-  },
-  {
-    label: 'created at',
-    value: (v: PaymentToOwnerSummary) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 150,
-  },
-  {
-    label: 'created by',
-    value: (v: PaymentToOwnerSummary) =>
-      resolve(
-        v,
-        'created_by' + v.created_by,
-        () => ({ name: '-' }),
-        () => usersStore.resolve(v.created_by),
-        (map) => map.name,
-      ),
-    size: 150,
   },
 ]
+
+async function createPayment() {
+  const account = authStore.account
+  if (account == null) return
+
+  await reportOwnerStore.createPayment(
+    authStore.org?.id,
+    currentYear.value,
+    currentWeek.value,
+    account,
+  )
+}
 </script>
 
 <template>
-  <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
+  <OwnerPayment :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
+    <Text size="2xl">Report</Text>
     <Search :store="ownersStore"></Search>
+    <div>#{{ currentWeek }}</div>
+    <div>{{ currentYear }}</div>
+    <Button
+      :disabled="reportOwnerStore.owners.length == 0"
+      class="btn-soft font-light tracking-wider"
+      @click="createPayment()"
+      >Close week</Button
+    >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
@@ -142,10 +146,18 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="line in paymentToOwnerStore.listing" :key="line.id" @click="openPayment(line)">
+      <tr
+        v-for="line in reportOwnerStore.owners"
+        :key="line.owner"
+        @click="openPayment(line)"
+        :class="{
+          processing: reportOwnerStore.processing[0] == line.owner,
+          done: reportOwnerStore.processing[1] == line.owner,
+        }"
+      >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + line.id"
+          :key="'row_' + col.label + '_' + line.owner"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -161,4 +173,12 @@ const cols = [
   </table>
 </template>
 
-<style scoped></style>
+<style scoped>
+.processing {
+  background-color: orange;
+}
+
+.done {
+  background-color: green;
+}
+</style>

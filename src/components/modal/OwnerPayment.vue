@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useStatusesStore } from '@/stores/statuses.ts'
-
 const props = defineProps<{
   ownerId: number | null
 }>()
@@ -112,16 +110,6 @@ function handleClick() {
             <QueryAndShow :id="props.ownerId" :store="ownerStore" />
           </Text>
         </div>
-        <div>
-          <Button
-            sm
-            ghost
-            class="cursor-pointer btn-soft font-light tracking-wider"
-            :class="{ 'payed-active': payed }"
-            @click="handleClick"
-            >payed
-          </Button>
-        </div>
       </div>
       <div class="mb-4 mt-4">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
@@ -159,7 +147,6 @@ function handleClick() {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider">Send by email</Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
@@ -167,8 +154,4 @@ function handleClick() {
   </Modal>
 </template>
 
-<style scoped>
-.payed-active {
-  background-color: #009688;
-}
-</style>
+<style scoped></style>
