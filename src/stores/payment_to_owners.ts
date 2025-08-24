@@ -5,6 +5,7 @@ export interface PaymentToOwnerSummary {
   id: number
   created_at: string
   created_by: number
+  organization: number
   owner: number
   year: number
   week: number

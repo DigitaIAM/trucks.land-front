@@ -38,7 +38,7 @@ export interface EventUpdate {
 export const useEventsStore = defineStore('event', () => {
   const mapping = ref(new Map<number, Event[] | Promise<Event[]>>())
 
-  async function _fetching(id: number): Promise<Array<Event>> {
+  async function fetching(id: number): Promise<Array<Event>> {
     const response = await supabase
       .from('order_events')
       .select()
@@ -66,7 +66,7 @@ export const useEventsStore = defineStore('event', () => {
       const v = mapping.value.get(id)
       if (v) return v
 
-      const promise = _fetching(id)
+      const promise = fetching(id)
       mapping.value.set(id, promise)
 
       return promise
@@ -164,7 +164,7 @@ export const useEventsStore = defineStore('event', () => {
       })
   }
 
-  return { listing, create, update, pickUp, delivery }
+  return { listing, create, update, fetching, pickUp, delivery }
 })
 
 if (import.meta.hot) {

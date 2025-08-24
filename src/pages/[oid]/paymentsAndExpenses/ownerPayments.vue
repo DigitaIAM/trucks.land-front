@@ -72,6 +72,11 @@ const cols = [
     size: 50,
   },
   {
+    label: 'week',
+    value: (v: PaymentToOwnerSummary) => v.week,
+    size: 50,
+  },
+  {
     label: 'owner',
     value: (v: PaymentToOwnerSummary) =>
       resolve(
