@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb, Color } from 'pdf-lib'
+import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
-import {
-  Alignment,
-  CellContent,
-  type CustomStyledText,
-  DrawTableOptions,
-} from 'pdf-lib-draw-table-beta/types.ts'
+import { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import type { PaymentToOwnerOrder } from '@/stores/payment_to_owners_orders.ts'
 
 const props = defineProps<{
@@ -43,9 +38,6 @@ function text_left(
   y: number,
 ): number {
   // const textWidth = font.widthOfTextAtSize(text, fontSize)
-  //
-  // console.log('textWidth', textWidth)
-  // console.log('x', x - textWidth)
 
   page.drawText(text, {
     x: x,
@@ -78,7 +70,6 @@ function text_right(
 }
 
 async function generatePdf() {
-  console.log('generatePdf')
   const document = props.document
   if (document == null) {
     return
@@ -93,6 +84,23 @@ async function generatePdf() {
   if (contra == null) {
     return
   }
+
+  let jpgUrl = ''
+
+  if (org.id == 1) {
+    jpgUrl =
+      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CAF.jpg'
+  }
+  if (org.id == 2) {
+    jpgUrl =
+      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CVS.jpg'
+  }
+  if (org.id == 3) {
+    jpgUrl =
+      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CNU.jpg'
+  }
+
+  const jpgImageBytes = await fetch(jpgUrl).then((res) => res.arrayBuffer())
 
   // Define the table data
   const tableData = [['order #', 'unit no', 'pick up', 'delivery', 'amount']] as CellContent[][]
@@ -133,6 +141,10 @@ async function generatePdf() {
   }
 
   const pdfDoc = await PDFDocument.create()
+
+  const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
+  const jpgDims = jpgImage.size(2)
+
   const page = pdfDoc.addPage()
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
@@ -169,7 +181,15 @@ async function generatePdf() {
 
   const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
 
-  console.log('tableDimensions', tableDimensions)
+  // logo
+  page.drawImage(jpgImage, {
+    x: startX,
+    y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+    width: 100,
+    height: (100 * jpgDims.height) / jpgDims.width,
+  })
+  text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
+  text_left(page, font, 10, `${org.address2}`, startX + bls, 685)
 
   // head
   let cy = 800
@@ -221,8 +241,6 @@ async function generatePdf() {
 
   text_right(page, font, fs, 'Total Trips:', cx, cy)
   cy -= bls + text_left(page, font, fs, `${paymentToOwnerOrdersStore.listing.length}`, cx + bls, cy)
-
-  console.log('cy', cy)
 
   //tableBottom
   const tableBottomY = tableDimensions.endY // Calculate the bottom edge of the table
@@ -294,8 +312,6 @@ async function generatePdf() {
       font.widthOfTextAtSize('Calculation:', fs) + 60,
       textY,
     )
-
-  console.log('tableBottomY', tableBottomY)
 
   // Save the PDF
   const pdfBytes = await pdfDoc.save()

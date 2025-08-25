@@ -23,7 +23,7 @@ export const usePaymentToOwnerOrdersStore = defineStore('payments_to_owners_orde
         .select()
         .eq('document', documentId)
 
-      console.log('response', response)
+      // console.log('response', response)
 
       if (response.status == 200) {
         const list: Array<PaymentToOwnerOrder> = []
