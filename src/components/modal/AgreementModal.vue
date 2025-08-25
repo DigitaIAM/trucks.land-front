@@ -13,6 +13,7 @@ const note = ref<string>('')
 const driver = ref<Driver | null>(null)
 const vehicle = ref<Vehicle | null>(null)
 const cost = ref<number | null>(null)
+const percent = ref<number | null>(null)
 
 const emit = defineEmits(['on-update'])
 
@@ -39,6 +40,9 @@ function resetAndShow(event: Event | null) {
   driver.value = event.driver ? { id: event.driver } : null
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
   cost.value = event?.cost
+  percent.value = event?.percent
+
+  console.log('document', props.document)
 
   create_agreement.showModal()
 }
@@ -54,6 +58,7 @@ async function saveAndEdit() {
         driver: driver.value?.id,
         vehicle: vehicle.value?.id,
         cost: cost.value,
+        percent: percent.value,
         details: {
           note: note.value,
         },
@@ -66,6 +71,7 @@ async function saveAndEdit() {
         driver: driver.value?.id,
         vehicle: vehicle.value?.id,
         cost: cost.value,
+        percent: percent.value,
         details: {
           note: note.value,
         },
@@ -105,13 +111,18 @@ function close() {
       <TextInput class="w-full" v-model="note" />
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-2/3 md:mb-0">
+        <div class="md:w-1/2 md:mb-0">
           <Label>Driver</Label>
           <selector v-model="driver" :store="driversStore"></selector>
         </div>
-        <div class="md:w-1/3 md:mb-0">
+        <div class="md:w-1/4 md:mb-0">
           <Label>Driver payment $</Label>
           <TextInput v-model="cost" />
+        </div>
+        <Text class="py-8">or</Text>
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Percent</Label>
+          <TextInput v-model="percent" />
         </div>
       </div>
 

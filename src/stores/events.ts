@@ -13,6 +13,7 @@ export interface EventCreate {
   state: string
   zip: string
   cost: number
+  percent: number
   driver: number
   vehicle: number
   owner: number
@@ -28,6 +29,7 @@ export interface EventUpdate {
   state?: string
   zip?: string
   cost?: number
+  percent?: number
   driver?: number
   vehicle?: number
   owner?: number

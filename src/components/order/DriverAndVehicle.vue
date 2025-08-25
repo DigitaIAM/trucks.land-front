@@ -8,13 +8,14 @@ const props = defineProps<{
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const ordersStore = useOrdersStore()
 
 const records = ref([])
 
 watch(
   () => props.orderId,
   (id) => {
-    // console.log('watch id', id, props.id)
+    console.log('watch id', id, props.orderId)
     resetAndShow(id)
   },
   { deep: true },
@@ -25,6 +26,7 @@ resetAndShow(props.orderId)
 async function resetAndShow(id: number) {
   const map = new Map()
 
+  const order = await ordersStore.resolve(id)
   const events = await eventsStore.listing(id)
   for (const idx in events) {
     const event = events[idx]
@@ -32,7 +34,11 @@ async function resetAndShow(id: number) {
       const m = map.get(event.driver) ?? new Map()
       let cost = m.get(event.vehicle) ?? 0
 
-      cost += event.cost
+      if (event.percent) {
+        cost = ((order!.cost * event.percent) / 100).toFixed(2)
+      } else {
+        cost += event.cost
+      }
 
       m.set(event.vehicle, cost)
       map.set(event.driver, m)
@@ -47,6 +53,7 @@ async function resetAndShow(id: number) {
   }
 
   records.value = list
+  console.log('list', list)
 }
 </script>
 
