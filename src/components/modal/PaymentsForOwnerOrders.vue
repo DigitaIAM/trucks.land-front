@@ -132,7 +132,7 @@ async function generatePdf() {
     }
 
     tableData.push([
-      `${org.code2}-${line.id}`,
+      `${org.code2}-${line.doc_order}`,
       vehicle,
       pickup,
       delivery,
@@ -228,7 +228,7 @@ async function generatePdf() {
 
   const fs = 10
   text_right(page, font, fs, 'Trip Related pay:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '$6945.75', cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `${totalPay}`, cx + bls, cy)
 
   text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
   cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
