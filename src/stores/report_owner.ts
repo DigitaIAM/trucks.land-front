@@ -12,17 +12,21 @@ export interface OwnerPaymentSummary {
   orders_number: number
   orders_amount: number
   orders_driver: number
-  // payment_driver: number
   orders: Map<number, Order>
   paymentsByOrder: Map<number, number>
 }
 
 export const useReportOwner = defineStore('report_current_owners_payments', () => {
+  const org = ref<number | null>(null)
   const mapping = ref(new Map<number, Array<OwnerPaymentRecord>>())
   const processing = ref<Array<number>>([])
 
-  const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('report_current_owners_payments').select()
+  async function loading(orgId: number | null) {
+    org.value = orgId
+    const response = await supabase
+      .from('report_current_owners_payments')
+      .select()
+      .eq('organization', orgId)
 
     const map = new Map<number, Array<OwnerPaymentRecord>>()
     response.data?.forEach((json) => {
@@ -38,7 +42,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
       map.set(key, list)
     })
     mapping.value = map
-  })
+  }
 
   const owners = computed(() => {
     const list = [] as OwnerPaymentSummary[]
@@ -97,7 +101,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
           doc_order: order.id,
           amount: order.cost,
           payment: payment,
-        } as PaymentToOwnerOrdersCreate)
+        } as PaymentToOwnerOrderCreate)
       }
 
       await paymentToOwnerStore.create(
@@ -116,7 +120,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     processing.value = []
   }
 
-  return { initialized, loading, owners, processing, createPayment }
+  return { loading, owners, processing, createPayment }
 })
 
 if (import.meta.hot) {

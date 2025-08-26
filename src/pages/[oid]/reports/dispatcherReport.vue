@@ -9,14 +9,14 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const reportOwner = useReportOwner()
+const reportDispatcher = useReportDispatcher()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await reportOwner.loading(org.id)
+    await reportDispatcher.loading(org.id)
     // console.table(org)
     return org
   },
@@ -25,78 +25,90 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment'
+import moment from 'moment/moment'
 
-const reportOwnerStore = useReportOwner()
-const ownersStore = useOwnersStore()
-const authStore = useAuthStore()
-
-const state = reactive({})
-
-const selectedOwner = ref<number | null>(null)
+const reportDispatcherStore = useReportDispatcher()
+const usersStore = useUsersStore()
 
 const ts = moment().subtract(3, 'days')
 const currentYear = ref(ts.year())
-const currentWeek = ref(ts.isoWeek())
+const currentMonth = ref(ts.month() + 1)
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-function openPayment(record: OwnerPaymentSummary) {
-  selectedOwner.value = record.owner
+const state = reactive({})
+
+const selectedDispatcher = ref(null)
+
+function openPayment(record: DispatcherPaymentRecord) {
+  selectedDispatcher.value = record.dispatcher
 }
 
 function onClose() {
-  selectedOwner.value = null
+  selectedDispatcher.value = null
 }
 
 function resolve(
-  order: Order,
-  name: string,
+  summary: DispatcherPaymentSummary,
   create: () => object,
   request: () => Promise<object | null>,
   label: (obj: object) => string,
 ) {
-  const s = state[order.id] ?? {}
-  if (s && s[name]) {
-    return label(s[name])
+  let s = state[summary.dispatcher]
+  if (s) {
+    return label(s)
   } else {
-    s[name] = create()
-    state[order.id] = s
+    s = create()
+    state[summary.dispatcher] = s
     request().then((obj) => {
-      if (obj) state[order.id][name] = obj
+      state[summary.dispatcher] = obj
     })
-    return label(s[name])
+    return label(s)
   }
 }
 
 const cols = [
   {
-    label: 'owner',
-    value: (v: OwnerPaymentSummary) =>
+    label: 'dispatcher',
+    value: (v: DispatcherPaymentSummary) =>
       resolve(
         v,
-        'owner_' + v.owner,
-        () => ({ name: '-' }),
-        () => ownersStore.resolve(v.owner),
-        (map) => map.name,
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.dispatcher),
+        (map) => map.real_name,
       ),
     size: 200,
   },
   {
     label: 'orders',
-    value: (v: OwnerPaymentSummary) => v.orders_number,
+    value: (v: DispatcherPaymentSummary) => v.orders_number,
     size: 100,
   },
   {
-    label: 'receive',
-    value: (v: OwnerPaymentSummary) => '$' + v.orders_driver,
+    label: 'amount',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_amount.toFixed(0),
     size: 100,
   },
   {
-    label: 'payout',
-    value: (v: OwnerPaymentSummary) => '$' + v.orders_driver,
+    label: 'd/payments',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_driver.toFixed(0),
+    size: 100,
+  },
+  {
+    label: 'profit',
+    value: (v: DispatcherPaymentSummary) => '$' + v.orders_profit.toFixed(0),
+    size: 100,
+  },
+  {
+    label: '%',
+    value: (v: DispatcherPaymentSummary) => v.paymentTerms.percent_of_gross,
+    size: 100,
+  },
+  {
+    label: 'to pay',
+    value: (v: DispatcherPaymentSummary) => '$' + v.toPayment.toFixed(0),
     size: 100,
   },
 ]
@@ -105,27 +117,27 @@ async function createPayment() {
   const account = authStore.account
   if (account == null) return
 
-  await reportOwnerStore.createPayment(
+  await reportDispatcherStore.createPayment(
     authStore.org?.id,
     currentYear.value,
-    currentWeek.value,
+    currentMonth.value,
     account,
   )
 }
 </script>
 
 <template>
-  <OwnerPayment :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
+  <DispatcherPayment :dispatcher-id="selectedDispatcher" @closed="onClose"></DispatcherPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
-    <Search :store="ownersStore"></Search>
-    <div>#{{ currentWeek }}</div>
+    <Search store="usersStore"></Search>
+    <div>{{ currentMonth }}</div>
     <div>{{ currentYear }}</div>
     <Button
-      :disabled="reportOwnerStore.owners.length == 0"
+      :disabled="reportDispatcherStore.dispatchers.length == 0"
       class="btn-soft font-light tracking-wider"
       @click="createPayment()"
-      >Close week</Button
+      >Close month</Button
     >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
@@ -147,17 +159,13 @@ async function createPayment() {
     </thead>
     <tbody>
       <tr
-        v-for="line in reportOwnerStore.owners"
-        :key="line.owner"
-        @click="openPayment(line)"
-        :class="{
-          processing: reportOwnerStore.processing[0] == line.owner,
-          done: reportOwnerStore.processing[1] == line.owner,
-        }"
+        v-for="order in reportDispatcherStore.dispatchers"
+        :key="order.dispatcher"
+        @click="openPayment(order)"
       >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + line.owner"
+          :key="'row_' + col.label + '_' + order.dispatcher"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -165,7 +173,7 @@ async function createPayment() {
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(line) }}
+            {{ col.value(order) }}
           </p>
         </td>
       </tr>
@@ -173,12 +181,4 @@ async function createPayment() {
   </table>
 </template>
 
-<style scoped>
-.processing {
-  background-color: orange;
-}
-
-.done {
-  background-color: green;
-}
-</style>
+<style scoped></style>

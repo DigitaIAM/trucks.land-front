@@ -28,6 +28,7 @@ export const useOrgData = defineBasicLoader(
 import BrokerIcon from '../../assets/icons/handshake.svg?url'
 import VehicleIcon from '../../assets/icons/vehicle.svg?url'
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
+import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
 defineOptions({
   __loaders: [useOrgData],
@@ -42,6 +43,11 @@ const buttons = [
     label: 'Owner',
     icon: OwnerIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/ownerReport',
+  },
+  {
+    label: 'Dispatcher',
+    icon: DispatcherIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/dispatcherReport',
   },
   // {
   //   label: 'Broker',

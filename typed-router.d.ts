@@ -42,6 +42,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/refs/statuses': RouteRecordInfo<'/[oid]/refs/statuses', '/:oid/refs/statuses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/users': RouteRecordInfo<'/[oid]/refs/users', '/:oid/refs/users', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/vehicles': RouteRecordInfo<'/[oid]/refs/vehicles', '/:oid/refs/vehicles', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/reports/dispatcherReport': RouteRecordInfo<'/[oid]/reports/dispatcherReport', '/:oid/reports/dispatcherReport', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reports/ownerReport': RouteRecordInfo<'/[oid]/reports/ownerReport', '/:oid/reports/ownerReport', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/reportsView': RouteRecordInfo<'/[oid]/reportsView', '/:oid/reportsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/organisation': RouteRecordInfo<'/organisation', '/organisation', Record<never, never>, Record<never, never>>,
@@ -153,6 +154,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/refs/vehicles.vue': {
       routes: '/[oid]/refs/vehicles'
+      views: never
+    }
+    'src/pages/[oid]/reports/dispatcherReport.vue': {
+      routes: '/[oid]/reports/dispatcherReport'
       views: never
     }
     'src/pages/[oid]/reports/ownerReport.vue': {

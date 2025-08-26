@@ -242,6 +242,8 @@ declare global {
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
+  const usePaymentToDispatcherOrdersStore: typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']
+  const usePaymentToDispatcherStore: typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']
   const usePaymentToOwnerJournalStore: (typeof import('./stores/payment_to_owners'))['usePaymentToOwnerJournalStore']
   const usePaymentToOwnerOrdersStore: typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']
   const usePaymentToOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']
@@ -383,13 +385,19 @@ declare global {
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
+  export type { PaymentToDispatcherSummary, PaymentToDispatcher, PaymentToDispatcherCreate } from './stores/payment_to_dispatchers'
+  import('./stores/payment_to_dispatchers')
+  // @ts-ignore
+  export type { PaymentToDispatcherOrder, PaymentToDispatcherOrderCreate } from './stores/payment_to_dispatchers_orders'
+  import('./stores/payment_to_dispatchers_orders')
+  // @ts-ignore
   export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
   import('./stores/payment_to_owners_orders')
   // @ts-ignore
-  export type { DispatcherPaymentRecord, DispatcherPaymentSummary } from './stores/report_dispatcher'
+  export type { DispatcherPaymentRecord, DispatcherPaymentSummary, PaymentTerms } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
   // @ts-ignore
   export type { DriverPaymentRecord, DriverPaymentSummary } from './stores/report_driver'
@@ -639,6 +647,8 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
+    readonly usePaymentToDispatcherOrdersStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']>
+    readonly usePaymentToDispatcherStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']>
     readonly usePaymentToOwnerOrdersStore: UnwrapRef<typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']>
     readonly usePaymentToOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>

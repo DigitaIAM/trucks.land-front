@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
-import { useStatusesStore } from '@/stores/statuses.ts'
 import { useReportDispatcher } from '@/stores/report_dispatcher.ts'
 
 const props = defineProps<{
@@ -10,7 +9,6 @@ const props = defineProps<{
 const reportStore = useReportDispatcher()
 const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
-const statusesStore = useStatusesStore()
 
 watch(
   () => props.dispatcherId,
@@ -50,12 +48,12 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.id,
-    size: 20,
+    size: 30,
   },
   {
     label: 'refs',
     value: (v: Order) => v.refs,
-    size: 90,
+    size: 150,
   },
   {
     label: 'broker',
@@ -77,18 +75,6 @@ const cols = [
   {
     label: 'payments to driver',
     value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
-    size: 100,
-  },
-  {
-    label: 'status',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'status_' + v.status,
-        () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
-        (map) => map.name,
-      ),
     size: 100,
   },
 ]
@@ -115,13 +101,25 @@ const orders = computed(() => {
 <template>
   <Modal id="payment_dispatcher">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <Text size="2xl">
-            <QueryAndShow name="real_name" :id="props.dispatcherId" :store="usersStore" />
-          </Text>
-        </div>
-        <Button sm class="place-self-end">payed</Button>
+      <ModalAction>
+        <form method="dialog">
+          <Button class="btn-soft font-light tracking-wider">Close</Button>
+        </form>
+      </ModalAction>
+      <div class="flex-col">
+        <Text size="2xl">
+          <QueryAndShow name="real_name" :id="props.dispatcherId" :store="usersStore" />
+        </Text>
+        <Text class="px-4">to pay $ {{ summary?.toPayment.toFixed(2) }}</Text>
+      </div>
+
+      <div class="flex flex-cols-6 gap-32 mt-10">
+        <Text bold size="lg">Total</Text>
+        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
+        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
+        <Text size="lg">Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
+        <Text size="lg">Gross $ {{ summary?.orders_profit.toFixed(2) }}</Text>
+        <Text size="lg">To pay $ {{ summary?.toPayment.toFixed(2) }}</Text>
       </div>
 
       <div class="mb-4 mt-4">
@@ -152,19 +150,6 @@ const orders = computed(() => {
           </tr>
         </tbody>
       </table>
-      <div class="flex flex-cols-6 gap-32 mt-10">
-        <Text bold size="lg">Total</Text>
-        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
-        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
-        <Text size="lg">Payments $ {{ summary?.orders_driver }}</Text>
-        <Text size="lg">Profit $ {{ summary?.orders_profit }}</Text>
-        <Text size="lg">To pay $ {{ summary?.toPayment }}</Text>
-      </div>
-      <ModalAction>
-        <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
-        </form>
-      </ModalAction>
     </ModalBox>
   </Modal>
 </template>
