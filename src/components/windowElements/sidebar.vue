@@ -46,9 +46,14 @@ const links = [
     path: '/reportsView',
   },
   {
-    name: 'Finances',
+    name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
-    path: '/financesView',
+    path: '/paymentsView',
+  },
+  {
+    name: 'Expenses',
+    icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
+    path: '/expensesView',
   },
 ]
 

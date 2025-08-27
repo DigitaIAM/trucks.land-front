@@ -30,7 +30,7 @@ const cols = [
   {
     label: '#',
     value: (v: PaymentToDispatcherOrder) => v.doc_order,
-    size: 30,
+    size: 50,
   },
 
   {
@@ -61,7 +61,7 @@ const cols = [
         <Text size="2xl">to</Text>
         <div>
           <Text size="2xl">
-            <QueryAndShow :id="document?.dispatcher" :store="userStore" />
+            <QueryAndShow name="real_name" :id="document?.dispatcher" :store="userStore" />
           </Text>
         </div>
         <Text size="2xl">$ {{ document?.to_pay }}</Text>

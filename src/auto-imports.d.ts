@@ -188,6 +188,7 @@ declare global {
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
   const useEventSource: typeof import('@vueuse/core')['useEventSource']
   const useEventsStore: typeof import('./stores/events')['useEventsStore']
+  const useExpensesToOwnerStore: typeof import('./stores/expenses_owner')['useExpensesToOwnerStore']
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFeathers: (typeof import('./composables/use-feathers'))['useFeathers']
@@ -372,6 +373,9 @@ declare global {
   // @ts-ignore
   export type { Event, EventCreate, EventUpdate } from './stores/events'
   import('./stores/events')
+  // @ts-ignore
+  export type { ExpensesToOwner, ExpensesToOwnerCreate, ExpensesToOwnerUpdate } from './stores/expenses_owner'
+  import('./stores/expenses_owner')
   // @ts-ignore
   export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
   import('./stores/order_files')
@@ -598,6 +602,7 @@ declare module 'vue' {
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
     readonly useEventSource: UnwrapRef<typeof import('@vueuse/core')['useEventSource']>
     readonly useEventsStore: UnwrapRef<typeof import('./stores/events')['useEventsStore']>
+    readonly useExpensesToOwnerStore: UnwrapRef<typeof import('./stores/expenses_owner')['useExpensesToOwnerStore']>
     readonly useEyeDropper: UnwrapRef<typeof import('@vueuse/core')['useEyeDropper']>
     readonly useFavicon: UnwrapRef<typeof import('@vueuse/core')['useFavicon']>
     readonly useFetch: UnwrapRef<typeof import('@vueuse/core')['useFetch']>

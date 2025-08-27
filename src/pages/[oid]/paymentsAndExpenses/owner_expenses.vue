@@ -25,22 +25,20 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
-import { usePaymentToDispatcherStore } from '@/stores/payment_to_dispatchers.ts'
-
-const paymentToDispatcherStore = usePaymentToDispatcherStore()
+const expensesStore = useExpensesToOwnerStore()
+const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
+
+const state = reactive({})
+
+const selectedDocument = ref(null)
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-const state = reactive({})
-
-const selectedDocument = ref<PaymentToDispatcherSummary | null>(null)
-
-function openPayment(record: PaymentToDispatcherSummary) {
-  selectedDocument.value = record
+function openExpenses(record: ExpensesToOwner) {
+  selectedDocument.value = record.owner
 }
 
 function onClose() {
@@ -70,70 +68,53 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: PaymentToDispatcherSummary) => v.id,
-    size: 50,
-  },
-  {
-    label: 'month',
-    value: (v: PaymentToDispatcherSummary) => v.month,
+    value: (v: ExpensesToOwner) => v.id,
     size: 30,
   },
   {
-    label: 'dispatcher',
-    value: (v: PaymentToDispatcherSummary) =>
+    label: 'created at',
+    value: (v: ExpensesToOwner) => useDateFormat(v.create_at, 'MMM DD'),
+    size: 80,
+  },
+  {
+    label: 'owner',
+    value: (v: ExpensesToOwner) =>
       resolve(
         v,
-        'dispatcher_' + v.dispatcher,
-        () => ({ name: '_' }),
-        () => usersStore.resolve(v.dispatcher),
-        (map) => map.real_name,
+        'owner_' + v.owner,
+        () => ({ name: '-' }),
+        () => ownersStore.resolve(v.owner),
+        (map) => map.name,
       ),
-    size: 200,
+    size: 150,
   },
   {
-    label: 'order amount',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.amount.toFixed(0),
-    size: 80,
+    label: 'expenses',
+    value: (v: ExpensesToOwner) => v.kind,
+    size: 100,
   },
   {
-    label: 'd/payment',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.payment.toFixed(0),
-    size: 80,
-  },
-  {
-    label: 'to pay',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.to_pay.toFixed(0),
-    size: 80,
-  },
-  {
-    label: 'created at',
-    value: (v: PaymentToDispatcherSummary) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 80,
+    label: 'amount',
+    value: (v: ExpensesToOwner) => '$' + v.amount,
+    size: 100,
   },
   {
     label: 'created by',
-    value: (v: PaymentToDispatcherSummary) =>
+    value: (v: ExpensesToOwner) =>
       resolve(
         v,
-        'created_by' + v.created_by,
+        'created_by_' + v.created_by,
         () => ({ name: '-' }),
         () => usersStore.resolve(v.created_by),
         (map) => map.name,
       ),
-    size: 150,
+    size: 100,
   },
 ]
 </script>
 
 <template>
-  <PaymentsForDispatcherOrders
-    @closed="onClose"
-    :document="selectedDocument"
-  ></PaymentsForDispatcherOrders>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
-    <Search :store="usersStore"></Search>
-  </div>
+  <ExpensesOwner :edit="selectedDocument" @closed="onClose"></ExpensesOwner>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr
@@ -152,11 +133,7 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-for="line in paymentToDispatcherStore.listing"
-        :key="line.id"
-        @click="openPayment(line)"
-      >
+      <tr v-for="line in expensesStore.listing" :key="line.id" @click="openExpenses(line)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + line.id"

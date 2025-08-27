@@ -82,7 +82,6 @@ function selectExpenses(data) {
   ></ExpensesModal>
 
   <div class="flex mb-2 w-full">
-    <!-- class="grow" -->
     <div class="flex-col">
       <ol class="relative text-gray-500 border-l-2 border-gray-500">
         <li class="mb-8 ms-6">

@@ -22,7 +22,7 @@ declare module 'vue-router/auto-routes' {
     '/_index': RouteRecordInfo<'/_index', '/_index', Record<never, never>, Record<never, never>>,
     '/[...NotFound]': RouteRecordInfo<'/[...NotFound]', '/:NotFound(.*)', { NotFound: ParamValue<true> }, { NotFound: ParamValue<false> }>,
     '/[oid]/': RouteRecordInfo<'/[oid]/', '/:oid', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/financesView': RouteRecordInfo<'/[oid]/financesView', '/:oid/financesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/expensesView': RouteRecordInfo<'/[oid]/expensesView', '/:oid/expensesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/check-outView': RouteRecordInfo<'/[oid]/journals/check-outView', '/:oid/journals/check-outView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/incomeView': RouteRecordInfo<'/[oid]/journals/incomeView', '/:oid/journals/incomeView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -32,8 +32,10 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/create': RouteRecordInfo<'/[oid]/order/create', '/:oid/order/create', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/driver_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/driver_expenses', '/:oid/paymentsAndExpenses/driver_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsAndExpenses/owner_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/owner_expenses', '/:oid/paymentsAndExpenses/owner_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/ownerPayments': RouteRecordInfo<'/[oid]/paymentsAndExpenses/ownerPayments', '/:oid/paymentsAndExpenses/ownerPayments', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/paymentsToDispatchers': RouteRecordInfo<'/[oid]/paymentsAndExpenses/paymentsToDispatchers', '/:oid/paymentsAndExpenses/paymentsToDispatchers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsView': RouteRecordInfo<'/[oid]/paymentsView', '/:oid/paymentsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/referenceBooks': RouteRecordInfo<'/[oid]/referenceBooks', '/:oid/referenceBooks', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/brokers': RouteRecordInfo<'/[oid]/refs/brokers', '/:oid/refs/brokers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/drivers': RouteRecordInfo<'/[oid]/refs/drivers', '/:oid/refs/drivers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -76,8 +78,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/'
       views: never
     }
-    'src/pages/[oid]/financesView.vue': {
-      routes: '/[oid]/financesView'
+    'src/pages/[oid]/expensesView.vue': {
+      routes: '/[oid]/expensesView'
       views: never
     }
     'src/pages/[oid]/journals/check-outView.vue': {
@@ -116,12 +118,20 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/paymentsAndExpenses/driver_expenses'
       views: never
     }
+    'src/pages/[oid]/paymentsAndExpenses/owner_expenses.vue': {
+      routes: '/[oid]/paymentsAndExpenses/owner_expenses'
+      views: never
+    }
     'src/pages/[oid]/paymentsAndExpenses/ownerPayments.vue': {
       routes: '/[oid]/paymentsAndExpenses/ownerPayments'
       views: never
     }
     'src/pages/[oid]/paymentsAndExpenses/paymentsToDispatchers.vue': {
       routes: '/[oid]/paymentsAndExpenses/paymentsToDispatchers'
+      views: never
+    }
+    'src/pages/[oid]/paymentsView.vue': {
+      routes: '/[oid]/paymentsView'
       views: never
     }
     'src/pages/[oid]/referenceBooks.vue': {

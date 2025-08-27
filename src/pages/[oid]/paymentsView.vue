@@ -25,7 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import DriverIcon from '../../assets/icons/driver.svg?url'
+// import DriverIcon from '../../assets/icons/driver.svg?url'
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
 import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
@@ -59,9 +59,8 @@ const buttons = [
 
 <template>
   <div class="flex text-3xl p-5 font-bold pb-10">
-    <h1>Payments and expenses</h1>
+    <h1>Payments</h1>
   </div>
-
   <div class="flex space-x-8 px-5">
     <div
       v-for="button in buttons"
