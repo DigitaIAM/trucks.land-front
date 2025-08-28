@@ -6,18 +6,17 @@ const props = defineProps<{
 const ownerStore = useOwnersStore()
 const reportStore = useReportOwner()
 const statusesStore = useStatusesStore()
-const payed = ref(false)
 
 watch(
   () => props.ownerId,
-  (id) => {
-    resetAndShow(id)
+  (ownerId) => {
+    resetAndShow(ownerId)
   },
   { deep: true },
 )
 
-function resetAndShow(id: number) {
-  payment_owner.showModal(id)
+function resetAndShow(ownerId: number) {
+  payment_owner.showModal(ownerId)
 }
 
 const state = reactive({})
@@ -60,11 +59,6 @@ const cols = [
     size: 120,
   },
   {
-    label: 'payout',
-    value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
-    size: 120,
-  },
-  {
     label: 'status',
     value: (v: Order) =>
       resolve(
@@ -75,6 +69,25 @@ const cols = [
         (map) => map.name,
       ),
     size: 200,
+  },
+]
+
+const expensesCols = [
+  {
+    label: '#',
+    value: (v: ExpensesToOwner) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: ExpensesToOwner) => v.kind,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: ExpensesToOwner) => '$' + v.amount,
+    size: 120,
   },
 ]
 
@@ -96,9 +109,15 @@ const orders = computed(() => {
   }
 })
 
-function handleClick() {
-  payed.value = !payed.value
-}
+const expenses = computed(() => {
+  const data = summary.value
+
+  if (data) {
+    return data.expenses
+  } else {
+    return []
+  }
+})
 </script>
 
 <template>
@@ -119,7 +138,12 @@ function handleClick() {
           <tr
             class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
           >
-            <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
+            <th
+              v-for="col in cols"
+              :key="col.label"
+              class="p-4"
+              :style="{ width: col.size + 'px' }"
+            >
               <p class="block antialiasing tracking-wider font-thin leading-none">
                 {{ col.label }}
               </p>
@@ -127,7 +151,7 @@ function handleClick() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in orders">
+          <tr v-for="order in orders" :key="order.id">
             <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"
@@ -139,11 +163,51 @@ function handleClick() {
           </tr>
         </tbody>
       </table>
-      <div class="flex flex-cols-5 gap-40 mt-10">
+      <div class="mt-10">
+        <Text bold size="lg" class="mb-4">Expenses</Text>
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="p-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="expense in expenses" :key="expense.id">
+              <td
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  {{ col.value(expense) }}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex flex-cols-6 gap-40 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ summary?.orders_number }}</Text>
         <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
         <Text size="lg">Payment $ {{ summary?.orders_driver }}</Text>
+        <Text size="lg">Expenses $ {{ summary?.expenses_total }}</Text>
+        <Text size="lg">Payout $ {{ summary?.payout }}</Text>
       </div>
       <ModalAction>
         <form method="dialog">

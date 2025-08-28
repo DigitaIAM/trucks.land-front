@@ -26,6 +26,18 @@ export interface PaymentToOwnerCreate {
   week: number
 }
 
+export interface PaymentToOwnerExpense extends PaymentToOwnerExpenseCreate {
+  id: number
+  created_at: string
+}
+
+export interface PaymentToOwnerExpenseCreate {
+  created_by: number
+  document: number
+  doc_expense: number
+  amount: number
+}
+
 export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
   const mapping = ref(new Map<number, PaymentToOwnerSummary | Promise<PaymentToOwnerSummary>>())
 
@@ -53,14 +65,18 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
     return list
   })
 
-  async function create(payment: PaymentToOwnerCreate, records: Array<PaymentToOwnerOrderCreate>) {
+  async function create(
+    payment: PaymentToOwnerCreate,
+    paymentRecords: Array<PaymentToOwnerOrderCreate>,
+    expenseRecords: Array<PaymentToOwnerExpenseCreate>,
+  ) {
     const response = await supabase
       .from('payments_to_owners')
       .insert(payment)
       .select()
       .throwOnError()
 
-    console.log('response', response)
+    // console.log('response', response)
 
     if (response.status == 201 && response.data?.length == 1) {
       const payment = response.data[0] as PaymentToOwner
@@ -68,19 +84,25 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
 
       console.log('payment', payment)
 
-      for (const record of records) {
+      for (const record of paymentRecords) {
         record.document = payment.id
       }
 
-      console.log('records', records)
+      for (const record of expenseRecords) {
+        record.document = payment.id
+      }
 
-      const responseRecords = await supabase
+      await supabase
         .from('payments_to_owners_orders')
-        .insert(records)
+        .insert(paymentRecords)
         .select()
         .throwOnError()
 
-      console.log('responseRecords', responseRecords)
+      await supabase
+        .from('payments_to_owners_expenses')
+        .insert(expenseRecords)
+        .select()
+        .throwOnError()
     } else {
       throw 'unexpended response status: ' + response.status
     }

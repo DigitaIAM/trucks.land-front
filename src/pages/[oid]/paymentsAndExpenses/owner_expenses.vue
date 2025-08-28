@@ -9,14 +9,14 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
+const expensesStore = useExpensesToOwnerStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await expensesStore.loading(org.id)
     // console.table(org)
     return org
   },
@@ -29,22 +29,21 @@ const expensesStore = useExpensesToOwnerStore()
 const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
 
-const state = reactive({})
-
-const selectedDocument = ref(null)
+const selectedDocument = ref<ExpensesToOwner | null>(null)
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-function openExpenses(record: ExpensesToOwner) {
-  selectedDocument.value = record.owner
+function openExpenses(expense: ExpensesToOwner) {
+  selectedDocument.value = expense
 }
 
 function onClose() {
   selectedDocument.value = null
 }
 
+const state = reactive({})
 function resolve(
   order: Order,
   name: string,
@@ -91,7 +90,7 @@ const cols = [
   {
     label: 'expenses',
     value: (v: ExpensesToOwner) => v.kind,
-    size: 100,
+    size: 150,
   },
   {
     label: 'amount',
@@ -133,10 +132,10 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="line in expensesStore.listing" :key="line.id" @click="openExpenses(line)">
+      <tr v-for="expense in expensesStore.listing" :key="expense" @click="openExpenses(expense)">
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + line.id"
+          :key="'row_' + col.label + '_' + expense"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -144,7 +143,7 @@ const cols = [
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(line) }}
+            {{ col.value(expense) }}
           </p>
         </td>
       </tr>

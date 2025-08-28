@@ -95,8 +95,13 @@ const cols = [
     size: 100,
   },
   {
+    label: 'expenses',
+    value: (v: OwnerPaymentSummary) => '$' + v.expenses_total,
+    size: 100,
+  },
+  {
     label: 'payout',
-    value: (v: OwnerPaymentSummary) => '$' + v.orders_driver,
+    value: (v: OwnerPaymentSummary) => '$' + v.payout,
     size: 100,
   },
 ]
@@ -115,7 +120,7 @@ async function createPayment() {
 </script>
 
 <template>
-  <OwnerPayment :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
+  <OwnerPayment :org-id="authStore.oid" :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
     <Search :store="ownersStore"></Search>

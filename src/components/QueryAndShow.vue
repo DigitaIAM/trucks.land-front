@@ -2,7 +2,7 @@
 const state = ref(null)
 
 const props = defineProps<{
-  id: string | number | null
+  id: string | number | null | undefined
   store: Searchable
   asTextField?: boolean
   name?: string | null
