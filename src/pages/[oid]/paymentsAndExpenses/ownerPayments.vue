@@ -69,12 +69,12 @@ const cols = [
   {
     label: '#',
     value: (v: PaymentToOwnerSummary) => v.id,
-    size: 50,
+    size: 40,
   },
   {
     label: 'week',
     value: (v: PaymentToOwnerSummary) => v.week,
-    size: 50,
+    size: 40,
   },
   {
     label: 'owner',
@@ -90,23 +90,28 @@ const cols = [
   },
   {
     label: 'order amount',
-    value: (v: PaymentToOwnerSummary) => '$' + v.amount,
+    value: (v: PaymentToOwnerSummary) => '$' + v.orders,
     size: 100,
   },
   {
-    label: 'payout',
+    label: 'order payment',
     value: (v: PaymentToOwnerSummary) => '$' + v.payment,
     size: 100,
   },
   {
-    label: 'payed',
-    value: (v) => '',
+    label: 'expenses',
+    value: (v: PaymentToOwnerSummary) => '$' + v.expenses,
+    size: 100,
+  },
+  {
+    label: 'payout',
+    value: (v: PaymentToOwnerSummary) => '$' + v.payout,
     size: 100,
   },
   {
     label: 'created at',
     value: (v: PaymentToOwnerSummary) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 150,
+    size: 75,
   },
   {
     label: 'created by',

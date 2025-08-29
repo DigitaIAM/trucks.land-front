@@ -1,5 +1,4 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { sleep } from '@/utils/datetime.ts'
 
 export interface ExpensesToOwner extends ExpensesToOwnerCreate {
   id: number

@@ -42,11 +42,11 @@ const buttons = [
     icon: OwnerIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/owner_expenses',
   },
-  {
-    label: 'Driver',
-    icon: DriverIcon,
-    link: '',
-  },
+  // {
+  //   label: 'Driver',
+  //   icon: DriverIcon,
+  //   link: '',
+  // },
   // {
   //   label: 'Driver',
   //   icon: DriverIcon,

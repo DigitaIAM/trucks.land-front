@@ -9,8 +9,10 @@ export interface PaymentToOwnerSummary {
   owner: number
   year: number
   week: number
-  amount: number
+  orders: number
   payment: number
+  expenses: number
+  payout: number
 }
 
 export interface PaymentToOwner extends PaymentToOwnerCreate {
@@ -24,18 +26,6 @@ export interface PaymentToOwnerCreate {
   owner: number
   year: number
   week: number
-}
-
-export interface PaymentToOwnerExpense extends PaymentToOwnerExpenseCreate {
-  id: number
-  created_at: string
-}
-
-export interface PaymentToOwnerExpenseCreate {
-  created_by: number
-  document: number
-  doc_expense: number
-  amount: number
 }
 
 export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {

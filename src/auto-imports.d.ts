@@ -245,6 +245,7 @@ declare global {
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
   const usePaymentToDispatcherOrdersStore: typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']
   const usePaymentToDispatcherStore: typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']
+  const usePaymentToOwnerExpenseStore: typeof import('./stores/payment_to_owner_expenses')['usePaymentToOwnerExpenseStore']
   const usePaymentToOwnerJournalStore: (typeof import('./stores/payment_to_owners'))['usePaymentToOwnerJournalStore']
   const usePaymentToOwnerOrdersStore: typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']
   const usePaymentToOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']
@@ -395,7 +396,10 @@ declare global {
   export type { PaymentToDispatcherOrder, PaymentToDispatcherOrderCreate } from './stores/payment_to_dispatchers_orders'
   import('./stores/payment_to_dispatchers_orders')
   // @ts-ignore
-  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerExpenseCreate } from './stores/payment_to_owners'
+  export type { PaymentToOwnerExpense, PaymentToOwnerExpenseCreate } from './stores/payment_to_owner_expenses'
+  import('./stores/payment_to_owner_expenses')
+  // @ts-ignore
+  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
@@ -654,6 +658,7 @@ declare module 'vue' {
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
     readonly usePaymentToDispatcherOrdersStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']>
     readonly usePaymentToDispatcherStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']>
+    readonly usePaymentToOwnerExpenseStore: UnwrapRef<typeof import('./stores/payment_to_owner_expenses')['usePaymentToOwnerExpenseStore']>
     readonly usePaymentToOwnerOrdersStore: UnwrapRef<typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']>
     readonly usePaymentToOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>

@@ -2,13 +2,13 @@
 import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
-import type { PaymentToOwnerOrder } from '@/stores/payment_to_owners_orders.ts'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
 }>()
 
 const paymentToOwnerOrdersStore = usePaymentToOwnerOrdersStore()
+const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const ownerStore = useOwnersStore()
@@ -27,6 +27,7 @@ watch(
 function resetAndShow(document: PaymentToOwnerSummary) {
   details.showModal()
   paymentToOwnerOrdersStore.loading(document.id)
+  paymentToOwnerExpenseStore.loading(document.id)
 }
 
 function text_left(
@@ -143,7 +144,7 @@ async function generatePdf() {
   const pdfDoc = await PDFDocument.create()
 
   const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
-  const jpgDims = jpgImage.size(2)
+  const jpgDims = jpgImage.size()
 
   const page = pdfDoc.addPage()
 
@@ -223,12 +224,10 @@ async function generatePdf() {
   cy -= bls * 2
 
   const cx = tableDimensions.endX - 50
-  const weekly = 25
-  const totalPay = document?.payment.toFixed(2)
 
   const fs = 10
   text_right(page, font, fs, 'Trip Related pay:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${totalPay}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `${document.payment}`, cx + bls, cy)
 
   text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
   cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
@@ -237,7 +236,16 @@ async function generatePdf() {
   cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
 
   text_right(page, font, fs, 'Total Pay:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${(totalPay - weekly).toFixed(0)}`, cx + bls, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
+      cx + bls,
+      cy,
+    )
 
   text_right(page, font, fs, 'Total Trips:', cx, cy)
   cy -= bls + text_left(page, font, fs, `${paymentToOwnerOrdersStore.listing.length}`, cx + bls, cy)
@@ -271,7 +279,7 @@ async function generatePdf() {
       page,
       font,
       fs,
-      `\$${document?.amount}`,
+      `\$${document?.orders}`,
       font.widthOfTextAtSize('Total gross:', fs) + 60,
       textY,
     )
@@ -283,23 +291,17 @@ async function generatePdf() {
       page,
       font,
       fs,
-      `\$${document?.amount - document?.amount * (0.04 + 0.015)}`,
+      `\$${document?.orders - document?.orders * (0.04 + 0.015)}`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
       textY,
     )
 
-  textY -= bls + text_left(page, font, fs, 'Expenses:', textX + bls, textY)
-  text_left(page, font, fs, 'Fleet care (weekly):', textX + bls, textY)
-  textY -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `\$${weekly}`,
-      font.widthOfTextAtSize('Fleet care (weekly):', fs) + 60,
-      textY,
-    )
+  textY -= text_right(page, font, fs, 'Expenses:', cx, textY + bls)
+
+  for (const expense of paymentToOwnerExpenseStore.listing) {
+    text_right(page, font, fs, expense.kind, cx, textY)
+    textY -= bls + text_left(page, font, fs, `\$${expense.amount}`, cx + bls, textY)
+  }
 
   text_left(page, font, fs, 'Calculation:', textX + bls, textY)
   textY -=
@@ -308,7 +310,7 @@ async function generatePdf() {
       page,
       font,
       fs,
-      `\$${document?.amount - document?.amount * (0.04 + 0.015) - weekly}`,
+      `\$${document?.orders - document?.orders * (0.04 + 0.015) - document.expenses}`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
       textY,
     )
@@ -343,6 +345,25 @@ const cols = [
   {
     label: 'payout',
     value: (v: PaymentToOwnerOrder) => '$' + v.payment,
+    size: 120,
+  },
+]
+
+const expensesCols = [
+  {
+    label: '#',
+    value: (v: ExpensesToOwner) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: ExpensesToOwner) => v.kind,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: ExpensesToOwner) => '$' + v.amount,
     size: 120,
   },
 ]
@@ -391,11 +412,51 @@ const cols = [
           </tr>
         </tbody>
       </table>
-      <div class="flex flex-cols-5 gap-60 mt-10">
+      <div class="mt-10">
+        <Text bold size="lg" class="mb-4">Expenses</Text>
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="p-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="expense in paymentToOwnerExpenseStore.listing" :key="expense.id">
+              <td
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  {{ col.value(expense) }}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex flex-cols-6 gap-40 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ paymentToOwnerOrdersStore.listing.length }}</Text>
-        <Text size="lg">Orders amount $ {{ document?.amount }}</Text>
+        <Text size="lg">Orders amount $ {{ document?.orders }}</Text>
         <Text size="lg">Payment $ {{ document?.payment }}</Text>
+        <Text size="lg">Expenses $ {{ document?.expenses }}</Text>
+        <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>
       <ModalAction>
         <form method="dialog">

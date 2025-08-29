@@ -50,13 +50,13 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     payments.value = paymentsMap
 
     const responseExpenses = await supabase
-      .from('expenses_to_owner')
+      .from('report_current_owners_expenses')
       .select()
       .eq('organization', orgId)
 
     const expensesMap = new Map<number, Array<ExpensesToOwner>>()
     responseExpenses.data?.forEach((json) => {
-      console.log('json', json)
+      // console.log('json', json)
       const record = json as ExpensesToOwner
 
       const key = record.owner
