@@ -98,7 +98,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
 
       let toPayment = 0
       if (paymentTerms.percent_of_gross) {
-        toPayment += (orders_profit * paymentTerms.percent_of_gross) / 100
+        toPayment += (orders_amount * paymentTerms.percent_of_gross) / 100
       } else if (paymentTerms.percent_of_driver) {
         toPayment += (orders_driver * paymentTerms.percent_of_driver) / 100
       }

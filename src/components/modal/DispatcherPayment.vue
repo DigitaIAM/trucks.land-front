@@ -118,11 +118,10 @@ const orders = computed(() => {
         <Text size="lg">Orders {{ summary?.orders_number }}</Text>
         <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
         <Text size="lg">Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
-        <Text size="lg">Gross $ {{ summary?.orders_profit.toFixed(2) }}</Text>
         <Text size="lg">To pay $ {{ summary?.toPayment.toFixed(2) }}</Text>
       </div>
 
-      <div class="mb-4 mt-4">
+      <div class="mb-4 mt-10">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
       <table class="w-full text-left table-auto min-w-max">

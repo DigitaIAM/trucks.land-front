@@ -25,8 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
-import { usePaymentToDispatcherStore } from '@/stores/payment_to_dispatchers.ts'
+import { paymentToDispatcherExportToExcel } from '@/utils/export_dispatchers_payments.ts'
 
 const paymentToDispatcherStore = usePaymentToDispatcherStore()
 const usersStore = useUsersStore()
@@ -133,6 +132,11 @@ const cols = [
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
     <Search :store="usersStore"></Search>
+    <Button
+      class="btn-soft font-light tracking-wider flex"
+      @click="paymentToDispatcherExportToExcel(paymentToDispatcherStore.listing!)"
+      >Excel
+    </Button>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>

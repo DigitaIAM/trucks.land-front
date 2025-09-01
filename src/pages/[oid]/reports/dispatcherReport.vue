@@ -87,7 +87,7 @@ const cols = [
     size: 100,
   },
   {
-    label: 'amount',
+    label: 'cost of orders',
     value: (v: DispatcherPaymentSummary) => '$' + v.orders_amount.toFixed(0),
     size: 100,
   },
@@ -97,12 +97,7 @@ const cols = [
     size: 100,
   },
   {
-    label: 'profit',
-    value: (v: DispatcherPaymentSummary) => '$' + v.orders_profit.toFixed(0),
-    size: 100,
-  },
-  {
-    label: '%',
+    label: '% of gross',
     value: (v: DispatcherPaymentSummary) => v.paymentTerms.percent_of_gross,
     size: 100,
   },

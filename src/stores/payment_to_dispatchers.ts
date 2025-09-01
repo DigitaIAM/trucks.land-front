@@ -9,6 +9,7 @@ export interface PaymentToDispatcherSummary {
   dispatcher: number
   month: number
   year: number
+  number_of_orders: number
   amount: number
   payment: number
   to_pay: number
@@ -67,20 +68,20 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
       .insert(payment)
       .select()
       .throwOnError()
-
-    console.log('response', response)
+    //
+    // console.log('response', response)
 
     if (response.status == 201 && response.data?.length == 1) {
       const payment = response.data[0] as PaymentToDispatcher
       mapping.value.set(payment.id, payment)
 
-      console.log('payment', payment)
+      // console.log('payment', payment)
 
       for (const record of records) {
         record.document = payment.id
       }
 
-      console.log('records', records)
+      // console.log('records', records)
 
       const responseRecords = await supabase
         .from('payments_to_dispatchers_orders')
