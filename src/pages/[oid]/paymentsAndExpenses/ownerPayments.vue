@@ -25,11 +25,15 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import { weekExportToExcel } from '@/utils/export_week_orders.ts'
+import moment from 'moment/moment'
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
 
-const state = reactive({})
+const ts = moment().subtract(3, 'days')
+const currentYear = ref(ts.year())
+const currentWeek = ref(ts.isoWeek())
 
 const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
 
@@ -44,6 +48,8 @@ function openPayment(record: PaymentToOwnerSummary) {
 function onClose() {
   selectedDocument.value = null
 }
+
+const state = reactive({})
 
 function resolve(
   order: Order,
@@ -133,6 +139,13 @@ const cols = [
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
     <Search :store="ownersStore"></Search>
+    <div>#{{ currentWeek }}</div>
+    <div>{{ currentYear }}</div>
+    <Button
+      class="btn-soft font-light tracking-wider ml-6"
+      @click="weekExportToExcel(paymentToOwnerStore.listing)"
+      >Excel
+    </Button>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>

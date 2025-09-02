@@ -1,5 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToOwnerOrderCreate } from '@/stores/payment_to_owners_orders.ts'
+import type { Order } from '@/stores/orders.ts'
+import type { Event } from '@/stores/events.ts'
 
 export interface PaymentToOwnerSummary {
   id: number
@@ -28,11 +30,21 @@ export interface PaymentToOwnerCreate {
   week: number
 }
 
+export interface PaymentToOwnerSummaryInDetails {
+  order: Order
+  agreements: Array<Event>
+  pickups: Array<Event>
+  deliveries: Array<Event>
+}
+
 export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
   const mapping = ref(new Map<number, PaymentToOwnerSummary | Promise<PaymentToOwnerSummary>>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('payments_to_owners_journal').select()
+    const response = await supabase
+      .from('payments_to_owners_journal')
+      .select()
+      .order('created_at', { ascending: false })
 
     // console.log('response', response)
 
@@ -44,6 +56,60 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
 
     mapping.value = map
   })
+
+  async function fetchingDetails(
+    paymentId: number,
+  ): Promise<Array<PaymentToOwnerSummaryInDetails>> {
+    const list = [] as Array<PaymentToOwnerSummaryInDetails>
+
+    const responsePayment = await supabase
+      .from('payments_to_owners_orders')
+      .select()
+      .eq('document', paymentId)
+
+    for (const record of responsePayment.data ?? []) {
+      const orderId = record['doc_order']
+      const responseOrder = await supabase
+        .from('orders_journal')
+        .select()
+        .eq('id', orderId)
+        .single()
+
+      const order = responseOrder.data as Order
+
+      const responseAgreement = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', order.id)
+        .eq('kind', 'agreement')
+
+      const agreements = Array.from((responseAgreement.data ?? []).map((json) => json as Event))
+
+      const responsePickup = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', order.id)
+        .eq('kind', 'pick-up')
+
+      const pickups = Array.from((responsePickup.data ?? []).map((json) => json as Event))
+
+      const responseDelivery = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', order.id)
+        .eq('kind', 'delivery')
+
+      const deliveries = Array.from((responseDelivery.data ?? []).map((json) => json as Event))
+
+      list.push({
+        order: order,
+        agreements: agreements,
+        pickups: pickups,
+        deliveries: deliveries,
+      } as PaymentToOwnerSummaryInDetails)
+    }
+    return list
+  }
 
   const listing = computedAsync(async () => {
     const list = [] as PaymentToOwnerSummary[]
@@ -98,7 +164,7 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
     }
   }
 
-  return { initialized, loading, listing, create }
+  return { initialized, fetchingDetails, loading, listing, create }
 })
 
 if (import.meta.hot) {

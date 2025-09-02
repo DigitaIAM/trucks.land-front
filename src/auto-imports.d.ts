@@ -399,7 +399,7 @@ declare global {
   export type { PaymentToOwnerExpense, PaymentToOwnerExpenseCreate } from './stores/payment_to_owner_expenses'
   import('./stores/payment_to_owner_expenses')
   // @ts-ignore
-  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate } from './stores/payment_to_owners'
+  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
