@@ -20,7 +20,7 @@ export interface FileRecordUpdate {
 export const useFilesStore = defineStore('file', () => {
   const listing = ref<Array<FileRecord>>([])
 
-  async function loading(orderId: number | null) {
+  async function request(orderId: number | null): Promise<Array<FileRecord>> {
     if (orderId) {
       const response = await supabase.from('order_files').select().eq('document', orderId)
 
@@ -32,16 +32,20 @@ export const useFilesStore = defineStore('file', () => {
           list.push(file)
         })
 
-        listing.value = list
+        return list
       } else {
         throw 'unexpended response status: ' + response.status
       }
     } else {
-      listing.value = [] as Array<FileRecord>
+      return [] as Array<FileRecord>
     }
   }
 
-  async function create(file: FileRecordCreate) {
+  async function loading(orderId: number | null) {
+    listing.value = await request(orderId)
+  }
+
+  async function create(file: FileRecordCreate): Promise<FileRecord> {
     const response = await supabase.from('order_files').insert(file).select() // .throwOnError()
 
     if (response.status == 201 && response.data?.length == 1) {
@@ -52,12 +56,14 @@ export const useFilesStore = defineStore('file', () => {
       list.push(record)
 
       listing.value = list
+
+      return record
     } else {
       throw 'unexpended response status: ' + response.status
     }
   }
 
-  return { listing, loading, create }
+  return { request, loading, listing, create }
 })
 
 if (import.meta.hot) {

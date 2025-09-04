@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import * as tus from 'tus-js-client'
+import { generateBI } from '@/utils/invoice_broker.ts'
 
 const props = defineProps<{
   order: Order | null
 }>()
 
+const emit = defineEmits(['close'])
+
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const filesStore = useFilesStore()
+const organizationsStore = useOrganizationsStore()
+const brokersStore = useBrokersStore()
 
 const stages = ref([
   { label: 'RC', check: false },
   { label: 'BOL', check: false },
   { label: 'POD', check: false },
-  { label: 'INV', check: false },
+  { label: 'BI', check: false },
+  { label: 'FI', check: false },
 ])
 
 const uploadProgress = ref<number | null>(null)
@@ -27,7 +33,7 @@ const signedBy = ref('')
 async function uploadFile(
   bucketName: string,
   fileName: string,
-  file: File,
+  file: File | Blob,
   onProgress: (percentage: number) => void,
 ) {
   const {
@@ -176,6 +182,60 @@ async function download(file) {
     console.error('Error downloading image: ', error.message)
   }
 }
+
+function close() {
+  modal.close()
+  emit('close')
+}
+
+async function createAndPdfBI() {
+  const order = props.order
+  const user = authStore.user
+  if (order && user) {
+    const cUser = await usersStore.resolveUUID(user.id)
+
+    const org = await organizationsStore.resolve(order.organization)
+    const broker = await brokersStore.resolve(order.broker)
+
+    if (org && broker) {
+      const createAt = order.created_at
+      const path =
+        createAt.substring(0, 4) +
+        '/' +
+        createAt.substring(5, 7) +
+        '/' +
+        createAt.substring(8, 10) +
+        '/' +
+        order.id +
+        '/' +
+        'BI_' +
+        org.code2 +
+        '-WEEK-' +
+        order.id +
+        '.pdf'
+
+      if (cUser == null) {
+        throw 'authorize first'
+      }
+
+      const record = await filesStore.create({
+        document: order.id,
+        file_type: 'BI',
+        signed_by: '',
+        path: path,
+        created_by: cUser.id,
+      })
+      console.log('createAndPdfBI', path)
+
+      const blob = await generateBI(order, org, broker, record)
+
+      await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
+      uploadProgress.value = null
+
+      await download(record)
+    }
+  }
+}
 </script>
 
 <template>
@@ -217,19 +277,23 @@ async function download(file) {
 
   <Modal id="modal">
     <ModalBox>
-      <Text size="2xl" class="mr-4">Files</Text>
-      <Button
-        :disabled="isReadOnly"
-        sm
-        class="mr-4 mb-2"
-        v-for="ft in ['RC', 'BOL', 'POD']"
-        :key="ft"
-        :class="{ 'bg-accent': ft == fileType }"
-        @click="fileType = ft"
-      >
-        {{ ft }}
-      </Button>
-
+      <div class="flex space-x-4 mb-6 w-full">
+        <Text size="2xl" class="mr-4">Files</Text>
+        <Button
+          :disabled="isReadOnly"
+          sm
+          class="mr-4 mb-2"
+          v-for="ft in ['RC', 'BOL', 'POD']"
+          :key="ft"
+          :class="{ 'bg-accent': ft == fileType }"
+          @click="fileType = ft"
+        >
+          {{ ft }}
+        </Button>
+        <div class="ml-32">
+          <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+        </div>
+      </div>
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <TextInput :disabled="isReadOnly" placeholder="Signed by" v-model="signedBy"></TextInput>
@@ -271,11 +335,14 @@ async function download(file) {
           </tbody>
         </table>
       </div>
-      <ModalAction>
-        <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
-        </form>
-      </ModalAction>
+      <div class="mt-10 mb-2 ml-2">
+        <Text size="xl" class="mr-6">Invoice for</Text>
+        <Button class="btn-soft font-light tracking-wider ml-6" @click="createAndPdfBI">
+          broker
+        </Button>
+        <Text size="xl" class="ml-6">or</Text>
+        <Button class="btn-soft font-light tracking-wider ml-6">factoring company</Button>
+      </div>
     </ModalBox>
   </Modal>
 </template>

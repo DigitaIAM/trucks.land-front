@@ -15,7 +15,6 @@ const records = ref([])
 watch(
   () => props.orderId,
   (id) => {
-    console.log('watch id', id, props.orderId)
     resetAndShow(id)
   },
   { deep: true },
@@ -51,9 +50,7 @@ async function resetAndShow(id: number) {
       list.push({ driver: driver, vehicle: vehicle, cost: cost })
     }
   }
-
   records.value = list
-  console.log('list', list)
 }
 </script>
 
