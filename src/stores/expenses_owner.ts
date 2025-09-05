@@ -2,7 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 
 export interface ExpensesToOwner extends ExpensesToOwnerCreate {
   id: number
-  create_at: string
+  created_at: string
   organization: number
 }
 

@@ -3,8 +3,6 @@ import { saveAs } from 'file-saver'
 import { type PaymentToOwnerSummary, usePaymentToOwnerStore } from '@/stores/payment_to_owners.ts'
 
 export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) {
-  console.log('start export')
-
   const workbook = new Workbook()
   const sheet = workbook.addWorksheet('My Sheet')
 
@@ -27,10 +25,12 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
     { header: 'broker', key: 'broker', width: 30 },
     { header: 'from', key: 'from', width: 30 },
     { header: 'state', key: 'state_from', width: 10 },
-    { header: 'date and time', key: 'dateTime_from', width: 20 },
+    { header: 'date', key: 'date_from', width: 20 },
+    { header: 'time', key: 'time_from', width: 20 },
     { header: 'to', key: 'to', width: 30 },
     { header: 'state', key: 'state_to', width: 10 },
-    { header: 'date and time', key: 'dateTime_to', width: 20 },
+    { header: 'date', key: 'date_to', width: 20 },
+    { header: 'time', key: 'time_to', width: 20 },
     { header: 'dispatcher', key: 'dispatcher', width: 30 },
     { header: 'miles', key: 'miles', width: 10 },
     { header: 'gross', key: 'gross', width: 20 },
@@ -44,11 +44,10 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
   let count = 0
   for (const payment of payments) {
     count++
-    console.log('payment', payment)
+
     const details = await paymentToOwnerStore.fetchingDetails(payment.id)
 
     for (const detail of details) {
-      console.log('detail', detail)
       const order = detail.order
 
       const dispatcher = await userStore.resolve(order.dispatcher)
@@ -68,22 +67,29 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
         createdAt = useDateFormat(order?.created_at, 'MMM DD, HH:mm').value
       }
 
-      let pickupDT = ''
+      let pickupD = ''
+      let pickupT = ''
       if (pickup?.datetime) {
-        pickupDT = useDateFormat(pickup.datetime, 'MMM DD, HH:mm').value
+        const date = new Date(pickup?.datetime)
+        pickupD = useDateFormat(date, 'MMM DD').value
+        pickupT = useDateFormat(date, 'HH:mm').value
       }
 
-      let deliveryDT = ''
+      let deliveryD = ''
+      let deliveryT = ''
       if (delivery?.datetime) {
-        deliveryDT = useDateFormat(delivery.datetime, 'MMM DD, HH:mm').value
+        const date = new Date(delivery?.datetime)
+        deliveryD = useDateFormat(date, 'MMM DD').value
+        deliveryT = useDateFormat(date, 'HH:mm').value
       }
 
       const profit = order.cost - order.driver_cost
       const percent = (profit / order.cost) * 100
+      const week = payment.week
 
       sheet.addRow({
         number: ++n,
-        order: `${org?.code2}-${order.id}`,
+        order: `${org?.code2}-${week}-${order.id}`,
         ref: order?.refs ?? '',
         date: createdAt,
         unit: vehicle?.unit_id,
@@ -92,10 +98,12 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
         broker: broker?.name,
         from: pickup?.city ?? '',
         state_from: pickup?.state ?? '',
-        dateTime_from: pickupDT,
+        date_from: pickupD,
+        time_from: pickupT,
         to: delivery?.city ?? '',
         state_to: delivery?.state ?? '',
-        dateTime_to: deliveryDT,
+        date_to: deliveryD,
+        time_to: deliveryT,
         dispatcher: dispatcher?.name,
         miles: order?.total_miles,
         gross: order.cost,
@@ -105,8 +113,23 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
         comments: '',
       })
 
-      const cell = sheet.getCell(`R${n}`)
-      cell.numFmt = '#,##0.00'
+      for (const col of ['S', 'T', 'U', 'V']) {
+        const cell = sheet.getCell(`${col}${n + 1}`)
+        cell.numFmt = '#,##0.00'
+      }
+
+      const rowToColor = sheet.getRow(1)
+
+      const fillStyle = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '949494' },
+      }
+
+      // Iterate through each cell in the row and apply the fill style
+      rowToColor.eachCell((cell) => {
+        cell.fill = fillStyle
+      })
     }
 
     if (count > 1) {
@@ -121,6 +144,6 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    'week_data.xlsx',
+    `week_data.xlsx`,
   )
 }

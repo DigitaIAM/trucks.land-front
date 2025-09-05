@@ -72,7 +72,7 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: ExpensesToOwner) => useDateFormat(v.create_at, 'MMM DD'),
+    value: (v: ExpensesToOwner) => useDateFormat(v.created_at, 'MMM DD'),
     size: 80,
   },
   {
