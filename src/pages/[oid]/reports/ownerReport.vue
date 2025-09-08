@@ -123,7 +123,7 @@ async function createPayment() {
   <OwnerPayment :org-id="authStore.oid" :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
-    <Search :store="ownersStore"></Search>
+    <SearchVue :store="ownersStore"></SearchVue>
     <div>#{{ currentWeek }}</div>
     <div>{{ currentYear }}</div>
     <Button

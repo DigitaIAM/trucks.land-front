@@ -87,7 +87,7 @@ async function saveOrder() {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search></Search>
+    <SearchForPayments></SearchForPayments>
     <Button class="btn" @click="resetAndShow(null)">Create</Button>
   </div>
 

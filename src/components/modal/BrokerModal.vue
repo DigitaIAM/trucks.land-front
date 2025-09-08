@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Broker } from '@/stores/brokers.ts'
+import SearchVue from '@/components/search/SearchVue.vue'
 
 const props = defineProps<{
   edit: Broker | null
@@ -96,7 +97,7 @@ function saveBroker() {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search :store="brokersStore"></Search>
+    <SearchVue :store="brokersStore"></SearchVue>
     <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
 

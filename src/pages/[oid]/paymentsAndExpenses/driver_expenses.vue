@@ -121,7 +121,7 @@ const cols = [
   <DriverPayment :driver-id="selectedDriver" @closed="onClose"></DriverPayment>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Driver expenses</Text>
-    <Search store=""></Search>
+    <SearchVue :store="driversStore"></SearchVue>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>

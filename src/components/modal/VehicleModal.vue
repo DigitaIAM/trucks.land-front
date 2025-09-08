@@ -129,8 +129,8 @@ async function saveVehicle() {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search :store="vehicleStore"></Search>
-    <Button class="btn-soft font-light tracking-wider"  @click="resetAndShow(null)">Create</Button>
+    <SearchVue :store="vehicleStore"></SearchVue>
+    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_vehicle">
     <ModalBox class="w-4/5">

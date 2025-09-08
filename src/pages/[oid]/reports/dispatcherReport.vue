@@ -125,7 +125,7 @@ async function createPayment() {
   <DispatcherPayment :dispatcher-id="selectedDispatcher" @closed="onClose"></DispatcherPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
-    <Search store="usersStore"></Search>
+    <SearchVue :store="usersStore"></SearchVue>
     <div>{{ currentMonth }}</div>
     <div>{{ currentYear }}</div>
     <Button

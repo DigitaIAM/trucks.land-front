@@ -147,6 +147,7 @@ declare module 'vue' {
     SearchAll: typeof import('./components/search/SearchAll.vue')['default']
     SearchBlock: typeof import('./components/search/SearchBlock.vue')['default']
     SearchForPayments: typeof import('./components/search/SearchForPayments.vue')['default']
+    SearchVue: typeof import('./components/search/SearchVue.vue')['default']
     Select: typeof import('./components/widgets/Select.vue')['default']
     Selector: typeof import('./components/selector/selector.vue')['default']
     Sidebar: typeof import('./components/windowElements/sidebar.vue')['default']

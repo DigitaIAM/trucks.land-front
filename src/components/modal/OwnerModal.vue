@@ -80,7 +80,7 @@ function saveOwner() {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Search :store="ownersStore"></Search>
+    <SearchVue :store="ownersStore"></SearchVue>
     <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="edit_owner">

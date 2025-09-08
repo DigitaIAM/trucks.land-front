@@ -131,7 +131,7 @@ const cols = [
   ></PaymentsForDispatcherOrders>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
-    <Search :store="usersStore"></Search>
+    <SearchVue :store="usersStore"></SearchVue>
     <Button
       class="btn-soft font-light tracking-wider flex"
       @click="paymentToDispatcherExportToExcel(paymentToDispatcherStore.listing!)"
