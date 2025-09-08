@@ -9,14 +9,14 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
+const paymentToOwnerStore = usePaymentToOwnerStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await paymentToOwnerStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
   },
@@ -26,16 +26,13 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { weekExportToExcel } from '@/utils/export_week_orders.ts'
-import moment from 'moment/moment'
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
 
-const ts = moment().subtract(3, 'days')
-const currentYear = ref(ts.year())
-const currentWeek = ref(ts.isoWeek())
-
 const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
+
+const filters = ref([])
 
 defineOptions({
   __loaders: [useOrgData],
@@ -132,20 +129,60 @@ const cols = [
     size: 150,
   },
 ]
+
+function setFilter(key, val) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index < 0) {
+    filters.value.push({ key: key, val: val })
+  } else {
+    filters.value[index] = { key: key, val: val }
+  }
+
+  paymentToOwnerStore.setFilters(filters.value)
+}
+
+function delFilter(key) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index >= 0) {
+    filters.value.splice(index, 1)
+  }
+
+  paymentToOwnerStore.setFilters(filters.value)
+}
+
+function capitalizeFirstLetter(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
 </script>
 
 <template>
   <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
-    <Search :store="ownersStore"></Search>
-    <div>#{{ currentWeek }}</div>
-    <div>{{ currentYear }}</div>
+    <SearchForPayments @selected="setFilter"></SearchForPayments>
     <Button
       class="btn-soft font-light tracking-wider ml-6"
       @click="weekExportToExcel(paymentToOwnerStore.listing)"
       >Excel
     </Button>
+  </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
+      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
+        {{ capitalizeFirstLetter(filter.key) }}:
+      </div>
+      <div>{{ filter.val.name }}</div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="0.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </Badge>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>

@@ -176,7 +176,9 @@ export async function generateBI(
   // head
   let cy = 800
   cy -= bls + text_right(page, font, 12, 'Invoice number', tableDimensions.endX, cy + 2 * bls)
-  const numberFormated = `${org.code2}-35-00${order.id}`
+  const ts = moment().subtract(3, 'days')
+  const currentWeek = ref(ts.isoWeek())
+  const numberFormated = `${org.code2}-${currentWeek.value}-${order.id}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)
 
   cy -= bls + text_right(page, font, 12, 'Invoice date', tableDimensions.endX, cy + bls)
@@ -199,7 +201,8 @@ export async function generateBI(
   cy -= bls + text_left(page, font, fs, 'Carrier team (Third Party)', cx + bls, cy)
 
   text_right(page, boldFont, fs, 'DUE DATE:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '10/02/2025', cx + bls, cy)
+  const due_date = moment(record.created_at).add(30, 'days').format('MM/DD/YYYY')
+  cy -= bls + text_left(page, font, fs, `${due_date}`, cx + bls, cy)
 
   // text left
   text_left(page, boldFont, fs, 'Bill To:', 50, cy)

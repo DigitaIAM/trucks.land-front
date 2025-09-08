@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as tus from 'tus-js-client'
 import { generateBI } from '@/utils/invoice_broker.ts'
+import moment from 'moment/moment'
 
 const props = defineProps<{
   order: Order | null
@@ -189,6 +190,9 @@ function close() {
 }
 
 async function createAndPdfBI() {
+  const ts = moment().subtract(3, 'days')
+  const currentWeek = ref(ts.isoWeek())
+
   const order = props.order
   const user = authStore.user
   if (order && user) {
@@ -210,7 +214,9 @@ async function createAndPdfBI() {
         '/' +
         'BI_' +
         org.code2 +
-        '-WEEK-' +
+        '-' +
+        currentWeek.value +
+        '-' +
         order.id +
         '.pdf'
 

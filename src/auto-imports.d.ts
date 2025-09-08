@@ -381,7 +381,7 @@ declare global {
   export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
   import('./stores/order_files')
   // @ts-ignore
-  export type { Order, OrderCreate, OrderUpdate, OrderStatus, KV } from './stores/orders'
+  export type { Order, OrderCreate, OrderUpdate, OrderStatus } from './stores/orders'
   import('./stores/orders')
   // @ts-ignore
   export type { Organization, OrganizationCreate, OrganizationUpdate } from './stores/organizations'
@@ -399,7 +399,7 @@ declare global {
   export type { PaymentToOwnerExpense, PaymentToOwnerExpenseCreate } from './stores/payment_to_owner_expenses'
   import('./stores/payment_to_owner_expenses')
   // @ts-ignore
-  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails } from './stores/payment_to_owners'
+  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails, KV } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'

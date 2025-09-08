@@ -37,8 +37,17 @@ export interface PaymentToOwnerSummaryInDetails {
   deliveries: Array<Event>
 }
 
+export interface KV {
+  key: string
+  val: never
+}
+
 export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
+  const contextFilters = ref<Array<KV>>([])
+  const searchFilters = ref<Array<KV>>([])
+
   const mapping = ref(new Map<number, PaymentToOwnerSummary | Promise<PaymentToOwnerSummary>>())
+  const timestamp = ref(Date.now())
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase
@@ -164,7 +173,78 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
     }
   }
 
-  return { initialized, fetchingDetails, loading, listing, create }
+  async function search(text: string) {
+    const response = await supabase
+      .from('payments_to_owners_journal')
+      .select()
+      .ilike('week', '%' + text + '%')
+      .limit(10)
+
+    if (response.status == 200) {
+      return response.data?.map((json) => json as PaymentToOwnerSummary) ?? []
+    }
+
+    return []
+  }
+
+  async function setContext(filters: Array<KV>) {
+    contextFilters.value = filters
+
+    await _setFilters()
+  }
+
+  async function setFilters(filters: Array<KV>) {
+    searchFilters.value = filters
+
+    await _setFilters()
+  }
+
+  async function _setFilters() {
+    mapping.value = new Map<number, PaymentToOwnerSummary>()
+
+    const localTime = Date.now()
+
+    if (timestamp.value > localTime) {
+      return
+    }
+    timestamp.value = localTime
+
+    let query = supabase.from('payments_to_owners_journal').select()
+
+    contextFilters.value.concat(searchFilters.value).forEach((f) => {
+      const x = f.val
+      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+        query = query.eq(f.key, x.id)
+      } else if (Array.isArray(x)) {
+        query = query.in(f.key, x)
+      } else {
+        query = query.eq(f.key, x)
+      }
+    })
+
+    const response = await query.order('created_at', { ascending: false }).limit(50)
+
+    if (timestamp.value == localTime) {
+      const map = new Map<number, PaymentToOwnerSummary>()
+      response.data?.forEach((json) => {
+        const payment = json as PaymentToOwnerSummary
+        map.set(payment.id, payment)
+      })
+
+      mapping.value = map
+    }
+  }
+
+  return {
+    initialized,
+    fetchingDetails,
+    loading,
+    listing,
+    create,
+    search,
+    setContext,
+    setFilters,
+  }
 })
 
 if (import.meta.hot) {
