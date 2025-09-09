@@ -29,7 +29,7 @@ watch(
   },
 )
 
-async function init(suggestion: Reference | Suggestion) {
+async function init(suggestion: Reference | Suggestion | null) {
   // console.log('modelValue', suggestion)
   // if (suggestion instanceof Reference) {
   if (suggestion) {

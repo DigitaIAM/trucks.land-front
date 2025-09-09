@@ -1,4 +1,9 @@
 <script setup lang="ts">
+const expensesOwnerStore = useExpensesToOwnerStore()
+const ownerStore = useOwnersStore()
+const authStore = useAuthStore()
+const usersStore = useUsersStore()
+
 const props = defineProps<{
   edit: ExpensesToOwner | null
 }>()
@@ -8,7 +13,7 @@ const organization = ref<number>()
 const owner = ref<number>()
 const kind = ref('')
 const amount = ref<number>()
-const created_by = ref<number>()
+const createdBy = ref<Reference>({ id: authStore.account?.id ?? -1 })
 
 const emit = defineEmits(['closed'])
 
@@ -20,18 +25,15 @@ watch(
   { deep: true },
 )
 
-const expensesOwnerStore = useExpensesToOwnerStore()
-const ownerStore = useOwnersStore()
-const authStore = useAuthStore()
-const usersStore = useUsersStore()
-
 function resetAndShow(expense: ExpensesToOwner | null) {
   id.value = expense?.id
   organization.value = expense?.organization
   owner.value = expense ? { id: expense.owner } : null
   kind.value = expense?.kind || ''
   amount.value = expense?.amount
-  created_by.value = expense?.created_by
+  createdBy.value = {
+    id: expense?.created_by ?? authStore.account?.id,
+  }
 
   expense_modal.showModal()
 }
@@ -69,7 +71,7 @@ function saveExpenses() {
       <div class="flex space-x-2 w-full">
         <Text class="w-full mt-1" size="xl">Expenses # {{ id }}</Text>
         <Label class="mb-1">created by</Label>
-        <selector class="w-full" :modelValue="authStore.account" :store="usersStore" disabled />
+        <selector class="w-full" :modelValue="createdBy" :store="usersStore" disabled />
       </div>
       <div>
         <Label class="mt-2 mb-2">Owner</Label>

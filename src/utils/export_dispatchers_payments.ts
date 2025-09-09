@@ -15,15 +15,34 @@ export async function paymentToDispatcherExportToExcel(
     { header: '3%', key: 'payout', width: 30 },
   ]
 
+  let n = 0
+
   for (const record of payments) {
     const dispatcher = await userStore.resolve(record.dispatcher)
 
-    console.log('dispatcher', dispatcher)
     sheet.addRow({
       dispatcher: `${dispatcher?.real_name}`,
       gross: `${record.amount}`,
       orders: `${record.number_of_orders}`,
       payout: `${record.to_pay}`,
+    })
+
+    for (const col of ['B', 'D']) {
+      const cell = sheet.getCell(`${col}${n}`)
+      cell.numFmt = '#,##0.00'
+    }
+
+    const rowToColor = sheet.getRow(1)
+
+    const fillStyle = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: '949494' },
+    }
+
+    // Iterate through each cell in the row and apply the fill style
+    rowToColor.eachCell((cell) => {
+      cell.fill = fillStyle
     })
   }
 
@@ -34,6 +53,6 @@ export async function paymentToDispatcherExportToExcel(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    'my_data.xlsx',
+    'salary_data.xlsx',
   )
 }
