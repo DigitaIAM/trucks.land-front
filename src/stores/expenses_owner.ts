@@ -29,7 +29,7 @@ export const useExpensesToOwnerStore = defineStore('expenses_to_owner', () => {
         .from('expenses_to_owner')
         .select()
         .eq('organization', orgId)
-        .order('created_at')
+        .order('created_at', { ascending: false })
         .limit(50)
 
       if (response.status == 200) {

@@ -51,9 +51,9 @@ function close() {
 <template>
   <Modal id="details">
     <ModalBox class="max-w-[calc(70vw-6.25rem)]">
-      <ModalAction>
+      <div class="flex place-self-end">
         <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
-      </ModalAction>
+      </div>
       <div class="flex flex-cols-5 gap-10">
         <Text size="2xl"
           >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}

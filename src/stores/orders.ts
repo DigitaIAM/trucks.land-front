@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import type { KV } from '@/utils/kv.ts'
 
 export interface Order extends OrderCreate {
   id: number
@@ -39,11 +40,6 @@ export interface OrderStatus {
   document: number
   status: number
   user: number
-}
-
-export interface KV {
-  key: string
-  val: never
 }
 
 export const useOrdersStore = defineStore('order', () => {

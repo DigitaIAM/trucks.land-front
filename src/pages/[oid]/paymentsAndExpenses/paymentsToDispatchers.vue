@@ -6,17 +6,18 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
+const paymentToDispatcherStore = usePaymentToDispatcherStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await paymentToDispatcherStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
   },
@@ -29,6 +30,8 @@ import { paymentToDispatcherExportToExcel } from '@/utils/export_dispatchers_pay
 
 const paymentToDispatcherStore = usePaymentToDispatcherStore()
 const usersStore = useUsersStore()
+
+const filters = ref([])
 
 defineOptions({
   __loaders: [useOrgData],
@@ -122,6 +125,30 @@ const cols = [
     size: 150,
   },
 ]
+
+function setFilter(key, val) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index < 0) {
+    filters.value.push({ key: key, val: val })
+  } else {
+    filters.value[index] = { key: key, val: val }
+  }
+
+  paymentToDispatcherStore.setFilters(filters.value)
+}
+
+function delFilter(key) {
+  const index = filters.value.findIndex((v) => v.key === key)
+  if (index >= 0) {
+    filters.value.splice(index, 1)
+  }
+
+  paymentToDispatcherStore.setFilters(filters.value)
+}
+
+function capitalizeFirstLetter(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
 </script>
 
 <template>
@@ -131,12 +158,30 @@ const cols = [
   ></PaymentsForDispatcherOrders>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
-    <SearchVue :store="usersStore"></SearchVue>
+    <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
     <Button
       class="btn-soft font-light tracking-wider flex"
       @click="paymentToDispatcherExportToExcel(paymentToDispatcherStore.listing!)"
       >Excel
     </Button>
+  </div>
+  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
+      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
+        {{ capitalizeFirstLetter(filter.key) }}:
+      </div>
+      <div>{{ filter.val.name }}</div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="0.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </Badge>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>

@@ -16,7 +16,7 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
   },

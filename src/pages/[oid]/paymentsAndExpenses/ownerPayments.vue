@@ -6,6 +6,7 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
@@ -159,10 +160,10 @@ function capitalizeFirstLetter(val) {
   <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Payments</Text>
-    <SearchForPayments @selected="setFilter"></SearchForPayments>
+    <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
     <Button
       class="btn-soft font-light tracking-wider ml-6"
-      @click="weekExportToExcel(paymentToOwnerStore.listing)"
+      @click="weekExportToExcel(paymentToOwnerStore.listing!)"
       >Excel
     </Button>
   </div>

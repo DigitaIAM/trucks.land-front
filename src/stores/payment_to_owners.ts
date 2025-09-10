@@ -37,11 +37,6 @@ export interface PaymentToOwnerSummaryInDetails {
   deliveries: Array<Event>
 }
 
-export interface KV {
-  key: string
-  val: never
-}
-
 export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])

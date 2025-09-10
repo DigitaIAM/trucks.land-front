@@ -1,5 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToDispatcherOrderCreate } from '@/stores/payment_to_dispatchers_orders.ts'
+import type { KV } from '@/utils/kv.ts'
+import type { Order } from '@/stores/orders.ts'
 
 export interface PaymentToDispatcherSummary {
   id: number
@@ -33,21 +35,61 @@ export interface PaymentToDispatcherCreate {
 }
 
 export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers', () => {
+  const contextFilters = ref<Array<KV>>([])
+  const searchFilters = ref<Array<KV>>([])
+
   const mapping = ref(
     new Map<number, PaymentToDispatcherSummary | Promise<PaymentToDispatcherSummary>>(),
   )
+  const timestamp = ref(Date.now())
 
-  const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('payment_to_dispatchers_journal').select()
+  async function setContext(filters: Array<KV>) {
+    contextFilters.value = filters
 
-    const map = new Map<number, PaymentToDispatcherSummary>()
-    response.data?.forEach((json) => {
-      const payment = json as PaymentToDispatcherSummary
-      map.set(payment.id, payment)
+    await _setFilters()
+  }
+
+  async function setFilters(filters: Array<KV>) {
+    searchFilters.value = filters
+
+    await _setFilters()
+  }
+
+  async function _setFilters() {
+    mapping.value = new Map<number, Order>()
+
+    const localTime = Date.now()
+
+    if (timestamp.value > localTime) {
+      return
+    }
+    timestamp.value = localTime
+
+    let query = supabase.from('payment_to_dispatchers_journal').select()
+
+    contextFilters.value.concat(searchFilters.value).forEach((f) => {
+      const x = f.val
+      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+        query = query.eq(f.key, x.id)
+      } else if (Array.isArray(x)) {
+        query = query.in(f.key, x)
+      } else {
+        query = query.eq(f.key, x)
+      }
     })
 
-    mapping.value = map
-  })
+    const response = await query.order('created_at', { ascending: false }).limit(50)
+
+    if (timestamp.value == localTime) {
+      const map = new Map<number, PaymentToDispatcherSummary>()
+      response.data?.forEach((json) => {
+        const payment = json as PaymentToDispatcherSummary
+        map.set(payment.id, payment)
+      })
+
+      mapping.value = map
+    }
+  }
 
   const listing = computedAsync(async () => {
     const list = [] as PaymentToDispatcherSummary[]
@@ -95,7 +137,7 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
     }
   }
 
-  return { initialized, loading, listing, create }
+  return { setContext, setFilters, listing, create }
 })
 
 if (import.meta.hot) {

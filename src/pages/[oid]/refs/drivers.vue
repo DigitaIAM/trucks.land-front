@@ -4,26 +4,6 @@ meta:
   layout: nav-view
 </route>
 
-<script lang="ts">
-import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-
-const organizationsStore = useOrganizationsStore()
-const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
-
-export const useOrgData = defineBasicLoader(
-  'oid',
-  async (route) => {
-    const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.org = org
-    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
-    // console.table(org)
-    return org
-  },
-  { key: 'org' },
-)
-</script>
-
 <script setup lang="ts">
 const cols = [
   {
@@ -50,10 +30,6 @@ const cols = [
 
 const selectedDriver = ref(null)
 const driversStore = useDriversStore()
-
-defineOptions({
-  __loaders: [useOrgData],
-})
 
 function editDriver(driver: Driver) {
   selectedDriver.value = driver
