@@ -29,7 +29,6 @@ function resetAndShow(id: number) {
   // console.log('resetAndShow', id)
   state.value = { id: id, name: '?' }
   props.store.resolve(id).then((obj) => {
-    // console.log('resolve', obj, obj.name)
     if (obj) state.value = obj
   })
 }

@@ -2,6 +2,7 @@
 import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
+import { createFetch } from '@vueuse/core'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -13,6 +14,7 @@ const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const ownerStore = useOwnersStore()
 const organizationsStore = useOrganizationsStore()
+const accessTokenStore = useAccessTokenStore()
 
 watch(
   () => props.document,
@@ -73,17 +75,22 @@ function text_right(
 async function generatePdf() {
   const document = props.document
   if (document == null) {
-    return
+    throw 'missing document'
   }
 
   const org = await organizationsStore.resolve(document.organization)
   if (org == null) {
-    return
+    throw 'missing organizaton'
+  }
+
+  const token = await accessTokenStore.getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
   }
 
   const contra = await ownerStore.resolve(document.owner)
   if (contra == null) {
-    return
+    throw 'missing owner'
   }
 
   let jpgUrl = ''
@@ -212,7 +219,7 @@ async function generatePdf() {
       page,
       boldFont,
       16,
-      `WEEK #${document.week} of ${document.year}`,
+      `WEEK ${document.week} of ${document.year}`,
       tableDimensions.endX,
       cy,
     )
@@ -227,7 +234,7 @@ async function generatePdf() {
 
   const fs = 10
   text_right(page, font, fs, 'Trip Related pay:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${document.payment}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.payment}`, cx + bls, cy)
 
   text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
   cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
@@ -315,14 +322,60 @@ async function generatePdf() {
       textY,
     )
 
-  // Save the PDF
-  const pdfBytes = await pdfDoc.save()
+  // Send by email
+  const base64String = await pdfDoc.saveAsBase64()
 
-  // You can then display or download the PDF (e.g., in a browser)
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-  const url = URL.createObjectURL(blob)
-  // Open in a new tab or use in an iframe
-  window.open(url)
+  const email = {
+    from: { address: 'noreply@daiylabs.com' },
+    to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
+    htmlbody:
+      'Greetings,<br />' +
+      '<br />' +
+      'Payment sheet of week #&nbsp;' +
+      `${document.week}` +
+      '&nbsp;of&nbsp;' +
+      `${document.year}` +
+      '&nbsp;is attached.<br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
+      '<br />' +
+      'Best Regards,<br />' +
+      '<br />' +
+      `${org.name}<br />` +
+      `${org.address1}<br />` +
+      `${org.address2}<br />`,
+    attachments: [
+      {
+        name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
+        content: base64String,
+        mime_type: 'plain/txt',
+      },
+    ],
+  }
+
+  const myFetch = createFetch({
+    // baseUrl: 'https://api.zeptomail.com/',
+    // baseUrl: 'http://localhost:5173/',
+    options: {
+      async beforeFetch({ options }) {
+        options.headers = {
+          ...options.headers,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
+        return { options }
+      },
+    },
+    fetchOptions: { mode: 'cors' },
+  })
+
+  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+
+  console.log('isFetching', isFetching)
+  console.log('error', error)
+  console.log('data', data)
 }
 
 const cols = [
@@ -372,17 +425,24 @@ const expensesCols = [
 <template>
   <Modal id="details">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
-      <div class="flex flex-cols-6 gap-10">
-        <Text size="2xl">Payment # {{ document?.id }}</Text>
-        <Text size="2xl">week {{ document?.week }}</Text>
-        <Text size="2xl">to</Text>
-        <div>
-          <Text size="2xl">
-            <QueryAndShow :id="props.document?.owner" :store="ownerStore" />
-          </Text>
+      <div class="grid grid-cols-2">
+        <div class="flex flex-col-5 gap-10">
+          <Text size="2xl">Payment # {{ document?.id }}</Text>
+          <Text size="2xl">week {{ document?.week }}</Text>
+          <Text size="2xl">to</Text>
+          <div>
+            <Text size="2xl">
+              <QueryAndShow :id="props.document?.owner" :store="ownerStore" />
+            </Text>
+          </div>
+          <Text size="2xl">$ {{ document?.payment }}</Text>
         </div>
-        <Text size="2xl">$ {{ document?.payment }}</Text>
-        <Button class="btn-soft font-light tracking-wider ml-6" @click="generatePdf">pdf</Button>
+        <div class="justify-self-end">
+          <Button class="btn-soft font-light tracking-wider" @click="generatePdf">
+            Send to
+            <QueryAndShow name="email" :id="props.document?.owner" :store="ownerStore" />
+          </Button>
+        </div>
       </div>
       <div class="mb-4 mt-4">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>

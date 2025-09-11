@@ -20,6 +20,22 @@ import AutoImport from 'unplugin-auto-import/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    cors: {
+      origin: ['http://localhost:5173', 'https://api.zeptomail.com'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      // credentials: true,
+    },
+    // cors: true,
+    proxy: {
+      '/zeptomail': {
+        target: 'https://api.zeptomail.com',
+        rewrite: (path) => path.replace(/^\/zeptomail/, ''),
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '~/': `${path.resolve(__dirname, 'src')}/`,

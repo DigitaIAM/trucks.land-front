@@ -122,6 +122,7 @@ declare global {
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
+  const useAccessTokenStore: typeof import('./stores/access_tokens')['useAccessTokenStore']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
@@ -399,7 +400,7 @@ declare global {
   export type { PaymentToOwnerExpense, PaymentToOwnerExpenseCreate } from './stores/payment_to_owner_expenses'
   import('./stores/payment_to_owner_expenses')
   // @ts-ignore
-  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails, KV } from './stores/payment_to_owners'
+  export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails } from './stores/payment_to_owners'
   import('./stores/payment_to_owners')
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
@@ -544,6 +545,7 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
+    readonly useAccessTokenStore: UnwrapRef<typeof import('./stores/access_tokens')['useAccessTokenStore']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
