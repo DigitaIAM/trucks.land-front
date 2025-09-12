@@ -14,7 +14,6 @@ export const useAccessTokenStore = defineStore('access_tokens', () => {
         console.log('error', error)
         return null
       }
-      console.log('data', data)
       return data['token'] as string
     }
     return null

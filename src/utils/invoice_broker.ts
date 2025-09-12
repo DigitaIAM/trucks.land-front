@@ -3,10 +3,12 @@ import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import moment from 'moment'
 import type { FileRecord } from '@/stores/order_files.ts'
+import { createFetch } from '@vueuse/core'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
 const filesStore = useFilesStore()
+const accessTokenStore = useAccessTokenStore()
 
 function text_left(
   page: PDFPage,
@@ -64,6 +66,23 @@ export async function generateBI(
 
   if (broker.id != order.broker) {
     throw 'fail broker check'
+  }
+
+  const token = await accessTokenStore.getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
+
+  let domain = ''
+
+  if (org.id == 1) {
+    domain = 'caravanfreight.net'
+  }
+  if (org.id == 2) {
+    domain = 'cvslogisticsllc.com'
+  }
+  if (org.id == 3) {
+    domain = 'cnulogistics.com'
   }
 
   let jpgUrl = ''
@@ -178,6 +197,7 @@ export async function generateBI(
   cy -= bls + text_right(page, font, 12, 'Invoice number', tableDimensions.endX, cy + 2 * bls)
   const ts = moment().subtract(3, 'days')
   const currentWeek = ref(ts.isoWeek())
+  const currentYear = ref(ts.year())
   const numberFormated = `${org.code2}-${currentWeek.value}-${order.id}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)
 
@@ -262,8 +282,62 @@ export async function generateBI(
     console.log('error', error)
   }
 
-  // Save the PDF
+  // Save the PDF and send email
   const pdfBytes = await pdfDoc.save()
+
+  const base64String = await pdfDoc.saveAsBase64()
+
+  const email = {
+    from: { address: `noreply@${domain}` },
+    to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    subject: `Invoice ${currentWeek.value}-${org.code2}-${order.id}`,
+    htmlbody:
+      'Greetings,<br />' +
+      '<br />' +
+      'Invoice #&nbsp;' +
+      `${currentWeek.value}` +
+      '&nbsp;of&nbsp;' +
+      `${currentYear.value}` +
+      '&nbsp;is attached.<br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net <br />' +
+      '<br />' +
+      'Best Regards,<br />' +
+      '<br />' +
+      `${org.name}<br />` +
+      `${org.address1}<br />` +
+      `${org.address2}<br />`,
+    attachments: [
+      {
+        name: `invoice_${currentWeek.value}-${org.code2}-${order.id}.pdf`,
+        content: base64String,
+        mime_type: 'plain/txt',
+      },
+    ],
+  }
+
+  const myFetch = createFetch({
+    // baseUrl: 'https://api.zeptomail.com/',
+    // baseUrl: 'http://localhost:5173/',
+    options: {
+      async beforeFetch({ options }) {
+        options.headers = {
+          ...options.headers,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
+        return { options }
+      },
+    },
+    fetchOptions: { mode: 'cors' },
+  })
+
+  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+
+  console.log('isFetching', isFetching)
+  console.log('error', error)
+  console.log('data', data)
 
   return new Blob([pdfBytes], { type: 'application/pdf' })
 }

@@ -93,6 +93,18 @@ async function generatePdf() {
     throw 'missing owner'
   }
 
+  let domain = ''
+
+  if (org.id == 1) {
+    domain = 'caravanfreight.net'
+  }
+  if (org.id == 2) {
+    domain = 'cvslogisticsllc.com'
+  }
+  if (org.id == 3) {
+    domain = 'cnulogistics.com'
+  }
+
   let jpgUrl = ''
 
   if (org.id == 1) {
@@ -326,7 +338,7 @@ async function generatePdf() {
   const base64String = await pdfDoc.saveAsBase64()
 
   const email = {
-    from: { address: 'noreply@daiylabs.com' },
+    from: { address: `noreply@${domain}` },
     to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
     subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
     htmlbody:

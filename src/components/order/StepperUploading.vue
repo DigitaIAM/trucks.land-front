@@ -314,7 +314,7 @@ async function createAndPdfBI() {
         <Button v-else class="btn-soft font-light tracking-wider" @click="upload">Upload</Button>
       </ModalAction>
 
-      <div class="mt-6 mb-2">
+      <div class="mt-6">
         <table class="w-full text-left table-auto min-w-max">
           <thead>
             <tr>
@@ -341,13 +341,13 @@ async function createAndPdfBI() {
           </tbody>
         </table>
       </div>
-      <div class="mt-10 mb-2 ml-2">
-        <Text size="xl" class="mr-6">Invoice for</Text>
-        <Button class="btn-soft font-light tracking-wider ml-6" @click="createAndPdfBI">
-          broker
+      <div class="grid grid-cols-1 mb-2 mt-8 w-full">
+        <Text size="xl" class="mt-6 mb-4">Invoice for</Text>
+        <Button class="flex btn-soft font-light tracking-wider mb-6" @click="createAndPdfBI">
+          broker by
+          <QueryAndShow name="email" :id="order?.broker" :store="brokersStore"></QueryAndShow>
         </Button>
-        <Text size="xl" class="ml-6">or</Text>
-        <Button class="btn-soft font-light tracking-wider ml-6">factoring company</Button>
+        <Button class="btn-soft font-light tracking-wider">factoring company</Button>
       </div>
     </ModalBox>
   </Modal>
