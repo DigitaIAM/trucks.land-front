@@ -119,7 +119,13 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
     return list
   }, [])
 
-  async function createPayment(org: number, year: number, month: number, account: User) {
+  async function createPayment(
+    org: number,
+    year: number,
+    month: number,
+    account: User,
+    ex_rate: number,
+  ) {
     const paymentToDispatcherStore = usePaymentToDispatcherStore()
 
     const data = dispatchers.value.slice()
@@ -152,6 +158,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
           percent_of_gross: summary.paymentTerms.percent_of_gross,
           percent_of_driver: summary.paymentTerms.percent_of_driver,
           to_pay: summary.toPayment,
+          ex_rate: ex_rate,
         } as PaymentToDispatcherCreate,
         records,
       )

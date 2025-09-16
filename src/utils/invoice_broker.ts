@@ -73,35 +73,6 @@ export async function generateBI(
     throw 'missing token'
   }
 
-  let domain = ''
-
-  if (org.id == 1) {
-    domain = 'caravanfreight.net'
-  }
-  if (org.id == 2) {
-    domain = 'cvslogisticsllc.com'
-  }
-  if (org.id == 3) {
-    domain = 'cnulogistics.com'
-  }
-
-  let jpgUrl = ''
-
-  if (org.id == 1) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CAF.jpg'
-  }
-  if (org.id == 2) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CVS.jpg'
-  }
-  if (org.id == 3) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CNU.jpg'
-  }
-
-  const jpgImageBytes = await fetch(jpgUrl).then((res) => res.arrayBuffer())
-
   const pieces = (order?.total_pieces as number) ?? ''
   const weight = (order?.total_weight as number) ?? ''
 
@@ -143,9 +114,6 @@ export async function generateBI(
 
   const pdfDoc = await PDFDocument.create()
 
-  const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
-  const jpgDims = jpgImage.size()
-
   const page = pdfDoc.addPage()
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
@@ -183,12 +151,19 @@ export async function generateBI(
   const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
 
   // logo
-  page.drawImage(jpgImage, {
-    x: startX,
-    y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
-    width: 100,
-    height: (100 * jpgDims.height) / jpgDims.width,
-  })
+  if (org.url_logo) {
+    const jpgImageBytes = await fetch(org.url_logo).then((res) => res.arrayBuffer())
+
+    const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
+    const jpgDims = jpgImage.size()
+
+    page.drawImage(jpgImage, {
+      x: startX,
+      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+      width: 100,
+      height: (100 * jpgDims.height) / jpgDims.width,
+    })
+  }
   text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
   text_left(page, font, 10, `${org.address2}`, startX + bls, 685)
 
@@ -288,7 +263,7 @@ export async function generateBI(
   const base64String = await pdfDoc.saveAsBase64()
 
   const email = {
-    from: { address: `noreply@${domain}` },
+    from: { address: `noreply@${org.domain}` },
     to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
     subject: `Invoice ${currentWeek.value}-${org.code2}-${order.id}`,
     htmlbody:

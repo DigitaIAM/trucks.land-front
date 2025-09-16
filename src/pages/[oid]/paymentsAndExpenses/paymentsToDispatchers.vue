@@ -26,7 +26,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { paymentToDispatcherExportToExcel } from '@/utils/export_dispatchers_payments.ts'
+import { paymentToDispatcherExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
 
 const paymentToDispatcherStore = usePaymentToDispatcherStore()
 const usersStore = useUsersStore()

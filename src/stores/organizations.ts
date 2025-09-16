@@ -15,6 +15,8 @@ export interface OrganizationCreate {
   name: string
   billing_email: string
   owner: number
+  domain: string
+  url_logo: string
 }
 
 export interface OrganizationUpdate {
@@ -25,6 +27,8 @@ export interface OrganizationUpdate {
   name?: string
   billing_email?: string
   owner?: number
+  domain?: string
+  url_logo?: string
 }
 
 export const useOrganizationsStore = defineStore('organization', () => {

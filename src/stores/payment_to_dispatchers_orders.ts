@@ -18,7 +18,7 @@ export const usePaymentToDispatcherOrdersStore = defineStore(
   () => {
     const listing = ref<Array<PaymentToDispatcherOrder>>([])
 
-    async function loading(documentId: number | null) {
+    async function request(documentId: number | null): Promise<Array<PaymentToDispatcherOrder>> {
       if (documentId) {
         const response = await supabase
           .from('payments_to_dispatchers_orders')
@@ -35,16 +35,20 @@ export const usePaymentToDispatcherOrdersStore = defineStore(
             list.push(record)
           })
 
-          listing.value = list
+          return list
         } else {
           throw 'unexpended response status: ' + response.status
         }
       } else {
-        listing.value = [] as Array<PaymentToDispatcherOrder>
+        return [] as Array<PaymentToDispatcherOrder>
       }
     }
 
-    return { loading, listing }
+    async function loading(documentId: number | null) {
+      listing.value = await request(documentId)
+    }
+
+    return { request, loading, listing }
   },
 )
 

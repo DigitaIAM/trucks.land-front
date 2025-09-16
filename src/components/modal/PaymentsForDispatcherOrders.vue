@@ -1,10 +1,18 @@
 <script setup lang="ts">
+import { generateDispatcherPaymentPdf } from '@/utils/export_dispatchers_payments_to_pdf.ts'
+import { openInNewTab } from '@/utils/pdf-helper.ts'
+
 const props = defineProps<{
   document: PaymentToDispatcherSummary | null
 }>()
 
 const paymentToDispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
+// const eventsStore = useEventsStore()
+// const vehiclesStore = useVehiclesStore()
+// const orderStore = useOrdersStore()
 const userStore = useUsersStore()
+const organizationsStore = useOrganizationsStore()
+const accessTokenStore = useAccessTokenStore()
 
 const emit = defineEmits(['close'])
 
@@ -21,6 +29,98 @@ watch(
 function resetAndShow(document: PaymentToDispatcherSummary) {
   details.showModal()
   paymentToDispatcherOrdersStore.loading(document.id)
+}
+
+async function generatePdf() {
+  const document = props.document
+  if (document == null) {
+    throw 'missing document'
+  }
+
+  const org = await organizationsStore.resolve(document.organization)
+  if (org == null) {
+    throw 'missing organization'
+  }
+
+  const token = await accessTokenStore.getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
+
+  // const contra = await ownerStore.resolve(document.owner)
+  // if (contra == null) {
+  //   throw 'missing owner'
+  // }
+
+  const pdfDoc = await generateDispatcherPaymentPdf(document)
+
+  await openInNewTab(pdfDoc)
+
+  // // Send by email
+  // const base64String = await pdfDoc.saveAsBase64()
+
+  // let domain = ''
+  // if (org.id == 1) {
+  //   domain = 'caravanfreight.net'
+  // } else if (org.id == 2) {
+  //   domain = 'cvslogisticsllc.com'
+  // } else if (org.id == 3) {
+  //   domain = 'cnulogistics.com'
+  // } else {
+  //   throw 'domain is not set'
+  // }
+  //
+  // const email = {
+  //   from: { address: `noreply@${domain}` },
+  //   to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: '' } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+  //   subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
+  //   htmlbody:
+  //     'Greetings,<br />' +
+  //     '<br />' +
+  //     'Payment sheet of week #&nbsp;' +
+  //     `${document.month}` +
+  //     '&nbsp;of&nbsp;' +
+  //     `${document.year}` +
+  //     '&nbsp;is attached.<br />' +
+  //     '<br />' +
+  //     'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
+  //     '<br />' +
+  //     'Best Regards,<br />' +
+  //     '<br />' +
+  //     `${org.name}<br />` +
+  //     `${org.address1}<br />` +
+  //     `${org.address2}<br />`,
+  //   attachments: [
+  //     {
+  //       name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
+  //       content: base64String,
+  //       mime_type: 'plain/txt',
+  //     },
+  //   ],
+  // }
+  //
+  // const myFetch = createFetch({
+  //   // baseUrl: 'https://api.zeptomail.com/',
+  //   // baseUrl: 'http://localhost:5173/',
+  //   options: {
+  //     async beforeFetch({ options }) {
+  //       options.headers = {
+  //         ...options.headers,
+  //         Accept: 'application/json',
+  //         'Content-Type': 'application/json',
+  //         Authorization: token,
+  //       }
+  //       return { options }
+  //     },
+  //   },
+  //   fetchOptions: { mode: 'cors' },
+  // })
+  //
+  // const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+  //
+  // console.log('isFetching', isFetching)
+  // console.log('error', error)
+  // console.log('data', data)
 }
 
 const cols = [
@@ -50,21 +150,28 @@ function close() {
 
 <template>
   <Modal id="details">
-    <ModalBox class="max-w-[calc(70vw-6.25rem)]">
-      <div class="flex place-self-end">
-        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
-      </div>
-      <div class="flex flex-cols-5 gap-10">
-        <Text size="2xl"
-          >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
-        </Text>
-        <Text size="2xl">to</Text>
-        <div>
-          <Text size="2xl">
-            <QueryAndShow name="real_name" :id="document?.dispatcher" :store="userStore" />
+    <ModalBox class="max-w-[calc(75vw-6.25rem)]">
+      <div class="grid grid-cols-2">
+        <div class="flex flex-cols-4 gap-10">
+          <Text size="2xl"
+            >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
           </Text>
+          <Text size="2xl">to</Text>
+          <div>
+            <Text class="flex w-full" size="2xl">
+              <QueryAndShow name="real_name" :id="document?.dispatcher" :store="userStore" />
+            </Text>
+          </div>
+          <Text size="2xl">$ {{ document?.to_pay }}</Text>
         </div>
-        <Text size="2xl">$ {{ document?.to_pay }}</Text>
+        <div>
+          <div class="justify-self-end">
+            <Button class="btn-soft font-light tracking-wider" @click="generatePdf">
+              Send to
+              <QueryAndShow name="email" :id="props.document?.dispatcher" :store="userStore" />
+            </Button>
+          </div>
+        </div>
       </div>
       <div class="flex flex-cols-6 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
@@ -121,6 +228,9 @@ function close() {
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex place-self-end mt-6">
+          <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
         </div>
       </div>
     </ModalBox>

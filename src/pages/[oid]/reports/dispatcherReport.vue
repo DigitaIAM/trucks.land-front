@@ -33,6 +33,8 @@ const usersStore = useUsersStore()
 const ts = moment().subtract(3, 'days')
 const currentYear = ref(ts.year())
 const currentMonth = ref(ts.month() + 1)
+const currentDay = ref(moment())
+const ex_rate = ref<number>()
 
 defineOptions({
   __loaders: [useOrgData],
@@ -113,6 +115,7 @@ async function createPayment() {
     currentYear.value,
     currentMonth.value,
     account,
+    ex_rate.value,
   )
 }
 </script>
@@ -122,8 +125,8 @@ async function createPayment() {
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
     <SearchVue :store="usersStore"></SearchVue>
-    <div>{{ currentMonth }}</div>
-    <div>{{ currentYear }}</div>
+    <div>{{ currentDay.format('ll') }}</div>
+    <TextInput v-model="ex_rate" placeholder="Ex rate"></TextInput>
     <Button
       :disabled="reportDispatcherStore.dispatchers.length == 0"
       class="btn-soft font-light tracking-wider"

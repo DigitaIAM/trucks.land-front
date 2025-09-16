@@ -93,35 +93,6 @@ async function generatePdf() {
     throw 'missing owner'
   }
 
-  let domain = ''
-
-  if (org.id == 1) {
-    domain = 'caravanfreight.net'
-  }
-  if (org.id == 2) {
-    domain = 'cvslogisticsllc.com'
-  }
-  if (org.id == 3) {
-    domain = 'cnulogistics.com'
-  }
-
-  let jpgUrl = ''
-
-  if (org.id == 1) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CAF.jpg'
-  }
-  if (org.id == 2) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CVS.jpg'
-  }
-  if (org.id == 3) {
-    jpgUrl =
-      'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/logos/logo_CNU.jpg'
-  }
-
-  const jpgImageBytes = await fetch(jpgUrl).then((res) => res.arrayBuffer())
-
   // Define the table data
   const tableData = [['order #', 'unit no', 'pick up', 'delivery', 'amount']] as CellContent[][]
 
@@ -162,9 +133,6 @@ async function generatePdf() {
 
   const pdfDoc = await PDFDocument.create()
 
-  const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
-  const jpgDims = jpgImage.size()
-
   const page = pdfDoc.addPage()
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
@@ -202,12 +170,19 @@ async function generatePdf() {
   const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
 
   // logo
-  page.drawImage(jpgImage, {
-    x: startX,
-    y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
-    width: 100,
-    height: (100 * jpgDims.height) / jpgDims.width,
-  })
+  if (org.url_logo) {
+    const jpgImageBytes = await fetch(org.url_logo).then((res) => res.arrayBuffer())
+    const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
+    const jpgDims = jpgImage.size()
+
+    page.drawImage(jpgImage, {
+      x: startX,
+      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+      width: 100,
+      height: (100 * jpgDims.height) / jpgDims.width,
+    })
+  }
+
   text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
   text_left(page, font, 10, `${org.address2}`, startX + bls, 685)
 
@@ -338,7 +313,7 @@ async function generatePdf() {
   const base64String = await pdfDoc.saveAsBase64()
 
   const email = {
-    from: { address: `noreply@${domain}` },
+    from: { address: `noreply@${org.domain}` },
     to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
     subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
     htmlbody:

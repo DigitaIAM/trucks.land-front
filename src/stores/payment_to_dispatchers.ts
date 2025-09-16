@@ -32,6 +32,7 @@ export interface PaymentToDispatcherCreate {
   year: number
   percent_of_gross: number
   percent_of_driver: number
+  ex_rate: number
 }
 
 export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers', () => {

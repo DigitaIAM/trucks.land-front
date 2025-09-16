@@ -25,7 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-// import DriverIcon from '../../assets/icons/driver.svg?url'
+import AdditionalIcon from '../../assets/icons/additional.svg?url'
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
 import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
@@ -43,16 +43,19 @@ const buttons = [
     icon: OwnerIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/ownerPayments',
   },
-  // {
-  //   label: 'Driver',
-  //   icon: DriverIcon,
-  //   link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/driver_expenses',
-  // },
   {
     label: 'Dispatcher',
     icon: DispatcherIcon,
     link:
       '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/paymentsToDispatchers',
+  },
+  {
+    label: 'Additional',
+    icon: AdditionalIcon,
+    link:
+      '/' +
+      orgData.data.value.code3.toLowerCase() +
+      '/paymentsAndExpenses/additional_dispatcher_to_dispatcher',
   },
 ]
 </script>

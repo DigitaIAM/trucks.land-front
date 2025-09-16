@@ -250,6 +250,7 @@ declare global {
   const usePaymentToOwnerJournalStore: (typeof import('./stores/payment_to_owners'))['usePaymentToOwnerJournalStore']
   const usePaymentToOwnerOrdersStore: typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']
   const usePaymentToOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']
+  const usePaymentsAdditionalToEmployeeStore: typeof import('./stores/payments_additional_to_employee')['usePaymentsAdditionalToEmployeeStore']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
   const usePickUpStore: (typeof import('./stores/pick_up'))['usePickUpStore']
@@ -405,6 +406,9 @@ declare global {
   // @ts-ignore
   export type { PaymentToOwnerOrder, PaymentToOwnerOrderCreate } from './stores/payment_to_owners_orders'
   import('./stores/payment_to_owners_orders')
+  // @ts-ignore
+  export type { PaymentsAdditionalToEmployee, PaymentsAdditionalToEmployeeCreate, PaymentsAdditionalToEmployeeUpdate } from './stores/payments_additional_to_employee'
+  import('./stores/payments_additional_to_employee')
   // @ts-ignore
   export type { DispatcherPaymentRecord, DispatcherPaymentSummary, PaymentTerms } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
@@ -663,6 +667,7 @@ declare module 'vue' {
     readonly usePaymentToOwnerExpenseStore: UnwrapRef<typeof import('./stores/payment_to_owner_expenses')['usePaymentToOwnerExpenseStore']>
     readonly usePaymentToOwnerOrdersStore: UnwrapRef<typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']>
     readonly usePaymentToOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']>
+    readonly usePaymentsAdditionalToEmployeeStore: UnwrapRef<typeof import('./stores/payments_additional_to_employee')['usePaymentsAdditionalToEmployeeStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
