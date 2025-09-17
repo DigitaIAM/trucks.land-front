@@ -64,7 +64,6 @@ export const usePaymentsAdditionalToEmployeeStore = defineStore(
             })
           }
         })
-      console.log('create', payment)
     }
 
     function update(id: number, payment: PaymentsAdditionalToEmployeeUpdate) {

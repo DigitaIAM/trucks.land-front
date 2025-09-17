@@ -33,6 +33,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/order/create': RouteRecordInfo<'/[oid]/order/create', '/:oid/order/create', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher': RouteRecordInfo<'/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher', '/:oid/paymentsAndExpenses/additional_dispatcher_to_dispatcher', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/driver_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/driver_expenses', '/:oid/paymentsAndExpenses/driver_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsAndExpenses/finesOfEmployee': RouteRecordInfo<'/[oid]/paymentsAndExpenses/finesOfEmployee', '/:oid/paymentsAndExpenses/finesOfEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/owner_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/owner_expenses', '/:oid/paymentsAndExpenses/owner_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/ownerPayments': RouteRecordInfo<'/[oid]/paymentsAndExpenses/ownerPayments', '/:oid/paymentsAndExpenses/ownerPayments', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/paymentsToDispatchers': RouteRecordInfo<'/[oid]/paymentsAndExpenses/paymentsToDispatchers', '/:oid/paymentsAndExpenses/paymentsToDispatchers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -121,6 +122,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/paymentsAndExpenses/driver_expenses.vue': {
       routes: '/[oid]/paymentsAndExpenses/driver_expenses'
+      views: never
+    }
+    'src/pages/[oid]/paymentsAndExpenses/finesOfEmployee.vue': {
+      routes: '/[oid]/paymentsAndExpenses/finesOfEmployee'
       views: never
     }
     'src/pages/[oid]/paymentsAndExpenses/owner_expenses.vue': {
