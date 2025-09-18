@@ -1,6 +1,8 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Order } from '@/stores/orders.ts'
 import type { PaymentToDispatcherCreate } from '@/stores/payment_to_dispatchers.ts'
+import type { PaymentsToEmployeeAdditionalCreate } from '@/stores/payments_to_employee_additional.ts'
+import type { PaymentEmployeeFinesCreate } from '@/stores/payment_employee_fines.ts'
 
 export interface DispatcherPaymentRecord {
   dispatcher: number
@@ -18,6 +20,11 @@ export interface DispatcherPaymentSummary {
   orders: Map<number, Order>
   paymentsByOrder: Map<number, number>
   paymentTerms: PaymentTerms
+  additional_payments_total: number
+  additional_payments: Array<PaymentsAdditionalToEmployee>
+  fines_total: number
+  fines: Array<FinesEmployee>
+  payout: number
 }
 
 export interface PaymentTerms {
@@ -26,11 +33,14 @@ export interface PaymentTerms {
   user: number
   percent_of_gross: number
   percent_of_driver: number
+  income_tax: number
 }
 
 export const useReportDispatcher = defineStore('report_current_dispatcher_payments', () => {
   const org = ref<number | null>(null)
   const mapping = ref(new Map<number, Array<DispatcherPaymentRecord>>())
+  const additional_payments = ref(new Map<number, Array<PaymentsAdditionalToEmployee>>())
+  const fines = ref(new Map<number, Array<FinesEmployee>>())
   const processing = ref<Array<number>>([])
 
   async function loading(orgId: number | null) {
@@ -55,15 +65,48 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
       map.set(key, list)
     })
     mapping.value = map
+
+    const responseAdditional = await supabase
+      .from('report_current_employee_additional_payments')
+      .select()
+      .eq('organization', orgId)
+
+    const additionalMap = new Map<number, Array<PaymentsAdditionalToEmployee>>()
+    responseAdditional.data?.forEach((json) => {
+      const record = json as PaymentsAdditionalToEmployee
+
+      const key = record.employee
+      const list = additionalMap.get(key) ?? []
+      list.push(record)
+      additionalMap.set(key, list)
+    })
+    additional_payments.value = additionalMap
+
+    const responseFines = await supabase
+      .from('report_current_employee_fines')
+      .select()
+      .eq('organization', orgId)
+
+    const finesMap = new Map<number, Array<FinesEmployee>>()
+    responseFines.data?.forEach((json) => {
+      const record = json as FinesEmployee
+
+      const key = record.employee
+      const list = finesMap.get(key) ?? []
+      list.push(record)
+      finesMap.set(key, list)
+    })
+    fines.value = finesMap
   }
 
   const dispatchers = computedAsync(async () => {
     const list = [] as DispatcherPaymentSummary[]
+    const paymentsMap = mapping.value
+    const additionalMap = additional_payments.value
+    const finesMap = fines.value
 
-    const map = mapping.value
-    for (const entry of map.entries()) {
-      const dispatcher = entry[0]
-
+    const keys = new Set([...paymentsMap.keys(), ...additionalMap.keys(), ...finesMap.keys()])
+    for (const dispatcher of keys) {
       let orders_amount = 0
       let orders_driver = 0
       let orders_profit = 0
@@ -80,7 +123,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
 
       const paymentTerms = response.data as PaymentTerms
 
-      entry[1].forEach((p) => {
+      paymentsMap.get(dispatcher)?.forEach((p) => {
         if (p.order.excluded) {
           // ignore
         } else {
@@ -94,6 +137,26 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
         paymentsByOrder.set(p.order.id, num + p.driver_payment)
 
         orders.set(p.order.id, p.order)
+      })
+
+      const additionalRecords = [] as Array<PaymentsAdditionalToEmployee>
+      let additionalTotal = 0
+
+      additionalMap.get(dispatcher)?.forEach((v) => {
+        if (v.employee == dispatcher) {
+          additionalRecords.push(v)
+          additionalTotal += v.amount
+        }
+      })
+
+      const finesRecords = [] as Array<FinesEmployee>
+      let finesTotal = 0
+
+      finesMap.get(dispatcher)?.forEach((v) => {
+        if (v.employee == dispatcher) {
+          finesRecords.push(v)
+          finesTotal += v.amount
+        }
       })
 
       let toPayment = 0
@@ -113,9 +176,14 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
         orders: orders,
         paymentsByOrder: paymentsByOrder,
         paymentTerms: paymentTerms,
+        additional_payments: additionalRecords,
+        additional_payments_total: additionalTotal,
+        fines: finesRecords,
+        fines_total: finesTotal,
+        payout: toPayment + additionalTotal - finesTotal,
       } as DispatcherPaymentSummary)
     }
-
+    console.log('list', list)
     return list
   }, [])
 
@@ -126,11 +194,15 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
     account: User,
     ex_rate: number,
   ) {
+    console.log('ex_rate', ex_rate)
     const paymentToDispatcherStore = usePaymentToDispatcherStore()
 
     const data = dispatchers.value.slice()
     for (const summary of data) {
       mapping.value.delete(processing.value[1])
+
+      additional_payments.value.delete(processing.value[1])
+      fines.value.delete(processing.value[1])
 
       processing.value = [summary.dispatcher, processing.value[0]]
 
@@ -148,6 +220,26 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
         } as PaymentToDispatcherOrderCreate)
       }
 
+      const additionalRecords = []
+      for (const additional of summary.additional_payments.values()) {
+        additionalRecords.push({
+          created_by: account.id,
+          document: -1,
+          doc_additional_payment: additional.id,
+          amount: additional.amount,
+        } as PaymentsToEmployeeAdditionalCreate)
+      }
+
+      const finesRecords = []
+      for (const fine of summary.fines.values()) {
+        finesRecords.push({
+          created_by: account.id,
+          document: -1,
+          doc_fine: fine.id,
+          amount: fine.amount,
+        } as PaymentEmployeeFinesCreate)
+      }
+
       await paymentToDispatcherStore.create(
         {
           created_by: account.id,
@@ -159,12 +251,19 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
           percent_of_driver: summary.paymentTerms.percent_of_driver,
           to_pay: summary.toPayment,
           ex_rate: ex_rate,
+          income_tax: summary.paymentTerms.income_tax,
         } as PaymentToDispatcherCreate,
         records,
+        additionalRecords,
+        finesRecords,
       )
     }
 
-    mapping.value.clear()
+    for (const employeeId of processing.value) {
+      mapping.value.clear(employeeId)
+      additional_payments.value.clear(employeeId)
+      fines.value.clear(employeeId)
+    }
     processing.value = []
   }
 

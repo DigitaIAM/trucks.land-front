@@ -34,7 +34,7 @@ const ts = moment().subtract(3, 'days')
 const currentYear = ref(ts.year())
 const currentMonth = ref(ts.month() + 1)
 const currentDay = ref(moment())
-const ex_rate = ref<number>()
+const exchangeRate = ref<string>('')
 
 defineOptions({
   __loaders: [useOrgData],
@@ -110,12 +110,18 @@ async function createPayment() {
   const account = authStore.account
   if (account == null) return
 
+  console.log('exchangeRate', exchangeRate.value)
+
+  const rate = Number(exchangeRate.value)
+
+  console.log('rate', rate)
+
   await reportDispatcherStore.createPayment(
     authStore.org?.id,
     currentYear.value,
     currentMonth.value,
     account,
-    ex_rate.value,
+    rate,
   )
 }
 </script>
@@ -126,7 +132,7 @@ async function createPayment() {
     <Text size="2xl">Report</Text>
     <SearchVue :store="usersStore"></SearchVue>
     <div>{{ currentDay.format('ll') }}</div>
-    <TextInput v-model="ex_rate" placeholder="Ex rate"></TextInput>
+    <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
     <Button
       :disabled="reportDispatcherStore.dispatchers.length == 0"
       class="btn-soft font-light tracking-wider"

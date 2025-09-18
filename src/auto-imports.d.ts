@@ -199,6 +199,7 @@ declare global {
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
   const useFilesStore: typeof import('./stores/order_files')['useFilesStore']
+  const useFinesEmployeeStore: typeof import('./stores/fines_employee')['useFinesEmployeeStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
   const useFps: typeof import('@vueuse/core')['useFps']
@@ -251,6 +252,7 @@ declare global {
   const usePaymentToOwnerOrdersStore: typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']
   const usePaymentToOwnerStore: typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']
   const usePaymentsAdditionalToEmployeeStore: typeof import('./stores/payments_additional_to_employee')['usePaymentsAdditionalToEmployeeStore']
+  const usePaymentsToEmployeeAdditionalStore: typeof import('./stores/payments_to_employee_additional')['usePaymentsToEmployeeAdditionalStore']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
   const usePickUpStore: (typeof import('./stores/pick_up'))['usePickUpStore']
@@ -380,6 +382,9 @@ declare global {
   export type { ExpensesToOwner, ExpensesToOwnerCreate, ExpensesToOwnerUpdate } from './stores/expenses_owner'
   import('./stores/expenses_owner')
   // @ts-ignore
+  export type { FinesEmployee, FinesEmployeeCreate, FinesEmployeeUpdate } from './stores/fines_employee'
+  import('./stores/fines_employee')
+  // @ts-ignore
   export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
   import('./stores/order_files')
   // @ts-ignore
@@ -391,6 +396,9 @@ declare global {
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
+  // @ts-ignore
+  export type { PaymentEmployeeFines, PaymentEmployeeFinesCreate } from './stores/payment_employee_fines'
+  import('./stores/payment_employee_fines')
   // @ts-ignore
   export type { PaymentToDispatcherSummary, PaymentToDispatcher, PaymentToDispatcherCreate } from './stores/payment_to_dispatchers'
   import('./stores/payment_to_dispatchers')
@@ -409,6 +417,9 @@ declare global {
   // @ts-ignore
   export type { PaymentsAdditionalToEmployee, PaymentsAdditionalToEmployeeCreate, PaymentsAdditionalToEmployeeUpdate } from './stores/payments_additional_to_employee'
   import('./stores/payments_additional_to_employee')
+  // @ts-ignore
+  export type { PaymentsToEmployeeAdditional, PaymentsToEmployeeAdditionalCreate } from './stores/payments_to_employee_additional'
+  import('./stores/payments_to_employee_additional')
   // @ts-ignore
   export type { DispatcherPaymentRecord, DispatcherPaymentSummary, PaymentTerms } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
@@ -619,6 +630,7 @@ declare module 'vue' {
     readonly useFileDialog: UnwrapRef<typeof import('@vueuse/core')['useFileDialog']>
     readonly useFileSystemAccess: UnwrapRef<typeof import('@vueuse/core')['useFileSystemAccess']>
     readonly useFilesStore: UnwrapRef<typeof import('./stores/order_files')['useFilesStore']>
+    readonly useFinesEmployeeStore: UnwrapRef<typeof import('./stores/fines_employee')['useFinesEmployeeStore']>
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>
@@ -668,6 +680,7 @@ declare module 'vue' {
     readonly usePaymentToOwnerOrdersStore: UnwrapRef<typeof import('./stores/payment_to_owners_orders')['usePaymentToOwnerOrdersStore']>
     readonly usePaymentToOwnerStore: UnwrapRef<typeof import('./stores/payment_to_owners')['usePaymentToOwnerStore']>
     readonly usePaymentsAdditionalToEmployeeStore: UnwrapRef<typeof import('./stores/payments_additional_to_employee')['usePaymentsAdditionalToEmployeeStore']>
+    readonly usePaymentsToEmployeeAdditionalStore: UnwrapRef<typeof import('./stores/payments_to_employee_additional')['usePaymentsToEmployeeAdditionalStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>

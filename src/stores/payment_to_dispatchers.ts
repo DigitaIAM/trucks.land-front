@@ -2,6 +2,8 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToDispatcherOrderCreate } from '@/stores/payment_to_dispatchers_orders.ts'
 import type { KV } from '@/utils/kv.ts'
 import type { Order } from '@/stores/orders.ts'
+import type { PaymentsToEmployeeAdditionalCreate } from '@/stores/payments_to_employee_additional.ts'
+import type { PaymentEmployeeFinesCreate } from '@/stores/payment_employee_fines.ts'
 
 export interface PaymentToDispatcherSummary {
   id: number
@@ -15,6 +17,8 @@ export interface PaymentToDispatcherSummary {
   amount: number
   payment: number
   to_pay: number
+  ex_rate: number
+  toPaymentInSum: number
   percent_of_gross: number
   percent_of_driver: number
 }
@@ -33,6 +37,7 @@ export interface PaymentToDispatcherCreate {
   percent_of_gross: number
   percent_of_driver: number
   ex_rate: number
+  income_tax: number
 }
 
 export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers', () => {
@@ -105,6 +110,8 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
   async function create(
     payment: PaymentToDispatcherCreate,
     records: Array<PaymentToDispatcherOrderCreate>,
+    additionalRecords: Array<PaymentsToEmployeeAdditionalCreate>,
+    finesRecords: Array<PaymentEmployeeFinesCreate>,
   ) {
     const response = await supabase
       .from('payments_to_dispatchers')
@@ -125,10 +132,30 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
       }
 
       // console.log('records', records)
+      for (const recordAd of additionalRecords) {
+        recordAd.document = payment.id
+      }
+
+      for (const recordFine of finesRecords) {
+        recordFine.document = payment.id
+      }
 
       const responseRecords = await supabase
         .from('payments_to_dispatchers_orders')
         .insert(records)
+        .select()
+        .throwOnError()
+
+      await supabase
+        .from('payments_to_employee_additional')
+        .insert(additionalRecords)
+        .select()
+        .throwOnError()
+
+      await supabase
+        .from('payment_employee_fines')
+        .insert(finesRecords)
+        .select()
         .select()
         .throwOnError()
 

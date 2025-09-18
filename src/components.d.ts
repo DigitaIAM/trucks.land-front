@@ -64,6 +64,7 @@ declare module 'vue' {
     ExpensesModal: typeof import('./components/modal/ExpensesModal.vue')['default']
     ExpensesOwner: typeof import('./components/modal/ExpensesOwner.vue')['default']
     FileInput: typeof import('./components/widgets/FileInput.vue')['default']
+    FineEmployeeModal: typeof import('./components/modal/FineEmployeeModal.vue')['default']
     Flex: typeof import('./components/widgets/Flex.vue')['default']
     FlexItem: typeof import('./components/widgets/FlexItem.vue')['default']
     Footer: typeof import('./components/widgets/Footer.vue')['default']

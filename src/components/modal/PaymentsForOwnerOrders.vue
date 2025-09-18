@@ -315,6 +315,7 @@ async function generatePdf() {
   const email = {
     from: { address: `noreply@${org.domain}` },
     to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
     subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
     htmlbody:
       'Greetings,<br />' +
