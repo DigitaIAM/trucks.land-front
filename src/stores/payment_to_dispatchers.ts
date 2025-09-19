@@ -14,13 +14,16 @@ export interface PaymentToDispatcherSummary {
   month: number
   year: number
   number_of_orders: number
-  amount: number
-  payment: number
+  gross: number
+  driver_payment: number
   to_pay: number
+  additionals: number
+  fines: number
   ex_rate: number
-  toPaymentInSum: number
+  payout: number
   percent_of_gross: number
   percent_of_driver: number
+  income_tax: number
 }
 
 export interface PaymentToDispatcher extends PaymentToDispatcherCreate {

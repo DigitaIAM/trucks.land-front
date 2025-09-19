@@ -13,6 +13,8 @@ const paymentToDispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
 const userStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
 const accessTokenStore = useAccessTokenStore()
+const paymentAdditionallyStore = usePaymentsToEmployeeAdditionalStore()
+const finesStore = usePaymentEmployeeFinesStore()
 
 const emit = defineEmits(['close'])
 
@@ -29,6 +31,8 @@ watch(
 function resetAndShow(document: PaymentToDispatcherSummary) {
   details.showModal()
   paymentToDispatcherOrdersStore.loading(document.id)
+  paymentAdditionallyStore.loading(document.id)
+  finesStore.loading(document.id)
 }
 
 async function generatePdf() {
@@ -142,6 +146,44 @@ const cols = [
   },
 ]
 
+const additionallyCols = [
+  {
+    label: '#',
+    value: (v: PaymentsAdditionalToEmployee) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: PaymentsAdditionalToEmployee) => v.kind,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: PaymentsAdditionalToEmployee) => '$' + v.amount,
+    size: 120,
+  },
+]
+
+const fineCols = [
+  {
+    label: '#',
+    value: (v: FinesEmployee) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: FinesEmployee) => v.description,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: FinesEmployee) => '$' + v.amount,
+    size: 120,
+  },
+]
+
 function close() {
   details.close()
   emit('close')
@@ -150,7 +192,7 @@ function close() {
 
 <template>
   <Modal id="details">
-    <ModalBox class="max-w-[calc(75vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(90vw-6.25rem)]">
       <div class="grid grid-cols-2">
         <div class="flex flex-cols-4 gap-10">
           <Text size="2xl"
@@ -173,18 +215,20 @@ function close() {
           </div>
         </div>
       </div>
-      <div class="flex flex-cols-6 gap-20 mt-10">
+      <div class="flex flex-cols-8 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
-        <Text size="lg">Orders amount $ {{ document?.amount.toFixed(2) }}</Text>
-        <Text size="lg">D/payment $ {{ document?.payment.toFixed(2) }}</Text>
+        <Text size="lg">Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
+        <Text size="lg">D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
         <Text size="lg"> Percent of gross % {{ document?.percent_of_gross }}</Text>
-        <Text size="lg">Payout $ {{ document?.to_pay }}</Text>
+        <Text size="lg">Additionally $ {{ document?.additionals }}</Text>
+        <Text size="lg">Fines $ {{ document?.fines }}</Text>
+        <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>
       <div class="mb-2 mt-12">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
-      <div class="max-h-100 overflow-clip flex flex-col">
+      <div class="overflow-clip flex flex-col">
         <table class="w-full table-fixed text-left">
           <!-- table-auto min-w-max -->
           <thead>
@@ -223,6 +267,82 @@ function close() {
                     :style="{ width: col.size + 'px' }"
                   >
                     {{ col.value(line) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-10">
+          <Text bold size="lg" class="mb-4">Additionally</Text>
+          <table class="w-full text-left table-auto min-w-max">
+            <thead>
+              <tr
+                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+              >
+                <th
+                  v-for="col in additionallyCols"
+                  :key="col.label"
+                  class="p-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p class="block antialiasing tracking-wider font-thin leading-none">
+                    {{ col.label }}
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="additionally in paymentAdditionallyStore.listing" :key="additionally.id">
+                <td
+                  v-for="col in additionallyCols"
+                  :key="col.label"
+                  class="py-3 px-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    {{ col.value(additionally) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-10">
+          <Text bold size="lg" class="mb-4">Fines</Text>
+          <table class="w-full text-left table-auto min-w-max">
+            <thead>
+              <tr
+                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+              >
+                <th
+                  v-for="col in fineCols"
+                  :key="col.label"
+                  class="p-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p class="block antialiasing tracking-wider font-thin leading-none">
+                    {{ col.label }}
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="fine in finesStore.listing" :key="fine.id">
+                <td
+                  v-for="col in fineCols"
+                  :key="col.label"
+                  class="py-3 px-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    {{ col.value(fine) }}
                   </p>
                 </td>
               </tr>

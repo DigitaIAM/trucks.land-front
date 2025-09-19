@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import type { FinesEmployee } from '@/stores/fines_employee.ts'
 
 export interface PaymentEmployeeFines extends PaymentEmployeeFinesCreate {
   id: number
@@ -12,14 +13,14 @@ export interface PaymentEmployeeFinesCreate {
   amount: number
 }
 
-export const usePaymentToOwnerExpenseStore = defineStore('payment_employee_fines', () => {
+export const usePaymentEmployeeFinesStore = defineStore('payment_employee_fines', () => {
   const listing = ref<Array<PaymentEmployeeFines>>([])
 
   async function loading(documentId: number | null) {
     if (documentId) {
       const response = await supabase
         .from('payment_employee_fines')
-        .select()
+        .select('*, fine:employee_fines(*)')
         .eq('document', documentId)
 
       // console.log('response', response)
@@ -28,7 +29,7 @@ export const usePaymentToOwnerExpenseStore = defineStore('payment_employee_fines
         const list: Array<PaymentEmployeeFines> = []
 
         response.data?.forEach((json) => {
-          const fine = json as PaymentEmployeeFines
+          const fine = json['fine'] as FinesEmployee
           list.push(fine)
         })
 
@@ -45,5 +46,5 @@ export const usePaymentToOwnerExpenseStore = defineStore('payment_employee_fines
 })
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(usePaymentToOwnerExpenseStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(usePaymentEmployeeFinesStore, import.meta.hot))
 }

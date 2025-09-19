@@ -104,6 +104,16 @@ const cols = [
     value: (v: DispatcherPaymentSummary) => '$' + v.toPayment.toFixed(0),
     size: 100,
   },
+  {
+    label: 'additionally',
+    value: (v: DispatcherPaymentSummary) => '$' + v.additional_payments_total,
+    size: 80,
+  },
+  {
+    label: 'fines',
+    value: (v: DispatcherPaymentSummary) => '$' + v.fines_total,
+    size: 80,
+  },
 ]
 
 async function createPayment() {

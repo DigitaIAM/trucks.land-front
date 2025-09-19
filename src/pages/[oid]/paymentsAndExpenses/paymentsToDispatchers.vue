@@ -81,6 +81,11 @@ const cols = [
     size: 30,
   },
   {
+    label: 'created at',
+    value: (v: PaymentToDispatcherSummary) => useDateFormat(v.created_at, 'MMM DD'),
+    size: 80,
+  },
+  {
     label: 'dispatcher',
     value: (v: PaymentToDispatcherSummary) =>
       resolve(
@@ -94,12 +99,12 @@ const cols = [
   },
   {
     label: 'order amount',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.amount.toFixed(0),
+    value: (v: PaymentToDispatcherSummary) => '$' + v.gross.toFixed(0),
     size: 80,
   },
   {
     label: 'd/payment',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.payment.toFixed(0),
+    value: (v: PaymentToDispatcherSummary) => '$' + v.driver_payment.toFixed(0),
     size: 80,
   },
   {
@@ -108,8 +113,13 @@ const cols = [
     size: 80,
   },
   {
-    label: 'created at',
-    value: (v: PaymentToDispatcherSummary) => useDateFormat(v.created_at, 'MMM DD'),
+    label: 'additionally',
+    value: (v: PaymentToDispatcherSummary) => '$' + v.additionals,
+    size: 80,
+  },
+  {
+    label: 'fine',
+    value: (v: PaymentToDispatcherSummary) => '$' + v.fines,
     size: 80,
   },
   {

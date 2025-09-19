@@ -245,6 +245,7 @@ declare global {
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
+  const usePaymentEmployeeFinesStore: typeof import('./stores/payment_employee_fines')['usePaymentEmployeeFinesStore']
   const usePaymentToDispatcherOrdersStore: typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']
   const usePaymentToDispatcherStore: typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']
   const usePaymentToOwnerExpenseStore: typeof import('./stores/payment_to_owner_expenses')['usePaymentToOwnerExpenseStore']
@@ -674,6 +675,7 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
+    readonly usePaymentEmployeeFinesStore: UnwrapRef<typeof import('./stores/payment_employee_fines')['usePaymentEmployeeFinesStore']>
     readonly usePaymentToDispatcherOrdersStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers_orders')['usePaymentToDispatcherOrdersStore']>
     readonly usePaymentToDispatcherStore: UnwrapRef<typeof import('./stores/payment_to_dispatchers')['usePaymentToDispatcherStore']>
     readonly usePaymentToOwnerExpenseStore: UnwrapRef<typeof import('./stores/payment_to_owner_expenses')['usePaymentToOwnerExpenseStore']>

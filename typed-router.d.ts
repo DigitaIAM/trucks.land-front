@@ -31,7 +31,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/order/[id]': RouteRecordInfo<'/[oid]/order/[id]', '/:oid/order/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/create': RouteRecordInfo<'/[oid]/order/create', '/:oid/order/create', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher': RouteRecordInfo<'/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher', '/:oid/paymentsAndExpenses/additional_dispatcher_to_dispatcher', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsAndExpenses/additional_to_dispatcher': RouteRecordInfo<'/[oid]/paymentsAndExpenses/additional_to_dispatcher', '/:oid/paymentsAndExpenses/additional_to_dispatcher', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/driver_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/driver_expenses', '/:oid/paymentsAndExpenses/driver_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/finesOfEmployee': RouteRecordInfo<'/[oid]/paymentsAndExpenses/finesOfEmployee', '/:oid/paymentsAndExpenses/finesOfEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/owner_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/owner_expenses', '/:oid/paymentsAndExpenses/owner_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -116,8 +116,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/order/create'
       views: never
     }
-    'src/pages/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher.vue': {
-      routes: '/[oid]/paymentsAndExpenses/additional_dispatcher_to_dispatcher'
+    'src/pages/[oid]/paymentsAndExpenses/additional_to_dispatcher.vue': {
+      routes: '/[oid]/paymentsAndExpenses/additional_to_dispatcher'
       views: never
     }
     'src/pages/[oid]/paymentsAndExpenses/driver_expenses.vue': {

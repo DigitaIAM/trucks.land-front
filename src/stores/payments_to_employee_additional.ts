@@ -1,5 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import type { ExpensesToOwner } from '@/stores/expenses_owner.ts'
+import type { PaymentsAdditionalToEmployee } from '@/stores/payments_additional_to_employee.ts'
 
 export interface PaymentsToEmployeeAdditional extends PaymentsToEmployeeAdditionalCreate {
   id: number
@@ -22,7 +22,7 @@ export const usePaymentsToEmployeeAdditionalStore = defineStore(
       if (documentId) {
         const response = await supabase
           .from('payments_to_employee_additional')
-          .select()
+          .select('*, payment:payments_additional_to_employee(*)')
           .eq('document', documentId)
 
         // console.log('response', response)
@@ -31,8 +31,8 @@ export const usePaymentsToEmployeeAdditionalStore = defineStore(
           const list: Array<PaymentsToEmployeeAdditional> = []
 
           response.data?.forEach((json) => {
-            const paymentAdd = json as PaymentsToEmployeeAdditional
-            list.push(paymentAdd)
+            const payment = json['payment'] as PaymentsAdditionalToEmployee
+            list.push(payment)
           })
 
           listing.value = list

@@ -22,7 +22,7 @@ export async function paymentToDispatcherExportToExcel(
 
     sheet.addRow({
       dispatcher: `${dispatcher?.real_name}`,
-      gross: `${record.amount}`,
+      gross: `${record.gross}`,
       orders: `${record.number_of_orders}`,
       payout: `${record.to_pay}`,
     })

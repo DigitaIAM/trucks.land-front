@@ -140,44 +140,85 @@ async function _head(
 
   const fs = 10
   text_right(page, font, fs, 'Total gross:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.amount}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.gross}`, cx + bls, cy)
 
-  text_right(page, font, fs, 'Dispatch fee:', cx + bls, cy)
-  cy -= bls + text_left(page, font, fs, `${document.percent_of_gross}\%`, cx + bls * 2, cy)
+  text_right(page, font, fs, 'Dispatch fee:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `${document.percent_of_gross}\%`, cx + bls, cy)
 
   text_right(page, font, fs, 'Calculation:', cx, cy)
   cy -= bls + text_left(page, font, fs, `\$${document.to_pay}`, cx + bls, cy)
+
+  text_right(page, font, fs, 'Rewards:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\+\$${document.additionals}`, cx + bls, cy)
+
+  text_right(page, font, fs, 'Fines:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\-\$${document.fines}`, cx + bls, cy)
+
+  text_right(page, boldFont, fs, 'Total pay:', cx, cy)
+  cy -= bls + text_left(page, boldFont, fs, `\$${document.payout}`, cx + bls, cy)
 
   //text left
   // const textMargin = 40 // Desired margin below the table
   // cy = cy - textMargin
   const textX = 50
 
-  text_left(page, font, fs, 'Bonuses:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, '+', font.widthOfTextAtSize('Bonuses:', fs) + 60, cy)
-
-  text_left(page, font, fs, 'Fines:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, '-$', font.widthOfTextAtSize('Fines:', fs) + 60, cy)
-
-  text_left(page, font, fs, 'Rewards:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, '+$', font.widthOfTextAtSize('Rewards:', fs) + 60, cy)
-
-  text_left(page, font, fs, 'Vacation pay:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, '+$', font.widthOfTextAtSize('Vacation pay:', fs) + 60, cy)
+  //
+  // text_left(page, font, fs, 'Vacation pay:', textX + bls, cy)
+  // cy -= bls + text_left(page, font, fs, '+$', font.widthOfTextAtSize('Vacation pay:', fs) + 60, cy)
 
   text_left(page, font, fs, 'Ex rate:', textX + bls, cy)
   cy -=
-    bls + text_left(page, font, fs, '12600 sum', font.widthOfTextAtSize('Ex rate:', fs) + 60, cy)
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${document.ex_rate} sum`,
+      font.widthOfTextAtSize('Ex rate:', fs) + 60,
+      cy,
+    )
 
   text_left(page, font, fs, 'Date:', textX + bls, cy)
   cy -= bls + text_left(page, font, fs, `${date1}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
 
-  text_left(page, font, fs, 'Taxes:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, '', font.widthOfTextAtSize('Date:', fs) + 60, cy)
+  const toPaySum = document.payout * document.ex_rate
+  text_left(page, font, fs, 'Calculation:', textX + bls, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${toPaySum.toFixed(2)} sum`,
+      font.widthOfTextAtSize('Calculation:', fs) + 60,
+      cy,
+    )
 
+  const tax = (document.payout * document.ex_rate * document.income_tax) / 100
+  text_left(page, font, fs, 'Taxes:', textX + bls, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${tax.toFixed(2)} sum`,
+      font.widthOfTextAtSize('Taxes:', fs) + 60,
+      cy,
+    )
+
+  const totalInSum = document.payout * document.ex_rate - tax
   text_left(page, boldFont, fs, 'Total pay:', textX + bls, cy)
   cy -=
-    bls * 2 + text_left(page, boldFont, fs, '', font.widthOfTextAtSize('Total pay:', fs) + 60, cy)
+    bls * 2 +
+    text_left(
+      page,
+      boldFont,
+      fs,
+      `${totalInSum.toFixed(2)} sum`,
+      font.widthOfTextAtSize('Total pay:', fs) + 65,
+      cy,
+    )
 
   return cy
 }

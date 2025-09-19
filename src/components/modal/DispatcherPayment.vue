@@ -99,6 +99,64 @@ const orders = computed(() => {
   }
 })
 
+const additionalles = computed(() => {
+  const data = summary.value
+
+  if (data) {
+    return data.additional_payments
+  } else {
+    return []
+  }
+})
+
+const fines = computed(() => {
+  const data = summary.value
+
+  if (data) {
+    return data.fines
+  } else {
+    return []
+  }
+})
+
+const additionallyCols = [
+  {
+    label: '#',
+    value: (v: PaymentsAdditionalToEmployee) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: PaymentsAdditionalToEmployee) => v.kind,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: PaymentsAdditionalToEmployee) => '$' + v.amount,
+    size: 120,
+  },
+]
+
+const fineCols = [
+  {
+    label: '#',
+    value: (v: FinesEmployee) => v.id,
+    size: 50,
+  },
+
+  {
+    label: 'details',
+    value: (v: FinesEmployee) => v.description,
+    size: 200,
+  },
+  {
+    label: 'amount',
+    value: (v: FinesEmployee) => '$' + v.amount,
+    size: 120,
+  },
+]
+
 function close() {
   orders_dispatcher.close()
   emit('close')
@@ -107,7 +165,7 @@ function close() {
 
 <template>
   <Modal id="orders_dispatcher">
-    <ModalBox class="max-w-[calc(70vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(90vw-6.25rem)]">
       <div class="flex place-self-end">
         <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
       </div>
@@ -118,18 +176,21 @@ function close() {
         <Text size="2xl" class="px-4">to pay $ {{ summary?.toPayment.toFixed(2) }}</Text>
       </div>
 
-      <div class="flex flex-cols-6 gap-32 mt-10">
+      <div class="flex flex-cols-7 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ summary?.orders_number }}</Text>
         <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
         <Text size="lg">Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
-        <Text size="lg">To pay $ {{ summary?.toPayment.toFixed(2) }}</Text>
+        <Text size="lg"> Percent of gross % {{ summary?.paymentTerms.percent_of_gross }}</Text>
+        <Text size="lg">Additionally $ {{ summary?.additional_payments_total }}</Text>
+        <Text size="lg">Fines $ {{ summary?.fines_total }}</Text>
+        <Text size="lg">Payout $ {{ summary?.payout }}</Text>
       </div>
 
       <div class="mb-4 mt-10">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
-      <div class="max-h-100 overflow-clip flex flex-col">
+      <div class="overflow-clip flex flex-col">
         <table class="w-full table-fixed text-left">
           <thead>
             <tr
@@ -163,6 +224,82 @@ function close() {
                     :style="{ width: col.size + 'px' }"
                   >
                     {{ col.value(order) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-10">
+          <Text bold size="lg" class="mb-4">Additionally</Text>
+          <table class="w-full text-left table-auto min-w-max">
+            <thead>
+              <tr
+                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+              >
+                <th
+                  v-for="col in additionallyCols"
+                  :key="col.label"
+                  class="p-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p class="block antialiasing tracking-wider font-thin leading-none">
+                    {{ col.label }}
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="additionally in additionalles" :key="additionally.id">
+                <td
+                  v-for="col in additionallyCols"
+                  :key="col.label"
+                  class="py-3 px-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    {{ col.value(additionally) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-10">
+          <Text bold size="lg" class="mb-4">Fines</Text>
+          <table class="w-full text-left table-auto min-w-max">
+            <thead>
+              <tr
+                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+              >
+                <th
+                  v-for="col in fineCols"
+                  :key="col.label"
+                  class="p-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p class="block antialiasing tracking-wider font-thin leading-none">
+                    {{ col.label }}
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="fine in fines" :key="fine.id">
+                <td
+                  v-for="col in fineCols"
+                  :key="col.label"
+                  class="py-3 px-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    {{ col.value(fine) }}
                   </p>
                 </td>
               </tr>
