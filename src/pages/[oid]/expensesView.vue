@@ -57,7 +57,7 @@ const buttons = [
 
 <template>
   <div class="flex text-3xl p-5 font-bold pb-10">
-    <h1>Expenses</h1>
+    <h1>Costs</h1>
   </div>
   <div class="flex space-x-8 px-5">
     <div

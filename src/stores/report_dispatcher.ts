@@ -100,6 +100,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
   }
 
   const dispatchers = computedAsync(async () => {
+    console.log('dispatchers computedAsync')
     const list = [] as DispatcherPaymentSummary[]
     const paymentsMap = mapping.value
     const additionalMap = additional_payments.value
@@ -114,14 +115,16 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
       const orders = new Map<number, Order>()
       const paymentsByOrder = new Map<number, number>()
 
-      const response = await supabase
+      const responseTerms = await supabase
         .from('conditions')
         .select()
         .eq('user', dispatcher)
         .eq('organization', org.value)
         .maybeSingle()
 
-      const paymentTerms = response.data as PaymentTerms
+      console.log('responseTerms', responseTerms)
+
+      const paymentTerms = responseTerms.data as PaymentTerms
 
       paymentsMap.get(dispatcher)?.forEach((p) => {
         if (p.order.excluded) {

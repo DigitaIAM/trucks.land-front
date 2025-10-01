@@ -169,13 +169,13 @@ async function createPayment() {
     </thead>
     <tbody>
       <tr
-        v-for="order in reportDispatcherStore.dispatchers"
-        :key="order.dispatcher"
-        @click="openPayment(order)"
+        v-for="line in reportDispatcherStore.dispatchers"
+        :key="line.dispatcher"
+        @click="openPayment(line)"
       >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.dispatcher"
+          :key="'row_' + col.label + '_' + line.dispatcher"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -183,7 +183,7 @@ async function createPayment() {
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(order) }}
+            {{ col.value(line) }}
           </p>
         </td>
       </tr>

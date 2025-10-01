@@ -121,8 +121,9 @@ async function _head(
   cy -= bls + text_right(page, boldFont, 16, `${document.month} of ${document.year}`, endX, cy)
   cy -= bls + text_right(page, font, 12, 'Pay Period', endX, cy)
 
-  const date1 = moment(document.created_at).format('MM/DD/YYYY')
-  const date2 = moment(document.created_at).add(30, 'days').format('MM/DD/YYYY')
+  const date1 = moment(document.created_at).subtract(30, 'days').format('MM/DD/YYYY')
+  const date2 = moment(document.created_at).format('MM/DD/YYYY')
+
   // const period = ts.month() + 2
   cy -= bls + text_right(page, boldFont, 16, `${date1} - ${date2}`, endX, cy)
 
@@ -194,7 +195,6 @@ async function _head(
       cy,
     )
 
-  const tax = (document.payout * document.ex_rate * document.income_tax) / 100
   text_left(page, font, fs, 'Taxes:', textX + bls, cy)
   cy -=
     bls +
@@ -202,12 +202,38 @@ async function _head(
       page,
       font,
       fs,
-      `${tax.toFixed(2)} sum`,
+      `${document.income_tax} %`,
       font.widthOfTextAtSize('Taxes:', fs) + 60,
       cy,
     )
 
-  const totalInSum = document.payout * document.ex_rate - tax
+  const perIn_tax = (toPaySum * (document.income_tax - 0.1)) / 100
+  text_left(page, font, fs, 'Personal Income Tax:', textX + bls, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${perIn_tax.toFixed(2)} sum`,
+      font.widthOfTextAtSize('Personal Income Tax:', fs) + 60,
+      cy,
+    )
+
+  const inps_tax = (toPaySum * 0.1) / 100
+  text_left(page, font, fs, 'INPS:', textX + bls, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${inps_tax.toFixed(2)} sum`,
+      font.widthOfTextAtSize('INPS:', fs) + 60,
+      cy,
+    )
+
+  const totalInSum = toPaySum - perIn_tax
   text_left(page, boldFont, fs, 'Total pay:', textX + bls, cy)
   cy -=
     bls * 2 +

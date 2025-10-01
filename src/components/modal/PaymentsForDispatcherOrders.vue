@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { generateDispatcherPaymentPdf } from '@/utils/export_dispatchers_payments_to_pdf.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
+import { createFetch } from '@vueuse/core'
 
 const props = defineProps<{
   document: PaymentToDispatcherSummary | null
@@ -37,9 +38,12 @@ function resetAndShow(document: PaymentToDispatcherSummary) {
 
 async function generatePdf() {
   const document = props.document
+
   if (document == null) {
     throw 'missing document'
   }
+
+  const dispatcher = await userStore.resolve(document.dispatcher)
 
   const org = await organizationsStore.resolve(document.organization)
   if (org == null) {
@@ -51,80 +55,71 @@ async function generatePdf() {
     throw 'missing token'
   }
 
-  // const contra = await ownerStore.resolve(document.owner)
-  // if (contra == null) {
-  //   throw 'missing owner'
-  // }
-
   const pdfDoc = await generateDispatcherPaymentPdf(document)
 
   await openInNewTab(pdfDoc)
 
-  // // Send by email
-  // const base64String = await pdfDoc.saveAsBase64()
+  // Send by email
+  const base64String = await pdfDoc.saveAsBase64()
 
-  // let domain = ''
-  // if (org.id == 1) {
-  //   domain = 'caravanfreight.net'
-  // } else if (org.id == 2) {
-  //   domain = 'cvslogisticsllc.com'
-  // } else if (org.id == 3) {
-  //   domain = 'cnulogistics.com'
-  // } else {
-  //   throw 'domain is not set'
-  // }
-  //
-  // const email = {
-  //   from: { address: `noreply@${domain}` },
-  //   to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: '' } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
-  //   subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
-  //   htmlbody:
-  //     'Greetings,<br />' +
-  //     '<br />' +
-  //     'Payment sheet of week #&nbsp;' +
-  //     `${document.month}` +
-  //     '&nbsp;of&nbsp;' +
-  //     `${document.year}` +
-  //     '&nbsp;is attached.<br />' +
-  //     '<br />' +
-  //     'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
-  //     '<br />' +
-  //     'Best Regards,<br />' +
-  //     '<br />' +
-  //     `${org.name}<br />` +
-  //     `${org.address1}<br />` +
-  //     `${org.address2}<br />`,
-  //   attachments: [
-  //     {
-  //       name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
-  //       content: base64String,
-  //       mime_type: 'plain/txt',
-  //     },
-  //   ],
-  // }
-  //
-  // const myFetch = createFetch({
-  //   // baseUrl: 'https://api.zeptomail.com/',
-  //   // baseUrl: 'http://localhost:5173/',
-  //   options: {
-  //     async beforeFetch({ options }) {
-  //       options.headers = {
-  //         ...options.headers,
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //         Authorization: token,
-  //       }
-  //       return { options }
-  //     },
-  //   },
-  //   fetchOptions: { mode: 'cors' },
-  // })
-  //
-  // const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-  //
-  // console.log('isFetching', isFetching)
-  // console.log('error', error)
-  // console.log('data', data)
+  const email = {
+    from: { address: `noreply@${org.domain}` },
+    to: [
+      {
+        email_address: {
+          address: `${dispatcher?.email}`,
+          name: `${dispatcher?.real_name}`,
+        },
+      },
+    ], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
+    htmlbody:
+      'Greetings,<br />' +
+      '<br />' +
+      'Payment sheet of week #&nbsp;' +
+      `${document.month}` +
+      '&nbsp;of&nbsp;' +
+      `${document.year}` +
+      '&nbsp;is attached.<br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
+      '<br />' +
+      'Best Regards,<br />' +
+      '<br />' +
+      `${org.name}<br />` +
+      `${org.address1}<br />` +
+      `${org.address2}<br />`,
+    attachments: [
+      {
+        name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
+        content: base64String,
+        mime_type: 'plain/txt',
+      },
+    ],
+  }
+
+  const myFetch = createFetch({
+    // baseUrl: 'https://api.zeptomail.com/',
+    // baseUrl: 'http://localhost:5173/',
+    options: {
+      async beforeFetch({ options }) {
+        options.headers = {
+          ...options.headers,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
+        return { options }
+      },
+    },
+    fetchOptions: { mode: 'cors' },
+  })
+
+  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+
+  console.log('isFetching', isFetching)
+  console.log('error', error)
+  console.log('data', data)
 }
 
 const cols = [

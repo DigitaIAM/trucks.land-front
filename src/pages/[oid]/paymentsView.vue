@@ -55,7 +55,7 @@ const buttons = [
     link:
       '/' +
       orgData.data.value.code3.toLowerCase() +
-      '/paymentsAndExpenses/additional_dispatcher_to_dispatcher',
+      '/paymentsAndExpenses/additional_to_dispatcher',
   },
 ]
 </script>

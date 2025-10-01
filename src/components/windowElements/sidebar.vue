@@ -51,7 +51,7 @@ const links = [
     path: '/paymentsView',
   },
   {
-    name: 'Expenses',
+    name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
     path: '/expensesView',
   },
