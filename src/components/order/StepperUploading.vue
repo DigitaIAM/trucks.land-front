@@ -2,6 +2,7 @@
 import * as tus from 'tus-js-client'
 import { generateBI } from '@/utils/invoice_broker.ts'
 import moment from 'moment/moment'
+import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
 
 const props = defineProps<{
   order: Order | null
@@ -242,6 +243,59 @@ async function createAndPdfBI() {
     }
   }
 }
+
+async function createAndPdfFI() {
+  const ts = moment().subtract(3, 'days')
+  const currentWeek = ref(ts.isoWeek())
+
+  const order = props.order
+  const user = authStore.user
+
+  if (order && user) {
+    const cUser = await usersStore.resolveUUID(user.id)
+    const org = await organizationsStore.resolve(order.organization)
+
+    if (org) {
+      const createAt = order.created_at
+      const path =
+        createAt.substring(0, 4) +
+        '/' +
+        createAt.substring(5, 7) +
+        '/' +
+        createAt.substring(8, 10) +
+        '/' +
+        order.id +
+        '/' +
+        'FI_' +
+        org.code2 +
+        '-' +
+        currentWeek.value +
+        '-' +
+        order.id +
+        '.pdf'
+
+      if (cUser == null) {
+        throw 'authorize first'
+      }
+
+      const record = await filesStore.create({
+        document: order.id,
+        file_type: 'FI',
+        signed_by: '',
+        path: path,
+        created_by: cUser.id,
+      })
+      console.log('createAndPdfFI', path)
+
+      const blob = await generateFI(order, org)
+
+      await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
+      uploadProgress.value = null
+
+      await download(record)
+    }
+  }
+}
 </script>
 
 <template>
@@ -347,7 +401,9 @@ async function createAndPdfBI() {
           broker by
           <QueryAndShow name="email" :id="order?.broker" :store="brokersStore"></QueryAndShow>
         </Button>
-        <Button class="btn-soft font-light tracking-wider">factoring company</Button>
+        <Button class="btn-soft font-light tracking-wider" @click="createAndPdfFI"
+          >factoring company
+        </Button>
       </div>
     </ModalBox>
   </Modal>
