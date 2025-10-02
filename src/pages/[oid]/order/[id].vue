@@ -168,7 +168,7 @@ useEventListener(document, 'keydown', handleKeyDown)
 </script>
 
 <template>
-  <div class="flex flex-col-2 m-6">
+  <div class="flex flex-col-3 m-6">
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
@@ -184,7 +184,7 @@ useEventListener(document, 'keydown', handleKeyDown)
           @click="handleClick"
           >excluded from calculations with the dispatcher
         </Button>
-        <StepperUploading :order="_order"></StepperUploading>
+        <!--        <StepperUploading :order="_order"></StepperUploading>-->
       </div>
 
       <div class="flex w-full h-full mt-6">
@@ -273,6 +273,9 @@ useEventListener(document, 'keydown', handleKeyDown)
       <div class="px-20 mt-1">
         <StepperStates :orderId="_id"></StepperStates>
       </div>
+    </div>
+    <div class="w-full flex-col">
+      <StepperUploading :order="_order"></StepperUploading>
     </div>
   </div>
 </template>

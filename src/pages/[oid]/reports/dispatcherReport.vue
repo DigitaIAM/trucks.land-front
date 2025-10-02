@@ -141,7 +141,7 @@ async function createPayment() {
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
     <SearchVue :store="usersStore"></SearchVue>
-    <div>{{ currentDay.format('ll') }}</div>
+    <Text>{{ currentDay.format('L') }}</Text>
     <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
     <Button
       :disabled="reportDispatcherStore.dispatchers.length == 0"
