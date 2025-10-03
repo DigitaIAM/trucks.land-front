@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const paymentToOwnerOrdersStore = usePaymentToOwnerOrdersStore()
 const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
+const orderStore = useOrdersStore()
 const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const ownerStore = useOwnersStore()
@@ -366,10 +367,39 @@ async function generatePdf() {
   console.log('data', data)
 }
 
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
 const cols = [
   {
     label: '#',
-    value: (v: PaymentToOwnerOrder) => v.doc_order,
+    value: (v: PaymentToOwnerOrder) =>
+      resolve(
+        v,
+        '#_' + v.doc_order,
+        () => ({ name: '?' }),
+        () => orderStore.resolve(v.doc_order),
+        (map) => map.number,
+      ),
     size: 30,
   },
 

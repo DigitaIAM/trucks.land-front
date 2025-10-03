@@ -26,7 +26,7 @@ const props = defineProps<{
   edit: Order | null
 }>()
 
-const order_number = ref<number>()
+const docnum = ref<number>()
 const posted_loads = ref('')
 const refs = ref('')
 
@@ -68,7 +68,7 @@ watch(
 )
 
 function resetAndShow(order: Order | null) {
-  order_number.value = order?.id
+  docnum.value = order?.number
   posted_loads.value = order?.posted_loads
   refs.value = order?.refs
   broker.value = order ? { id: order.broker } : null
@@ -81,7 +81,7 @@ function resetAndShow(order: Order | null) {
 }
 
 function openOrder(order: Order, org: Organization) {
-  window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  window.open('/' + org.code3.toLowerCase() + '/order/' + order.number, '_blank')
   // console.log('org.code3', orgData.data.value.code3)
 }
 
@@ -97,7 +97,6 @@ async function saveAndEdit(status: Status | null) {
     const order = await ordersStore.create(
       {
         organization: org.id,
-        order_number: order_number.value,
         dispatcher: authStore.account?.id,
         posted_loads: posted_loads.value,
         refs: refs.value,
@@ -138,7 +137,7 @@ async function saveAndEdit(status: Status | null) {
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">
           <Label class="mb-1">Number</Label>
-          <TextInput disabled v-model="order_number" />
+          <TextInput disabled v-model="docnum" />
         </div>
         <div class="md:w-1/3 md:mb-0">
           <Label class="mb-1">Posted loads ID</Label>

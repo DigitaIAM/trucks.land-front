@@ -49,7 +49,7 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: Order) => v.id,
+    value: (v: Order) => v.number,
     size: 30,
   },
   {
@@ -212,7 +212,7 @@ function close() {
         <div class="flex-1 overflow-y-auto">
           <table class="w-full table-fixed">
             <tbody>
-              <tr v-for="order in orders" :key="order.id" class="hover:bg-base-200">
+              <tr v-for="order in orders" :key="order.number" class="hover:bg-base-200">
                 <td
                   v-for="col in cols"
                   :key="order.id + '_' + col.label"

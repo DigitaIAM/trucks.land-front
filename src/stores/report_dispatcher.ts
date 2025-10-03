@@ -100,7 +100,6 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
   }
 
   const dispatchers = computedAsync(async () => {
-    console.log('dispatchers computedAsync')
     const list = [] as DispatcherPaymentSummary[]
     const paymentsMap = mapping.value
     const additionalMap = additional_payments.value
@@ -121,8 +120,6 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
         .eq('user', dispatcher)
         .eq('organization', org.value)
         .maybeSingle()
-
-      console.log('responseTerms', responseTerms)
 
       const paymentTerms = responseTerms.data as PaymentTerms
 
@@ -186,7 +183,6 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
         payout: toPayment + additionalTotal - finesTotal,
       } as DispatcherPaymentSummary)
     }
-    console.log('list', list)
     return list
   }, [])
 
@@ -197,7 +193,6 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
     account: User,
     ex_rate: number,
   ) {
-    console.log('ex_rate', ex_rate)
     const paymentToDispatcherStore = usePaymentToDispatcherStore()
 
     const data = dispatchers.value.slice()

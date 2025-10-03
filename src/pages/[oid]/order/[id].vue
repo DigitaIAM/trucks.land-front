@@ -93,7 +93,7 @@ async function resetAndShow(str: string) {
   if (order) {
     // resetAndShow(order)
     _order.value = order
-    _id.value = order.id
+    _id.value = order.number
     posted_loads.value = order.posted_loads
     dispatcher.value = { id: order.dispatcher }
     broker.value = { id: order.broker }
@@ -124,7 +124,7 @@ async function saveOrder(next: Status | null | undefined) {
         order.excluded != excluded.value
       ) {
         // const org = cOrg.data.value
-        await ordersStore.update(order.id, {
+        await ordersStore.update(order.number, {
           // organization: org.id,
           // status: next?.id ?? _order.value.status,
           // dispatcher: dispatcher.value?.id,
@@ -184,7 +184,6 @@ useEventListener(document, 'keydown', handleKeyDown)
           @click="handleClick"
           >excluded from calculations with the dispatcher
         </Button>
-        <!--        <StepperUploading :order="_order"></StepperUploading>-->
       </div>
 
       <div class="flex w-full h-full mt-6">

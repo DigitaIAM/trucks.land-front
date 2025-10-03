@@ -97,7 +97,7 @@ function generateStyle(col, order) {
 const cols = [
   {
     label: '#',
-    value: (v: Order) => v.id,
+    value: (v: Order) => v.number,
     color: (v: Status) => v.color,
     size: 50,
   },
@@ -280,10 +280,10 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.id)">
+      <tr v-for="order in ordersStore.listing" :key="order.id" @click="openOrder(order.number)">
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
+          :key="'row_' + col.label + '_' + order.number"
           class="py-3 px-4"
           :style="generateStyle(col, order)"
         >

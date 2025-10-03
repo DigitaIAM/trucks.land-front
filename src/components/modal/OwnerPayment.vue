@@ -44,7 +44,7 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: Order) => v.id,
+    value: (v: Order) => v.number,
     size: 50,
   },
 
@@ -151,7 +151,7 @@ const expenses = computed(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in orders" :key="order.id">
+          <tr v-for="order in orders" :key="order.number">
             <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"

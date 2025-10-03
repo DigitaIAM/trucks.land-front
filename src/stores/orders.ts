@@ -3,6 +3,7 @@ import type { KV } from '@/utils/kv.ts'
 
 export interface Order extends OrderCreate {
   id: number
+  number: number
   created_at: string
   driver_cost: number
   status: number
@@ -42,7 +43,7 @@ export interface OrderStatus {
   user: number
 }
 
-export const useOrdersStore = defineStore('order', () => {
+export const useOrdersStore = defineStore('orders', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])
 
