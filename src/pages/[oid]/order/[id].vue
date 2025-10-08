@@ -34,6 +34,7 @@ defineOptions({
 
 const _order = ref<Order | null>(null)
 const _id = ref<number | null>(null)
+const docnum = ref<number | null>(null)
 const dispatcher = ref<User | Reference>()
 const posted_loads = ref('')
 const refs = ref('')
@@ -93,7 +94,8 @@ async function resetAndShow(str: string) {
   if (order) {
     // resetAndShow(order)
     _order.value = order
-    _id.value = order.number
+    _id.value = order.id
+    docnum.value = order.number
     posted_loads.value = order.posted_loads
     dispatcher.value = { id: order.dispatcher }
     broker.value = { id: order.broker }
@@ -124,7 +126,7 @@ async function saveOrder(next: Status | null | undefined) {
         order.excluded != excluded.value
       ) {
         // const org = cOrg.data.value
-        await ordersStore.update(order.number, {
+        await ordersStore.update(order.id, {
           // organization: org.id,
           // status: next?.id ?? _order.value.status,
           // dispatcher: dispatcher.value?.id,
@@ -212,7 +214,7 @@ useEventListener(document, 'keydown', handleKeyDown)
           <div class="flex space-x-3 mb-2 mt-2 w-full">
             <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Number</Label>
-              <TextInput disabled :modelValue="_id" />
+              <TextInput disabled :modelValue="docnum" />
             </div>
             <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Posted loads ID</Label>

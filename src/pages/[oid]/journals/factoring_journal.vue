@@ -16,7 +16,7 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
   },
@@ -25,17 +25,13 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
-import Create from '@/pages/[oid]/order/create.vue'
-
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
-const vehiclesStore = useVehiclesStore()
+const statusesStore = useStatusesStore()
 const driversStore = useDriversStore()
-
-const filters = ref([])
-const selectedOrder = ref(null)
+const vehiclesStore = useVehiclesStore()
+const commentsStore = useCommentsStore()
 
 defineOptions({
   __loaders: [useOrgData],
@@ -43,9 +39,9 @@ defineOptions({
 
 const orgData = useOrgData()
 
-function onClose() {
-  selectedOrder.value = null
-}
+orders.setContext([{ key: 'status', val: '26' } as KV])
+
+const filters = ref([])
 
 const state = reactive({})
 
@@ -73,7 +69,21 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
+    color: (v: Status) => v.color,
     size: 50,
+  },
+  {
+    label: 'status',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'status_' + v.status,
+        () => ({ name: '?', color: '' }),
+        () => statusesStore.resolve(v.status),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 100,
   },
   {
     label: 'dispatcher',
@@ -85,7 +95,14 @@ const cols = [
         () => usersStore.resolve(v.dispatcher),
         (map) => map.name,
       ),
-    size: 120,
+    color: (v: Status) => v.color,
+    size: 100,
+  },
+  {
+    label: 'refs',
+    value: (v: Order) => v.refs,
+    color: (v: Status) => v.color,
+    size: 150,
   },
   {
     label: 'broker',
@@ -97,7 +114,8 @@ const cols = [
         () => brokersStore.resolve(v.broker),
         (map) => map.name,
       ),
-    size: 180,
+    color: (v: Status) => v.color,
+    size: 200,
   },
   {
     label: 'driver',
@@ -109,6 +127,7 @@ const cols = [
         () => driversStore.resolve(v.driver),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 180,
   },
   {
@@ -121,17 +140,33 @@ const cols = [
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
     size: 120,
   },
   {
     label: 'cost',
-    value: (v: Order) => '$ ' + v.cost,
-    size: 100,
+    value: (v: Order) => '$' + v.cost,
+    color: (v: Status) => v.color,
+    size: 80,
   },
   {
-    label: 'total miles',
-    value: (v: Order) => v.total_miles,
-    size: 100,
+    label: 'spend',
+    value: (v) => '$' + (v.driver_cost ?? 0),
+    color: (v: Status) => v.color,
+    size: 80,
+  },
+  {
+    label: 'notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'note',
+        () => [],
+        () => commentsStore.commentsForOrder(v.id),
+        (map) => map[0]?.note ?? '',
+      ),
+    color: (v: Status) => v.color,
+    size: 300,
   },
 ]
 
@@ -167,7 +202,7 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter"></SearchAll>
-    <create :edit="selectedOrder" @closed="onClose"></create>
+    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Send invoices</Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
@@ -189,39 +224,41 @@ function capitalizeFirstLetter(val) {
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-      <tr
-        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+    <tr
+      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+    >
+      <th
+        v-for="col in cols"
+        :key="'head_' + col.label"
+        class="p-4"
+        :style="{ width: col.size + 'px' }"
       >
-        <th
-          v-for="col in cols"
-          :key="'head_' + col.label"
-          class="p-4"
-          :style="{ width: col.size + 'px' }"
-        >
-          <p class="block antialiasing tracking-wider font-thin leading-none">
-            {{ col.label }}
-          </p>
-        </th>
-      </tr>
+        <p class="block antialiasing tracking-wider font-thin leading-none">
+          {{ col.label }}
+        </p>
+      </th>
+    </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
-        <td
-          v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
+    <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
+      <td
+        v-for="col in cols"
+        :key="'row_' + col.label + '_' + order.id"
+        class="py-3 px-4"
+        :style="{ width: col.size + 'px' }"
+      >
+        <p
+          class="block antialiasing tracking-wide font-light leading-normal truncate"
           :style="{ width: col.size + 'px' }"
-          class="py-3 px-4"
         >
-          <p
-            class="block antialiasing tracking-wide font-light leading-normal truncate"
-            :style="{ width: col.size + 'px' }"
-          >
-            {{ col.value(order) }}
-          </p>
-        </td>
-      </tr>
+          {{ col.value(order) }}
+        </p>
+      </td>
+    </tr>
     </tbody>
   </table>
 </template>
 
 <style scoped></style>
+
+

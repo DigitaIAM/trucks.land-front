@@ -12,7 +12,7 @@ watch(
   (ownerId) => {
     resetAndShow(ownerId)
   },
-  { deep: true },
+  { deep: true }
 )
 
 function resetAndShow(ownerId: number) {
@@ -26,7 +26,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string,
+  label: (obj: object) => string
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -45,18 +45,18 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 50,
+    size: 50
   },
 
   {
     label: 'cost',
     value: (v: Order) => '$' + v.cost,
-    size: 120,
+    size: 120
   },
   {
     label: 'd/payments',
     value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
-    size: 120,
+    size: 120
   },
   {
     label: 'status',
@@ -66,29 +66,29 @@ const cols = [
         'status_' + v.status,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.status),
-        (map) => map.name,
+        (map) => map.name
       ),
-    size: 200,
-  },
+    size: 200
+  }
 ]
 
 const expensesCols = [
   {
     label: '#',
     value: (v: ExpensesToOwner) => v.id,
-    size: 50,
+    size: 50
   },
 
   {
     label: 'details',
     value: (v: ExpensesToOwner) => v.kind,
-    size: 200,
+    size: 200
   },
   {
     label: 'amount',
     value: (v: ExpensesToOwner) => '$' + v.amount,
-    size: 120,
-  },
+    size: 120
+  }
 ]
 
 const summary = computed(() => {
@@ -135,11 +135,43 @@ const expenses = computed(() => {
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
+        <tr
+          class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+        >
+          <th
+            v-for="col in cols"
+            :key="col.label"
+            class="p-4"
+            :style="{ width: col.size + 'px' }"
+          >
+            <p class="block antialiasing tracking-wider font-thin leading-none">
+              {{ col.label }}
+            </p>
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="order in orders" :key="order.id">
+          <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+            <p
+              class="block antialiasing tracking-wide font-light leading-normal truncate"
+              :style="{ width: col.size + 'px' }"
+            >
+              {{ col.value(order) }}
+            </p>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="mt-10">
+        <Text bold size="lg" class="mb-4">Expenses</Text>
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
           <tr
             class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
           >
             <th
-              v-for="col in cols"
+              v-for="col in expensesCols"
               :key="col.label"
               class="p-4"
               :style="{ width: col.size + 'px' }"
@@ -149,55 +181,23 @@ const expenses = computed(() => {
               </p>
             </th>
           </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in orders" :key="order.number">
-            <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+          </thead>
+          <tbody>
+          <tr v-for="expense in expenses" :key="expense.id">
+            <td
+              v-for="col in expensesCols"
+              :key="col.label"
+              class="py-3 px-4"
+              :style="{ width: col.size + 'px' }"
+            >
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"
                 :style="{ width: col.size + 'px' }"
               >
-                {{ col.value(order) }}
+                {{ col.value(expense) }}
               </p>
             </td>
           </tr>
-        </tbody>
-      </table>
-      <div class="mt-10">
-        <Text bold size="lg" class="mb-4">Expenses</Text>
-        <table class="w-full text-left table-auto min-w-max">
-          <thead>
-            <tr
-              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-            >
-              <th
-                v-for="col in expensesCols"
-                :key="col.label"
-                class="p-4"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p class="block antialiasing tracking-wider font-thin leading-none">
-                  {{ col.label }}
-                </p>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="expense in expenses" :key="expense.id">
-              <td
-                v-for="col in expensesCols"
-                :key="col.label"
-                class="py-3 px-4"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p
-                  class="block antialiasing tracking-wide font-light leading-normal truncate"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  {{ col.value(expense) }}
-                </p>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>

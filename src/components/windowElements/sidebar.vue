@@ -8,53 +8,58 @@ const links = [
   {
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
-    path: '/order/all',
+    path: '/order/all'
   },
   {
     name: 'Dispatcher',
     icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
-    path: '/journals/dispatcherView',
+    path: '/journals/dispatcherView'
   },
   {
     name: 'Tracking',
     icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
-    path: '/tracking',
+    path: '/tracking'
   },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
-    path: '/journals/check-outView',
+    path: '/journals/check-outView'
   },
   {
     name: 'Income',
     icon: defineAsyncComponent(() => import('~icons/streamline/subscription-cashflow')),
-    path: '/journals/incomeView',
+    path: '/journals/incomeView'
   },
   {
     name: 'Quick pay',
     icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
-    path: '/journals/quick_payView',
+    path: '/journals/quick_payView'
+  },
+  {
+    name: 'Factoring',
+    icon: defineAsyncComponent(() => import('~icons/streamline/coin-share')), //'~icons/streamline/coin-share'
+    path: '/journals/factoring_journal'
   },
   {
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
-    path: '/referenceBooks',
+    path: '/referenceBooks'
   },
   {
     name: 'Reports',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-    path: '/reportsView',
+    path: '/reportsView'
   },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
-    path: '/paymentsView',
+    path: '/paymentsView'
   },
   {
     name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
-    path: '/expensesView',
-  },
+    path: '/expensesView'
+  }
 ]
 
 const authStore = useAuthStore()
@@ -151,7 +156,7 @@ function openNav(mode: string | null) {
         <Text
           :class="{ active: route.path.endsWith(link.path) }"
           class="grow px-3 font-thin tracking-wider"
-          >{{ link.name }}
+        >{{ link.name }}
         </Text>
       </div>
     </div>

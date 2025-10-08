@@ -11,13 +11,13 @@ export const useOrgData = defineBasicLoader(
     authStore.org = org
     return org
   },
-  { key: 'org' },
+  { key: 'org' }
 )
 </script>
 
 <script setup lang="ts">
 defineOptions({
-  __loaders: [useOrgData],
+  __loaders: [useOrgData]
 })
 
 const cOrg = useOrgData()
@@ -64,7 +64,7 @@ watch(
   (order) => {
     resetAndShow(order)
   },
-  { deep: true },
+  { deep: true }
 )
 
 function resetAndShow(order: Order | null) {
@@ -81,7 +81,7 @@ function resetAndShow(order: Order | null) {
 }
 
 function openOrder(order: Order, org: Organization) {
-  window.open('/' + org.code3.toLowerCase() + '/order/' + order.number, '_blank')
+  window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
   // console.log('org.code3', orgData.data.value.code3)
 }
 
@@ -105,10 +105,10 @@ async function saveAndEdit(status: Status | null) {
         total_weight: total_weight.value,
         total_miles: total_miles.value,
         cost: cost.value,
-        excluded: false,
+        excluded: false
       } as OrderCreate,
       account,
-      status,
+      status
     )
     create_draft.close()
 

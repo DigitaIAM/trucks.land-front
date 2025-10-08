@@ -72,7 +72,7 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: Order) => v.id,
+    value: (v: Order) => v.number,
     size: 50,
   },
   {

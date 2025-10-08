@@ -15,7 +15,7 @@ watch(
   (id) => {
     resetAndShow(id)
   },
-  { deep: true },
+  { deep: true }
 )
 
 const emit = defineEmits(['close'])
@@ -31,7 +31,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string,
+  label: (obj: object) => string
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -50,12 +50,12 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 30,
+    size: 30
   },
   {
     label: 'refs',
     value: (v: Order) => v.refs,
-    size: 150,
+    size: 150
   },
   {
     label: 'broker',
@@ -65,20 +65,20 @@ const cols = [
         'broker_' + v.broker,
         () => ({ name: '?' }),
         () => brokersStore.resolve(v.broker),
-        (map) => map.name,
+        (map) => map.name
       ),
-    size: 200,
+    size: 200
   },
   {
     label: 'cost',
     value: (v: Order) => '$' + v.cost,
-    size: 100,
+    size: 100
   },
   {
     label: 'payments to driver',
     value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
-    size: 100,
-  },
+    size: 100
+  }
 ]
 
 const summary = computed(() => {
@@ -123,38 +123,38 @@ const additionallyCols = [
   {
     label: '#',
     value: (v: PaymentsAdditionalToEmployee) => v.id,
-    size: 50,
+    size: 50
   },
 
   {
     label: 'details',
     value: (v: PaymentsAdditionalToEmployee) => v.kind,
-    size: 200,
+    size: 200
   },
   {
     label: 'amount',
     value: (v: PaymentsAdditionalToEmployee) => '$' + v.amount,
-    size: 120,
-  },
+    size: 120
+  }
 ]
 
 const fineCols = [
   {
     label: '#',
     value: (v: FinesEmployee) => v.id,
-    size: 50,
+    size: 50
   },
 
   {
     label: 'details',
     value: (v: FinesEmployee) => v.description,
-    size: 200,
+    size: 200
   },
   {
     label: 'amount',
     value: (v: FinesEmployee) => '$' + v.amount,
-    size: 120,
-  },
+    size: 120
+  }
 ]
 
 function close() {
@@ -193,40 +193,40 @@ function close() {
       <div class="overflow-clip flex flex-col">
         <table class="w-full table-fixed text-left">
           <thead>
-            <tr
-              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          <tr
+            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          >
+            <th
+              v-for="col in cols"
+              class="p-4"
+              :key="col.label"
+              :style="{ width: col.size + 'px' }"
             >
-              <th
-                v-for="col in cols"
-                class="p-4"
-                :key="col.label"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p class="block antialiasing tracking-wider font-thin leading-none">
-                  {{ col.label }}
-                </p>
-              </th>
-            </tr>
+              <p class="block antialiasing tracking-wider font-thin leading-none">
+                {{ col.label }}
+              </p>
+            </th>
+          </tr>
           </thead>
         </table>
         <div class="flex-1 overflow-y-auto">
           <table class="w-full table-fixed">
             <tbody>
-              <tr v-for="order in orders" :key="order.number" class="hover:bg-base-200">
-                <td
-                  v-for="col in cols"
-                  :key="order.id + '_' + col.label"
-                  class="py-3 px-4"
+            <tr v-for="order in orders" :key="order.id" class="hover:bg-base-200">
+              <td
+                v-for="col in cols"
+                :key="order.id + '_' + col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
                   :style="{ width: col.size + 'px' }"
                 >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
-                    :style="{ width: col.size + 'px' }"
-                  >
-                    {{ col.value(order) }}
-                  </p>
-                </td>
-              </tr>
+                  {{ col.value(order) }}
+                </p>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -234,37 +234,37 @@ function close() {
           <Text bold size="lg" class="mb-4">Additionally</Text>
           <table class="w-full text-left table-auto min-w-max">
             <thead>
-              <tr
-                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="col in additionallyCols"
+                :key="col.label"
+                class="p-4"
+                :style="{ width: col.size + 'px' }"
               >
-                <th
-                  v-for="col in additionallyCols"
-                  :key="col.label"
-                  class="p-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p class="block antialiasing tracking-wider font-thin leading-none">
-                    {{ col.label }}
-                  </p>
-                </th>
-              </tr>
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="additionally in additionalles" :key="additionally.id">
-                <td
-                  v-for="col in additionallyCols"
-                  :key="col.label"
-                  class="py-3 px-4"
+            <tr v-for="additionally in additionalles" :key="additionally.id">
+              <td
+                v-for="col in additionallyCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
                   :style="{ width: col.size + 'px' }"
                 >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
-                    :style="{ width: col.size + 'px' }"
-                  >
-                    {{ col.value(additionally) }}
-                  </p>
-                </td>
-              </tr>
+                  {{ col.value(additionally) }}
+                </p>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -272,37 +272,37 @@ function close() {
           <Text bold size="lg" class="mb-4">Fines</Text>
           <table class="w-full text-left table-auto min-w-max">
             <thead>
-              <tr
-                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="col in fineCols"
+                :key="col.label"
+                class="p-4"
+                :style="{ width: col.size + 'px' }"
               >
-                <th
-                  v-for="col in fineCols"
-                  :key="col.label"
-                  class="p-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p class="block antialiasing tracking-wider font-thin leading-none">
-                    {{ col.label }}
-                  </p>
-                </th>
-              </tr>
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="fine in fines" :key="fine.id">
-                <td
-                  v-for="col in fineCols"
-                  :key="col.label"
-                  class="py-3 px-4"
+            <tr v-for="fine in fines" :key="fine.id">
+              <td
+                v-for="col in fineCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
                   :style="{ width: col.size + 'px' }"
                 >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
-                    :style="{ width: col.size + 'px' }"
-                  >
-                    {{ col.value(fine) }}
-                  </p>
-                </td>
-              </tr>
+                  {{ col.value(fine) }}
+                </p>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
