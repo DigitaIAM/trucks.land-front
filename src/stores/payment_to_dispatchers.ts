@@ -43,6 +43,10 @@ export interface PaymentToDispatcherCreate {
   income_tax: number
 }
 
+export interface PaymentToDispatcherSummaryDetails {
+  order: Order
+}
+
 export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])
@@ -98,6 +102,33 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
 
       mapping.value = map
     }
+  }
+
+  async function fetchingOrder(
+    paymentId: number,
+  ): Promise<Array<PaymentToDispatcherSummaryDetails>> {
+    const list = [] as Array<PaymentToDispatcherSummaryDetails>
+
+    const responsePayment = await supabase
+      .from('payments_to_dispatchers_orders')
+      .select()
+      .eq('document', paymentId)
+
+    for (const record of responsePayment.data ?? []) {
+      const orderId = record['doc_order']
+      const responseOrder = await supabase
+        .from('orders_journal')
+        .select()
+        .eq('id', orderId)
+        .single()
+
+      const order = responseOrder.data as Order
+
+      list.push({
+        order: order,
+      } as PaymentToDispatcherSummaryDetails)
+    }
+    return list
   }
 
   const listing = computedAsync(async () => {
@@ -168,7 +199,7 @@ export const usePaymentToDispatcherStore = defineStore('payments_to_dispatchers'
     }
   }
 
-  return { setContext, setFilters, listing, create }
+  return { setContext, setFilters, fetchingOrder, listing, create }
 })
 
 if (import.meta.hot) {

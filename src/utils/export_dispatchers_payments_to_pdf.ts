@@ -2,6 +2,7 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
+import { usePaymentToDispatcherStore } from '@/stores/payment_to_dispatchers.ts'
 
 const margin = 50
 
@@ -61,10 +62,12 @@ export async function generateDispatcherPaymentPdf(document: PaymentToDispatcher
   // Define the table data
   let tableData = [['#', 'order', 'gross']] as CellContent[][]
 
-  const lines = await usePaymentToDispatcherOrdersStore().request(document.id)
+  const paymentToDispatcherStore = usePaymentToDispatcherStore()
+
+  const lines = await paymentToDispatcherStore.fetchingOrder(document.id)
   let pos = 0
   for (const line of lines) {
-    tableData.push([`${++pos}`, `${org.code2}-${line.doc_order}`, `\$${line.amount}`])
+    tableData.push([`${++pos}`, `${org.code2}-${line.order.number}`, `\$${line.order.cost}`])
 
     if (currentY - fh12 - fh10 * (tableData.length - 1) < fh12) {
       await drawTable(pdfDoc, page, tableData, margin, currentY, options)
@@ -96,7 +99,6 @@ async function _head(
 
   // Set the starting X and Y coordinates for the table
   const startX = 50
-  const startY = 580
 
   if (org.url_logo) {
     const jpgImageBytes = await fetch(org.url_logo).then((res) => res.arrayBuffer())

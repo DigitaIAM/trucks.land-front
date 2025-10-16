@@ -71,12 +71,12 @@ async function generatePdf() {
           name: `${dispatcher?.real_name}`,
         },
       },
-    ], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    ], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
     subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
     htmlbody:
       'Greetings,<br />' +
       '<br />' +
-      'Payment sheet of week #&nbsp;' +
+      'Payment sheet of month #&nbsp;' +
       `${document.month}` +
       '&nbsp;of&nbsp;' +
       `${document.year}` +

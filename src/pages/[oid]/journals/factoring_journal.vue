@@ -202,7 +202,7 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter"></SearchAll>
-    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Send invoices</Button>
+    <Button class="btn-soft font-light tracking-wider" @click="">Send to factoring</Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
@@ -224,41 +224,39 @@ function capitalizeFirstLetter(val) {
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
-    <tr
-      class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-    >
-      <th
-        v-for="col in cols"
-        :key="'head_' + col.label"
-        class="p-4"
-        :style="{ width: col.size + 'px' }"
+      <tr
+        class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
       >
-        <p class="block antialiasing tracking-wider font-thin leading-none">
-          {{ col.label }}
-        </p>
-      </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
-      <td
-        v-for="col in cols"
-        :key="'row_' + col.label + '_' + order.id"
-        class="py-3 px-4"
-        :style="{ width: col.size + 'px' }"
-      >
-        <p
-          class="block antialiasing tracking-wide font-light leading-normal truncate"
+        <th
+          v-for="col in cols"
+          :key="'head_' + col.label"
+          class="p-4"
           :style="{ width: col.size + 'px' }"
         >
-          {{ col.value(order) }}
-        </p>
-      </td>
-    </tr>
+          <p class="block antialiasing tracking-wider font-thin leading-none">
+            {{ col.label }}
+          </p>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="order in orders.listing" :key="order.id" @click="openOrder(order.id)">
+        <td
+          v-for="col in cols"
+          :key="'row_' + col.label + '_' + order.id"
+          class="py-3 px-4"
+          :style="{ width: col.size + 'px' }"
+        >
+          <p
+            class="block antialiasing tracking-wide font-light leading-normal truncate"
+            :style="{ width: col.size + 'px' }"
+          >
+            {{ col.value(order) }}
+          </p>
+        </td>
+      </tr>
     </tbody>
   </table>
 </template>
 
 <style scoped></style>
-
-
