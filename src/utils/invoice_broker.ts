@@ -173,7 +173,7 @@ export async function generateBI(
   const ts = moment().subtract(3, 'days')
   const currentWeek = ref(ts.isoWeek())
   const currentYear = ref(ts.year())
-  const numberFormated = `${org.code2}-${currentWeek.value}-${order.id}`
+  const numberFormated = `${org.code2}-${currentWeek.value}-${order.number}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)
 
   cy -= bls + text_right(page, font, 12, 'Invoice date', tableDimensions.endX, cy + bls)
@@ -284,7 +284,7 @@ export async function generateBI(
       `${org.address2}<br />`,
     attachments: [
       {
-        name: `invoice_${currentWeek.value}-${org.code2}-${order.id}.pdf`,
+        name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
         content: base64String,
         mime_type: 'plain/txt',
       },

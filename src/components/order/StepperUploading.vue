@@ -218,7 +218,7 @@ async function createAndPdfBI() {
         '-' +
         currentWeek.value +
         '-' +
-        order.id +
+        order.number +
         '.pdf'
 
       if (cUser == null) {
@@ -271,7 +271,7 @@ async function createAndPdfFI() {
         '-' +
         currentWeek.value +
         '-' +
-        order.id +
+        order.number +
         '.pdf'
 
       if (cUser == null) {

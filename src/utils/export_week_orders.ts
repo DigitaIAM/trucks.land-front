@@ -89,7 +89,7 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
 
       sheet.addRow({
         number: ++n,
-        order: `${org?.code2}-${week}-${order.id}`,
+        order: `${org?.code2}-${week}-${order.number}`,
         ref: order?.refs ?? '',
         date: createdAt,
         unit: vehicle?.unit_id,
