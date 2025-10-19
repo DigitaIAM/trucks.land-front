@@ -1,7 +1,6 @@
 import type { Order } from '@/stores/orders.ts'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { ExpensesToOwner } from '@/stores/expenses_owner.ts'
-import type { PaymentToOwnerExpenseCreate } from '@/stores/payment_to_owners.ts'
 
 export interface OwnerPaymentRecord {
   owner: number

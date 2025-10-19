@@ -2,6 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToOwnerOrderCreate } from '@/stores/payment_to_owners_orders.ts'
 import type { Order } from '@/stores/orders.ts'
 import type { Event } from '@/stores/events.ts'
+import type { KV } from '@/utils/kv.ts'
 
 export interface PaymentToOwnerSummary {
   id: number
@@ -140,9 +141,8 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
 
     if (response.status == 201 && response.data?.length == 1) {
       const payment = response.data[0] as PaymentToOwner
-      mapping.value.set(payment.id, payment)
-
-      console.log('payment', payment)
+      mapping.value.set(payment.id, payment as PaymentToOwnerSummary)
+      // console.log('payment', payment)
 
       for (const record of paymentRecords) {
         record.document = payment.id

@@ -7,13 +7,11 @@ meta:
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
-// const organizationsStore = useOrganizationsStore()
-// const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
-  async (route) => {
+  async (_) => {
     ordersStore.reset()
 
     // const org = await organizationsStore.resolve3(route.params.oid)
@@ -34,6 +32,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import type { KV } from '@/utils/kv.ts'
 const ordersStore = useOrdersStore()
 const organizationsStore = useOrganizationsStore()
 const statusesStore = useStatusesStore()
@@ -41,19 +40,20 @@ const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
-// ordersStore.reset()
-
-const filters = ref([])
-const selectedOrder = ref(null)
+const filters = ref([] as Array<KV>)
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-const orgData = useOrgData()
+useOrgData()
 
-function onClose() {
-  selectedOrder.value = null
+interface Col {
+  label: string
+  size: number
+
+  value(v: Order): string
+  color(v: Status): string
 }
 
 const state = reactive({})
@@ -78,30 +78,30 @@ function resolve(
   }
 }
 
-function generateStyle(col, order) {
+function generateStyle(col: Col, order: Order) {
   const color = resolve(
     order,
-    'status_' + order?.status,
+    'status_' + order.status,
     () => ({
       name: '?',
       color: '',
     }),
-    () => statusesStore.resolve(order?.status),
+    () => statusesStore.resolve(order.status),
     (obj) => obj.color,
   )
-  if (color && col?.label === 'status') {
+  if (color && col.label === 'status') {
     return { 'background-color': color }
   }
   return {}
 }
 
-const cols = [
+const cols: Col[] = [
   {
     label: '#',
-    value: (v: Order) => v.id,
+    value: (v: Order) => v.id.toString(),
     color: (v: Status) => v.color,
     size: 50,
-  },
+  } as Col,
   {
     label: 'status',
     value: (v: Order) =>
@@ -114,13 +114,13 @@ const cols = [
       ),
     color: (v: Status) => v.color,
     size: 150,
-  },
+  } as Col,
   {
     label: 'refs',
     value: (v: Order) => v.refs,
     color: (v: Status) => v.color,
     size: 90,
-  },
+  } as Col,
   {
     label: 'driver',
     value: (v: Order) =>
@@ -133,7 +133,7 @@ const cols = [
       ),
     color: (v: Status) => v.color,
     size: 180,
-  },
+  } as Col,
   {
     label: 'vehicle',
     value: (v: Order) =>
@@ -146,7 +146,7 @@ const cols = [
       ),
     color: (v: Status) => v.color,
     size: 120,
-  },
+  } as Col,
   {
     label: 'pick up',
     value: (v: Order) =>
@@ -168,7 +168,7 @@ const cols = [
       ),
     color: (v: Status) => v.color,
     size: 300,
-  },
+  } as Col,
   {
     label: 'delivery',
     value: (v: Order) =>
@@ -190,26 +190,28 @@ const cols = [
       ),
     color: (v: Status) => v.color,
     size: 300,
-  },
+  } as Col,
 ]
 
 async function openOrder(order: Order) {
   const org = await organizationsStore.resolve(order.organization)
-  window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  if (org) {
+    window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  }
 }
 
-function setFilter(key, val) {
+function setFilter(key: string, val: never) {
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
-    filters.value.push({ key: key, val: val })
+    filters.value.push({ key: key, val: val } as KV)
   } else {
-    filters.value[index] = { key: key, val: val }
+    filters.value[index] = { key: key, val: val } as KV
   }
 
   ordersStore.setFilters(filters.value)
 }
 
-function delFilter(key) {
+function delFilter(key: string) {
   const index = filters.value.findIndex((v) => v.key === key)
   if (index >= 0) {
     filters.value.splice(index, 1)
@@ -218,7 +220,7 @@ function delFilter(key) {
   ordersStore.setFilters(filters.value)
 }
 
-function capitalizeFirstLetter(val) {
+function capitalizeFirstLetter(val: string) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
 </script>

@@ -29,16 +29,6 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     mapping.value = map
   })
 
-  const listing = computed(() => {
-    const list = [] as StatusNext[]
-
-    for (const obj of mapping.value.values()) {
-      list.push(obj)
-    }
-
-    return list
-  })
-
   function nextFor(status?: number) {
     if (status) {
       return Array.from(mapping.value.get(status)?.keys() ?? [])
@@ -47,7 +37,7 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     }
   }
 
-  async function update(status: Status, next: []) {
+  async function update(status: Status, next: number[]) {
     const map = mapping.value.get(status.id) ?? new Map<number, StatusNext>()
 
     // insert
@@ -86,7 +76,7 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
     mapping.value.set(status.id, map)
   }
 
-  return { listing, initialized, loading, update, nextFor }
+  return { initialized, loading, update, nextFor }
 })
 
 if (import.meta.hot) {

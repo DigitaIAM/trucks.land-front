@@ -401,7 +401,7 @@ declare global {
   export type { PaymentEmployeeFines, PaymentEmployeeFinesCreate } from './stores/payment_employee_fines'
   import('./stores/payment_employee_fines')
   // @ts-ignore
-  export type { PaymentToDispatcherSummary, PaymentToDispatcher, PaymentToDispatcherCreate } from './stores/payment_to_dispatchers'
+  export type { PaymentToDispatcherSummary, PaymentToDispatcher, PaymentToDispatcherCreate, PaymentToDispatcherSummaryDetails } from './stores/payment_to_dispatchers'
   import('./stores/payment_to_dispatchers')
   // @ts-ignore
   export type { PaymentToDispatcherOrder, PaymentToDispatcherOrderCreate } from './stores/payment_to_dispatchers_orders'
@@ -424,9 +424,6 @@ declare global {
   // @ts-ignore
   export type { DispatcherPaymentRecord, DispatcherPaymentSummary, PaymentTerms } from './stores/report_dispatcher'
   import('./stores/report_dispatcher')
-  // @ts-ignore
-  export type { DriverPaymentRecord, DriverPaymentSummary } from './stores/report_driver'
-  import('./stores/report_driver')
   // @ts-ignore
   export type { OwnerPaymentRecord, OwnerPaymentSummary } from './stores/report_owner'
   import('./stores/report_owner')
@@ -698,7 +695,6 @@ declare module 'vue' {
     readonly useRafFn: UnwrapRef<typeof import('@vueuse/core')['useRafFn']>
     readonly useRefHistory: UnwrapRef<typeof import('@vueuse/core')['useRefHistory']>
     readonly useReportDispatcher: UnwrapRef<typeof import('./stores/report_dispatcher')['useReportDispatcher']>
-    readonly useReportDriver: UnwrapRef<typeof import('./stores/report_driver')['useReportDriver']>
     readonly useReportOwner: UnwrapRef<typeof import('./stores/report_owner')['useReportOwner']>
     readonly useResizeObserver: UnwrapRef<typeof import('@vueuse/core')['useResizeObserver']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>

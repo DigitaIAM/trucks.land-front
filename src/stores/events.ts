@@ -77,7 +77,7 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  async function pickUp(orderId: number) {
+  async function pickUp(orderId: number): Promise<Array<Event>> {
     if (orderId) {
       const response = await supabase
         .from('order_events')
@@ -89,7 +89,7 @@ export const useEventsStore = defineStore('event', () => {
       // console.log(response)
 
       if (response.status == 200) {
-        const list = []
+        const list: Array<Event> = []
 
         response.data?.forEach((json) => {
           const event = json as Event
@@ -107,7 +107,7 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  async function delivery(orderId: number) {
+  async function delivery(orderId: number): Promise<Array<Event>> {
     if (orderId) {
       const response = await supabase
         .from('order_events')
@@ -119,7 +119,7 @@ export const useEventsStore = defineStore('event', () => {
       // console.log(response)
 
       if (response.status == 200) {
-        const list = []
+        const list: Array<Event> = []
 
         response.data?.forEach((json) => {
           const event = json as Event
@@ -141,10 +141,10 @@ export const useEventsStore = defineStore('event', () => {
     // console.log(response)
 
     if (response.status == 201) {
-      response.data?.forEach((json) => {
-        // const event = json as Event
-        // mapping.value.set(event.id, event)
-      })
+      // response.data?.forEach((json) => {
+      // const event = json as Event
+      // mapping.value.set(event.id, event)
+      // })
     } else {
       throw 'unexpended response status: ' + response.status
     }
@@ -158,10 +158,10 @@ export const useEventsStore = defineStore('event', () => {
       .select()
       .then((response) => {
         if (response.status == 200) {
-          response.data?.forEach((json) => {
-            // const event = json as Event
-            // mapping.value.set(event.id, event)
-          })
+          // response.data?.forEach((json) => {
+          // const event = json as Event
+          // mapping.value.set(event.id, event)
+          // })
         }
       })
   }

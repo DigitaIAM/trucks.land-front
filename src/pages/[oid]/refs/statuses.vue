@@ -32,8 +32,8 @@ function generateStyle(status: Status | null) {
   return style
 }
 
-const selectedStatus = ref(null)
-const selectedNextStatus = ref(null)
+const selectedStatus = ref<Status | null>(null)
+const selectedNextStatus = ref<Status | null>(null)
 
 function editStatus(status: Status) {
   selectedStatus.value = status

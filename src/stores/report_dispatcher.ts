@@ -258,9 +258,9 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
     }
 
     for (const employeeId of processing.value) {
-      mapping.value.clear(employeeId)
-      additional_payments.value.clear(employeeId)
-      fines.value.clear(employeeId)
+      mapping.value.delete(employeeId)
+      additional_payments.value.delete(employeeId)
+      fines.value.delete(employeeId)
     }
     processing.value = []
   }

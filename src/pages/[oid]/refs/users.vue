@@ -7,7 +7,7 @@ meta:
 <script setup lang="ts">
 const usersStore = useUsersStore()
 
-const selectedUser = ref(null)
+const selectedUser = ref<User | null>(null)
 
 function editUser(user: User) {
   selectedUser.value = user
@@ -20,27 +20,27 @@ function onClose() {
 const cols = [
   {
     label: 'Real name',
-    value: (v) => v.real_name,
+    value: (v: User) => v.real_name,
     size: 300,
   },
   {
     label: 'Name',
-    value: (v) => v.name,
+    value: (v: User) => v.name,
     size: 300,
   },
   {
     label: 'Group',
-    value: (v) => v.group,
+    value: (v: User) => v.group,
     size: 300,
   },
   {
     label: 'Phone',
-    value: (v) => v.phone,
+    value: (v: User) => v.phone,
     size: 300,
   },
   {
     label: 'Email',
-    value: (v) => v.email,
+    value: (v: User) => v.email,
     size: 300,
   },
 ]
@@ -80,6 +80,7 @@ watch(
         <th
           v-for="col in cols"
           class="p-4 border-b border-b-gray-400"
+          :key="col.label"
           :style="{ width: col.size + 'px' }"
         >
           <p class="block antialiasing tracking-wider font-thin leading-none">
@@ -90,7 +91,12 @@ watch(
     </thead>
     <tbody>
       <tr v-for="user in usersStore.listing" :key="user.id" @click="editUser(user)">
-        <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+        <td
+          v-for="col in cols"
+          class="py-3 px-4"
+          :key="col.label"
+          :style="{ width: col.size + 'px' }"
+        >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
