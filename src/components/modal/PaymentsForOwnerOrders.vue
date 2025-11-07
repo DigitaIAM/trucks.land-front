@@ -3,7 +3,6 @@ import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { createFetch } from '@vueuse/core'
-import { openInNewTab } from '@/utils/pdf-helper.ts'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -238,8 +237,10 @@ async function generatePdf() {
 
     lines += cLines
 
+    const order = await orderStore.resolve(line.doc_order)
+
     tableData.push([
-      `${org.code2}-${line.document}`,
+      `${org.code2}-${order?.number}`,
       vehicle,
       pickup,
       delivery,
@@ -321,8 +322,8 @@ async function generatePdf() {
 
   const email = {
     from: { address: `noreply@${org.domain}` },
-    to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
-    // cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
+    to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
     subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
     htmlbody:
       'Greetings,<br />' +

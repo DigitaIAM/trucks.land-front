@@ -30,7 +30,7 @@ const useOrganizations = useOrganizationsStore()
     <NavbarEnd>
       <div class="flex-col justify-items-center px-2">
         <div><img src="./../assets/logoTL.svg" /></div>
-        <div class="text-xs font-thin antialiased text-gray-500">251016</div>
+        <div class="text-xs font-thin antialiased text-gray-500">251107</div>
       </div>
     </NavbarEnd>
   </Navbar>
