@@ -3,6 +3,7 @@ import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { createFetch } from '@vueuse/core'
+import { openInNewTab } from '@/utils/pdf-helper.ts'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -73,6 +74,8 @@ function text_right(
   return font.heightAtSize(fontSize)
 }
 
+const margin = 50
+
 async function generatePdf() {
   const document = props.document
   if (document == null) {
@@ -94,8 +97,106 @@ async function generatePdf() {
     throw 'missing owner'
   }
 
-  // Define the table data
-  const tableData = [['order #', 'unit no', 'pick up', 'delivery', 'amount']] as CellContent[][]
+  const pdfDoc = await PDFDocument.create()
+
+  let page = pdfDoc.addPage()
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+  const bls = font.heightAtSize(12) / 2
+
+  // logo
+  if (org.url_logo) {
+    const jpgImageBytes = await fetch(org.url_logo).then((res) => res.arrayBuffer())
+    const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
+    const jpgDims = jpgImage.size()
+
+    page.drawImage(jpgImage, {
+      x: margin,
+      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+      width: 100,
+      height: (100 * jpgDims.height) / jpgDims.width,
+    })
+  }
+
+  text_left(page, font, 10, `${org.address1}`, margin + bls, 700)
+  text_left(page, font, 10, `${org.address2}`, margin + bls, 685)
+
+  const rightSide = page.getWidth() - 2 * margin
+
+  // head
+  let cy = 800
+  cy -= bls + text_right(page, font, 12, 'Pay Sheet', rightSide, cy)
+  cy -=
+    bls +
+    text_right(page, boldFont, 16, `${document.week}-${org.code3}-${document.id}`, rightSide, cy)
+  cy -= bls + text_right(page, font, 12, 'Pay Period', rightSide, cy)
+  cy -=
+    bls + text_right(page, boldFont, 16, `WEEK ${document.week} of ${document.year}`, rightSide, cy)
+
+  cy -= bls * 2
+
+  cy -= bls + text_right(page, boldFont, 16, contra.name.toUpperCase(), rightSide, cy)
+
+  cy -= bls * 2
+
+  const cx = rightSide - 50
+
+  const fs = 10
+  text_right(page, font, fs, 'Trip Related pay:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.payment}`, cx + bls, cy)
+
+  text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
+  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
+
+  text_right(page, font, fs, 'Total Deductions:', cx, cy)
+  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
+
+  text_right(page, font, fs, 'Total Pay:', cx, cy)
+  cy -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
+      cx + bls,
+      cy,
+    )
+
+  text_right(page, font, fs, 'Total Trips:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `${paymentToOwnerOrdersStore.listing.length}`, cx + bls, cy)
+
+  // Set the table options
+  const options = {
+    textSize: 10,
+    title: {
+      text: 'Shipments Details',
+      textSize: 12,
+      font: font,
+      alignment: 'center',
+    },
+    header: {
+      hasHeaderRow: true,
+      font: font,
+      textSize: 10,
+      backgroundColor: rgb(0.9, 0.9, 0.9),
+      contentAlignment: 'center',
+    },
+    border: {
+      color: rgb(0.9, 0.9, 0.9),
+      width: 0.4,
+    },
+    font: font,
+  } as DrawTableOptions
+
+  const fh12 = font.heightAtSize(options.title.textSize) * 2
+  const fh10 = font.heightAtSize(options.textSize) * 2
+
+  let tableData = [['order #', 'unit no', 'pick up', 'delivery', 'amount']] as CellContent[][]
+  let lines = 0
+  let tableDimensions = { endY: cy }
 
   for (const line of paymentToOwnerOrdersStore.listing.values()) {
     const events = await eventsStore.fetching(line.doc_order)
@@ -123,8 +224,22 @@ async function generatePdf() {
       }
     }
 
+    const cLines = Math.max(1, Math.max(pickup.length, delivery.length))
+
+    if (cy - fh12 - fh10 * (lines + cLines) < fh12 + margin) {
+      tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
+
+      page = pdfDoc.addPage()
+      tableData = [['order #', 'unit no', 'pick up', 'delivery', 'amount']] as CellContent[][]
+
+      cy = page.getHeight() - margin
+      lines = 0
+    }
+
+    lines += cLines
+
     tableData.push([
-      `${org.code2}-${line.doc_order}`,
+      `${org.code2}-${line.document}`,
       vehicle,
       pickup,
       delivery,
@@ -132,118 +247,9 @@ async function generatePdf() {
     ])
   }
 
-  const pdfDoc = await PDFDocument.create()
-
-  const page = pdfDoc.addPage()
-
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-
-  const bls = font.heightAtSize(12) / 2
-
-  // Set the starting X and Y coordinates for the table
-  const startX = 50
-  const startY = 580
-
-  // Set the table options
-  const options = {
-    textSize: 10,
-    title: {
-      text: 'Shipments Details',
-      textSize: 12,
-      font: font,
-      alignment: 'center',
-    },
-    header: {
-      hasHeaderRow: true,
-      font: font,
-      textSize: 10,
-      backgroundColor: rgb(0.9, 0.9, 0.9),
-      contentAlignment: 'center',
-    },
-    border: {
-      color: rgb(0.9, 0.9, 0.9),
-      width: 0.4,
-    },
-    font: font,
-  } as DrawTableOptions
-
-  const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
-
-  // logo
-  if (org.url_logo) {
-    const jpgImageBytes = await fetch(org.url_logo).then((res) => res.arrayBuffer())
-    const jpgImage = await pdfDoc.embedJpg(jpgImageBytes)
-    const jpgDims = jpgImage.size()
-
-    page.drawImage(jpgImage, {
-      x: startX,
-      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
-      width: 100,
-      height: (100 * jpgDims.height) / jpgDims.width,
-    })
+  if (tableData.length > 1) {
+    tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
   }
-
-  text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
-  text_left(page, font, 10, `${org.address2}`, startX + bls, 685)
-
-  // head
-  let cy = 800
-  cy -= bls + text_right(page, font, 12, 'Pay Sheet', tableDimensions.endX, cy)
-  cy -=
-    bls +
-    text_right(
-      page,
-      boldFont,
-      16,
-      `${document.week}-${org.code3}-${document.id}`,
-      tableDimensions.endX,
-      cy,
-    )
-  cy -= bls + text_right(page, font, 12, 'Pay Period', tableDimensions.endX, cy)
-  cy -=
-    bls +
-    text_right(
-      page,
-      boldFont,
-      16,
-      `WEEK ${document.week} of ${document.year}`,
-      tableDimensions.endX,
-      cy,
-    )
-
-  cy -= bls * 2
-
-  cy -= bls + text_right(page, boldFont, 16, contra.name.toUpperCase(), tableDimensions.endX, cy)
-
-  cy -= bls * 2
-
-  const cx = tableDimensions.endX - 50
-
-  const fs = 10
-  text_right(page, font, fs, 'Trip Related pay:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.payment}`, cx + bls, cy)
-
-  text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-
-  text_right(page, font, fs, 'Total Deductions:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-
-  text_right(page, font, fs, 'Total Pay:', cx, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
-      cx + bls,
-      cy,
-    )
-
-  text_right(page, font, fs, 'Total Trips:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${paymentToOwnerOrdersStore.listing.length}`, cx + bls, cy)
 
   //tableBottom
   const tableBottomY = tableDimensions.endY // Calculate the bottom edge of the table
@@ -315,8 +321,8 @@ async function generatePdf() {
 
   const email = {
     from: { address: `noreply@${org.domain}` },
-    to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
-    cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
+    to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    // cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
     subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
     htmlbody:
       'Greetings,<br />' +
