@@ -42,11 +42,11 @@ const buttons = [
     icon: OwnerIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/owner_expenses',
   },
-  {
-    label: 'Fines',
-    icon: FinesIcon,
-    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/finesOfEmployee',
-  },
+  // {
+  //   label: 'Fines',
+  //   icon: FinesIcon,
+  //   link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/finesOfEmployee',
+  // },
   // {
   //   label: 'Driver',
   //   icon: DriverIcon,
