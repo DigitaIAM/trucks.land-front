@@ -38,40 +38,50 @@ export interface EventUpdate {
 }
 
 export const useEventsStore = defineStore('event', () => {
-  const mapping = ref(new Map<number, Event[] | Promise<Event[]>>())
+  const orderId = ref<number | null>(null)
+  const mapping = ref(new Map<number, Event[]>()) // | Promise<Event[]>
 
-  async function fetching(id: number): Promise<Array<Event>> {
-    const response = await supabase
-      .from('order_events')
-      .select()
-      .eq('document', id)
-      .order('datetime', { ascending: false })
-    // .order('datetime') // .throwOnError()
-    // console.log(response)
-
-    if (response.status == 200) {
-      const list: Array<Event> = []
-
-      response.data?.forEach((json) => {
-        const event = json as Event
-        list.push(event)
-      })
-
-      return list
-    } else {
-      throw 'unexpended response status: ' + response.status
-    }
+  function setOrderId(id: number) {
+    orderId.value = id
   }
 
-  async function listing(id: number) {
+  const listing = computedAsync(async () => {
+    const id = orderId.value
     if (id) {
       const v = mapping.value.get(id)
       if (v) return v
 
-      const promise = fetching(id)
+      const promise = await fetching(id)
       mapping.value.set(id, promise)
 
       return promise
+    } else {
+      return []
+    }
+  }, [])
+
+  async function fetching(id: number): Promise<Array<Event>> {
+    if (id) {
+      const response = await supabase
+        .from('order_events')
+        .select()
+        .eq('document', id)
+        .order('datetime', { ascending: false })
+      // .order('datetime') // .throwOnError()
+      // console.log(response)
+
+      if (response.status == 200) {
+        const list: Array<Event> = []
+
+        response.data?.forEach((json) => {
+          const event = json as Event
+          list.push(event)
+        })
+
+        return list
+      } else {
+        throw 'unexpended response status: ' + response.status
+      }
     } else {
       return []
     }
@@ -136,15 +146,32 @@ export const useEventsStore = defineStore('event', () => {
   }
 
   async function create(event: EventCreate) {
-    // console.log('create', event)
+    console.log('create', event)
     const response = await supabase.from('order_events').insert(event).select() // .throwOnError()
-    // console.log(response)
+    console.log(response)
 
     if (response.status == 201) {
-      // response.data?.forEach((json) => {
-      // const event = json as Event
-      // mapping.value.set(event.id, event)
-      // })
+      response.data?.forEach((json) => {
+        const event = json as Event
+
+        const map = mapping.value
+
+        const list = map.get(event.document) ?? []
+        list.push(event)
+
+        list.sort((a, b) => {
+          if (a.datetime == b.datetime) {
+            return 0
+          } else if (a.datetime > b.datetime) {
+            return -1
+          } else {
+            return 1
+          }
+        })
+
+        map.set(event.document, list)
+        mapping.value = map
+      })
     } else {
       throw 'unexpended response status: ' + response.status
     }
@@ -158,15 +185,46 @@ export const useEventsStore = defineStore('event', () => {
       .select()
       .then((response) => {
         if (response.status == 200) {
-          // response.data?.forEach((json) => {
-          // const event = json as Event
-          // mapping.value.set(event.id, event)
-          // })
+          response.data?.forEach((json) => {
+            const event = json as Event
+
+            const map = mapping.value
+
+            const list = map.get(event.document) ?? []
+
+            let index = -1
+            for (const [i, value] of list.entries()) {
+              if (value.id == event.id) {
+                index = i
+                break
+              }
+            }
+
+            if (index == -1) {
+              list.push(event)
+
+              list.sort((a, b) => {
+                if (a.datetime == b.datetime) {
+                  return 0
+                } else if (a.datetime > b.datetime) {
+                  return -1
+                } else {
+                  return 1
+                }
+              })
+            } else {
+              list[index] = event
+            }
+
+            map.set(event.document, list)
+
+            mapping.value = map
+          })
         }
       })
   }
 
-  return { listing, create, update, fetching, pickUp, delivery }
+  return { setOrderId, listing, create, update, fetching, pickUp, delivery }
 })
 
 if (import.meta.hot) {

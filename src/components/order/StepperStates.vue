@@ -9,8 +9,6 @@ const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
-const events = ref([])
-
 watch(
   () => props.orderId,
   (id) => {
@@ -22,8 +20,8 @@ watch(
 
 resetAndShow(props.orderId)
 
-async function resetAndShow(id: number) {
-  events.value = await eventsStore.listing(id)
+function resetAndShow(id: number) {
+  eventsStore.setOrderId(id)
 }
 
 function onUpdate() {
@@ -122,7 +120,7 @@ function selectExpenses(data) {
           </div>
           <span>&nbsp;</span>
         </li>
-        <li class="mb-8 ms-6" v-for="eventDate in events" :key="eventDate.id">
+        <li class="mb-8 ms-6" v-for="eventDate in eventsStore.listing" :key="eventDate.id">
           <template v-if="eventDate.kind == 'delivery'">
             <span class="cursor-pointer" @click="selectDelivery(eventDate)">
               <span
@@ -211,6 +209,9 @@ function selectExpenses(data) {
               </p>
               <p class="text-md">
                 <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
+              </p>
+              <p class="text-md">
+                {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
               </p>
               <p class="text-md">{{ eventDate.details.note }}</p>
             </span>

@@ -17,6 +17,9 @@ const percent = ref<number | null>(null)
 
 const emit = defineEmits(['on-update'])
 
+const buttonDisabled = ref(false)
+const errorMsg = ref<string | null>(null)
+
 watch(
   () => props.edit,
   (event) => {
@@ -48,6 +51,8 @@ function resetAndShow(event: Event | null) {
 }
 
 async function saveAndEdit() {
+  errorMsg.value = null
+  buttonDisabled.value = true
   try {
     const id = props.edit?.id
     if (id >= 0) {
@@ -80,7 +85,9 @@ async function saveAndEdit() {
 
     close()
   } catch (e) {
-    console.log('error', e)
+    errorMsg.value = e
+  } finally {
+    buttonDisabled.value = false
   }
 }
 
@@ -130,11 +137,16 @@ function close() {
       <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
       <ModalAction>
-        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">
+        <Button
+          class="btn-soft font-light tracking-wider"
+          :disabled="buttonDisabled"
+          @click="saveAndEdit"
+        >
           {{ id > 0 ? 'Update' : 'Create' }}
         </Button>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>
       </ModalAction>
+      <div v-if="errorMsg" class="text-red-500">{{ errorMsg }}</div>
     </ModalBox>
   </Modal>
 </template>

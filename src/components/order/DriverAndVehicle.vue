@@ -26,7 +26,7 @@ async function resetAndShow(id: number) {
   const map = new Map()
 
   const order = await ordersStore.resolve(id)
-  const events = await eventsStore.listing(id)
+  const events = await eventsStore.fetching(id)
   for (const idx in events) {
     const event = events[idx]
     if (event.kind === 'agreement') {
