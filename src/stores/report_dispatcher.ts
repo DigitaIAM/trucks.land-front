@@ -1,8 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { Order } from '@/stores/orders.ts'
-import type { PaymentToDispatcherCreate } from '@/stores/payment_to_dispatchers.ts'
-import type { PaymentsToEmployeeAdditionalCreate } from '@/stores/payments_to_employee_additional.ts'
-import type { PaymentEmployeeFinesCreate } from '@/stores/payment_employee_fines.ts'
+import type { PaymentToDispatcherCreate } from '@/stores/employee_payments.ts'
+import type { EmployeePaymentSettlementsCreate } from '@/stores/employee_payment_settlements.ts'
 
 export interface DispatcherPaymentRecord {
   dispatcher: number
@@ -115,9 +114,9 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
       const paymentsByOrder = new Map<number, number>()
 
       const responseTerms = await supabase
-        .from('conditions')
+        .from('user_conditions')
         .select()
-        .eq('user', dispatcher)
+        .eq('user_id', dispatcher)
         .eq('organization', org.value)
         .maybeSingle()
 
@@ -211,31 +210,21 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
 
         records.push({
           created_by: account.id,
-          document: -1,
+          doc_payment: -1,
           doc_order: order.id,
-          amount: order.cost,
-          payment: payment,
+          order_cost: order.cost,
+          amount: payment,
         } as PaymentToDispatcherOrderCreate)
       }
 
-      const additionalRecords = []
-      for (const additional of summary.additional_payments.values()) {
-        additionalRecords.push({
+      const settlementsRecords = []
+      for (const settlement of summary.fines.values()) {
+        settlementsRecords.push({
           created_by: account.id,
-          document: -1,
-          doc_additional_payment: additional.id,
-          amount: additional.amount,
-        } as PaymentsToEmployeeAdditionalCreate)
-      }
-
-      const finesRecords = []
-      for (const fine of summary.fines.values()) {
-        finesRecords.push({
-          created_by: account.id,
-          document: -1,
-          doc_fine: fine.id,
-          amount: fine.amount,
-        } as PaymentEmployeeFinesCreate)
+          doc_payment: -1,
+          doc_settlements: settlement.id,
+          amount: settlement.amount,
+        } as EmployeePaymentSettlementsCreate)
       }
 
       await paymentToDispatcherStore.create(
@@ -252,8 +241,7 @@ export const useReportDispatcher = defineStore('report_current_dispatcher_paymen
           income_tax: summary.paymentTerms.income_tax,
         } as PaymentToDispatcherCreate,
         records,
-        additionalRecords,
-        finesRecords,
+        settlementsRecords,
       )
     }
 

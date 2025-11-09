@@ -5,28 +5,29 @@ import { sleep } from '@/utils/datetime.ts'
 export interface Organization extends OrganizationCreate {
   id: number
   created_at: string
+  created_by: number
 }
 
 export interface OrganizationCreate {
+  owner: number
+  name: string
   code2: string
   code3: string
   address1: string
   address2: string
-  name: string
   billing_email: string
-  owner: number
   domain: string
   url_logo: string
 }
 
 export interface OrganizationUpdate {
+  owner?: number
+  name?: string
   code2?: string
   code3?: string
   address1?: string
   address2?: string
-  name?: string
   billing_email?: string
-  owner?: number
   domain?: string
   url_logo?: string
 }

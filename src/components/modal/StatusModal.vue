@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TwitterPicker } from 'vue-color'
-import type { StatusCreate } from '@/stores/statuses.ts'
+import type { StatusCreate } from '@/stores/stages.ts'
 
 const props = defineProps<{
   edit: Status | null

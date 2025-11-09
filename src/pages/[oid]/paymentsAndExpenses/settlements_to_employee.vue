@@ -25,6 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 const usersStore = useUsersStore()
 const paymentsAdditionalToEmployeeStore = usePaymentsAdditionalToEmployeeStore()
 
@@ -66,17 +67,17 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: PaymentsAdditionalToEmployee) => v.id,
+    value: (v: SettlementEmployee) => v.id,
     size: 30,
   },
   {
     label: 'created at',
-    value: (v: PaymentsAdditionalToEmployee) => useDateFormat(v.created_at, 'MMM DD'),
+    value: (v: SettlementEmployee) => useDateFormat(v.created_at, 'MMM DD'),
     size: 80,
   },
   {
     label: 'employee',
-    value: (v: PaymentsAdditionalToEmployee) =>
+    value: (v: SettlementEmployee) =>
       resolve(
         v,
         'employee_' + v.employee,
@@ -88,17 +89,17 @@ const cols = [
   },
   {
     label: 'payment',
-    value: (v: PaymentsAdditionalToEmployee) => v.kind,
+    value: (v: SettlementEmployee) => v.notes,
     size: 150,
   },
   {
     label: 'amount',
-    value: (v: PaymentsAdditionalToEmployee) => '$' + v.amount,
+    value: (v: SettlementEmployee) => '$' + v.amount,
     size: 100,
   },
   {
     label: 'created by',
-    value: (v: PaymentsAdditionalToEmployee) =>
+    value: (v: SettlementEmployee) =>
       resolve(
         v,
         'created_by_' + v.created_by,

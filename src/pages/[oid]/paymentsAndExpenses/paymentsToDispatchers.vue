@@ -103,23 +103,13 @@ const cols = [
     size: 80,
   },
   {
-    label: 'd/payment',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.driver_payment.toFixed(0),
-    size: 80,
-  },
-  {
     label: 'to pay',
     value: (v: PaymentToDispatcherSummary) => '$' + v.to_pay.toFixed(0),
     size: 80,
   },
   {
-    label: 'additionally',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.additionals,
-    size: 80,
-  },
-  {
-    label: 'fine',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.fines,
+    label: 'settlements',
+    value: (v: PaymentToDispatcherSummary) => '$' + v.settlement,
     size: 80,
   },
   {

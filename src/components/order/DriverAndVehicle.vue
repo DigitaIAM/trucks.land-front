@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventsStore } from '@/stores/events.ts'
+import { useEventsStore } from '@/stores/order_events.ts'
 
 const props = defineProps<{
   orderId: number | null

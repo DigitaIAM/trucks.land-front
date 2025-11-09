@@ -81,12 +81,12 @@ function resolve(
 function generateStyle(col: Col, order: Order) {
   const color = resolve(
     order,
-    'status_' + order.status,
+    'status_' + order.stage,
     () => ({
       name: '?',
       color: '',
     }),
-    () => statusesStore.resolve(order.status),
+    () => statusesStore.resolve(order.stage),
     (obj) => obj.color,
   )
   if (color && col.label === 'status') {
@@ -107,9 +107,9 @@ const cols: Col[] = [
     value: (v: Order) =>
       resolve(
         v,
-        'status_' + v.status,
+        'status_' + v.stage,
         () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
+        () => statusesStore.resolve(v.stage),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,

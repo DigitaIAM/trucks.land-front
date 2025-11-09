@@ -6,11 +6,11 @@ export interface FileRecord extends FileRecordCreate {
 }
 
 export interface FileRecordCreate {
-  document: number
-  path: string
-  file_type: string
-  signed_by: string
   created_by: number
+  document: number
+  kind: string
+  signed_by: string
+  path: string
 }
 
 export interface FileRecordUpdate {

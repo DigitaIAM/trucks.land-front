@@ -6,14 +6,14 @@ export interface Order extends OrderCreate {
   number: number
   created_at: string
   driver_cost: number
-  status: number
+  stage: number
 }
 
 export interface OrderCreate {
-  dispatcher: number
+  created_by: number
+  organization: number
   posted_loads: string
   refs: string
-  organization: number
   broker: number
   total_pieces: number
   total_weight: number
@@ -23,10 +23,10 @@ export interface OrderCreate {
 }
 
 export interface OrderUpdate {
-  dispatcher?: number
+  created_by?: number
+  organization?: number
   posted_loads?: string
   refs?: string
-  organization?: number
   broker?: number
   total_pieces?: number
   total_weight?: number
@@ -51,13 +51,13 @@ export const useOrdersStore = defineStore('orders', () => {
   const timestamp = ref(Date.now())
 
   const changes = supabase
-    .channel('realtime_order_statuses_channel')
+    .channel('realtime_order_stages_channel')
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: 'order_statuses',
+        table: 'order_stages',
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {
@@ -67,7 +67,7 @@ export const useOrdersStore = defineStore('orders', () => {
           if (order) {
             const map = new Map<number, Order>(mapping.value)
 
-            order.status = nextStatus.status
+            order.stage = nextStatus.status
             map.set(order.id, order)
 
             mapping.value = map
@@ -168,7 +168,7 @@ export const useOrdersStore = defineStore('orders', () => {
 
   async function changeStatus(order: Order, user: User, status: Status) {
     const response = await supabase
-      .from('order_statuses')
+      .from('order_stages')
       .insert({
         document: order.id,
         user: user.id,
@@ -177,7 +177,7 @@ export const useOrdersStore = defineStore('orders', () => {
       .select()
 
     if (response.status == 201 && response.data?.length == 1) {
-      order.status = status.id
+      order.stage = status.id
 
       const map = new Map<number, Order>(mapping.value)
       map.set(order.id, order)

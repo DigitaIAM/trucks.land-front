@@ -32,11 +32,11 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/order/[id]': RouteRecordInfo<'/[oid]/order/[id]', '/:oid/order/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/create': RouteRecordInfo<'/[oid]/order/create', '/:oid/order/create', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/paymentsAndExpenses/additional_to_dispatcher': RouteRecordInfo<'/[oid]/paymentsAndExpenses/additional_to_dispatcher', '/:oid/paymentsAndExpenses/additional_to_dispatcher', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/finesOfEmployee': RouteRecordInfo<'/[oid]/paymentsAndExpenses/finesOfEmployee', '/:oid/paymentsAndExpenses/finesOfEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/owner_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/owner_expenses', '/:oid/paymentsAndExpenses/owner_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/ownerPayments': RouteRecordInfo<'/[oid]/paymentsAndExpenses/ownerPayments', '/:oid/paymentsAndExpenses/ownerPayments', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/paymentsToDispatchers': RouteRecordInfo<'/[oid]/paymentsAndExpenses/paymentsToDispatchers', '/:oid/paymentsAndExpenses/paymentsToDispatchers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsAndExpenses/settlements_to_employee': RouteRecordInfo<'/[oid]/paymentsAndExpenses/settlements_to_employee', '/:oid/paymentsAndExpenses/settlements_to_employee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsView': RouteRecordInfo<'/[oid]/paymentsView', '/:oid/paymentsView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/referenceBooks': RouteRecordInfo<'/[oid]/referenceBooks', '/:oid/referenceBooks', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/brokers': RouteRecordInfo<'/[oid]/refs/brokers', '/:oid/refs/brokers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -120,10 +120,6 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/order/create'
       views: never
     }
-    'src/pages/[oid]/paymentsAndExpenses/additional_to_dispatcher.vue': {
-      routes: '/[oid]/paymentsAndExpenses/additional_to_dispatcher'
-      views: never
-    }
     'src/pages/[oid]/paymentsAndExpenses/finesOfEmployee.vue': {
       routes: '/[oid]/paymentsAndExpenses/finesOfEmployee'
       views: never
@@ -138,6 +134,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/paymentsAndExpenses/paymentsToDispatchers.vue': {
       routes: '/[oid]/paymentsAndExpenses/paymentsToDispatchers'
+      views: never
+    }
+    'src/pages/[oid]/paymentsAndExpenses/settlements_to_employee.vue': {
+      routes: '/[oid]/paymentsAndExpenses/settlements_to_employee'
       views: never
     }
     'src/pages/[oid]/paymentsView.vue': {

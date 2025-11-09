@@ -7,16 +7,16 @@ export interface Comment extends CommentCreate {
 }
 
 export interface CommentCreate {
+  created_by: number
   document: number
-  user: number
-  note: string
+  notes: string
 }
 
 export interface CommentUpdate {
-  note?: string
+  notes?: string
 }
 
-export const useCommentsStore = defineStore('comment', () => {
+export const useCommentsStore = defineStore('order_comments', () => {
   const mapping = ref(new Map<number, Comment>())
 
   const orderId = ref<number | null>(null)
@@ -44,7 +44,7 @@ export const useCommentsStore = defineStore('comment', () => {
     listing.value = []
 
     const response = await supabase
-      .from('comments')
+      .from('order_comments')
       .select()
       .eq('document', id)
       .order('created_at', { ascending: false })
@@ -58,7 +58,7 @@ export const useCommentsStore = defineStore('comment', () => {
   }
 
   async function _fetching(ids: Array<number>): Promise<Array<Comment>> {
-    const response = await supabase.from('comment_last_in_document').select().in('document', ids)
+    const response = await supabase.from('order_last_comment').select().in('document', ids)
 
     if (response.status == 200) {
       const list: Array<Comment> = []
@@ -86,7 +86,7 @@ export const useCommentsStore = defineStore('comment', () => {
 
   function create(comment: CommentCreate) {
     supabase
-      .from('comments')
+      .from('order_comments')
       .insert(comment)
       .select()
       .then((response) => {
@@ -101,7 +101,7 @@ export const useCommentsStore = defineStore('comment', () => {
 
   function update(id: number, comment: CommentUpdate) {
     supabase
-      .from('comments')
+      .from('order_comments')
       .update(comment)
       .eq('id', id)
       .select()
@@ -121,7 +121,7 @@ export const useCommentsStore = defineStore('comment', () => {
       return v
     }
 
-    const response = await supabase.from('comments').select().eq('id', id)
+    const response = await supabase.from('order_comments').select().eq('id', id)
 
     const map = new Map<number, Comment>()
     response.data?.forEach((json) => {

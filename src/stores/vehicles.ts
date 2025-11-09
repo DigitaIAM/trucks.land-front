@@ -5,54 +5,44 @@ import { sleep } from '@/utils/datetime.ts'
 export interface Vehicle extends VehicleCreate {
   id: number
   created_at: string
-
+  created_by: number
   name: string
 }
 
 export interface VehicleCreate {
-  is_active: boolean
-
   owner: number
+  is_active: boolean
   unit_id: string
   vin: string
-  expiry_date: Date
-
   model: string
   type: string
-  kind: string
-
   color: string
   year: number
-
   load_capacity: number
   length: number
   width: number
   height: number
   door_width: number
   door_height: number
+  kind: string
 }
 
 export interface VehicleUpdate {
-  is_active?: boolean
-
   owner?: number
+  is_active?: boolean
   unit_id?: string
   vin?: string
-  expiry_date?: Date
-
   model?: string
   type?: string
-  kind?: string
-
   color?: string
   year?: number
-
   load_capacity?: number
   length?: number
   width?: number
   height?: number
   door_width?: number
   door_height?: number
+  kind?: string
 }
 
 function convert(vehicle: Vehicle): Vehicle {

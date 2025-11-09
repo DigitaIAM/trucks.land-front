@@ -3,30 +3,30 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 export interface ExpensesToOwner extends ExpensesToOwnerCreate {
   id: number
   created_at: string
+  created_by: number
   organization: number
 }
 
 export interface ExpensesToOwnerCreate {
   organization: number
   owner: number
-  kind: string
+  notes: string
   amount: number
-  created_by: number
 }
 
 export interface ExpensesToOwnerUpdate {
   owner?: number
-  kind?: string
+  notes?: string
   amount?: number
 }
 
-export const useExpensesToOwnerStore = defineStore('expenses_to_owner', () => {
+export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {
   const listing = ref<Array<ExpensesToOwner>>([])
 
   async function loading(orgId: number | null) {
     if (orgId) {
       const response = await supabase
-        .from('expenses_to_owner')
+        .from('owner_expenses')
         .select()
         .eq('organization', orgId)
         .order('created_at', { ascending: false })
@@ -51,7 +51,7 @@ export const useExpensesToOwnerStore = defineStore('expenses_to_owner', () => {
 
   function create(expense: ExpensesToOwnerCreate) {
     supabase
-      .from('expenses_to_owner')
+      .from('owner_expenses')
       .insert(expense)
       .select()
       .then((response) => {
@@ -66,7 +66,7 @@ export const useExpensesToOwnerStore = defineStore('expenses_to_owner', () => {
 
   function update(id: number, expense: ExpensesToOwnerUpdate) {
     supabase
-      .from('expenses_to_owner')
+      .from('owner_expenses')
       .update(expense)
       .eq('id', id)
       .select()

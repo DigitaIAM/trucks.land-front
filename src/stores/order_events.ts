@@ -3,9 +3,11 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 export interface Event extends EventCreate {
   id: number
   created_at: string
+  created_by: number
 }
 
 export interface EventCreate {
+  document: number
   kind: string
   datetime: Date
   address: string
@@ -13,15 +15,14 @@ export interface EventCreate {
   state: string
   zip: string
   cost: number
-  percent: number
   driver: number
   vehicle: number
-  owner: number
   details: object
-  document: number
+  percent: number
 }
 
 export interface EventUpdate {
+  document?: number
   kind?: string
   datetime?: Date
   address?: string
@@ -29,12 +30,11 @@ export interface EventUpdate {
   state?: string
   zip?: string
   cost?: number
-  percent?: number
   driver?: number
   vehicle?: number
   owner?: number
   details?: object
-  document?: number
+  percent?: number
 }
 
 export const useEventsStore = defineStore('event', () => {

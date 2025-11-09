@@ -5,6 +5,7 @@ import { sleep } from '@/utils/datetime.ts'
 export interface Owner extends OwnerCreate {
   id: number
   created_at: string
+  created_by: number
 }
 
 export interface OwnerCreate {

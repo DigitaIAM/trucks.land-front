@@ -21,12 +21,7 @@ watch(
 )
 
 async function saveComments() {
-  const user = authStore.user
-  if (user == null) {
-    throw 'authorize first'
-  }
-
-  const cUser = await usersStore.resolveUUID(user.id)
+  const cUser = authStore.account
   if (cUser == null) {
     throw 'authorize first'
   }

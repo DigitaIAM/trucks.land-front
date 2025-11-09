@@ -56,7 +56,7 @@ const nextStatuses = computedAsync(async () => {
 
   const order = _order.value
   if (order) {
-    const ids = nextStatusStore.nextFor(order.status)
+    const ids = nextStatusStore.nextFor(order.stage)
     for (const idx in ids) {
       const id = ids[idx]
       const status = await statusesStore.resolve(id)
@@ -68,7 +68,7 @@ const nextStatuses = computedAsync(async () => {
 }, [] as List<Status>)
 
 const currentStatus = computedAsync(async () => {
-  return await statusesStore.resolve(_order.value?.status)
+  return await statusesStore.resolve(_order.value?.stage)
 }, {})
 
 const route = useRoute()
@@ -97,7 +97,7 @@ async function resetAndShow(str: string) {
     _id.value = order.id
     docnum.value = order.number
     posted_loads.value = order.posted_loads
-    dispatcher.value = { id: order.dispatcher }
+    dispatcher.value = { id: order.created_by }
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs

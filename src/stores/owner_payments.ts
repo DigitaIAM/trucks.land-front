@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import type { PaymentToOwnerOrderCreate } from '@/stores/payment_to_owners_orders.ts'
+import type { PaymentToOwnerOrderCreate } from '@/stores/owner_payment_orders.ts'
 import type { Order } from '@/stores/orders.ts'
-import type { Event } from '@/stores/events.ts'
+import type { Event } from '@/stores/order_events.ts'
 import type { KV } from '@/utils/kv.ts'
 
 export interface PaymentToOwnerSummary {
@@ -38,7 +38,7 @@ export interface PaymentToOwnerSummaryInDetails {
   deliveries: Array<Event>
 }
 
-export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
+export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])
 
@@ -131,11 +131,7 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
     paymentRecords: Array<PaymentToOwnerOrderCreate>,
     expenseRecords: Array<PaymentToOwnerExpenseCreate>,
   ) {
-    const response = await supabase
-      .from('payments_to_owners')
-      .insert(payment)
-      .select()
-      .throwOnError()
+    const response = await supabase.from('owner_payments').insert(payment).select().throwOnError()
 
     // console.log('response', response)
 
@@ -145,24 +141,16 @@ export const usePaymentToOwnerStore = defineStore('payments_to_owners', () => {
       // console.log('payment', payment)
 
       for (const record of paymentRecords) {
-        record.document = payment.id
+        record.doc_payment = payment.id
       }
 
       for (const record of expenseRecords) {
-        record.document = payment.id
+        record.doc_payment = payment.id
       }
 
-      await supabase
-        .from('payments_to_owners_orders')
-        .insert(paymentRecords)
-        .select()
-        .throwOnError()
+      await supabase.from('owner_payment_orders').insert(paymentRecords).select().throwOnError()
 
-      await supabase
-        .from('payments_to_owners_expenses')
-        .insert(expenseRecords)
-        .select()
-        .throwOnError()
+      await supabase.from('owner_payment_expenses').insert(expenseRecords).select().throwOnError()
     } else {
       throw 'unexpended response status: ' + response.status
     }

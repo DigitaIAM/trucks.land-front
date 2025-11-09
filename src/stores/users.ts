@@ -10,69 +10,20 @@ export interface User extends UserCreate {
 export interface UserCreate {
   name: string
   real_name: string
-  uuid: string
-
   phone: string
   email: string
-
-  group: string
-  // password: string
-  organization?: number
-
-  less_ten: number
-  more_ten: number
-  percent: number
-
-  admin: boolean
-  manager: boolean
-  dispatcher_supervisor: boolean
-  dispatcher: boolean
-  tracking_supervisor: boolean
-  tracking_team: boolean
-  accounts: boolean
-  hr: boolean
-  broker: boolean
-  view: boolean
-  driver: boolean
-
-  disabled: boolean
 }
 
 export interface UserUpdate {
   name?: string
   real_name?: string
-  uuid?: string
-
   phone?: string
   email?: string
-
-  group?: string
-  // password?: string
-
-  organization?: number
-
-  less_ten?: number
-  more_ten?: number
-  percent?: number
-
-  admin?: boolean
-  manager?: boolean
-  dispatcher_supervisor?: boolean
-  dispatcher?: boolean
-  tracking_supervisor?: boolean
-  tracking_team?: boolean
-  accounts?: boolean
-  hr?: boolean
-  broker?: boolean
-  view?: boolean
-  driver?: boolean
-
-  disabled?: boolean
 }
 
 export const useUsersStore = defineStore('user', () => {
   const mapping = ref(new Map<number, User | Promise<User>>())
-  const uuids = ref(new Map<string, User>())
+  const uuids = ref(new Map<number, Map<string, User>>())
 
   const searchResult = ref<Array<User> | null>(null)
 
@@ -159,20 +110,35 @@ export const useUsersStore = defineStore('user', () => {
     return promise
   }
 
-  async function resolveUUID(uuid: string) {
-    const v = uuids.value.get(uuid)
-    if (v) {
-      return v
+  async function resolveUUID(oid: number | null, uuid: string | null) {
+    if (oid && uuid) {
+      const v = uuids.value.get(oid)?.get(uuid)
+      if (v) {
+        return v
+      }
+
+      const access = await supabase
+        .from('access_matrix')
+        .select()
+        .eq('organization', oid)
+        .eq('uuid', uuid)
+
+      if (access.data) {
+        const response = await supabase.from('users').select().eq('id', access.data[0].user_id)
+
+        response.data?.forEach((json) => {
+          const user = json as User
+
+          const map = uuids.value.get(oid) || new Map()
+          map.set(uuid, user)
+
+          uuids.value.set(oid, map)
+        })
+      }
+      return uuids.value.get(oid)?.get(uuid)
+    } else {
+      return null
     }
-
-    const response = await supabase.from('users').select().eq('uuid', uuid)
-
-    response.data?.forEach((json) => {
-      const user = json as User
-      uuids.value.set(user.uuid, user)
-    })
-
-    return uuids.value.get(uuid)
   }
 
   async function search(text: string) {

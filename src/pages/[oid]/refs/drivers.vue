@@ -21,11 +21,11 @@ const cols = [
     value: (v: Driver) => v.email,
     size: 300,
   },
-  {
-    label: 'Percentage',
-    value: (v: Driver) => v.percentage,
-    size: 120,
-  },
+  // {
+  //   label: 'Percentage',
+  //   value: (v: Driver) => v.percentage,
+  //   size: 120,
+  // },
 ]
 
 const selectedDriver = ref<Driver | null>(null)

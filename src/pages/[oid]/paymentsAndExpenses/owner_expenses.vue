@@ -89,7 +89,7 @@ const cols = [
   },
   {
     label: 'expenses',
-    value: (v: ExpensesToOwner) => v.kind,
+    value: (v: ExpensesToOwner) => v.notes,
     size: 150,
   },
   {

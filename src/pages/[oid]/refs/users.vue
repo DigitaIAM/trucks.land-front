@@ -29,11 +29,6 @@ const cols = [
     size: 300,
   },
   {
-    label: 'Group',
-    value: (v: User) => v.group,
-    size: 300,
-  },
-  {
     label: 'Phone',
     value: (v: User) => v.phone,
     size: 300,

@@ -2,7 +2,7 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
-import { usePaymentToDispatcherStore } from '@/stores/payment_to_dispatchers.ts'
+import { usePaymentToDispatcherStore } from '@/stores/employee_payments.ts'
 
 const margin = 50
 
@@ -151,14 +151,11 @@ async function _head(
   text_right(page, font, fs, 'Calculation:', cx, cy)
   cy -= bls + text_left(page, font, fs, `\$${document.to_pay}`, cx + bls, cy)
 
-  text_right(page, font, fs, 'Rewards:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\+\$${document.additionals}`, cx + bls, cy)
-
-  text_right(page, font, fs, 'Fines:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\-\$${document.fines}`, cx + bls, cy)
+  text_right(page, font, fs, 'Additional:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.settlement}`, cx + bls, cy)
 
   text_right(page, boldFont, fs, 'Total pay:', cx, cy)
-  cy -= bls + text_left(page, boldFont, fs, `\$${document.payout}`, cx + bls, cy)
+  cy -= bls + text_left(page, boldFont, fs, `\$${document.to_pay}`, cx + bls, cy)
 
   //text left
   // const textMargin = 40 // Desired margin below the table
@@ -184,7 +181,7 @@ async function _head(
   text_left(page, font, fs, 'Date:', textX + bls, cy)
   cy -= bls + text_left(page, font, fs, `${date1}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
 
-  const toPaySum = document.payout * document.ex_rate
+  const toPaySum = document.to_pay * document.ex_rate
   text_left(page, font, fs, 'Calculation:', textX + bls, cy)
   cy -=
     bls +

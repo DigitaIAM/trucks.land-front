@@ -71,7 +71,8 @@ async function generatePdf() {
           name: `${dispatcher?.real_name}`,
         },
       },
-    ], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
+    ],
+    //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
     subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
     htmlbody:
       'Greetings,<br />' +
@@ -189,25 +190,6 @@ const additionallyCols = [
   },
 ]
 
-const fineCols = [
-  {
-    label: '#',
-    value: (v: FinesEmployee) => v.id,
-    size: 50,
-  },
-
-  {
-    label: 'details',
-    value: (v: FinesEmployee) => v.description,
-    size: 200,
-  },
-  {
-    label: 'amount',
-    value: (v: FinesEmployee) => '$' + v.amount,
-    size: 120,
-  },
-]
-
 function close() {
   details.close()
   emit('close')
@@ -246,7 +228,6 @@ function close() {
         <Text size="lg">D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
         <Text size="lg"> Percent of gross % {{ document?.percent_of_gross }}</Text>
         <Text size="lg">Additionally $ {{ document?.additionals }}</Text>
-        <Text size="lg">Fines $ {{ document?.fines }}</Text>
         <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>
       <div class="mb-2 mt-12">
@@ -329,44 +310,6 @@ function close() {
                     :style="{ width: col.size + 'px' }"
                   >
                     {{ col.value(additionally) }}
-                  </p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-10">
-          <Text bold size="lg" class="mb-4">Fines</Text>
-          <table class="w-full text-left table-auto min-w-max">
-            <thead>
-              <tr
-                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-              >
-                <th
-                  v-for="col in fineCols"
-                  :key="col.label"
-                  class="p-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p class="block antialiasing tracking-wider font-thin leading-none">
-                    {{ col.label }}
-                  </p>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="fine in finesStore.listing" :key="fine.id">
-                <td
-                  v-for="col in fineCols"
-                  :key="col.label"
-                  class="py-3 px-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
-                    :style="{ width: col.size + 'px' }"
-                  >
-                    {{ col.value(fine) }}
                   </p>
                 </td>
               </tr>

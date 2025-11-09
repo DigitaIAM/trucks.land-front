@@ -5,30 +5,21 @@ import { sleep } from '@/utils/datetime.ts'
 export interface Driver extends DriverCreate {
   id: number
   created_at: string
+  created_by: number
 }
 
 export interface DriverCreate {
   name: string
-  user: string
   email: string
   phone: string
-  licence: string
-  company: string
-  fix_payments: string
-  percentage: string
-  expiry_date: Date
+  user_id: number
 }
 
 export interface DriverUpdate {
   name?: string
-  user?: string
   email?: string
   phone?: string
-  licence?: string
-  company?: string
-  fix_payments?: string
-  percentage?: string
-  expiry_date?: Date
+  user_id?: number
 }
 
 export const useDriversStore = defineStore('driver', () => {

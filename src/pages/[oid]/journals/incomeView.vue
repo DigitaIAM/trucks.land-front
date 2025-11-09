@@ -26,8 +26,8 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
-import { useStatusesStore } from '@/stores/statuses.ts'
-import { useCommentsStore } from '@/stores/comments.ts'
+import { useStatusesStore } from '@/stores/stages.ts'
+import { useCommentsStore } from '@/stores/order_comments.ts'
 
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
@@ -80,9 +80,9 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'dispatcher_' + v.dispatcher,
+        'dispatcher_' + v.created_by,
         () => ({ name: '?' }),
-        () => usersStore.resolve(v.dispatcher),
+        () => usersStore.resolve(v.created_by),
         (map) => map.name,
       ),
     size: 120,
@@ -131,9 +131,9 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'status_' + v.status,
+        'status_' + v.stage,
         () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
+        () => statusesStore.resolve(v.stage),
         (map) => map.name,
       ),
     size: 200,

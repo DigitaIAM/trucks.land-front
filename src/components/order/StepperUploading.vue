@@ -92,12 +92,7 @@ async function uploadFile(
 }
 
 async function upload() {
-  const user = authStore.user
-  if (user == null) {
-    throw 'authorize first'
-  }
-
-  const cUser = await usersStore.resolveUUID(user.id)
+  const cUser = authStore.account
   if (cUser == null) {
     throw 'authorize first'
   }
@@ -195,10 +190,8 @@ async function createAndPdfBI() {
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
-  const user = authStore.user
-  if (order && user) {
-    const cUser = await usersStore.resolveUUID(user.id)
-
+  const cUser = authStore.account
+  if (order && cUser) {
     const org = await organizationsStore.resolve(order.organization)
     const broker = await brokersStore.resolve(order.broker)
 
@@ -249,10 +242,9 @@ async function createAndPdfFI() {
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
-  const user = authStore.user
+  const cUser = authStore.account
 
-  if (order && user) {
-    const cUser = await usersStore.resolveUUID(user.id)
+  if (order && cUser) {
     const org = await organizationsStore.resolve(order.organization)
 
     if (org) {

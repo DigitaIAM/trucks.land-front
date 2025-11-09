@@ -5,9 +5,9 @@ meta:
 </route>
 
 <script setup lang="ts">
-const authStore = useAuthStore()
+//const authStore = useAuthStore()
 const router = useRouter()
-const useOrganizations = useOrganizationsStore()
+//const useOrganizations = useOrganizationsStore()
 
 const buttons = [
   {

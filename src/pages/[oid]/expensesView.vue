@@ -26,7 +26,6 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
-import FinesIcon from '../../assets/icons/fines.svg?url'
 
 defineOptions({
   __loaders: [useOrgData],

@@ -1,6 +1,6 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
-import { type PaymentToOwnerSummary, usePaymentToOwnerStore } from '@/stores/payment_to_owners.ts'
+import { type PaymentToOwnerSummary, usePaymentToOwnerStore } from '@/stores/owner_payments.ts'
 
 export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) {
   const workbook = new Workbook()

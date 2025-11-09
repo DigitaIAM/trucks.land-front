@@ -5,34 +5,35 @@ import { sleep } from '@/utils/datetime.ts'
 export interface Broker extends BrokerCreate {
   id: number
   created_at: string
+  created_by: string
 }
 
 export interface BrokerCreate {
   is_active: boolean
   name: string
-  contact: string
   phone: string
   email: string
   city: string
   street: string
-  state: string
-  zip: string
   ms: string
   dot: string
+  state: string
+  zip: string
+  contact: string
 }
 
 export interface BrokerUpdate {
   is_active?: boolean
   name?: string
-  contact?: string
   phone?: string
   email?: string
   city?: string
   street?: string
-  state?: string
-  zip?: string
   ms?: string
   dot?: string
+  state?: string
+  zip?: string
+  contact?: string
 }
 
 export const useBrokersStore = defineStore('broker', () => {

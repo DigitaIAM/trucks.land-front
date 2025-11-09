@@ -1,29 +1,30 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
-import type { Status } from '@/stores/statuses.ts'
+import type { Status } from '@/stores/stages.ts'
 
 export interface StatusNext {
   id: number
-  createAt: string
-  status?: number
+  create_at: string
+  created_by: number
+  stage?: number
   next: number
 }
 
-export const useStatusesNextStore = defineStore('statusNext', () => {
+export const useStatusesNextStore = defineStore('stage_transitions', () => {
   const mapping = ref(new Map<number, Map<number, StatusNext>>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('statuses_next').select()
+    const response = await supabase.from('stage_transitions').select()
 
     const map = new Map<number, Map<number, StatusNext>>()
     response.data?.forEach((json) => {
       const link = json as StatusNext
 
-      const m = map.get(link.status ?? -1) ?? new Map<number, StatusNext>()
+      const m = map.get(link.stage ?? -1) ?? new Map<number, StatusNext>()
 
       m.set(link.next, link)
 
-      map.set(link.status ?? -1, m)
+      map.set(link.stage ?? -1, m)
     })
 
     mapping.value = map
@@ -46,7 +47,7 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
 
       if (map.get(id) == null) {
         const response = await supabase
-          .from('statuses_next')
+          .from('stage_transitions')
           .insert({ status: status.id, next: id })
           .select()
 
@@ -65,7 +66,11 @@ export const useStatusesNextStore = defineStore('statusNext', () => {
       const link = values[i]
 
       if (next.indexOf(link.next) < 0) {
-        const response = await supabase.from('statuses_next').delete().eq('id', link.id).select()
+        const response = await supabase
+          .from('stage_transitions')
+          .delete()
+          .eq('id', link.id)
+          .select()
 
         if (response.status == 200) {
           map.delete(link.next)

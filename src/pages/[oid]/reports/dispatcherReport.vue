@@ -109,11 +109,6 @@ const cols = [
     value: (v: DispatcherPaymentSummary) => '$' + v.additional_payments_total,
     size: 80,
   },
-  {
-    label: 'fines',
-    value: (v: DispatcherPaymentSummary) => '$' + v.fines_total,
-    size: 80,
-  },
 ]
 
 async function createPayment() {

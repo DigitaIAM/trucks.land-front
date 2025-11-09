@@ -8,17 +8,11 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref<Session | null>(null)
   const user = computed(() => session.value?.user)
   const account = computedAsync(async () => {
-    const uuid = user.value?.id
-    // console.log('uuid', uuid)
-    if (uuid) {
-      return await useUsersStore().resolveUUID(uuid)
-    } else {
-      return null
-    }
+    return await useUsersStore().resolveUUID(oid.value, user.value?.id)
   }, null)
 
   const org = ref<Organization | null>(null)
-  const oid = computed<int | null>(() => org.value?.id)
+  const oid = computed<number | null>(() => org.value?.id)
 
   const isInitDone = ref(false)
 

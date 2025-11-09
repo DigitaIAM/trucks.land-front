@@ -1,43 +1,42 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
-export interface FinesEmployee extends FinesEmployeeCreate {
+export interface SettlementEmployee extends SettlementEmployeeCreate {
   id: number
   created_at: string
-  organization: number
 }
 
-export interface FinesEmployeeCreate {
+export interface SettlementEmployeeCreate {
+  created_by: number
   organization: number
   employee: number
-  description: string
+  notes: string
   amount: number
-  created_by: number
 }
 
-export interface FinesEmployeeUpdate {
+export interface SettlementEmployeeUpdate {
   employee?: number
-  description?: string
+  notes?: string
   amount?: number
 }
 
-export const useFinesEmployeeStore = defineStore('employee_fines', () => {
-  const listing = ref<Array<FinesEmployee>>([])
+export const useFinesEmployeeStore = defineStore('employee_settlements', () => {
+  const listing = ref<Array<SettlementEmployee>>([])
 
   async function loading(orgId: number | null) {
     if (orgId) {
       const response = await supabase
-        .from('employee_fines')
+        .from('employee_settlements')
         .select()
         .eq('organization', orgId)
         .order('created_at', { ascending: false })
         .limit(50)
 
       if (response.status == 200) {
-        const list: Array<FinesEmployee> = []
+        const list: Array<SettlementEmployee> = []
 
         response.data?.forEach((json) => {
-          const fine = json as FinesEmployee
-          list.push(fine)
+          const settlement = json as SettlementEmployee
+          list.push(settlement)
         })
 
         listing.value = list
@@ -45,42 +44,41 @@ export const useFinesEmployeeStore = defineStore('employee_fines', () => {
         throw 'unexpended response status: ' + response.status
       }
     } else {
-      listing.value = [] as Array<FinesEmployee>
+      listing.value = [] as Array<SettlementEmployee>
     }
   }
 
-  function create(fine: FinesEmployeeCreate) {
+  function create(settlement: SettlementEmployeeCreate) {
     supabase
-      .from('employee_fines')
-      .insert(fine)
+      .from('employee_settlements')
+      .insert(settlement)
       .select()
       .then((response) => {
         if (response.status == 201) {
           response.data?.forEach((json) => {
-            const fine = json as FinesEmployee
-            listing.value.push(fine)
+            const settlement = json as SettlementEmployee
+            listing.value.push(settlement)
           })
         }
       })
-    console.log('create', fine)
   }
 
-  function update(id: number, fine: FinesEmployeeUpdate) {
+  function update(id: number, settlement: SettlementEmployeeUpdate) {
     supabase
-      .from('employee_fines')
-      .update(fine)
+      .from('employee_settlements')
+      .update(settlement)
       .eq('id', id)
       .select()
       .then((response) => {
         if (response.status == 200) {
           const list = listing.value
           response.data?.forEach((json) => {
-            const fine = json as FinesEmployee
-            const index = list.findIndex((v) => v.id == fine.id)
+            const settlement = json as SettlementEmployee
+            const index = list.findIndex((v) => v.id == settlement.id)
             if (index < 0) {
-              list.push(fine)
+              list.push(settlement)
             } else {
-              list[index] = fine
+              list[index] = settlement
             }
           })
 

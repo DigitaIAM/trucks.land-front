@@ -77,9 +77,9 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'status_' + v.status,
+        'status_' + v.stage,
         () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
+        () => statusesStore.resolve(v.stage),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
@@ -90,9 +90,9 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'dispatcher_' + v.dispatcher,
+        'dispatcher_' + v.created_by,
         () => ({ name: '?' }),
-        () => usersStore.resolve(v.dispatcher),
+        () => usersStore.resolve(v.created_by),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,

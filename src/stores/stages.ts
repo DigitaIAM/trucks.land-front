@@ -4,24 +4,29 @@ import { sleep } from '@/utils/datetime.ts'
 
 export interface Status extends StatusCreate {
   id: number
-  createAt: string
+  create_at: string
+  created_by: number
 }
 
 export interface StatusCreate {
   name: string
   color: string
+  is_ready_for_payout: boolean
+  is_week_fixation: boolean
 }
 
 export interface StatusUpdate {
   name?: string
   color?: string
+  is_ready_for_payout?: boolean
+  is_week_fixation?: boolean
 }
 
-export const useStatusesStore = defineStore('status', () => {
+export const useStatusesStore = defineStore('stage', () => {
   const mapping = ref(new Map<number, Status | Promise<Status>>())
 
   const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase.from('statuses').select()
+    const response = await supabase.from('stages').select()
 
     const map = new Map<number, Status>()
     response.data?.forEach((json) => {
@@ -44,7 +49,7 @@ export const useStatusesStore = defineStore('status', () => {
 
   function create(status: StatusCreate) {
     supabase
-      .from('statuses')
+      .from('stages')
       .insert(status)
       .select()
       .then((response) => {
@@ -59,7 +64,7 @@ export const useStatusesStore = defineStore('status', () => {
 
   function update(id: number, status: StatusUpdate) {
     supabase
-      .from('statuses')
+      .from('stages')
       .update(status)
       .eq('id', id)
       .select()
@@ -74,7 +79,7 @@ export const useStatusesStore = defineStore('status', () => {
   }
 
   async function _fetching(id: number): Promise<Status> {
-    const response = await supabase.from('statuses').select().eq('id', id)
+    const response = await supabase.from('stages').select().eq('id', id)
 
     if (response.data && response.data.length > 0) {
       return response.data[0] as Status
@@ -100,7 +105,7 @@ export const useStatusesStore = defineStore('status', () => {
 
   async function search(text: string) {
     const response = await supabase
-      .from('statuses')
+      .from('stages')
       .select()
       .ilike('name', '%' + text + '%')
       .limit(10)

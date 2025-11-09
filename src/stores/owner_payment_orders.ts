@@ -7,21 +7,21 @@ export interface PaymentToOwnerOrder extends PaymentToOwnerOrderCreate {
 
 export interface PaymentToOwnerOrderCreate {
   created_by: number
-  document: number
+  doc_payment: number
   doc_order: number
+  order_cost: number
   amount: number
-  payment: number
 }
 
-export const usePaymentToOwnerOrdersStore = defineStore('payments_to_owners_orders', () => {
+export const usePaymentToOwnerOrdersStore = defineStore('owner_payment_orders', () => {
   const listing = ref<Array<PaymentToOwnerOrder>>([])
 
   async function loading(documentId: number | null) {
     if (documentId) {
       const response = await supabase
-        .from('payments_to_owners_orders')
+        .from('owner_payment_orders')
         .select()
-        .eq('document', documentId)
+        .eq('doc_payment', documentId)
 
       // console.log('response', response)
 
