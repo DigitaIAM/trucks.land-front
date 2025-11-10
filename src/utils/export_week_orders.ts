@@ -50,7 +50,7 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
     for (const detail of details) {
       const order = detail.order
 
-      const dispatcher = await userStore.resolve(order.dispatcher)
+      const dispatcher = await userStore.resolve(order.created_by)
       const org = await organizationsStore.resolve(order.organization)
       const owner = await ownerStore.resolve(payment.owner)
 

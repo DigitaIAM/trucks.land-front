@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import VueDatePicker from '@vuepic/vue-datepicker'
+//import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import type { Driver, DriverCreate, DriverUpdate } from '@/stores/drivers.ts'
 
@@ -8,16 +8,15 @@ const props = defineProps<{
 }>()
 
 const id = ref<number>()
-
 const name = ref('')
-const user = ref('')
+const user_id = ref<number>()
 const email = ref('')
 const phone = ref('')
-const licence = ref('')
-const company = ref('')
-const fix_payments = ref('')
-const percentage = ref('')
-const expiry_date = ref(new Date() as Date | undefined)
+// const licence = ref('')
+// const company = ref('')
+// const fix_payments = ref('')
+// const percentage = ref('')
+// const expiry_date = ref(new Date() as Date | undefined)
 
 const emit = defineEmits(['closed'])
 
@@ -34,14 +33,14 @@ const driversStore = useDriversStore()
 function resetAndShow(driver: Driver | null) {
   id.value = driver?.id
   name.value = driver?.name || ''
-  user.value = driver?.user || ''
+  user_id.value = driver?.user_id
   email.value = driver?.email || ''
   phone.value = driver?.phone || ''
-  licence.value = driver?.licence || ''
-  company.value = driver?.company || ''
-  fix_payments.value = driver?.fix_payments || ''
-  percentage.value = driver?.percentage || ''
-  expiry_date.value = driver?.expiry_date
+  // licence.value = driver?.licence || ''
+  // company.value = driver?.company || ''
+  // fix_payments.value = driver?.fix_payments || ''
+  // percentage.value = driver?.percentage || ''
+  // expiry_date.value = driver?.expiry_date
   edit_driver.showModal()
 }
 
@@ -49,32 +48,31 @@ function saveDriver() {
   if (id.value == null) {
     driversStore.create({
       name: name.value,
-
-      user: user.value,
+      user_id: user_id.value,
       email: email.value,
       phone: phone.value,
 
-      licence: licence.value,
-      company: company.value,
-      fix_payments: fix_payments.value,
-      percentage: percentage.value,
-
-      expiry_date: expiry_date.value,
+      // licence: licence.value,
+      // company: company.value,
+      // fix_payments: fix_payments.value,
+      // percentage: percentage.value,
+      //
+      // expiry_date: expiry_date.value,
     } as DriverCreate)
   } else {
     driversStore.update(id.value, {
       name: name.value,
 
-      user: user.value,
+      user_id: user_id.value,
       email: email.value,
       phone: phone.value,
 
-      licence: licence.value,
-      company: company.value,
-      fix_payments: fix_payments.value,
-      percentage: percentage.value,
-
-      expiry_date: expiry_date.value,
+      // licence: licence.value,
+      // company: company.value,
+      // fix_payments: fix_payments.value,
+      // percentage: percentage.value,
+      //
+      // expiry_date: expiry_date.value,
     } as DriverUpdate)
   }
   edit_driver.close()
@@ -91,16 +89,18 @@ function saveDriver() {
     <ModalBox class="w-2/5">
       <Text size="2xl">Driver</Text>
 
-      <div class="flex space-x-3 mb-2 mt-2 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Name</Label>
-          <TextInput v-model="name" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>User</Label>
-          <TextInput v-model="user" />
-        </div>
+      <!--      <div class="flex space-x-3 mb-2 mt-2 w-full">-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <div class="mb-2 mt-2 w-full">
+        <Label>Name</Label>
+        <TextInput class="w-full" v-model="name" />
       </div>
+      <!--        </div>-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>User</Label>-->
+      <!--          <TextInput v-model="user" />-->
+      <!--        </div>-->
+      <!--      </div>-->
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label>Email</Label>
@@ -111,35 +111,35 @@ function saveDriver() {
           <TextInput type="phone" v-model="phone" />
         </div>
       </div>
-      <div class="flex space-x-3 mb-4 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Driver licence</Label>
-          <TextInput v-model="licence" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Expiry date</Label>
-          <VueDatePicker
-            class="my-custom-datepicker"
-            teleport-center
-            :enable-time-picker="false"
-            v-model="expiry_date"
-          ></VueDatePicker>
-        </div>
-      </div>
+      <!--      <div class="flex space-x-3 mb-4 mt-4 w-full">-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>Driver licence</Label>-->
+      <!--          <TextInput v-model="licence" />-->
+      <!--        </div>-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>Expiry date</Label>-->
+      <!--          <VueDatePicker-->
+      <!--            class="my-custom-datepicker"-->
+      <!--            teleport-center-->
+      <!--            :enable-time-picker="false"-->
+      <!--            v-model="expiry_date"-->
+      <!--          ></VueDatePicker>-->
+      <!--        </div>-->
+      <!--      </div>-->
 
-      <Label>Company</Label>
-      <TextInput class="w-full" v-model="company" />
+      <!--      <Label>Company</Label>-->
+      <!--      <TextInput class="w-full" v-model="company" />-->
 
-      <div class="flex space-x-3 mb-6 mt-6 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Weekly fix payments</Label>
-          <TextInput v-model="fix_payments" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Profit percentage</Label>
-          <TextInput v-model="percentage" />
-        </div>
-      </div>
+      <!--      <div class="flex space-x-3 mb-6 mt-6 w-full">-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>Weekly fix payments</Label>-->
+      <!--          <TextInput v-model="fix_payments" />-->
+      <!--        </div>-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>Profit percentage</Label>-->
+      <!--          <TextInput v-model="percentage" />-->
+      <!--        </div>-->
+      <!--      </div>-->
       <ModalAction>
         <form method="dialog">
           <Button @click="saveDriver()" class="btn-soft font-light tracking-wider">

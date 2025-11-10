@@ -79,6 +79,7 @@ export const useBrokersStore = defineStore('broker', () => {
             mapping.value.set(broker.id, broker)
           })
         }
+        console.log('response', response)
       })
   }
 

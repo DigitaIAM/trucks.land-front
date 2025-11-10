@@ -56,7 +56,7 @@ export async function generateBI(
   broker: Broker,
   record: FileRecord,
 ): Promise<Blob> {
-  const dispatcher = await userStore.resolve(order.dispatcher)
+  const dispatcher = await userStore.resolve(order.created_by)
   const events = await eventsStore.fetching(order.id)
   const files = await filesStore.request(order.id)
 

@@ -7,25 +7,7 @@ meta:
 <script setup lang="ts">
 //const authStore = useAuthStore()
 const router = useRouter()
-//const useOrganizations = useOrganizationsStore()
-
-const buttons = [
-  {
-    label: 'Caravan Freight',
-    icon: '/src/assets/logo_CAF.jpg',
-    link: '/caf/order/all',
-  },
-  {
-    label: 'CVS Logistics',
-    icon: '/src/assets/logo_CVS.jpg',
-    link: '/cvs/order/all',
-  },
-  {
-    label: 'CNU Logistics',
-    icon: '/src/assets/logo_CNU.jpg',
-    link: '/cnu/order/all',
-  },
-]
+const organizationsStore = useOrganizationsStore()
 </script>
 
 <template>
@@ -35,15 +17,15 @@ const buttons = [
 
   <div class="flex space-x-8 px-8">
     <div
-      v-for="button in buttons"
-      :key="button.label"
-      @click="router.replace({ path: button.link })"
+      v-for="organization in organizationsStore.listing"
+      :key="organization.id"
+      @click="router.replace({ path: `/${organization.code3}/order/all` })"
     >
       <div
         class="size-36 place-items-center p-4 space-y-1 bg-white cursor-pointer border border-gray-300 rounded-lg transform transition-all hover:scale-105"
       >
         <!--        <component :is="button.icon" class="xl"></component>-->
-        <img class="size-28" :src="button.icon" alt="" />
+        <img class="size-28" :src="organization.url_logo" alt="" />
       </div>
     </div>
   </div>
