@@ -6,7 +6,7 @@ const props = defineProps<{
 }>()
 
 const id = ref<number>()
-const note = ref('')
+const notes = ref('')
 
 const commentsStore = useCommentsStore()
 const authStore = useAuthStore()
@@ -21,25 +21,15 @@ watch(
 )
 
 async function saveComments() {
-  const cUser = authStore.account
-  if (cUser == null) {
-    throw 'authorize first'
-  }
-
-  try {
-    if (id.value == null) {
-      commentsStore.create({
-        document: props.orderId,
-        user: cUser.id,
-        note: note.value,
-      } as CommentCreate)
-    } else {
-      commentsStore.update(id.value, {
-        note: note.value,
-      } as CommentUpdate)
-    }
-  } catch (e) {
-    console.log('error', e)
+  if (id.value == null) {
+    commentsStore.create({
+      document: props.orderId,
+      notes: notes.value,
+    } as CommentCreate)
+  } else {
+    commentsStore.update(id.value, {
+      notes: notes.value,
+    } as CommentUpdate)
   }
 }
 </script>
@@ -54,7 +44,7 @@ async function saveComments() {
         >
           <AvatarUser :username="authStore.account?.name ?? authStore.user?.email"></AvatarUser>
           <textarea
-            v-model="note"
+            v-model="notes"
             name=""
             rows="1"
             class="w-full resize-none focus:outline-none placeholder-gray-400 text-gray-500 text-sm font-normal leading-7"
@@ -86,14 +76,14 @@ async function saveComments() {
             :key="comment.id"
             class="w-full pb-6 inline-flex justify-start items-start gap-2.5"
           >
-            <QueryAnd :id="comment.user" :store="usersStore" v-slot="slotProps">
+            <QueryAnd :id="comment.created_by" :store="usersStore" v-slot="slotProps">
               <AvatarUser :username="slotProps.user?.email"></AvatarUser>
             </QueryAnd>
             <div class="w-full flex-col justify-start items-start gap-3.5 inline-flex">
               <div class="w-full justify-start items-start flex-col flex gap-1">
                 <div class="w-full justify-between items-start gap-1 inline-flex">
                   <Text class="text-gray-500 text-sm font-semibold leading-snug">
-                    <QueryAndShow :id="comment.user" :store="usersStore" />
+                    <QueryAndShow :id="comment.created_by" :store="usersStore" />
                   </Text>
                   <Label class="text-right text-gray-500 text-xs font-normal leading-5">
                     <UseTimeAgo v-slot="{ timeAgo }" :time="Date.parse(comment.created_at)">
@@ -101,7 +91,7 @@ async function saveComments() {
                     </UseTimeAgo>
                   </Label>
                 </div>
-                <Text class="text-gray-700">{{ comment.note }}</Text>
+                <Text class="text-gray-700">{{ comment.notes }}</Text>
               </div>
             </div>
           </div>

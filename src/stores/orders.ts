@@ -35,12 +35,12 @@ export interface OrderUpdate {
   excluded?: boolean
 }
 
-export interface OrderStatus {
+export interface OrderStage {
   id: number
   created_at: string
+  created_by: number
   document: number
-  status: number
-  user: number
+  stage: number
 }
 
 export const useOrdersStore = defineStore('orders', () => {
@@ -61,13 +61,13 @@ export const useOrdersStore = defineStore('orders', () => {
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {
-          const nextStatus = payload.new as OrderStatus
+          const nextStatus = payload.new as OrderStage
 
           const order = mapping.value.get(nextStatus.document)
           if (order) {
             const map = new Map<number, Order>(mapping.value)
 
-            order.stage = nextStatus.status
+            order.stage = nextStatus.stage
             map.set(order.id, order)
 
             mapping.value = map
@@ -137,13 +137,13 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
-  async function create(order: OrderCreate, user: User, status: Status) {
+  async function create(order: OrderCreate, status: Status) {
     const response = await supabase.from('orders').insert(order).select() // .throwOnError()
     if (response.status == 201 && response.data?.length == 1) {
       const order = response.data[0] as Order
       mapping.value.set(order.id, order)
 
-      return await changeStatus(order, user, status)
+      return await changeStatus(order, status)
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
@@ -166,18 +166,17 @@ export const useOrdersStore = defineStore('orders', () => {
       })
   }
 
-  async function changeStatus(order: Order, user: User, status: Status) {
+  async function changeStatus(order: Order, stage: Status) {
     const response = await supabase
       .from('order_stages')
       .insert({
         document: order.id,
-        user: user.id,
-        status: status.id,
+        stage: stage.id,
       })
       .select()
 
     if (response.status == 201 && response.data?.length == 1) {
-      order.stage = status.id
+      order.stage = stage.id
 
       const map = new Map<number, Order>(mapping.value)
       map.set(order.id, order)
@@ -190,21 +189,25 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
-  async function resolve(id: number) {
-    const order = mapping.value.get(id)
-    if (order) {
-      return order
+  async function resolve(id: number | null) {
+    if (id) {
+      const order = mapping.value.get(id)
+      if (order) {
+        return order
+      }
+
+      const response = await supabase.from('orders_journal').select().eq('id', id)
+
+      const map = new Map<number, Order>()
+      response.data?.forEach((json) => {
+        const order = json as Order
+        map.set(order.id, order)
+      })
+
+      return map.get(id)
+    } else {
+      return null
     }
-
-    const response = await supabase.from('orders_journal').select().eq('id', id)
-
-    const map = new Map<number, Order>()
-    response.data?.forEach((json) => {
-      const order = json as Order
-      map.set(order.id, order)
-    })
-
-    return map.get(id)
   }
 
   async function search(text: string) {

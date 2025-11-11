@@ -30,16 +30,16 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
     mapping.value = map
   })
 
-  function nextFor(status?: number) {
-    if (status) {
-      return Array.from(mapping.value.get(status)?.keys() ?? [])
+  function nextFor(stage?: number) {
+    if (stage) {
+      return Array.from(mapping.value.get(stage)?.keys() ?? [])
     } else {
       return Array.from(mapping.value.get(-1)?.keys() ?? [])
     }
   }
 
-  async function update(status: Status, next: number[]) {
-    const map = mapping.value.get(status.id) ?? new Map<number, StatusNext>()
+  async function update(stage: Status, next: number[]) {
+    const map = mapping.value.get(stage.id) ?? new Map<number, StatusNext>()
 
     // insert
     for (const i in next) {
@@ -48,7 +48,7 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
       if (map.get(id) == null) {
         const response = await supabase
           .from('stage_transitions')
-          .insert({ status: status.id, next: id })
+          .insert({ stage: stage.id, next: id })
           .select()
 
         if (response.status == 201) {
@@ -78,7 +78,7 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
       }
     }
 
-    mapping.value.set(status.id, map)
+    mapping.value.set(stage.id, map)
   }
 
   return { initialized, loading, update, nextFor }

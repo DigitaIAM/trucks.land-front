@@ -18,7 +18,7 @@ const owner = ref(null)
 
 const unit_id = ref('')
 const vin = ref('')
-const expiry_date = ref(new Date() as Date | undefined)
+//const expiry_date = ref(new Date() as Date | undefined)
 const model = ref('')
 const kind = ref('')
 
@@ -52,7 +52,7 @@ function resetAndShow(vehicle: Vehicle | null) {
   owner.value = vehicle ? { id: vehicle.owner } : null
   unit_id.value = vehicle?.unit_id
   vin.value = vehicle?.vin
-  expiry_date.value = vehicle?.expiry_date
+  //expiry_date.value = vehicle?.expiry_date
   model.value = vehicle?.model
   kind.value = vehicle?.kind
 
@@ -79,7 +79,7 @@ async function saveVehicle() {
         owner: owner.value?.id,
         unit_id: unit_id.value,
         vin: vin.value,
-        expiry_date: expiry_date.value,
+        //expiry_date: expiry_date.value,
         model: model.value,
         kind: kind.value,
 
@@ -101,7 +101,7 @@ async function saveVehicle() {
         owner: owner.value?.id,
         unit_id: unit_id.value,
         vin: vin.value,
-        expiry_date: expiry_date.value,
+        //expiry_date: expiry_date.value,
         model: model.value,
         kind: kind.value,
 
@@ -168,21 +168,26 @@ async function saveVehicle() {
       <Label class="mt-2">Owner</Label>
       <selector v-model="owner" :store="owners"></selector>
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>VIN</Label>
-          <TextInput v-model="vin" />
-        </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Expiry date</Label>
-          <VueDatePicker
-            class="my-custom-datepicker"
-            teleport-center
-            :enable-time-picker="false"
-            v-model="expiry_date"
-          ></VueDatePicker>
-        </div>
+      <div class="mb-2 mt-4 w-full">
+        <Label>VIN</Label>
+        <TextInput class="w-full" v-model="vin" />
       </div>
+
+      <!--      <div class="flex space-x-3 mb-2 mt-4 w-full">-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>VIN</Label>-->
+      <!--          <TextInput v-model="vin" />-->
+      <!--        </div>-->
+      <!--        <div class="md:w-1/2 md:mb-0">-->
+      <!--          <Label>Expiry date</Label>-->
+      <!--          <VueDatePicker-->
+      <!--            class="my-custom-datepicker"-->
+      <!--            teleport-center-->
+      <!--            :enable-time-picker="false"-->
+      <!--            v-model="expiry_date"-->
+      <!--          ></VueDatePicker>-->
+      <!--        </div>-->
+      <!--      </div>-->
       <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/4 md:mb-0">
           <Label>Model</Label>

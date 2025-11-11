@@ -10,7 +10,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const filesStore = useFilesStore()
 const organizationsStore = useOrganizationsStore()
@@ -92,11 +91,6 @@ async function uploadFile(
 }
 
 async function upload() {
-  const cUser = authStore.account
-  if (cUser == null) {
-    throw 'authorize first'
-  }
-
   const type = fileType.value
   const file = fileInfo.value
   const order = props.order
@@ -122,10 +116,9 @@ async function upload() {
 
       await filesStore.create({
         document: order.id,
-        file_type: fileType.value,
+        kind: fileType.value,
         signed_by: signedBy.value,
         path: path,
-        created_by: cUser.id,
       })
 
       const sl = stages.value
@@ -163,7 +156,7 @@ function isPresent(file_type: string) {
   const list = filesStore.listing
   for (const idx in list) {
     const file = list[idx]
-    if (file.file_type == file_type) {
+    if (file.kind == file_type) {
       return true
     }
   }
@@ -190,8 +183,7 @@ async function createAndPdfBI() {
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
-  const cUser = authStore.account
-  if (order && cUser) {
+  if (order) {
     const org = await organizationsStore.resolve(order.organization)
     const broker = await brokersStore.resolve(order.broker)
 
@@ -214,16 +206,11 @@ async function createAndPdfBI() {
         order.number +
         '.pdf'
 
-      if (cUser == null) {
-        throw 'authorize first'
-      }
-
       const record = await filesStore.create({
         document: order.id,
-        file_type: 'BI',
+        kind: 'BI',
         signed_by: '',
         path: path,
-        created_by: cUser.id,
       })
       console.log('createAndPdfBI', path)
 
@@ -242,9 +229,8 @@ async function createAndPdfFI() {
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
-  const cUser = authStore.account
 
-  if (order && cUser) {
+  if (order) {
     const org = await organizationsStore.resolve(order.organization)
 
     if (org) {
@@ -266,16 +252,11 @@ async function createAndPdfFI() {
         order.number +
         '.pdf'
 
-      if (cUser == null) {
-        throw 'authorize first'
-      }
-
       const record = await filesStore.create({
         document: order.id,
-        file_type: 'FI',
+        kind: 'FI',
         signed_by: '',
         path: path,
-        created_by: cUser.id,
       })
       console.log('createAndPdfFI', path)
 
@@ -377,7 +358,7 @@ async function createAndPdfFI() {
               @click="download(file)"
               class="cursor-pointer"
             >
-              <td class="py-2 px-3">{{ file.file_type }}</td>
+              <td class="py-2 px-3">{{ file.kind }}</td>
               <td class="py-2 px-3">
                 <QueryAndShow :id="file.created_by" :store="usersStore" />
               </td>

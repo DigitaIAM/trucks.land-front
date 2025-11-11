@@ -78,18 +78,20 @@ function resolve(
 }
 
 function generateStyle(col, order) {
-  const color = resolve(
-    order,
-    'status_' + order?.status,
-    () => ({
-      name: '?',
-      color: '',
-    }),
-    () => statusesStore.resolve(order?.status),
-    (obj) => obj.color,
-  )
-  if (color && col?.label === 'status') {
-    return { 'background-color': color }
+  if (col?.label === 'status') {
+    const color = resolve(
+      order,
+      'stage_' + order?.stage,
+      () => ({
+        name: '?',
+        color: '',
+      }),
+      () => statusesStore.resolve(order?.stage),
+      (obj) => obj.color,
+    )
+    if (color) {
+      return { 'background-color': color }
+    }
   }
   return {}
 }
@@ -198,7 +200,7 @@ const cols = [
         'note',
         () => [],
         () => commentsStore.commentsForOrder(v.id),
-        (map) => map[0]?.note ?? '',
+        (map) => map[0]?.notes ?? '',
       ),
     color: (v: Status) => v.color,
     size: 300,

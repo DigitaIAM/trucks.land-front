@@ -8,8 +8,12 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref<Session | null>(null)
   const user = computed(() => session.value?.user)
   const account = computedAsync(async () => {
-    return await useUsersStore().resolveUUID(oid.value, user.value?.id)
+    return await currentAccount()
   }, null)
+
+  const currentAccount = async () => {
+    return await useUsersStore().resolveUUID(org.value?.id, user.value?.id)
+  }
 
   const org = ref<Organization | null>(null)
   const oid = computed<number | null>(() => org.value?.id)
@@ -76,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
+    currentAccount,
     user,
     account,
     oid,

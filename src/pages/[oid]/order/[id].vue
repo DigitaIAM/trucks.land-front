@@ -35,7 +35,7 @@ defineOptions({
 const _order = ref<Order | null>(null)
 const _id = ref<number | null>(null)
 const docnum = ref<number | null>(null)
-const dispatcher = ref<User | Reference>()
+const created_by = ref<User | Reference>()
 const posted_loads = ref('')
 const refs = ref('')
 const broker = ref<Broker | Reference>()
@@ -97,7 +97,7 @@ async function resetAndShow(str: string) {
     _id.value = order.id
     docnum.value = order.number
     posted_loads.value = order.posted_loads
-    dispatcher.value = { id: order.created_by }
+    created_by.value = { id: order.created_by }
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs
@@ -112,9 +112,8 @@ async function resetAndShow(str: string) {
 
 async function saveOrder(next: Status | null | undefined) {
   try {
-    const account = authStore.account
     const order = _order.value
-    if (account && order) {
+    if (order) {
       if (
         order.posted_loads != posted_loads.value ||
         order.refs != refs.value ||
@@ -142,7 +141,7 @@ async function saveOrder(next: Status | null | undefined) {
       }
 
       if (next) {
-        await ordersStore.changeStatus(order, account, next)
+        await ordersStore.changeStatus(order, next)
         // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/all' })
       }
       closeOrder()
@@ -232,7 +231,7 @@ useEventListener(document, 'keydown', handleKeyDown)
               <selector
                 disabled
                 label="Dispatcher"
-                v-model="dispatcher"
+                v-model="created_by"
                 :store="usersStore"
               ></selector>
             </div>

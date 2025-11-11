@@ -121,7 +121,7 @@ export const useUsersStore = defineStore('user', () => {
         .from('access_matrix')
         .select()
         .eq('organization', oid)
-        .eq('uuid', uuid)
+        .eq('user_uuid', uuid)
 
       if (access.data) {
         const response = await supabase.from('users').select().eq('id', access.data[0].user_id)

@@ -29,7 +29,7 @@ export const useCommentsStore = defineStore('order_comments', () => {
       {
         event: '*',
         schema: 'public',
-        table: 'comments',
+        table: 'order_comments',
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {

@@ -3,10 +3,10 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 export interface FileRecord extends FileRecordCreate {
   id: number
   created_at: string
+  created_by: number
 }
 
 export interface FileRecordCreate {
-  created_by: number
   document: number
   kind: string
   signed_by: string

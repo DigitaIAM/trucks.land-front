@@ -27,6 +27,7 @@ const props = defineProps<{
 }>()
 
 const docnum = ref<number>()
+const created_by = ref<User>()
 const posted_loads = ref('')
 const refs = ref('')
 
@@ -50,8 +51,8 @@ const next = computedAsync(async () => {
   const ids = nextStatusStore.nextFor(null)
   for (const idx in ids) {
     const id = ids[idx]
-    const status = await statusesStore.resolve(id)
-    list.push(status)
+    const stage = await statusesStore.resolve(id)
+    list.push(stage)
   }
 
   return list
@@ -67,8 +68,11 @@ watch(
   { deep: true },
 )
 
-function resetAndShow(order: Order | null) {
+async function resetAndShow(order: Order | null) {
+  const account = await authStore.currentAccount()
+
   docnum.value = order?.number
+  created_by.value = order ? { id: order.created_by } : account ? { id: account.id } : null
   posted_loads.value = order?.posted_loads
   refs.value = order?.refs
   broker.value = order ? { id: order.broker } : null
@@ -85,19 +89,15 @@ function openOrder(order: Order, org: Organization) {
   // console.log('org.code3', orgData.data.value.code3)
 }
 
-async function saveAndEdit(status: Status | null) {
-  // console.log('order_number', order_number)
-  if (status == null) return
-
-  const account = authStore.account
-  if (account == null) return
+async function saveAndEdit(stage: Status | null) {
+  if (stage == null) return
 
   try {
     const org = cOrg.data.value
     const order = await ordersStore.create(
       {
         organization: org.id,
-        created_by: authStore.account?.id,
+        created_by: created_by.value?.id,
         posted_loads: posted_loads.value,
         refs: refs.value,
         broker: broker.value?.id,
@@ -107,8 +107,7 @@ async function saveAndEdit(status: Status | null) {
         cost: cost.value,
         excluded: false,
       } as OrderCreate,
-      account,
-      status,
+      stage,
     )
     create_draft.close()
 
@@ -116,7 +115,7 @@ async function saveAndEdit(status: Status | null) {
     // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/' + id })
   } catch (e) {
     console.log('error', e)
-    console.log('status', status.id)
+    console.log('stage', stage.id)
   }
   emit('closed')
 }
@@ -152,7 +151,7 @@ async function saveAndEdit(status: Status | null) {
       <div class="flex space-x-3 mb-2 mt-6 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label class="mb-1">Dispatcher</Label>
-          <selector :modelValue="authStore.account" :store="usersStore" disabled />
+          <selector :modelValue="created_by" :store="usersStore" disabled />
         </div>
         <div class="md:w-1/2 md:mb-0">
           <Label class="mb-1">Broker</Label>
@@ -183,11 +182,11 @@ async function saveAndEdit(status: Status | null) {
         <form method="dialog">
           <Button
             class="btn-soft font-light tracking-wider"
-            v-for="status in next"
-            :key="status?.id ?? -1"
-            @click.stop="saveAndEdit(status)"
+            v-for="stage in next"
+            :key="stage?.id ?? -1"
+            @click.stop="saveAndEdit(stage)"
           >
-            Create as {{ status?.name }}
+            Create as {{ stage?.name }}
           </Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>

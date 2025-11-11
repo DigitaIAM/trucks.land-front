@@ -68,42 +68,37 @@ function saveStatus() {
       </div>
 
       <div class="flex space-x-3 mb-6 mt-6 w-full">
-        <TwitterPicker
-          :presetColors="palette"
-          triangle="hide"
-          v-model="color"
-          class="md:w-1/2 md:mb-0"
-        />
-        <div class="flex-wrap">
-          <div class="px-3 mb-2">
-            <ToggleDescription label="start"></ToggleDescription>
-          </div>
-          <div class="px-3 mb-2">
-            <ToggleDescription label="end"></ToggleDescription>
-          </div>
-        </div>
+        <TwitterPicker :presetColors="palette" triangle="hide" v-model="color" />
+        <!--        <div class="flex-wrap">-->
+        <!--          <div class="px-3 mb-2">-->
+        <!--            <ToggleDescription label="start"></ToggleDescription>-->
+        <!--          </div>-->
+        <!--          <div class="px-3 mb-2">-->
+        <!--            <ToggleDescription label="end"></ToggleDescription>-->
+        <!--          </div>-->
+        <!--        </div>-->
       </div>
 
-      <div class="w-full">
-        <div class="mb-2">
-          <ToggleDescription label="Dispatcher team"></ToggleDescription>
-        </div>
-        <div class="mb-2">
-          <ToggleDescription label="Tracking team"></ToggleDescription>
-        </div>
-        <div class="mb-2">
-          <ToggleDescription label="Check out before payments"></ToggleDescription>
-        </div>
-        <div class="mb-2">
-          <ToggleDescription label="Accounts"></ToggleDescription>
-        </div>
-        <div class="mb-2">
-          <ToggleDescription label="QPay"></ToggleDescription>
-        </div>
-        <div class="mb-2">
-          <ToggleDescription label="Ready for pay out"></ToggleDescription>
-        </div>
-      </div>
+      <!--      <div class="w-full">-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="Dispatcher team"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="Tracking team"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="Check out before payments"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="Accounts"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="QPay"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--        <div class="mb-2">-->
+      <!--          <ToggleDescription label="Ready for pay out"></ToggleDescription>-->
+      <!--        </div>-->
+      <!--      </div>-->
 
       <ModalAction>
         <form method="dialog">
