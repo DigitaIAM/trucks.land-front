@@ -11,9 +11,9 @@ const props = defineProps<{
 const id = ref<number>()
 const organization = ref<number>()
 const owner = ref<number>()
-const kind = ref('')
+const notes = ref('')
 const amount = ref<number>()
-const createdBy = ref<Reference>({ id: authStore.account?.id ?? -1 })
+const created_by = ref<User>()
 
 const emit = defineEmits(['closed'])
 
@@ -26,14 +26,14 @@ watch(
 )
 
 function resetAndShow(expense: ExpensesToOwner | null) {
+  const account = authStore.currentAccount()
+
   id.value = expense?.id
   organization.value = expense?.organization
   owner.value = expense ? { id: expense.owner } : null
-  kind.value = expense?.kind || ''
+  notes.value = expense?.notes || ''
   amount.value = expense?.amount
-  createdBy.value = {
-    id: expense?.created_by ?? authStore.account?.id,
-  }
+  created_by.value = expense ? { id: expense.created_by } : account ? { id: account.id } : null
 
   expense_modal.showModal()
 }
@@ -43,16 +43,15 @@ function saveExpenses() {
     expensesOwnerStore.create({
       organization: authStore.oid,
       owner: owner.value?.id,
-      kind: kind.value,
+      notes: notes.value,
       amount: amount.value,
-      created_by: authStore.account?.id,
     } as ExpensesToOwnerCreate)
   } else {
     expensesOwnerStore.update(id.value, {
       owner: owner.value?.id,
-      kind: kind.value,
+      notes: notes.value,
       amount: amount.value,
-      created_by: authStore.account?.id,
+      //created_by: authStore.account?.id,
     } as ExpensesToOwnerUpdate)
   }
   expense_modal.close()
@@ -71,14 +70,14 @@ function saveExpenses() {
       <div class="flex space-x-2 w-full">
         <Text class="w-full mt-1" size="xl">Expenses # {{ id }}</Text>
         <Label class="mb-1">created by</Label>
-        <selector class="w-full" :modelValue="createdBy" :store="usersStore" disabled />
+        <selector class="w-full" :modelValue="created_by" :store="usersStore" disabled />
       </div>
       <div>
         <Label class="mt-2 mb-2">Owner</Label>
         <selector v-model="owner" :store="ownerStore" />
       </div>
       <Label class="mb-2 mt-4">Description</Label>
-      <TextInput class="w-full" v-model="kind" />
+      <TextInput class="w-full" v-model="notes" />
 
       <div class="md:w-1/2 md:mb-0">
         <Label class="mt-4 mb-2">Amount $</Label>

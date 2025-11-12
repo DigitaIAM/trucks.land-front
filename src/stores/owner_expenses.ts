@@ -8,7 +8,6 @@ export interface ExpensesToOwner extends ExpensesToOwnerCreate {
 }
 
 export interface ExpensesToOwnerCreate {
-  organization: number
   owner: number
   notes: string
   amount: number
@@ -61,6 +60,7 @@ export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {
             listing.value.push(expense)
           })
         }
+        console.log('response', response)
       })
   }
 
