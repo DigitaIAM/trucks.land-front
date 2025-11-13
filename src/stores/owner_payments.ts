@@ -13,7 +13,7 @@ export interface PaymentToOwnerSummary {
   year: number
   week: number
   orders: number
-  payment: number
+  amount: number
   expenses: number
   payout: number
 }
@@ -47,7 +47,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase
-      .from('payments_to_owners_journal')
+      .from('owner_payments_journal')
       .select()
       .order('created_at', { ascending: false })
 
@@ -63,14 +63,14 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   })
 
   async function fetchingDetails(
-    paymentId: number,
+    paymentId: number
   ): Promise<Array<PaymentToOwnerSummaryInDetails>> {
     const list = [] as Array<PaymentToOwnerSummaryInDetails>
 
     const responsePayment = await supabase
-      .from('payments_to_owners_orders')
+      .from('owner_payment_orders')
       .select()
-      .eq('document', paymentId)
+      .eq('doc_payment', paymentId)
 
     for (const record of responsePayment.data ?? []) {
       const orderId = record['doc_order']
@@ -110,7 +110,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
         order: order,
         agreements: agreements,
         pickups: pickups,
-        deliveries: deliveries,
+        deliveries: deliveries
       } as PaymentToOwnerSummaryInDetails)
     }
     return list
@@ -129,11 +129,11 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   async function create(
     payment: PaymentToOwnerCreate,
     paymentRecords: Array<PaymentToOwnerOrderCreate>,
-    expenseRecords: Array<PaymentToOwnerExpenseCreate>,
+    expenseRecords: Array<PaymentToOwnerExpenseCreate>
   ) {
     const response = await supabase.from('owner_payments').insert(payment).select().throwOnError()
 
-    // console.log('response', response)
+    //console.log('response', response)
 
     if (response.status == 201 && response.data?.length == 1) {
       const payment = response.data[0] as PaymentToOwner
@@ -158,7 +158,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
 
   async function search(text: string) {
     const response = await supabase
-      .from('payments_to_owners_journal')
+      .from('owner_payments_journal')
       .select()
       .ilike('week', '%' + text + '%')
       .limit(10)
@@ -192,7 +192,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
     }
     timestamp.value = localTime
 
-    let query = supabase.from('payments_to_owners_journal').select()
+    let query = supabase.from('owner_payments_journal').select()
 
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
@@ -226,7 +226,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
     create,
     search,
     setContext,
-    setFilters,
+    setFilters
   }
 })
 

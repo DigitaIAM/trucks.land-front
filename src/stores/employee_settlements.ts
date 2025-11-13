@@ -3,11 +3,11 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 export interface SettlementEmployee extends SettlementEmployeeCreate {
   id: number
   created_at: string
+  created_by: number
+  organization: number
 }
 
 export interface SettlementEmployeeCreate {
-  created_by: number
-  organization: number
   employee: number
   notes: string
   amount: number
@@ -19,7 +19,7 @@ export interface SettlementEmployeeUpdate {
   amount?: number
 }
 
-export const useFinesEmployeeStore = defineStore('employee_settlements', () => {
+export const useSettlementsEmployeeStore = defineStore('employee_settlements', () => {
   const listing = ref<Array<SettlementEmployee>>([])
 
   async function loading(orgId: number | null) {
@@ -91,5 +91,5 @@ export const useFinesEmployeeStore = defineStore('employee_settlements', () => {
 })
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useFinesEmployeeStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useSettlementsEmployeeStore, import.meta.hot))
 }

@@ -22,7 +22,7 @@ watch(
   (expense) => {
     resetAndShow(expense)
   },
-  { deep: true },
+  { deep: true }
 )
 
 function resetAndShow(expense: ExpensesToOwner | null) {
@@ -44,14 +44,13 @@ function saveExpenses() {
       organization: authStore.oid,
       owner: owner.value?.id,
       notes: notes.value,
-      amount: amount.value,
+      amount: amount.value
     } as ExpensesToOwnerCreate)
   } else {
     expensesOwnerStore.update(id.value, {
       owner: owner.value?.id,
       notes: notes.value,
-      amount: amount.value,
-      //created_by: authStore.account?.id,
+      amount: amount.value
     } as ExpensesToOwnerUpdate)
   }
   expense_modal.close()

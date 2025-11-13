@@ -1,30 +1,30 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 
-export async function paymentToDispatcherExportToExcel(
-  payments: Array<PaymentToDispatcherSummary>,
+export async function employeePaymentsExportToExcel(
+  payments: Array<PaymentToEmployeeSummary>
 ) {
   const workbook = new Workbook()
   const sheet = workbook.addWorksheet('My Sheet')
   const userStore = useUsersStore()
 
   sheet.columns = [
-    { header: 'Dispatcher', key: 'dispatcher', width: 30 },
+    { header: 'Dispatcher', key: 'employee', width: 30 },
     { header: 'Gross', key: 'gross', width: 30 },
     { header: 'Total loads', key: 'orders', width: 30 },
-    { header: '3%', key: 'payout', width: 30 },
+    { header: '3%', key: 'payout', width: 30 }
   ]
 
   let n = 0
 
   for (const record of payments) {
-    const dispatcher = await userStore.resolve(record.dispatcher)
+    const employee = await userStore.resolve(record.employee)
 
     sheet.addRow({
-      dispatcher: `${dispatcher?.real_name}`,
+      employee: `${employee?.real_name}`,
       gross: `${record.gross}`,
       orders: `${record.number_of_orders}`,
-      payout: `${record.to_pay}`,
+      payout: `${record.to_pay}`
     })
 
     for (const col of ['B', 'D']) {
@@ -37,7 +37,7 @@ export async function paymentToDispatcherExportToExcel(
     const fillStyle = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: '949494' },
+      fgColor: { argb: '949494' }
     }
 
     // Iterate through each cell in the row and apply the fill style
@@ -51,8 +51,8 @@ export async function paymentToDispatcherExportToExcel(
 
   saveAs(
     new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     }),
-    'salary_data.xlsx',
+    'salary_data.xlsx'
   )
 }

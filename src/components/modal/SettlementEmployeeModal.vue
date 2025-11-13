@@ -1,60 +1,59 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
-const finesEmployeeStore = useFinesEmployeeStore()
+const settlementsEmployeeStore = useSettlementsEmployeeStore()
 
 const props = defineProps<{
-  edit: FinesEmployee | null
+  edit: SettlementEmployee | null
 }>()
 
 const id = ref<number>()
 const organization = ref<number>()
 const employee = ref<number>()
-const description = ref('')
+const notes = ref('')
 const amount = ref<number>()
-const createdBy = ref<Reference>({ id: authStore.account?.id ?? -1 })
+const created_by = ref<User>()
+
 
 const emit = defineEmits(['closed'])
 
 watch(
   () => props.edit,
-  (fine) => {
-    resetAndShow(fine)
+  (settlement) => {
+    resetAndShow(settlement)
   },
-  { deep: true },
+  { deep: true }
 )
 
-function resetAndShow(fine: FinesEmployee | null) {
-  id.value = fine?.id
-  organization.value = fine?.organization
-  employee.value = fine ? { id: fine.employee } : null
-  description.value = fine?.description || ''
-  amount.value = fine?.amount
-  createdBy.value = {
-    id: fine?.created_by ?? authStore.account?.id,
-  }
+function resetAndShow(settlement: SettlementEmployee | null) {
+  const account = authStore.currentAccount()
 
-  fine_modal.showModal()
+  id.value = settlement?.id
+  organization.value = settlement?.organization
+  employee.value = settlement ? { id: settlement.employee } : null
+  notes.value = settlement?.notes || ''
+  amount.value = settlement?.amount
+  created_by.value = settlement ? { id: settlement.created_by } : account ? { id: account.id } : null
+
+  settlement_modal.showModal()
 }
 
 function savePayment() {
   if (id.value == null) {
-    finesEmployeeStore.create({
+    settlementsEmployeeStore.create({
       organization: authStore.oid,
       employee: employee.value?.id,
-      description: description.value,
-      amount: amount.value,
-      created_by: authStore.account?.id,
-    } as FinesEmployeeCreate)
+      notes: notes.value,
+      amount: amount.value
+    } as SettlementEmployeeCreate)
   } else {
-    finesEmployeeStore.update(id.value, {
+    settlementsEmployeeStore.update(id.value, {
       employee: employee.value?.id,
-      description: description.value,
-      amount: amount.value,
-      created_by: authStore.account?.id,
-    } as FinesEmployeeUpdate)
+      notes: notes.value,
+      amount: amount.value
+    } as SettlementEmployeeUpdate)
   }
-  fine_modal.close()
+  settlement_modal.close()
   emit('closed')
 
   console.log('savePayment', employee.value?.id)
@@ -63,23 +62,23 @@ function savePayment() {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Fines</Text>
+    <Text size="2xl">Settlements</Text>
     <SearchVue :store="usersStore"></SearchVue>
     <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
-  <Modal id="fine_modal">
+  <Modal id="settlement_modal">
     <ModalBox class="w-2/5">
       <div class="flex space-x-2 w-full">
         <Text class="w-full mt-1" size="xl">Payment # {{ id }}</Text>
         <Label class="mb-1">created by</Label>
-        <selector class="w-full" :modelValue="createdBy" :store="usersStore" disabled />
+        <selector class="w-full" :modelValue="created_by" :store="usersStore" disabled />
       </div>
       <div>
         <Label class="mt-2 mb-2">Employee</Label>
         <selector v-model="employee" :store="usersStore" />
       </div>
       <Label class="mb-2 mt-4">Description</Label>
-      <TextInput class="w-full" v-model="description" />
+      <TextInput class="w-full" v-model="notes" />
 
       <div class="md:w-1/2 md:mb-0">
         <Label class="mt-4 mb-2">Amount $</Label>

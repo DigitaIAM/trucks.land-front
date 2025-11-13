@@ -44,7 +44,7 @@ const buttons = [
     link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/ownerPayments',
   },
   {
-    label: 'Dispatcher',
+    label: 'Employee',
     icon: DispatcherIcon,
     link:
       '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/paymentsToDispatchers',
@@ -55,7 +55,7 @@ const buttons = [
     link:
       '/' +
       orgData.data.value.code3.toLowerCase() +
-      '/paymentsAndExpenses/additional_to_dispatcher',
+      '/paymentsAndExpenses/settlements_to_employee',
   },
 ]
 </script>

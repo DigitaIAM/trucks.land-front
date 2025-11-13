@@ -22,7 +22,7 @@ watch(
   (document) => {
     resetAndShow(document)
   },
-  { deep: true },
+  { deep: true }
 )
 
 // resetAndShow(props.id)
@@ -39,7 +39,7 @@ function text_left(
   fontSize: number,
   text: string,
   x: number,
-  y: number,
+  y: number
 ): number {
   // const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -47,7 +47,7 @@ function text_left(
     x: x,
     y: y,
     size: fontSize,
-    font: font,
+    font: font
   })
 
   return font.heightAtSize(fontSize)
@@ -59,7 +59,7 @@ function text_right(
   fontSize: number,
   text: string,
   x: number,
-  y: number,
+  y: number
 ): number {
   const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -67,7 +67,7 @@ function text_right(
     x: x - textWidth,
     y: y,
     size: fontSize,
-    font: font,
+    font: font
   })
 
   return font.heightAtSize(fontSize)
@@ -115,7 +115,7 @@ async function generatePdf() {
       x: margin,
       y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
       width: 100,
-      height: (100 * jpgDims.height) / jpgDims.width,
+      height: (100 * jpgDims.height) / jpgDims.width
     })
   }
 
@@ -161,7 +161,7 @@ async function generatePdf() {
       fs,
       `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
       cx + bls,
-      cy,
+      cy
     )
 
   text_right(page, font, fs, 'Total Trips:', cx, cy)
@@ -174,20 +174,20 @@ async function generatePdf() {
       text: 'Shipments Details',
       textSize: 12,
       font: font,
-      alignment: 'center',
+      alignment: 'center'
     },
     header: {
       hasHeaderRow: true,
       font: font,
       textSize: 10,
       backgroundColor: rgb(0.9, 0.9, 0.9),
-      contentAlignment: 'center',
+      contentAlignment: 'center'
     },
     border: {
       color: rgb(0.9, 0.9, 0.9),
-      width: 0.4,
+      width: 0.4
     },
-    font: font,
+    font: font
   } as DrawTableOptions
 
   const fh12 = font.heightAtSize(options.title.textSize) * 2
@@ -244,7 +244,7 @@ async function generatePdf() {
       vehicle,
       pickup,
       delivery,
-      `\$${line.payment?.toFixed(2)}`,
+      `\$${line.payment?.toFixed(2)}`
     ])
   }
 
@@ -271,7 +271,7 @@ async function generatePdf() {
       fs,
       '1.5%',
       font.widthOfTextAtSize('Factoring/Quick pay fee:', fs) + 60,
-      textY,
+      textY
     )
 
   text_left(page, font, fs, 'Total gross:', textX + bls, textY)
@@ -283,7 +283,7 @@ async function generatePdf() {
       fs,
       `\$${document?.orders}`,
       font.widthOfTextAtSize('Total gross:', fs) + 60,
-      textY,
+      textY
     )
 
   text_left(page, font, fs, 'Calculation:', textX + bls, textY)
@@ -295,7 +295,7 @@ async function generatePdf() {
       fs,
       `\$${document?.orders - document?.orders * (0.04 + 0.015)}`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
-      textY,
+      textY
     )
 
   textY -= text_right(page, font, fs, 'Expenses:', cx, textY + bls)
@@ -314,7 +314,7 @@ async function generatePdf() {
       fs,
       `\$${document?.orders - document?.orders * (0.04 + 0.015) - document.expenses}`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
-      textY,
+      textY
     )
 
   // Send by email
@@ -345,9 +345,9 @@ async function generatePdf() {
       {
         name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
         content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
+        mime_type: 'plain/txt'
+      }
+    ]
   }
 
   const myFetch = createFetch({
@@ -359,12 +359,12 @@ async function generatePdf() {
           ...options.headers,
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token,
+          Authorization: token
         }
         return { options }
-      },
+      }
     },
-    fetchOptions: { mode: 'cors' },
+    fetchOptions: { mode: 'cors' }
   })
 
   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
@@ -381,7 +381,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string,
+  label: (obj: object) => string
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -405,45 +405,45 @@ const cols = [
         '#_' + v.doc_order,
         () => ({ name: '?' }),
         () => orderStore.resolve(v.doc_order),
-        (map) => map.number,
+        (map) => map.number
       ),
-    size: 30,
+    size: 30
   },
 
   {
     label: 'cost',
-    value: (v: PaymentToOwnerOrder) => '$' + v.amount,
-    size: 120,
+    value: (v: PaymentToOwnerOrder) => '$' + v.order_cost,
+    size: 120
   },
   {
     label: 'd/payments',
-    value: (v: PaymentToOwnerOrder) => '$' + v.payment,
-    size: 120,
+    value: (v: PaymentToOwnerOrder) => '$' + v.amount,
+    size: 120
   },
   {
     label: 'payout',
-    value: (v: PaymentToOwnerOrder) => '$' + v.payment,
-    size: 120,
-  },
+    value: (v: PaymentToOwnerOrder) => '$' + v.amount,
+    size: 120
+  }
 ]
 
 const expensesCols = [
   {
     label: '#',
     value: (v: ExpensesToOwner) => v.id,
-    size: 50,
+    size: 50
   },
 
   {
     label: 'details',
-    value: (v: ExpensesToOwner) => v.kind,
-    size: 200,
+    value: (v: ExpensesToOwner) => v.notes,
+    size: 200
   },
   {
     label: 'amount',
     value: (v: ExpensesToOwner) => '$' + v.amount,
-    size: 120,
-  },
+    size: 120
+  }
 ]
 </script>
 
@@ -460,7 +460,7 @@ const expensesCols = [
               <QueryAndShow :id="props.document?.owner" :store="ownerStore" />
             </Text>
           </div>
-          <Text size="2xl">$ {{ document?.payment }}</Text>
+          <Text size="2xl">$ {{ document?.payout }}</Text>
         </div>
         <div class="justify-self-end">
           <Button class="btn-soft font-light tracking-wider" @click="generatePdf">
@@ -474,64 +474,64 @@ const expensesCols = [
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
-          <tr
-            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-          >
-            <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
-              <p class="block antialiasing tracking-wider font-thin leading-none">
-                {{ col.label }}
-              </p>
-            </th>
-          </tr>
+        <tr
+          class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+        >
+          <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
+            <p class="block antialiasing tracking-wider font-thin leading-none">
+              {{ col.label }}
+            </p>
+          </th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="line in paymentToOwnerOrdersStore.listing">
-            <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
-              <p
-                class="block antialiasing tracking-wide font-light leading-normal truncate"
-                :style="{ width: col.size + 'px' }"
-              >
-                {{ col.value(line) }}
-              </p>
-            </td>
-          </tr>
+        <tr v-for="line in paymentToOwnerOrdersStore.listing">
+          <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+            <p
+              class="block antialiasing tracking-wide font-light leading-normal truncate"
+              :style="{ width: col.size + 'px' }"
+            >
+              {{ col.value(line) }}
+            </p>
+          </td>
+        </tr>
         </tbody>
       </table>
       <div class="mt-10">
         <Text bold size="lg" class="mb-4">Expenses</Text>
         <table class="w-full text-left table-auto min-w-max">
           <thead>
-            <tr
-              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          <tr
+            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          >
+            <th
+              v-for="col in expensesCols"
+              :key="col.label"
+              class="p-4"
+              :style="{ width: col.size + 'px' }"
             >
-              <th
-                v-for="col in expensesCols"
-                :key="col.label"
-                class="p-4"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p class="block antialiasing tracking-wider font-thin leading-none">
-                  {{ col.label }}
-                </p>
-              </th>
-            </tr>
+              <p class="block antialiasing tracking-wider font-thin leading-none">
+                {{ col.label }}
+              </p>
+            </th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="expense in paymentToOwnerExpenseStore.listing" :key="expense.id">
-              <td
-                v-for="col in expensesCols"
-                :key="col.label"
-                class="py-3 px-4"
+          <tr v-for="expense in paymentToOwnerExpenseStore.listing" :key="expense.id">
+            <td
+              v-for="col in expensesCols"
+              :key="col.label"
+              class="py-3 px-4"
+              :style="{ width: col.size + 'px' }"
+            >
+              <p
+                class="block antialiasing tracking-wide font-light leading-normal truncate"
                 :style="{ width: col.size + 'px' }"
               >
-                <p
-                  class="block antialiasing tracking-wide font-light leading-normal truncate"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  {{ col.value(expense) }}
-                </p>
-              </td>
-            </tr>
+                {{ col.value(expense) }}
+              </p>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -539,7 +539,7 @@ const expensesCols = [
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ paymentToOwnerOrdersStore.listing.length }}</Text>
         <Text size="lg">Orders amount $ {{ document?.orders }}</Text>
-        <Text size="lg">Payment $ {{ document?.payment }}</Text>
+        <Text size="lg">Payment $ {{ document?.amount }}</Text>
         <Text size="lg">Expenses $ {{ document?.expenses }}</Text>
         <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>

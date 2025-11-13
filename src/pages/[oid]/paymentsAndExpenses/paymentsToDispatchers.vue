@@ -10,14 +10,14 @@ import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const paymentToDispatcherStore = usePaymentToDispatcherStore()
+const paymentToEmployeeStore = usePaymentToEmployeeStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await paymentToDispatcherStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await paymentToEmployeeStore.setContext([{ key: 'organization', val: org.id } as KV])
     // console.table(org)
     return org
   },
@@ -26,9 +26,9 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { paymentToDispatcherExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
+import  { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
 
-const paymentToDispatcherStore = usePaymentToDispatcherStore()
+const paymentToEmployeeStore = usePaymentToEmployeeStore()
 const usersStore = useUsersStore()
 
 const filters = ref([])
@@ -72,49 +72,49 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: PaymentToDispatcherSummary) => v.id,
+    value: (v: PaymentToEmployeeSummary) => v.id,
     size: 50,
   },
   {
     label: 'month',
-    value: (v: PaymentToDispatcherSummary) => v.month,
+    value: (v: PaymentToEmployeeSummary) => v.month,
     size: 30,
   },
   {
     label: 'created at',
-    value: (v: PaymentToDispatcherSummary) => useDateFormat(v.created_at, 'MMM DD'),
+    value: (v: PaymentToEmployeeSummary) => useDateFormat(v.created_at, 'MMM DD'),
     size: 80,
   },
   {
-    label: 'dispatcher',
-    value: (v: PaymentToDispatcherSummary) =>
+    label: 'employee',
+    value: (v: PaymentToEmployeeSummary) =>
       resolve(
         v,
-        'dispatcher_' + v.dispatcher,
+        'employee_' + v.employee,
         () => ({ name: '_' }),
-        () => usersStore.resolve(v.dispatcher),
+        () => usersStore.resolve(v.employee),
         (map) => map.real_name,
       ),
     size: 200,
   },
   {
     label: 'order amount',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.gross.toFixed(0),
+    value: (v: PaymentToEmployeeSummary) => '$' + v.gross.toFixed(0),
     size: 80,
   },
   {
     label: 'to pay',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.to_pay.toFixed(0),
+    value: (v: PaymentToEmployeeSummary) => '$' + v.to_pay.toFixed(0),
     size: 80,
   },
   {
     label: 'settlements',
-    value: (v: PaymentToDispatcherSummary) => '$' + v.settlement,
+    value: (v: PaymentToEmployeeSummary) => '$' + v.settlements,
     size: 80,
   },
   {
     label: 'created by',
-    value: (v: PaymentToDispatcherSummary) =>
+    value: (v: PaymentToEmployeeSummary) =>
       resolve(
         v,
         'created_by' + v.created_by,
@@ -134,7 +134,7 @@ function setFilter(key, val) {
     filters.value[index] = { key: key, val: val }
   }
 
-  paymentToDispatcherStore.setFilters(filters.value)
+  paymentToEmployeeStore.setFilters(filters.value)
 }
 
 function delFilter(key) {
@@ -143,7 +143,7 @@ function delFilter(key) {
     filters.value.splice(index, 1)
   }
 
-  paymentToDispatcherStore.setFilters(filters.value)
+  paymentToEmployeeStore.setFilters(filters.value)
 }
 
 function capitalizeFirstLetter(val) {
@@ -161,7 +161,7 @@ function capitalizeFirstLetter(val) {
     <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
     <Button
       class="btn-soft font-light tracking-wider flex"
-      @click="paymentToDispatcherExportToExcel(paymentToDispatcherStore.listing!)"
+      @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
       >Excel
     </Button>
   </div>
@@ -202,7 +202,7 @@ function capitalizeFirstLetter(val) {
     </thead>
     <tbody>
       <tr
-        v-for="line in paymentToDispatcherStore.listing"
+        v-for="line in paymentToEmployeeStore.listing"
         :key="line.id"
         @click="openPayment(line)"
       >

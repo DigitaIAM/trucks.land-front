@@ -63,9 +63,9 @@ const cols = [
     value: (v: Order) =>
       resolve(
         v,
-        'status_' + v.status,
+        'status_' + v.stage,
         () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.status),
+        () => statusesStore.resolve(v.stage),
         (map) => map.name
       ),
     size: 200
@@ -81,7 +81,7 @@ const expensesCols = [
 
   {
     label: 'details',
-    value: (v: ExpensesToOwner) => v.kind,
+    value: (v: ExpensesToOwner) => v.notes,
     size: 200
   },
   {

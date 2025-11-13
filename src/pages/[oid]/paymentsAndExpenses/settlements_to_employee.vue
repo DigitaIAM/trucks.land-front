@@ -9,14 +9,14 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const paymentsAdditionalToEmployeeStore = usePaymentsAdditionalToEmployeeStore()
+const settlementsEmployeeStore = useSettlementsEmployeeStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await paymentsAdditionalToEmployeeStore.loading(org.id)
+    await settlementsEmployeeStore.loading(org.id)
     // console.table(org)
     return org
   },
@@ -25,18 +25,17 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 const usersStore = useUsersStore()
-const paymentsAdditionalToEmployeeStore = usePaymentsAdditionalToEmployeeStore()
+const settlementsEmployeeStore = useSettlementsEmployeeStore()
 
-const selectedDocument = ref<PaymentsAdditionalToEmployee | null>(null)
+const selectedDocument = ref<SettlementEmployee | null>(null)
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
-function openPayment(payment: PaymentsAdditionalToEmployee) {
-  selectedDocument.value = payment
+function openSettlement(settlement: SettlementEmployee) {
+  selectedDocument.value = settlement
 }
 
 function onClose() {
@@ -113,7 +112,7 @@ const cols = [
 </script>
 
 <template>
-  <PaymentAdditionalEmployee :edit="selectedDocument" @closed="onClose"></PaymentAdditionalEmployee>
+  <SettlementEmployeeModal :edit="selectedDocument" @closed="onClose"></SettlementEmployeeModal>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr
@@ -133,13 +132,13 @@ const cols = [
     </thead>
     <tbody>
       <tr
-        v-for="payment in paymentsAdditionalToEmployeeStore.listing"
-        :key="payment.id"
-        @click="openPayment(payment)"
+        v-for="settlement in settlementsEmployeeStore.listing"
+        :key="settlement.id"
+        @click="openSettlement(settlement)"
       >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + payment"
+          :key="'row_' + col.label + '_' + settlement"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -147,7 +146,7 @@ const cols = [
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(payment) }}
+            {{ col.value(settlement) }}
           </p>
         </td>
       </tr>

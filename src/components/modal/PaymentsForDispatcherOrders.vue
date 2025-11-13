@@ -4,7 +4,7 @@ import { openInNewTab } from '@/utils/pdf-helper.ts'
 import { createFetch } from '@vueuse/core'
 
 const props = defineProps<{
-  document: PaymentToDispatcherSummary | null
+  document: PaymentToEmployeeSummary | null
 }>()
 
 const paymentToDispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
@@ -14,8 +14,7 @@ const orderStore = useOrdersStore()
 const userStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
 const accessTokenStore = useAccessTokenStore()
-const paymentAdditionallyStore = usePaymentsToEmployeeAdditionalStore()
-const finesStore = usePaymentEmployeeFinesStore()
+const employeePaymentSettlementsStore = useEmployeePaymentSettlementsStore()
 
 const emit = defineEmits(['close'])
 
@@ -24,16 +23,15 @@ watch(
   (document) => {
     resetAndShow(document)
   },
-  { deep: true },
+  { deep: true }
 )
 
 // resetAndShow(props.id)
 
-function resetAndShow(document: PaymentToDispatcherSummary) {
+function resetAndShow(document: PaymentToEmployeeSummary) {
   details.showModal()
   paymentToDispatcherOrdersStore.loading(document.id)
-  paymentAdditionallyStore.loading(document.id)
-  finesStore.loading(document.id)
+  employeePaymentSettlementsStore.loading(document.id)
 }
 
 async function generatePdf() {
@@ -43,7 +41,7 @@ async function generatePdf() {
     throw 'missing document'
   }
 
-  const dispatcher = await userStore.resolve(document.dispatcher)
+  const employee = await userStore.resolve(document.employee)
 
   const org = await organizationsStore.resolve(document.organization)
   if (org == null) {
@@ -67,10 +65,10 @@ async function generatePdf() {
     to: [
       {
         email_address: {
-          address: `${dispatcher?.email}`,
-          name: `${dispatcher?.real_name}`,
-        },
-      },
+          address: `${employee?.email}`,
+          name: `${employee?.real_name}`
+        }
+      }
     ],
     //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
     subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
@@ -94,9 +92,9 @@ async function generatePdf() {
       {
         name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
         content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
+        mime_type: 'plain/txt'
+      }
+    ]
   }
 
   const myFetch = createFetch({
@@ -108,12 +106,12 @@ async function generatePdf() {
           ...options.headers,
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token,
+          Authorization: token
         }
         return { options }
-      },
+      }
     },
-    fetchOptions: { mode: 'cors' },
+    fetchOptions: { mode: 'cors' }
   })
 
   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
@@ -130,7 +128,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string,
+  label: (obj: object) => string
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -154,40 +152,40 @@ const cols = [
         '#_' + v.doc_order,
         () => ({ name: '?' }),
         () => orderStore.resolve(v.doc_order),
-        (map) => map.number,
+        (map) => map.number
       ),
-    size: 50,
+    size: 50
   },
 
   {
     label: 'order amount',
-    value: (v: PaymentToDispatcherOrder) => '$' + v.amount,
-    size: 120,
+    value: (v: PaymentToDispatcherOrder) => '$' + v.order_cost,
+    size: 120
   },
   {
     label: 'd/payments',
-    value: (v: PaymentToDispatcherOrder) => '$' + v.payment,
-    size: 120,
-  },
+    value: (v: PaymentToDispatcherOrder) => '$' + v.amount,
+    size: 120
+  }
 ]
 
-const additionallyCols = [
+const settlementsCols = [
   {
     label: '#',
-    value: (v: PaymentsAdditionalToEmployee) => v.id,
-    size: 50,
+    value: (v: SettlementEmployee) => v.id,
+    size: 50
   },
 
   {
     label: 'details',
-    value: (v: PaymentsAdditionalToEmployee) => v.kind,
-    size: 200,
+    value: (v: SettlementEmployee) => v.notes,
+    size: 200
   },
   {
     label: 'amount',
-    value: (v: PaymentsAdditionalToEmployee) => '$' + v.amount,
-    size: 120,
-  },
+    value: (v: SettlementEmployee) => '$' + v.amount,
+    size: 120
+  }
 ]
 
 function close() {
@@ -202,7 +200,7 @@ function close() {
       <div class="grid grid-cols-2">
         <div class="flex flex-cols-4 gap-10">
           <Text size="2xl"
-            >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
+          >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
           </Text>
           <Text size="2xl">to</Text>
           <div>
@@ -210,7 +208,7 @@ function close() {
               <QueryAndShow name="real_name" :id="document?.dispatcher" :store="userStore" />
             </Text>
           </div>
-          <Text size="2xl">$ {{ document?.to_pay }}</Text>
+          <Text size="2xl">$ {{ document?.payout }}</Text>
         </div>
         <div>
           <div class="justify-self-end">
@@ -227,7 +225,7 @@ function close() {
         <Text size="lg">Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
         <Text size="lg">D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
         <Text size="lg"> Percent of gross % {{ document?.percent_of_gross }}</Text>
-        <Text size="lg">Additionally $ {{ document?.additionals }}</Text>
+        <Text size="lg">Settlements $ {{ document?.settlements }}</Text>
         <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>
       <div class="mb-2 mt-12">
@@ -237,56 +235,55 @@ function close() {
         <table class="w-full table-fixed text-left">
           <!-- table-auto min-w-max -->
           <thead>
-            <tr
-              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          <tr
+            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          >
+            <th
+              v-for="col in cols"
+              class="p-4"
+              :key="col.label"
+              :style="{ width: col.size + 'px' }"
             >
-              <th
-                v-for="col in cols"
-                class="p-4"
-                :key="col.label"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p class="block antialiasing tracking-wider font-thin leading-none">
-                  {{ col.label }}
-                </p>
-              </th>
-            </tr>
+              <p class="block antialiasing tracking-wider font-thin leading-none">
+                {{ col.label }}
+              </p>
+            </th>
+          </tr>
           </thead>
         </table>
         <div class="flex-1 overflow-y-auto">
           <table class="w-full table-fixed">
             <tbody>
-              <tr
-                v-for="line in paymentToDispatcherOrdersStore.listing"
-                :key="line.id"
-                class="hover:bg-base-200"
+            <tr
+              v-for="line in paymentToDispatcherOrdersStore.listing"
+              :key="line.id"
+              class="hover:bg-base-200"
+            >
+              <td
+                v-for="col in cols"
+                :key="line.id + '_' + col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
               >
-                <td
-                  v-for="col in cols"
-                  :key="line.id + '_' + col.label"
-                  class="py-3 px-4"
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
                   :style="{ width: col.size + 'px' }"
                 >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
-                    :style="{ width: col.size + 'px' }"
-                  >
-                    {{ col.value(line) }}
-                  </p>
-                </td>
-              </tr>
+                  {{ col.value(line) }}
+                </p>
+              </td>
+            </tr>
             </tbody>
           </table>
-        </div>
-        <div class="mt-10">
-          <Text bold size="lg" class="mb-4">Additionally</Text>
-          <table class="w-full text-left table-auto min-w-max">
-            <thead>
+          <div class="mt-10">
+            <Text bold size="lg" class="mb-4">Settlements</Text>
+            <table class="w-full text-left table-auto min-w-max">
+              <thead>
               <tr
                 class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
               >
                 <th
-                  v-for="col in additionallyCols"
+                  v-for="col in settlementsCols"
                   :key="col.label"
                   class="p-4"
                   :style="{ width: col.size + 'px' }"
@@ -296,11 +293,12 @@ function close() {
                   </p>
                 </th>
               </tr>
-            </thead>
-            <tbody>
-              <tr v-for="additionally in paymentAdditionallyStore.listing" :key="additionally.id">
+              </thead>
+              <tbody>
+              <tr v-for="settlement in employeePaymentSettlementsStore.listing"
+                  :key="settlement.id">
                 <td
-                  v-for="col in additionallyCols"
+                  v-for="col in settlementsCols"
                   :key="col.label"
                   class="py-3 px-4"
                   :style="{ width: col.size + 'px' }"
@@ -309,12 +307,13 @@ function close() {
                     class="block antialiasing tracking-wide font-light leading-normal truncate"
                     :style="{ width: col.size + 'px' }"
                   >
-                    {{ col.value(additionally) }}
+                    {{ col.value(settlement) }}
                   </p>
                 </td>
               </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div class="flex place-self-end mt-6">
           <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>

@@ -20,7 +20,7 @@ export interface OwnerPaymentSummary {
   payout: number
 }
 
-export const useReportOwner = defineStore('report_current_owners_payments', () => {
+export const useReportOwner = defineStore('owner_unpaid_orders', () => {
   const org = ref<number | null>(null)
   const payments = ref(new Map<number, Array<OwnerPaymentRecord>>())
   const expenses = ref(new Map<number, Array<ExpensesToOwner>>())
@@ -29,7 +29,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
   async function loading(orgId: number | null) {
     org.value = orgId
     const responsePayments = await supabase
-      .from('report_current_owners_payments')
+      .from('owner_unpaid_orders')
       .select()
       .eq('organization', orgId)
 
@@ -38,7 +38,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
       const record = {
         owner: json['owner'],
         driver_payment: json['driver_cost'],
-        order: json as Order,
+        order: json as Order
       } as OwnerPaymentRecord
 
       const key = record.owner
@@ -49,7 +49,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     payments.value = paymentsMap
 
     const responseExpenses = await supabase
-      .from('report_current_owners_expenses')
+      .from('owner_unpaid_expenses')
       .select()
       .eq('organization', orgId)
 
@@ -109,7 +109,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
         paymentsByOrder: paymentsByOrder,
         expenses: expensesRecords,
         expenses_total: expensesTotal,
-        payout: owner_payment - expensesTotal,
+        payout: owner_payment - expensesTotal
       } as OwnerPaymentSummary)
     }
 
@@ -117,7 +117,7 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
     return list
   })
 
-  async function createPayment(org: number, year: number, week: number, account: User) {
+  async function createPayment(org: number, year: number, week: number) {
     const paymentToOwnerStore = usePaymentToOwnerStore()
 
     const data = owners.value.slice()
@@ -137,11 +137,10 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
         const payment = summary.paymentsByOrder.get(order.id)
 
         paymentRecords.push({
-          created_by: account.id,
-          document: -1,
+          doc_payment: -1,
           doc_order: order.id,
-          amount: order.cost,
-          payment: payment,
+          order_cost: order.cost,
+          amount: payment
         } as PaymentToOwnerOrderCreate)
       }
 
@@ -149,23 +148,21 @@ export const useReportOwner = defineStore('report_current_owners_payments', () =
 
       for (const expense of summary.expenses.values()) {
         expensesRecords.push({
-          created_by: account.id,
-          document: -1,
+          doc_payment: -1,
           doc_expense: expense.id,
-          amount: expense.amount,
+          amount: expense.amount
         } as PaymentToOwnerExpenseCreate)
       }
 
       await paymentToOwnerStore.create(
         {
-          created_by: account.id,
           organization: org,
           owner: summary.owner,
           year: year,
-          week: week,
+          week: week
         } as PaymentToOwnerCreate,
         paymentRecords,
-        expensesRecords,
+        expensesRecords
       )
     }
 

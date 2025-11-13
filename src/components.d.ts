@@ -143,6 +143,7 @@ declare module 'vue' {
     SearchVue: typeof import('./components/search/SearchVue.vue')['default']
     Select: typeof import('./components/widgets/Select.vue')['default']
     Selector: typeof import('./components/selector/selector.vue')['default']
+    SettlementEmployeeModal: typeof import('./components/modal/SettlementEmployeeModal.vue')['default']
     Sidebar: typeof import('./components/windowElements/sidebar.vue')['default']
     Stack: typeof import('./components/widgets/Stack.vue')['default']
     Stat: typeof import('./components/widgets/Stat.vue')['default']

@@ -112,7 +112,7 @@ const cols = [
 </script>
 
 <template>
-  <FineEmployeeModal :edit="selectedDocument" @closed="onClose"></FineEmployeeModal>
+  <SettlementEmployeeModal :edit="selectedDocument" @closed="onClose"></SettlementEmployeeModal>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr

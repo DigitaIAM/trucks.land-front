@@ -27,6 +27,7 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { weekExportToExcel } from '@/utils/export_week_orders.ts'
+
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
@@ -99,7 +100,7 @@ const cols = [
   },
   {
     label: 'order payment',
-    value: (v: PaymentToOwnerSummary) => '$' + v.payment,
+    value: (v: PaymentToOwnerSummary) => '$' + v.amount,
     size: 100,
   },
   {

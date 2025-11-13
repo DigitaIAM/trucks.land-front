@@ -107,16 +107,13 @@ const cols = [
 ]
 
 async function createPayment() {
-  const account = authStore.account
-  if (account == null) return
-
   await reportOwnerStore.createPayment(
     authStore.org?.id,
     currentYear.value,
     currentWeek.value,
-    account,
   )
 }
+
 </script>
 
 <template>

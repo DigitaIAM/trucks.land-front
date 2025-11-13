@@ -42,26 +42,26 @@ defineOptions({
 
 const state = reactive({})
 
-const selectedDispatcher = ref(null)
+const selectedEmployee = ref(null)
 
-function openPayment(record: DispatcherPaymentRecord) {
-  selectedDispatcher.value = record.dispatcher
+function openPayment(record: EmployeePaymentRecord) {
+  selectedEmployee.value = record.employee
 }
 
 function resolve(
-  summary: DispatcherPaymentSummary,
+  summary: EmployeePaymentSummary,
   create: () => object,
   request: () => Promise<object | null>,
   label: (obj: object) => string,
 ) {
-  let s = state[summary.dispatcher]
+  let s = state[summary.employee]
   if (s) {
     return label(s)
   } else {
     s = create()
-    state[summary.dispatcher] = s
+    state[summary.employee] = s
     request().then((obj) => {
-      state[summary.dispatcher] = obj
+      state[summary.employee] = obj
     })
     return label(s)
   }
@@ -69,77 +69,74 @@ function resolve(
 
 const cols = [
   {
-    label: 'dispatcher',
-    value: (v: DispatcherPaymentSummary) =>
+    label: 'employee',
+    value: (v: EmployeePaymentSummary) =>
       resolve(
         v,
         () => ({ name: '?' }),
-        () => usersStore.resolve(v.dispatcher),
+        () => usersStore.resolve(v.employee),
         (map) => map.real_name,
       ),
     size: 200,
   },
   {
     label: 'orders',
-    value: (v: DispatcherPaymentSummary) => v.orders_number,
+    value: (v: EmployeePaymentSummary) => v.orders_number,
     size: 100,
   },
   {
     label: 'cost of orders',
-    value: (v: DispatcherPaymentSummary) => '$' + v.orders_amount.toFixed(0),
+    value: (v: EmployeePaymentSummary) => '$' + v.orders_amount.toFixed(0),
     size: 100,
   },
   {
     label: 'd/payments',
-    value: (v: DispatcherPaymentSummary) => '$' + v.orders_driver.toFixed(0),
+    value: (v: EmployeePaymentSummary) => '$' + v.orders_driver.toFixed(0),
     size: 100,
   },
   {
     label: '% of gross',
-    value: (v: DispatcherPaymentSummary) => v.paymentTerms.percent_of_gross,
+    value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
     size: 100,
   },
   {
     label: 'to pay',
-    value: (v: DispatcherPaymentSummary) => '$' + v.toPayment.toFixed(0),
+    value: (v: EmployeePaymentSummary) => '$' + v.toPayment.toFixed(0),
     size: 100,
   },
   {
-    label: 'additionally',
-    value: (v: DispatcherPaymentSummary) => '$' + v.additional_payments_total,
+    label: 'settlements',
+    value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,
     size: 80,
   },
 ]
 
 async function createPayment() {
-  const account = authStore.account
-  if (account == null) return
 
-  console.log('exchangeRate', exchangeRate.value)
+  // console.log('exchangeRate', exchangeRate.value)
 
   const rate = Number(exchangeRate.value)
 
-  console.log('rate', rate)
+  //console.log('rate', rate)
 
   await reportDispatcherStore.createPayment(
     authStore.org?.id,
     currentYear.value,
     currentMonth.value,
-    account,
     rate,
   )
 }
 </script>
 
 <template>
-  <DispatcherPayment :dispatcher-id="selectedDispatcher"></DispatcherPayment>
+  <DispatcherPayment :employee-id="selectedEmployee"></DispatcherPayment>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Report</Text>
     <SearchVue :store="usersStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
     <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
     <Button
-      :disabled="reportDispatcherStore.dispatchers.length == 0"
+      :disabled="reportDispatcherStore.employees.length == 0"
       class="btn-soft font-light tracking-wider"
       @click="createPayment()"
       >Close month</Button
@@ -164,13 +161,13 @@ async function createPayment() {
     </thead>
     <tbody>
       <tr
-        v-for="line in reportDispatcherStore.dispatchers"
-        :key="line.dispatcher"
+        v-for="line in reportDispatcherStore.employees"
+        :key="line.employee"
         @click="openPayment(line)"
       >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + line.dispatcher"
+          :key="'row_' + col.label + '_' + line.employee"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >

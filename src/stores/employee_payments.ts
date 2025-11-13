@@ -4,16 +4,16 @@ import type { KV } from '@/utils/kv.ts'
 import type { Order } from '@/stores/orders.ts'
 import type { EmployeePaymentSettlements } from '@/stores/employee_payment_settlements.ts'
 
-export interface PaymentToDispatcherSummary {
+export interface PaymentToEmployeeSummary {
   id: number
   created_at: string
   created_by: number
-  dispatcher: number
+  employee: number
   number_of_orders: number
   gross: number
   percent_of_gross: number
   payment: number
-  settlement: number
+  settlements: number
   to_pay: number
   ex_rate: number
   income_tax: number
@@ -21,15 +21,15 @@ export interface PaymentToDispatcherSummary {
   month: number
 }
 
-export interface PaymentToDispatcher extends PaymentToDispatcherCreate {
+export interface PaymentToEmployee extends PaymentToEmployeeCreate {
   id: number
   created_at: string
 }
 
-export interface PaymentToDispatcherCreate {
+export interface PaymentToEmployeeCreate {
   created_by: number
   organization: number
-  dispatcher: number
+  employee: number
   year: number
   month: number
   percent_of_gross: number
@@ -39,16 +39,16 @@ export interface PaymentToDispatcherCreate {
   income_tax: number
 }
 
-export interface PaymentToDispatcherSummaryDetails {
+export interface PaymentToEmployeeSummaryDetails {
   order: Order
 }
 
-export const usePaymentToDispatcherStore = defineStore('employee_payments', () => {
+export const usePaymentToEmployeeStore = defineStore('employee_payments', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])
 
   const mapping = ref(
-    new Map<number, PaymentToDispatcherSummary | Promise<PaymentToDispatcherSummary>>(),
+    new Map<number, PaymentToEmployeeSummary | Promise<PaymentToEmployeeSummary>>()
   )
   const timestamp = ref(Date.now())
 
@@ -74,7 +74,7 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
     }
     timestamp.value = localTime
 
-    let query = supabase.from('payment_to_dispatchers_journal').select()
+    let query = supabase.from('employee_payments_journal').select()
 
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
@@ -90,9 +90,9 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
     const response = await query.order('created_at', { ascending: false }).limit(50)
 
     if (timestamp.value == localTime) {
-      const map = new Map<number, PaymentToDispatcherSummary>()
+      const map = new Map<number, PaymentToEmployeeSummary>()
       response.data?.forEach((json) => {
-        const payment = json as PaymentToDispatcherSummary
+        const payment = json as PaymentToEmployeeSummary
         map.set(payment.id, payment)
       })
 
@@ -101,9 +101,9 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
   }
 
   async function fetchingOrder(
-    paymentId: number,
-  ): Promise<Array<PaymentToDispatcherSummaryDetails>> {
-    const list = [] as Array<PaymentToDispatcherSummaryDetails>
+    paymentId: number
+  ): Promise<Array<PaymentToEmployeeSummaryDetails>> {
+    const list = [] as Array<PaymentToEmployeeSummaryDetails>
 
     const responsePayment = await supabase
       .from('employee_payment_orders')
@@ -121,14 +121,14 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
       const order = responseOrder.data as Order
 
       list.push({
-        order: order,
-      } as PaymentToDispatcherSummaryDetails)
+        order: order
+      } as PaymentToEmployeeSummaryDetails)
     }
     return list
   }
 
   const listing = computedAsync(async () => {
-    const list = [] as PaymentToDispatcherSummary[]
+    const list = [] as PaymentToEmployeeSummary[]
 
     for (const obj of mapping.value.values()) {
       list.push(await obj)
@@ -138,9 +138,9 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
   })
 
   async function create(
-    payment: PaymentToDispatcherCreate,
+    payment: PaymentToEmployeeCreate,
     records: Array<PaymentToDispatcherOrderCreate>,
-    settlementsRecords: Array<EmployeePaymentSettlements>,
+    settlementsRecords: Array<EmployeePaymentSettlements>
   ) {
     const response = await supabase
       .from('employee_payments')
@@ -151,7 +151,7 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
     // console.log('response', response)
 
     if (response.status == 201 && response.data?.length == 1) {
-      const payment = response.data[0] as PaymentToDispatcher
+      const payment = response.data[0] as PaymentToEmployee
       mapping.value.set(payment.id, payment)
 
       // console.log('payment', payment)
@@ -189,5 +189,5 @@ export const usePaymentToDispatcherStore = defineStore('employee_payments', () =
 })
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(usePaymentToDispatcherStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(usePaymentToEmployeeStore, import.meta.hot))
 }
