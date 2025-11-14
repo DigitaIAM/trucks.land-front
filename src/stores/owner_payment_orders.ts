@@ -34,11 +34,13 @@ export const usePaymentToOwnerOrdersStore = defineStore('owner_payment_orders', 
         })
 
         listing.value = list
+        return list
       } else {
         throw 'unexpended response status: ' + response.status
       }
     } else {
       listing.value = [] as Array<PaymentToOwnerOrder>
+      return []
     }
   }
 

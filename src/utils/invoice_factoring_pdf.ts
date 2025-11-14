@@ -13,12 +13,12 @@ export async function generateFI(order: Order, org: Organization): Promise<Blob>
 
   const paths = []
   for (const file of files) {
-    if (file.file_type == 'RC') {
+    if (file.kind == 'RC') {
       paths.push(file.path)
     }
   }
   for (const file of files) {
-    if (file.file_type == 'POD') {
+    if (file.kind == 'POD') {
       paths.push(file.path)
     }
   }

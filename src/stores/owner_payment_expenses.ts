@@ -34,11 +34,13 @@ export const usePaymentToOwnerExpenseStore = defineStore('owner_payment_expenses
         })
 
         listing.value = list
+        return list
       } else {
         throw 'unexpended response status: ' + response.status
       }
     } else {
       listing.value = [] as Array<ExpensesToOwner>
+      return []
     }
   }
 

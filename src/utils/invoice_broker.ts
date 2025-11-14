@@ -4,6 +4,7 @@ import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/type
 import moment from 'moment'
 import type { FileRecord } from '@/stores/order_files.ts'
 import { createFetch } from '@vueuse/core'
+import { openInNewTab } from '@/utils/pdf-helper.ts'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
@@ -16,7 +17,7 @@ function text_left(
   fontSize: number,
   text: string,
   x: number,
-  y: number,
+  y: number
 ): number {
   // const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -24,7 +25,7 @@ function text_left(
     x: x,
     y: y,
     size: fontSize,
-    font: font,
+    font: font
   })
 
   return font.heightAtSize(fontSize)
@@ -36,7 +37,7 @@ function text_right(
   fontSize: number,
   text: string,
   x: number,
-  y: number,
+  y: number
 ): number {
   const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -44,7 +45,7 @@ function text_right(
     x: x - textWidth,
     y: y,
     size: fontSize,
-    font: font,
+    font: font
   })
 
   return font.heightAtSize(fontSize)
@@ -54,7 +55,7 @@ export async function generateBI(
   order: Order,
   org: Organization,
   broker: Broker,
-  record: FileRecord,
+  record: FileRecord
 ): Promise<Blob> {
   const dispatcher = await userStore.resolve(order.created_by)
   const events = await eventsStore.fetching(order.id)
@@ -108,8 +109,8 @@ export async function generateBI(
       `${delivery_city} ${delivery_state} ${delivery_zip}`,
       '',
       '',
-      `POD: ${dispatcher?.name}`,
-    ],
+      `POD: ${dispatcher?.name}`
+    ]
   ] as CellContent[][]
 
   const pdfDoc = await PDFDocument.create()
@@ -132,20 +133,20 @@ export async function generateBI(
       text: 'Shipments Details',
       textSize: 12,
       font: font,
-      alignment: 'center',
+      alignment: 'center'
     },
     header: {
       hasHeaderRow: true,
       font: font,
       textSize: 10,
       backgroundColor: rgb(0.9, 0.9, 0.9),
-      contentAlignment: 'center',
+      contentAlignment: 'center'
     },
     border: {
       color: rgb(0.9, 0.9, 0.9),
-      width: 0.4,
+      width: 0.4
     },
-    font: font,
+    font: font
   } as DrawTableOptions
 
   const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
@@ -161,7 +162,7 @@ export async function generateBI(
       x: startX,
       y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
       width: 100,
-      height: (100 * jpgDims.height) / jpgDims.width,
+      height: (100 * jpgDims.height) / jpgDims.width
     })
   }
   text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
@@ -236,12 +237,12 @@ export async function generateBI(
 
   const paths = []
   for (const file of files) {
-    if (file.file_type == 'RC') {
+    if (file.kind == 'RC') {
       paths.push(file.path)
     }
   }
   for (const file of files) {
-    if (file.file_type == 'POD') {
+    if (file.kind == 'POD') {
       paths.push(file.path)
     }
   }
@@ -259,6 +260,9 @@ export async function generateBI(
 
   // Save the PDF and send email
   const pdfBytes = await pdfDoc.save()
+
+  await openInNewTab(pdfDoc)
+
 
   const base64String = await pdfDoc.saveAsBase64()
 
@@ -286,9 +290,9 @@ export async function generateBI(
       {
         name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
         content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
+        mime_type: 'plain/txt'
+      }
+    ]
   }
 
   const myFetch = createFetch({
@@ -300,12 +304,12 @@ export async function generateBI(
           ...options.headers,
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token,
+          Authorization: token
         }
         return { options }
-      },
+      }
     },
-    fetchOptions: { mode: 'cors' },
+    fetchOptions: { mode: 'cors' }
   })
 
   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
