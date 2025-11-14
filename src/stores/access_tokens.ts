@@ -7,7 +7,7 @@ export const useAccessTokenStore = defineStore('access_tokens', () => {
         .from('access_tokens')
         .select()
         .eq('organization', orgId)
-        .eq('key', 'zoho')
+        .eq('name', 'zoho')
         .maybeSingle()
 
       if (error) {

@@ -128,11 +128,11 @@ async function _head(
 
   cy -= bls * 3
 
-  const dispatcher = await useUsersStore().resolve(document.dispatcher)
-  if (dispatcher == null) {
-    throw 'missing dispatcher'
+  const employee = await useUsersStore().resolve(document.employee)
+  if (employee == null) {
+    throw 'missing employee'
   }
-  cy -= bls + text_right(page, boldFont, 16, dispatcher.real_name.toUpperCase(), endX, cy)
+  cy -= bls + text_right(page, boldFont, 16, employee.real_name.toUpperCase(), endX, cy)
 
   cy -= bls * 3
 
@@ -148,11 +148,12 @@ async function _head(
   text_right(page, font, fs, 'Calculation:', cx, cy)
   cy -= bls + text_left(page, font, fs, `\$${document.to_pay}`, cx + bls, cy)
 
-  text_right(page, font, fs, 'Additional:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.settlement}`, cx + bls, cy)
+  text_right(page, font, fs, 'Settlements:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.settlements}`, cx + bls, cy)
 
+  const toPay = (document.to_pay + document.settlements).toFixed(2)
   text_right(page, boldFont, fs, 'Total pay:', cx, cy)
-  cy -= bls + text_left(page, boldFont, fs, `\$${document.to_pay}`, cx + bls, cy)
+  cy -= bls + text_left(page, boldFont, fs, `\$${toPay}`, cx + bls, cy)
 
   //text left
   // const textMargin = 40 // Desired margin below the table
@@ -178,7 +179,7 @@ async function _head(
   text_left(page, font, fs, 'Date:', textX + bls, cy)
   cy -= bls + text_left(page, font, fs, `${date1}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
 
-  const toPaySum = document.to_pay * document.ex_rate
+  const toPaySum = toPay * document.ex_rate
   text_left(page, font, fs, 'Calculation:', textX + bls, cy)
   cy -=
     bls +

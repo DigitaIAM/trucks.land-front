@@ -65,7 +65,7 @@ async function generatePdf() {
     to: [
       {
         email_address: {
-          address: `${employee?.email}`,
+          address: 'shabanovanatali@gmail.com',
           name: `${employee?.real_name}`
         }
       }
@@ -205,7 +205,7 @@ function close() {
           <Text size="2xl">to</Text>
           <div>
             <Text class="flex w-full" size="2xl">
-              <QueryAndShow name="real_name" :id="document?.dispatcher" :store="userStore" />
+              <QueryAndShow name="real_name" :id="document?.employee" :store="userStore" />
             </Text>
           </div>
           <Text size="2xl">$ {{ document?.payout }}</Text>
@@ -214,7 +214,7 @@ function close() {
           <div class="justify-self-end">
             <Button class="btn-soft font-light tracking-wider" @click="generatePdf">
               Send to
-              <QueryAndShow name="email" :id="props.document?.dispatcher" :store="userStore" />
+              <QueryAndShow name="email" :id="props.document?.employee" :store="userStore" />
             </Button>
           </div>
         </div>
