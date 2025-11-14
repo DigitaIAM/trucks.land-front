@@ -42,7 +42,7 @@ defineOptions({
 
 const orgData = useOrgData()
 
-orders.setContext([{ key: 'status', val: '25' } as KV])
+orders.setContext([{ key: 'stage', val: '14' } as KV])
 //25 - Approved for payment
 
 const filters = ref([])

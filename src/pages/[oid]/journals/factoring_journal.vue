@@ -39,7 +39,7 @@ defineOptions({
 
 const orgData = useOrgData()
 
-orders.setContext([{ key: 'status', val: '26' } as KV])
+orders.setContext([{ key: 'stage', val: '15' } as KV])
 
 const filters = ref([])
 

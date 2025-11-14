@@ -7,6 +7,7 @@ meta:
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
+
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
@@ -26,6 +27,7 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
+import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 
 defineOptions({
   __loaders: [useOrgData],
@@ -41,11 +43,11 @@ const buttons = [
     icon: OwnerIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/owner_expenses',
   },
-  // {
-  //   label: 'Fines',
-  //   icon: FinesIcon,
-  //   link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/finesOfEmployee',
-  // },
+  {
+    label: 'Settlements',
+    icon: DispatcherIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/settlements_to_employee',
+  },
   // {
   //   label: 'Driver',
   //   icon: DriverIcon,

@@ -74,7 +74,7 @@ watch(
       >
         <th
           v-for="col in cols"
-          class="p-4 border-b border-b-gray-400"
+          class="p-4"
           :key="col.label"
           :style="{ width: col.size + 'px' }"
         >

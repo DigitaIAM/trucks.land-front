@@ -23,7 +23,7 @@ export const useOrgData = defineBasicLoader(
     // 21 - Delivery on site
     await ordersStore.setContext([
       // { key: 'organization', val: org.id } as KV,
-      { key: 'status', val: ['3', '5', '8', '21'] } as KV,
+      { key: 'stage', val: ['2', '3', '5', '6'] } as KV,
     ])
     // return org
   },
