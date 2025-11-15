@@ -1,5 +1,35 @@
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
+import { useUserConditionsStore } from '@/stores/user_conditions.ts'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const userConditionsStore = useUserConditionsStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    await userConditionsStore.setContext({ orgId: org.id })
+    // console.table(org)
+    return org
+  },
+  { key: 'org' }
+)
+</script>
+
 <script setup lang="ts">
-const organizations = useOrganizationsStore()
+import { useUserConditionsStore } from '@/stores/user_conditions.ts'
+
+defineOptions({
+  __loaders: [useOrgData]
+})
+
+const orgData = useOrgData()
+
+const userConditionsStore = useUserConditionsStore()
 
 const props = defineProps<{
   edit: User | null
@@ -9,31 +39,13 @@ const id = ref<number>()
 
 const name = ref('')
 const real_name = ref('')
-
 const phone = ref('')
 const email = ref('')
+const percent_of_gross = ref<number | null>(null)
+const percent_of_profit = ref<number | null>(null)
+const fixed_salary = ref<number | null>(null)
+const income_tax = ref<number | null>(null)
 
-const group = ref('')
-
-const organization = ref(null)
-
-const less_ten = ref<number>()
-const more_ten = ref<number>()
-const percent = ref<number>()
-
-const admin = ref(false)
-const manager = ref(false)
-const dispatcher_supervisor = ref(false)
-const dispatcher = ref(false)
-const tracking_supervisor = ref(false)
-const tracking_team = ref(false)
-const accounts = ref(false)
-const hr = ref(false)
-const broker = ref(false)
-const view = ref(false)
-const driver = ref(false)
-
-const disabled = ref(false)
 
 const emit = defineEmits(['closed'])
 
@@ -42,37 +54,24 @@ watch(
   (user) => {
     resetAndShow(user)
   },
-  { deep: true },
+  { deep: true }
 )
 
 const usersStore = useUsersStore()
 
-function resetAndShow(user: User | null) {
+async function resetAndShow(user: User | null) {
   id.value = user?.id
 
   name.value = user?.name || ''
   real_name.value = user?.real_name || ''
   phone.value = user?.phone || ''
   email.value = user?.email || ''
-  group.value = user?.group || ''
 
-  organization.value = user ? { id: user.organization } : null
-  less_ten.value = user?.less_ten
-  more_ten.value = user?.more_ten
-  percent.value = user?.percent
-
-  admin.value = user?.admin || false
-  manager.value = user?.manager || false
-  dispatcher_supervisor.value = user?.dispatcher_supervisor || false
-  dispatcher.value = user?.dispatcher || false
-  tracking_supervisor.value = user?.tracking_supervisor || false
-  tracking_team.value = user?.tracking_team || false
-  accounts.value = user?.accounts || false
-  hr.value = user?.hr || false
-  broker.value = user?.broker || false
-  view.value = user?.view || false
-  driver.value = user?.driver || false
-  disabled.value = user?.disabled || false
+  const condition = await userConditionsStore.setContext({ userId: user?.id })
+  percent_of_gross.value = condition?.percent_of_gross
+  percent_of_profit.value = condition?.percent_of_profit
+  fixed_salary.value = condition?.fixed_salary
+  income_tax.value = condition?.income_tax
 
   edit_user.showModal()
 }
@@ -84,52 +83,22 @@ function saveUser() {
         name: name.value,
         real_name: real_name.value,
         phone: phone.value,
-        email: email.value,
-        group: group.value,
+        email: email.value
+        // percent_of_gross: percent_of_gross.value,
+        // percent_of_profit: percent_of_profit.value
+        // fixed_salary.value
 
-        organization: organization.value?.id,
-        less_ten: less_ten.value,
-        more_ten: more_ten.value,
-        percent: percent.value,
-
-        admin: admin.value,
-        manager: manager.value,
-        dispatcher_supervisor: dispatcher_supervisor.value,
-        dispatcher: dispatcher.value,
-        tracking_supervisor: tracking_supervisor.value,
-        tracking_team: tracking_team.value,
-        accounts: accounts.value,
-        hr: hr.value,
-        broker: broker.value,
-        view: view.value,
-        driver: driver.value,
-        disabled: disabled.value,
       } as UserCreate)
     } else {
       usersStore.update(id.value, {
         name: name.value,
         real_name: real_name.value,
         phone: phone.value,
-        email: email.value,
-        group: group.value,
+        email: email.value
+        // percent_of_gross: percent_of_gross.value,
+        // percent_of_profit: percent_of_profit.value
+        // fixed_salary.value
 
-        organization: organization.value?.id,
-        less_ten: less_ten.value,
-        more_ten: more_ten.value,
-        percent: percent.value,
-
-        admin: admin.value,
-        manager: manager.value,
-        dispatcher_supervisor: dispatcher_supervisor.value,
-        dispatcher: dispatcher.value,
-        tracking_supervisor: tracking_supervisor.value,
-        tracking_team: tracking_team.value,
-        accounts: accounts.value,
-        hr: hr.value,
-        broker: broker.value,
-        view: view.value,
-        driver: driver.value,
-        disabled: disabled.value,
       } as UserUpdate)
     }
     edit_user.close()
@@ -150,10 +119,6 @@ function saveUser() {
     <ModalBox class="w-4/5">
       <div class="flex space-x-76 w-full">
         <Text size="2xl">User</Text>
-        <label class="label">
-          <Toggle v-model="disabled"></Toggle>
-          <span class="ml-1 mr-3">disabled</span>
-        </label>
       </div>
 
       <div class="flex space-x-5 mb-4 mt-4 w-full">
@@ -177,98 +142,30 @@ function saveUser() {
         </div>
       </div>
 
-      <!--      <TextInput-->
-      <!--        type="password"-->
-      <!--        placeholder="Password"-->
-      <!--        class="mt-2 mb-2 w-full"-->
-      <!--        v-model="password"-->
-      <!--      ></TextInput>-->
+      <div class="flex space-x-48 mb-4 mt-6 w-full">
+        <Text size="2xl">Сonditions</Text>
+      </div>
 
-      <div class="flex space-x-3 mb-4 mt-4 w-full">
-        <div class="md:w-1/4 md:mb-0">
-          <Label>Group</Label>
-          <TextInput v-model="group" />
+      <div class="flex space-x-3 mt-4 w-full">
+        <div class="md:w-1/3 md:mb-0">
+          <Label> % of gross</Label>
+          <TextInput disabled v-model="percent_of_gross" />
         </div>
-        <div class="md:w-3/4 md:mb-0">
-          <Label>Organization</Label>
-          <selector v-model="organization" :store="organizations"></selector>
+        <Text class="py-8">or</Text>
+        <div class="md:w-1/3 md:mb-0">
+          <Label> % of profit</Label>
+          <TextInput disabled v-model="percent_of_profit" />
+        </div>
+        <Text class="py-8">or</Text>
+        <div class="md:w-1/3 md:mb-0">
+          <Label> fixed salary $</Label>
+          <TextInput disabled v-model="fixed_salary" />
         </div>
       </div>
 
-      <div class="flex space-x-48 mb-2 mt-4 w-full">
-        <h5>Vehicle dispatcher</h5>
-        <h5>Goods dispatcher</h5>
-      </div>
-
-      <div class="flex space-x-3 mb-4 mt-2 w-full">
-        <div class="md:w-1/3 md:mb-0">
-          <Label><=10%</Label>
-          <TextInput v-model="less_ten" />
-        </div>
-        <div class="md:w-1/3 md:mb-0">
-          <Label> >10% </Label>
-          <TextInput v-model="more_ten" />
-        </div>
-        <div class="md:w-1/3 md:mb-0">
-          <Label> % </Label>
-          <TextInput v-model="percent" />
-        </div>
-      </div>
-
-      <div class="flex flex-row space-x-20">
-        <div class="flex space-x-3 mt-2 w-full">
-          <div class="md:w-1/2 md:mb-0">
-            <label class="label mb-2">
-              <Toggle v-model="admin"></Toggle>
-              <span class="ml-3 mr-3">Admin</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="manager"></Toggle>
-              <span class="ml-3">Organization manager</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="dispatcher_supervisor"></Toggle>
-              <span class="ml-3">Dispatcher supervisor</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="dispatcher"></Toggle>
-              <span class="ml-3">Dispatcher</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="tracking_supervisor"></Toggle>
-              <span class="ml-3">Tracking team supervisor</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="tracking_team"></Toggle>
-              <span class="ml-3">Tracking team</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="flex space-x-3 mt-2 w-full">
-          <div class="md:w-1/2 md:mb-0">
-            <label class="label mb-2">
-              <Toggle v-model="accounts"></Toggle>
-              <span class="ml-3 mr-6">Accounts</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="hr"></Toggle>
-              <span class="ml-3 mr-10">HR</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="view"></Toggle>
-              <span class="ml-3 mr-6">View</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="driver"></Toggle>
-              <span class="ml-3 mr-6">Driver</span>
-            </label>
-            <label class="label mb-2">
-              <Toggle v-model="broker"></Toggle>
-              <span class="ml-3 mr-6">Broker</span>
-            </label>
-          </div>
-        </div>
+      <div class="md:w-1/2 md:mb-0">
+        <Label> Income tax %</Label>
+        <TextInput disabled v-model="income_tax" />
       </div>
 
       <ModalAction>
