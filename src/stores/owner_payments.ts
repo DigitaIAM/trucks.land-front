@@ -3,6 +3,7 @@ import type { PaymentToOwnerOrderCreate } from '@/stores/owner_payment_orders.ts
 import type { Order } from '@/stores/orders.ts'
 import type { Event } from '@/stores/order_events.ts'
 import type { KV } from '@/utils/kv.ts'
+import { groupBy } from '@/utils/group-by.ts'
 
 export interface PaymentToOwnerSummary {
   id: number
@@ -32,6 +33,7 @@ export interface PaymentToOwnerCreate {
 }
 
 export interface PaymentToOwnerSummaryInDetails {
+  document: number
   order: Order
   agreements: Array<Event>
   pickups: Array<Event>
@@ -45,13 +47,25 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   const mapping = ref(new Map<number, PaymentToOwnerSummary | Promise<PaymentToOwnerSummary>>())
   const timestamp = ref(Date.now())
 
-  const { initialized, loading } = useInitializeStore(async () => {
-    const response = await supabase
-      .from('owner_payments_journal')
-      .select()
-      .order('created_at', { ascending: false })
+  async function fetching(limit: number): Promise<Map<number, PaymentToOwnerSummary>> {
+    let query = supabase.from('owner_payments_journal').select()
 
-    // console.log('response', response)
+    contextFilters.value.concat(searchFilters.value).forEach((f) => {
+      const x = f.val
+      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+        query = query.eq(f.key, x.id)
+      } else if (Array.isArray(x)) {
+        query = query.in(f.key, x)
+      } else {
+        query = query.eq(f.key, x)
+      }
+    })
+
+    query = query.order('created_at', { ascending: false })
+    if (limit > 0) {
+      query = query.limit(limit)
+    }
+    const response = await query
 
     const map = new Map<number, PaymentToOwnerSummary>()
     response.data?.forEach((json) => {
@@ -59,61 +73,58 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
       map.set(payment.id, payment)
     })
 
-    mapping.value = map
-  })
+    return map
+  }
 
   async function fetchingDetails(
-    paymentId: number
-  ): Promise<Array<PaymentToOwnerSummaryInDetails>> {
-    const list = [] as Array<PaymentToOwnerSummaryInDetails>
-
-    const responsePayment = await supabase
+    paymentIds: number[],
+  ): Promise<Map<number, Array<PaymentToOwnerSummaryInDetails>>> {
+    const responsePayments = await supabase
       .from('owner_payment_orders')
       .select()
-      .eq('doc_payment', paymentId)
+      .in('doc_payment', paymentIds)
 
-    for (const record of responsePayment.data ?? []) {
-      const orderId = record['doc_order']
-      const responseOrder = await supabase
-        .from('orders_journal')
-        .select()
-        .eq('id', orderId)
-        .single()
+    const ids = (responsePayments.data ?? []).map((v) => v['doc_order'] as number)
 
-      const order = responseOrder.data as Order
+    const responseOrders = await supabase.from('orders_journal').select().in('id', ids)
+    const orders = groupBy(
+      responseOrders.data!.map((v) => v as Order),
+      (v) => v.id,
+    )
 
-      const responseAgreement = await supabase
-        .from('order_events')
-        .select()
-        .eq('document', order.id)
-        .eq('kind', 'agreement')
+    const responseEvents = await supabase
+      .from('order_events')
+      .select()
+      .in('document', ids)
+      .in('kind', ['agreement', 'pick-up', 'delivery'])
+    const events = groupBy(
+      responseEvents.data!.map((v) => v as Event),
+      (v) => v.document,
+    )
 
-      const agreements = Array.from((responseAgreement.data ?? []).map((json) => json as Event))
+    return groupBy(
+      (responsePayments.data ?? []).map((record) => {
+        const orderId = record['doc_order']
 
-      const responsePickup = await supabase
-        .from('order_events')
-        .select()
-        .eq('document', order.id)
-        .eq('kind', 'pick-up')
+        const order: Order = orders.get(orderId)![0]
 
-      const pickups = Array.from((responsePickup.data ?? []).map((json) => json as Event))
+        const agreements: Array<Event> =
+          events.get(orderId)?.filter((v) => v.kind === 'agreement') || new Array<Event>()
+        const pickups: Array<Event> =
+          events.get(orderId)?.filter((v) => v.kind === 'pick-up') || new Array<Event>()
+        const deliveries: Array<Event> =
+          events.get(orderId)?.filter((v) => v.kind === 'delivery') || new Array<Event>()
 
-      const responseDelivery = await supabase
-        .from('order_events')
-        .select()
-        .eq('document', order.id)
-        .eq('kind', 'delivery')
-
-      const deliveries = Array.from((responseDelivery.data ?? []).map((json) => json as Event))
-
-      list.push({
-        order: order,
-        agreements: agreements,
-        pickups: pickups,
-        deliveries: deliveries
-      } as PaymentToOwnerSummaryInDetails)
-    }
-    return list
+        return {
+          document: record['doc_payment'],
+          order: order,
+          agreements: agreements,
+          pickups: pickups,
+          deliveries: deliveries,
+        } as PaymentToOwnerSummaryInDetails
+      }),
+      (v) => v.document,
+    )
   }
 
   const listing = computedAsync(async () => {
@@ -129,7 +140,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   async function create(
     payment: PaymentToOwnerCreate,
     paymentRecords: Array<PaymentToOwnerOrderCreate>,
-    expenseRecords: Array<PaymentToOwnerExpenseCreate>
+    expenseRecords: Array<PaymentToOwnerExpenseCreate>,
   ) {
     const response = await supabase.from('owner_payments').insert(payment).select().throwOnError()
 
@@ -183,50 +194,29 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   }
 
   async function _setFilters() {
-    mapping.value = new Map<number, PaymentToOwnerSummary>()
-
     const localTime = Date.now()
-
     if (timestamp.value > localTime) {
       return
     }
     timestamp.value = localTime
 
-    let query = supabase.from('owner_payments_journal').select()
+    mapping.value = new Map<number, PaymentToOwnerSummary>()
 
-    contextFilters.value.concat(searchFilters.value).forEach((f) => {
-      const x = f.val
-      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
-        query = query.eq(f.key, x.id)
-      } else if (Array.isArray(x)) {
-        query = query.in(f.key, x)
-      } else {
-        query = query.eq(f.key, x)
-      }
-    })
-
-    const response = await query.order('created_at', { ascending: false }).limit(50)
+    const map = await fetching(20)
 
     if (timestamp.value == localTime) {
-      const map = new Map<number, PaymentToOwnerSummary>()
-      response.data?.forEach((json) => {
-        const payment = json as PaymentToOwnerSummary
-        map.set(payment.id, payment)
-      })
-
       mapping.value = map
     }
   }
 
   return {
-    initialized,
+    fetching,
     fetchingDetails,
-    loading,
     listing,
     create,
     search,
     setContext,
-    setFilters
+    setFilters,
   }
 })
 

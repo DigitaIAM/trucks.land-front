@@ -20,7 +20,7 @@ watch(
   (document) => {
     resetAndShow(document)
   },
-  { deep: true }
+  { deep: true },
 )
 
 // resetAndShow(props.id)
@@ -56,7 +56,6 @@ async function generatePdf() {
 
   await openInNewTab(pdfDoc)
 
-
   // Send by email
   const base64String = await pdfDoc.saveAsBase64()
 
@@ -85,9 +84,9 @@ async function generatePdf() {
       {
         name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
         content: base64String,
-        mime_type: 'plain/txt'
-      }
-    ]
+        mime_type: 'plain/txt',
+      },
+    ],
   }
 
   const myFetch = createFetch({
@@ -99,12 +98,12 @@ async function generatePdf() {
           ...options.headers,
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token
+          Authorization: token,
         }
         return { options }
-      }
+      },
     },
-    fetchOptions: { mode: 'cors' }
+    fetchOptions: { mode: 'cors' },
   })
 
   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
@@ -121,7 +120,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string
+  label: (obj: object) => string,
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -145,45 +144,45 @@ const cols = [
         '#_' + v.doc_order,
         () => ({ name: '?' }),
         () => orderStore.resolve(v.doc_order),
-        (map) => map.number
+        (map) => map.number,
       ),
-    size: 30
+    size: 100,
   },
 
   {
     label: 'cost',
     value: (v: PaymentToOwnerOrder) => '$' + v.order_cost,
-    size: 120
+    size: 120,
   },
   {
     label: 'd/payments',
     value: (v: PaymentToOwnerOrder) => '$' + v.amount,
-    size: 120
+    size: 120,
   },
   {
     label: 'payout',
     value: (v: PaymentToOwnerOrder) => '$' + v.amount,
-    size: 120
-  }
+    size: 120,
+  },
 ]
 
 const expensesCols = [
   {
     label: '#',
     value: (v: ExpensesToOwner) => v.id,
-    size: 50
+    size: 50,
   },
 
   {
     label: 'details',
     value: (v: ExpensesToOwner) => v.notes,
-    size: 200
+    size: 200,
   },
   {
     label: 'amount',
     value: (v: ExpensesToOwner) => '$' + v.amount,
-    size: 120
-  }
+    size: 120,
+  },
 ]
 </script>
 
@@ -214,64 +213,64 @@ const expensesCols = [
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
-        <tr
-          class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-        >
-          <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
-            <p class="block antialiasing tracking-wider font-thin leading-none">
-              {{ col.label }}
-            </p>
-          </th>
-        </tr>
+          <tr
+            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+          >
+            <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
+              <p class="block antialiasing tracking-wider font-thin leading-none">
+                {{ col.label }}
+              </p>
+            </th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="line in paymentToOwnerOrdersStore.listing">
-          <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
-            <p
-              class="block antialiasing tracking-wide font-light leading-normal truncate"
-              :style="{ width: col.size + 'px' }"
-            >
-              {{ col.value(line) }}
-            </p>
-          </td>
-        </tr>
+          <tr v-for="line in paymentToOwnerOrdersStore.listing">
+            <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+              <p
+                class="block antialiasing tracking-wide font-light leading-normal truncate"
+                :style="{ width: col.size + 'px' }"
+              >
+                {{ col.value(line) }}
+              </p>
+            </td>
+          </tr>
         </tbody>
       </table>
       <div class="mt-10">
         <Text bold size="lg" class="mb-4">Expenses</Text>
         <table class="w-full text-left table-auto min-w-max">
           <thead>
-          <tr
-            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-          >
-            <th
-              v-for="col in expensesCols"
-              :key="col.label"
-              class="p-4"
-              :style="{ width: col.size + 'px' }"
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
             >
-              <p class="block antialiasing tracking-wider font-thin leading-none">
-                {{ col.label }}
-              </p>
-            </th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="expense in paymentToOwnerExpenseStore.listing" :key="expense.id">
-            <td
-              v-for="col in expensesCols"
-              :key="col.label"
-              class="py-3 px-4"
-              :style="{ width: col.size + 'px' }"
-            >
-              <p
-                class="block antialiasing tracking-wide font-light leading-normal truncate"
+              <th
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="p-4"
                 :style="{ width: col.size + 'px' }"
               >
-                {{ col.value(expense) }}
-              </p>
-            </td>
-          </tr>
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="expense in paymentToOwnerExpenseStore.listing" :key="expense.id">
+              <td
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  {{ col.value(expense) }}
+                </p>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

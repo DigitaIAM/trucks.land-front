@@ -164,7 +164,7 @@ function capitalizeFirstLetter(val) {
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
     <Button
       class="btn-soft font-light tracking-wider ml-6"
-      @click="weekExportToExcel(paymentToOwnerStore.listing!)"
+      @click="weekExportToExcel(paymentToOwnerStore.fetching(-1))"
       >Excel
     </Button>
   </div>

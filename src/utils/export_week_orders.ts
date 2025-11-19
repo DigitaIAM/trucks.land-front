@@ -2,7 +2,9 @@ import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import { type PaymentToOwnerSummary, usePaymentToOwnerStore } from '@/stores/owner_payments.ts'
 
-export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) {
+export async function weekExportToExcel(
+  paymentsPromise: Promise<Map<number, PaymentToOwnerSummary>>,
+) {
   const workbook = new Workbook()
   const sheet = workbook.addWorksheet('My Sheet')
 
@@ -41,12 +43,18 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
   ]
 
   let n = 0
-  let count = 0
-  for (const payment of payments) {
-    count++
+  // let count = 0
+  const payments = await paymentsPromise
+  console.log('payments', payments.size)
 
-    const details = await paymentToOwnerStore.fetchingDetails(payment.id)
+  const ids = payments.values().map((v) => v.id)
+  const detailsList = await paymentToOwnerStore.fetchingDetails(ids)
 
+  for (const payment of payments.values()) {
+    // console.log('excel', payment)
+    //   count++
+
+    const details = detailsList.get(payment.id)
     for (const detail of details) {
       const order = detail.order
 
@@ -96,11 +104,11 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
         driver: driver?.name,
         owner: owner?.name,
         broker: broker?.name,
-        from: pickup?.city ?? '',
+        from: pickup.address ?? pickup.city ?? '',
         state_from: pickup?.state ?? '',
         date_from: pickupD,
         time_from: pickupT,
-        to: delivery?.city ?? '',
+        to: delivery?.address ?? delivery.city ?? '',
         state_to: delivery?.state ?? '',
         date_to: deliveryD,
         time_to: deliveryT,
@@ -132,9 +140,9 @@ export async function weekExportToExcel(payments: Array<PaymentToOwnerSummary>) 
       })
     }
 
-    if (count > 1) {
-      break
-    }
+    // if (count > 1) {
+    //   break
+    // }
   }
 
   // Example: Save to a buffer (for download or further processing)
