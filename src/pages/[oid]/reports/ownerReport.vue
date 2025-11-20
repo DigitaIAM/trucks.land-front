@@ -151,6 +151,7 @@ async function createPayment() {
       <tr
         v-for="line in reportOwnerStore.owners"
         :key="line.owner"
+        class="hover:bg-base-200"
         @click="openPayment(line)"
         :class="{
           processing: reportOwnerStore.processing[0] == line.owner,

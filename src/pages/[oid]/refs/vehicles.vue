@@ -31,13 +31,23 @@ function resolve(
   }
 }
 
+
 function editVehicle(vehicle: Vehicle) {
   selectedVehicle.value = vehicle
 }
 
+
 function onClose() {
   selectedVehicle.value = null
 }
+
+function leasing (vehicle: Vehicle) {
+  if (vehicle.leasing_agreement) {
+    return 'signed';
+} else {
+  return '';
+}}
+
 
 const cols = [
   {
@@ -60,6 +70,11 @@ const cols = [
         () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
+    size: 200,
+  },
+  {
+    label: 'leasing agreement',
+    value: (v: Vehicle) => leasing(v),
     size: 200,
   },
 ]
@@ -91,7 +106,7 @@ watch(
 
 <template>
   <VehicleModal :edit="selectedVehicle" @closed="onClose"></VehicleModal>
-  <table class="w-full text-left table-auto min-w-max">
+  <table class="w-full text-left table-fixed">
     <thead>
       <tr
         class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
@@ -104,7 +119,7 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" @click="editVehicle(vehicle)">
+      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" class="hover:bg-base-200" @click="editVehicle(vehicle)">
         <td
           v-for="col in cols"
           class="py-3 px-4"
@@ -119,8 +134,10 @@ watch(
           </p>
         </td>
       </tr>
+
     </tbody>
   </table>
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

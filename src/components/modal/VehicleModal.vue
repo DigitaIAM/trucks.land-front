@@ -17,7 +17,7 @@ const owner = ref(null)
 
 const unit_id = ref('')
 const vin = ref('')
-//const expiry_date = ref(new Date() as Date | undefined)
+
 const model = ref('')
 const kind = ref('')
 
@@ -32,6 +32,7 @@ const door_width = ref<number>()
 const door_height = ref<number>()
 
 const vanType = ref<string>()
+const leasing_agreement = ref(false)
 
 const emit = defineEmits(['closed'])
 
@@ -40,7 +41,7 @@ watch(
   (vehicle) => {
     resetAndShow(vehicle)
   },
-  { deep: true },
+  { deep: true }
 )
 
 const vehicleStore = useVehiclesStore()
@@ -51,7 +52,6 @@ function resetAndShow(vehicle: Vehicle | null) {
   owner.value = vehicle ? { id: vehicle.owner } : null
   unit_id.value = vehicle?.unit_id
   vin.value = vehicle?.vin
-  //expiry_date.value = vehicle?.expiry_date
   model.value = vehicle?.model
   kind.value = vehicle?.kind
 
@@ -67,6 +67,7 @@ function resetAndShow(vehicle: Vehicle | null) {
 
   is_active.value = vehicle?.is_active || false
   vanType.value = vehicle?.type ?? 'cargo van'
+  leasing_agreement.value = vehicle?.leasing_agreement || false
 
   edit_vehicle.showModal()
 }
@@ -78,7 +79,6 @@ async function saveVehicle() {
         owner: owner.value?.id,
         unit_id: unit_id.value,
         vin: vin.value,
-        //expiry_date: expiry_date.value,
         model: model.value,
         kind: kind.value,
 
@@ -94,13 +94,13 @@ async function saveVehicle() {
 
         is_active: is_active.value,
         type: vanType.value,
+        leasing_agreement: leasing_agreement.value
       } as VehicleCreate)
     } else {
       vehicleStore.update(id.value, {
         owner: owner.value?.id,
         unit_id: unit_id.value,
         vin: vin.value,
-        //expiry_date: expiry_date.value,
         model: model.value,
         kind: kind.value,
 
@@ -116,6 +116,7 @@ async function saveVehicle() {
 
         is_active: is_active.value,
         type: vanType.value,
+        leasing_agreement: leasing_agreement.value
       } as VehicleUpdate)
     }
     edit_vehicle.close()
@@ -124,6 +125,11 @@ async function saveVehicle() {
     console.log('error', e)
   }
 }
+
+function handleClick() {
+  leasing_agreement.value = !leasing_agreement.value
+}
+
 </script>
 
 <template>
@@ -172,21 +178,6 @@ async function saveVehicle() {
         <TextInput class="w-full" v-model="vin" />
       </div>
 
-      <!--      <div class="flex space-x-3 mb-2 mt-4 w-full">-->
-      <!--        <div class="md:w-1/2 md:mb-0">-->
-      <!--          <Label>VIN</Label>-->
-      <!--          <TextInput v-model="vin" />-->
-      <!--        </div>-->
-      <!--        <div class="md:w-1/2 md:mb-0">-->
-      <!--          <Label>Expiry date</Label>-->
-      <!--          <VueDatePicker-->
-      <!--            class="my-custom-datepicker"-->
-      <!--            teleport-center-->
-      <!--            :enable-time-picker="false"-->
-      <!--            v-model="expiry_date"-->
-      <!--          ></VueDatePicker>-->
-      <!--        </div>-->
-      <!--      </div>-->
       <div class="flex space-x-3 mb-4 mt-4 w-full">
         <div class="md:w-1/4 md:mb-0">
           <Label>Model</Label>
@@ -244,6 +235,14 @@ async function saveVehicle() {
           <TextInput v-model="door_height" />
         </div>
       </div>
+      <div class="flex space-x-3 mb-4 mt-10 w-full">
+        <Button
+          class="mr-3"
+          :class="{ 'bg-accent': leasing_agreement }"
+          @click="handleClick"
+        >leasing agreement
+        </Button>
+      </div>
       <ModalAction>
         <form method="dialog">
           <Button @click="saveVehicle" class="btn-soft font-light tracking-wider">
@@ -257,8 +256,7 @@ async function saveVehicle() {
 </template>
 
 <style scoped>
-.dp__theme_light {
-  --dp-background-color: gray-500;
-  --dp-text-color: gray-200;
+.exclude-active {
+  background-color: red;
 }
 </style>

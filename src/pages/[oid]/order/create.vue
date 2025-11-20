@@ -11,13 +11,13 @@ export const useOrgData = defineBasicLoader(
     authStore.org = org
     return org
   },
-  { key: 'org' },
+  { key: 'org' }
 )
 </script>
 
 <script setup lang="ts">
 defineOptions({
-  __loaders: [useOrgData],
+  __loaders: [useOrgData]
 })
 
 const cOrg = useOrgData()
@@ -28,6 +28,7 @@ const props = defineProps<{
 
 const docnum = ref<number>()
 const created_by = ref<User>()
+const vehicle_found = ref<User>()
 const posted_loads = ref('')
 const refs = ref('')
 
@@ -65,7 +66,7 @@ watch(
   (order) => {
     resetAndShow(order)
   },
-  { deep: true },
+  { deep: true }
 )
 
 async function resetAndShow(order: Order | null) {
@@ -73,6 +74,7 @@ async function resetAndShow(order: Order | null) {
 
   docnum.value = order?.number
   created_by.value = order ? { id: order.created_by } : account ? { id: account.id } : null
+  vehicle_found.value = order?.vehicle_found
   posted_loads.value = order?.posted_loads
   refs.value = order?.refs
   broker.value = order ? { id: order.broker } : null
@@ -98,6 +100,7 @@ async function saveAndEdit(stage: Status | null) {
       {
         organization: org.id,
         created_by: created_by.value?.id,
+        vehicle_found: vehicle_found.value,
         posted_loads: posted_loads.value,
         refs: refs.value,
         broker: broker.value?.id,
@@ -105,9 +108,9 @@ async function saveAndEdit(stage: Status | null) {
         total_weight: total_weight.value,
         total_miles: total_miles.value,
         cost: cost.value,
-        excluded: false,
+        excluded: false
       } as OrderCreate,
-      stage,
+      stage
     )
     create_draft.close()
 
@@ -149,11 +152,15 @@ async function saveAndEdit(stage: Status | null) {
       </div>
 
       <div class="flex space-x-3 mb-2 mt-6 w-full">
-        <div class="md:w-1/2 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label class="mb-1">Dispatcher</Label>
           <selector :modelValue="created_by" :store="usersStore" disabled />
         </div>
-        <div class="md:w-1/2 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mb-1">Vehicle was found</Label>
+          <selector :modelValue="vehicle_found" :store="usersStore" />
+        </div>
+        <div class="md:w-1/3 md:mb-0">
           <Label class="mb-1">Broker</Label>
           <selector v-model="broker" :store="brokersStore"></selector>
         </div>

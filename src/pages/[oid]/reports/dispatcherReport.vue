@@ -163,6 +163,7 @@ async function createPayment() {
       <tr
         v-for="line in reportDispatcherStore.employees"
         :key="line.employee"
+        class="hover:bg-base-200"
         @click="openPayment(line)"
       >
         <td

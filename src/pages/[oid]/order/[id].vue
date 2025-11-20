@@ -36,6 +36,7 @@ const _order = ref<Order | null>(null)
 const _id = ref<number | null>(null)
 const docnum = ref<number | null>(null)
 const created_by = ref<User | Reference>()
+const vehicle_found = ref<User>()
 const posted_loads = ref('')
 const refs = ref('')
 const broker = ref<Broker | Reference>()
@@ -98,6 +99,7 @@ async function resetAndShow(str: string) {
     docnum.value = order.number
     posted_loads.value = order.posted_loads
     created_by.value = { id: order.created_by }
+    vehicle_found.value = {id: order.vehicle_found}
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs
@@ -117,6 +119,7 @@ async function saveOrder(next: Status | null | undefined) {
       if (
         order.posted_loads != posted_loads.value ||
         order.refs != refs.value ||
+        order.vehicle_found != order.vehicle_found?.id ||
         order.broker != broker.value?.id ||
         order.total_pieces != total_pieces.value ||
         order.total_weight != total_weight.value ||
@@ -132,6 +135,7 @@ async function saveOrder(next: Status | null | undefined) {
           posted_loads: posted_loads.value,
           refs: refs.value,
           broker: broker.value?.id,
+          vehicle_found: vehicle_found.value?.id,
           total_pieces: total_pieces.value,
           total_weight: total_weight.value,
           total_miles: total_miles.value,
@@ -226,7 +230,7 @@ useEventListener(document, 'keydown', handleKeyDown)
           </div>
 
           <div class="flex space-x-3 mb-2 mt-6 w-full">
-            <div class="md:w-1/2 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Dispatcher</Label>
               <selector
                 disabled
@@ -235,7 +239,11 @@ useEventListener(document, 'keydown', handleKeyDown)
                 :store="usersStore"
               ></selector>
             </div>
-            <div class="md:w-1/2 md:mb-0">
+            <div class="md:w-1/3 md:mb-0">
+              <Label class="mb-1">Vehicle was found</Label>
+              <selector :modelValue="vehicle_found" :store="usersStore" disabled />
+            </div>
+            <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Broker</Label>
               <selector label="Broker" v-model="broker" :store="brokersStore"></selector>
             </div>

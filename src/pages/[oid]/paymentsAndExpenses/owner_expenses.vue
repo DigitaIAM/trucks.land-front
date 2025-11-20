@@ -132,7 +132,7 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="expense in expensesStore.listing" :key="expense.id" @click="openExpenses(expense)">
+      <tr v-for="expense in expensesStore.listing" :key="expense.id" class="hover:bg-base-200" @click="openExpenses(expense)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + expense"

@@ -204,7 +204,7 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="line in paymentToOwnerStore.listing" :key="line.id" @click="openPayment(line)">
+      <tr v-for="line in paymentToOwnerStore.listing" :key="line.id" class="hover:bg-base-200" @click="openPayment(line)">
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + line.id"

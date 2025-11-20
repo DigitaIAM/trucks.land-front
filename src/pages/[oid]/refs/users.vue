@@ -85,7 +85,7 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="user in usersStore.listing" :key="user.id" @click="editUser(user)">
+      <tr v-for="user in usersStore.listing" :key="user.id" class="hover:bg-base-200" @click="editUser(user)">
         <td
           v-for="col in cols"
           class="py-3 px-4"

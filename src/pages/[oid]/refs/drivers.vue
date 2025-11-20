@@ -79,7 +79,7 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="driver in driversStore.listing" :key="driver.id" @click="editDriver(driver)">
+      <tr v-for="driver in driversStore.listing" :key="driver.id" class="hover:bg-base-200" @click="editDriver(driver)">
         <td
           v-for="col in cols"
           :key="col.label"

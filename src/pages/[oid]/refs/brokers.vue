@@ -77,7 +77,7 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="broker in brokersStore.listing" :key="broker.id" @click="editBroker(broker)">
+      <tr v-for="broker in brokersStore.listing" :key="broker.id" class="hover:bg-base-200" @click="editBroker(broker)">
         <td
           v-for="col in cols"
           :key="col.label"

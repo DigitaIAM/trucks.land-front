@@ -69,7 +69,7 @@ function onClose() {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="status in statusesStore.listing" :key="status.id" @click="editStatus(status)">
+      <tr v-for="status in statusesStore.listing" :key="status.id"  @click="editStatus(status)">
         <td class="py-3 px-4" :style="generateStyle(status)">
           <p
             class="block text-sm antialiasing font-normal leading-normal truncate"

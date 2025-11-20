@@ -204,6 +204,7 @@ function capitalizeFirstLetter(val) {
       <tr
         v-for="line in paymentToEmployeeStore.listing"
         :key="line.id"
+        class="hover:bg-base-200"
         @click="openPayment(line)"
       >
         <td

@@ -52,6 +52,7 @@ const cols = [
       <tr
         v-for="organization in organizationStore.listing"
         :key="organization.id"
+        class="hover:bg-base-200"
         @click="editOrganization(organization)"
       >
         <td

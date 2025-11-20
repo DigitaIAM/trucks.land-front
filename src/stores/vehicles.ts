@@ -25,6 +25,7 @@ export interface VehicleCreate {
   door_width: number
   door_height: number
   kind: string
+  leasing_agreement: boolean
 }
 
 export interface VehicleUpdate {
@@ -43,6 +44,7 @@ export interface VehicleUpdate {
   door_width?: number
   door_height?: number
   kind?: string
+  leasing_agreement?: boolean
 }
 
 function convert(vehicle: Vehicle): Vehicle {

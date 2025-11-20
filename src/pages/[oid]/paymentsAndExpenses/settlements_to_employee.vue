@@ -134,6 +134,7 @@ const cols = [
       <tr
         v-for="settlement in settlementsEmployeeStore.listing"
         :key="settlement.id"
+        class="hover:bg-base-200"
         @click="openSettlement(settlement)"
       >
         <td

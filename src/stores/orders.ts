@@ -11,6 +11,7 @@ export interface Order extends OrderCreate {
 
 export interface OrderCreate {
   created_by: number
+  vehicle_found: number
   organization: number
   posted_loads: string
   refs: string
@@ -27,6 +28,7 @@ export interface OrderUpdate {
   organization?: number
   posted_loads?: string
   refs?: string
+  vehicle_found?: number
   broker?: number
   total_pieces?: number
   total_weight?: number
@@ -57,7 +59,7 @@ export const useOrdersStore = defineStore('orders', () => {
       {
         event: '*',
         schema: 'public',
-        table: 'order_stages',
+        table: 'order_stages'
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {
@@ -73,7 +75,7 @@ export const useOrdersStore = defineStore('orders', () => {
             mapping.value = map
           }
         }
-      },
+      }
     )
     .subscribe()
 
@@ -171,7 +173,7 @@ export const useOrdersStore = defineStore('orders', () => {
       .from('order_stages')
       .insert({
         document: order.id,
-        stage: stage.id,
+        stage: stage.id
       })
       .select()
 
@@ -234,7 +236,7 @@ export const useOrdersStore = defineStore('orders', () => {
     changeStatus,
     resolve,
     search,
-    changes,
+    changes
   }
 })
 
