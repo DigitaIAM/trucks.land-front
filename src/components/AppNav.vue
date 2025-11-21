@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Sidebar from '@/components/windowElements/sidebar.vue'
+import MyRawSvg from '@/assets/logoTL.svg?raw'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -29,7 +30,7 @@ const useOrganizations = useOrganizationsStore()
 
     <NavbarEnd>
       <div class="flex-col justify-items-center px-2">
-        <div><img src="./../assets/logoTL.svg" alt="" /></div>
+        <div v-html="MyRawSvg"></div>
         <div class="text-xs font-thin antialiased text-gray-500">251107</div>
       </div>
     </NavbarEnd>
