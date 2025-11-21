@@ -20,7 +20,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/trucks.land-front/',
+  // base: '/trucks.land-front/',
   server: {
     cors: {
       origin: ['http://localhost:5173', 'https://api.zeptomail.com'],
