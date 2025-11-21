@@ -129,20 +129,20 @@ const loginAndRedirect = (email: string, password: string) => {
           <Button v-if="inSignupMode" primary @click.prevent="handleSignup"> Signup</Button>
           <Button v-else primary @click.prevent="handleLogin"> Login</Button>
 
-          <div class="text-center">
-            <Flex v-if="inSignupMode" col>
-              <span>Already signed up?</span>
-              <Link @click="inSignupMode = !inSignupMode">
-                <span>Login</span>
-              </Link>
-            </Flex>
-            <Flex v-else col>
-              <span>Need an account?</span>
-              <Link @click="inSignupMode = !inSignupMode">
-                <span>Signup</span>
-              </Link>
-            </Flex>
-          </div>
+<!--          <div class="text-center">-->
+<!--            <Flex v-if="inSignupMode" col>-->
+<!--              <span>Already signed up?</span>-->
+<!--              <Link @click="inSignupMode = !inSignupMode">-->
+<!--                <span>Login</span>-->
+<!--              </Link>-->
+<!--            </Flex>-->
+<!--            <Flex v-else col>-->
+<!--              <span>Need an account?</span>-->
+<!--              <Link @click="inSignupMode = !inSignupMode">-->
+<!--                <span>Signup</span>-->
+<!--              </Link>-->
+<!--            </Flex>-->
+<!--          </div>-->
         </form>
       </CardBody>
     </Card>
