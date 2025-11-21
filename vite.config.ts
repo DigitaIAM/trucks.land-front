@@ -20,11 +20,12 @@ import AutoImport from 'unplugin-auto-import/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/trucks.land-front/',
   server: {
     cors: {
       origin: ['http://localhost:5173', 'https://api.zeptomail.com'],
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization']
       // credentials: true,
     },
     // cors: true,
@@ -32,15 +33,15 @@ export default defineConfig({
       '/zeptomail': {
         target: 'https://api.zeptomail.com',
         rewrite: (path) => path.replace(/^\/zeptomail/, ''),
-        changeOrigin: true,
-      },
-    },
+        changeOrigin: true
+      }
+    }
   },
   resolve: {
     alias: {
       '~/': `${path.resolve(__dirname, 'src')}/`,
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
   },
 
   plugins: [
@@ -58,7 +59,7 @@ export default defineConfig({
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     Layouts({
       layoutsDirs: 'src/layouts',
-      pagesDirs: 'src/pages',
+      pagesDirs: 'src/pages'
       // defaultLayout: 'default',
     }),
 
@@ -70,11 +71,11 @@ export default defineConfig({
         'vue-i18n',
         'vue/macros',
         // '@unhead/vue',
-        '@vueuse/core',
+        '@vueuse/core'
       ],
       dts: 'src/auto-imports.d.ts',
       dirs: ['src/composables', 'src/models', 'src/stores'],
-      vueTemplate: true,
+      vueTemplate: true
     }),
 
     Components({
@@ -86,17 +87,17 @@ export default defineConfig({
       types: [
         {
           from: 'vue-router',
-          names: ['RouterLink', 'RouterView'],
-        },
+          names: ['RouterLink', 'RouterView']
+        }
       ],
       resolvers: [
-        IconsResolver(),
+        IconsResolver()
         // (name: string) => {
         //   if (name.match(/^Daisy[A-Z]/)) return { name, from: 'daisy-ui-kit' }
         // },
-      ],
+      ]
     }),
 
-    Icons(),
-  ],
+    Icons()
+  ]
 })

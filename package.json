@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "homepage": "https://github.com/DigitaIAM/trucks.land-front",
+  "homepage": "https://github.com/DigitaIAM/trucks.land-front/",
   "scripts": {
     "dev": "vite",
     "build": "run-p \"build-only {@}\" --",
