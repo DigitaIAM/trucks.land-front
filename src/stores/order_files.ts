@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import type { Status, StatusUpdate } from '@/stores/stages.ts'
 
 export interface FileRecord extends FileRecordCreate {
   id: number
@@ -11,6 +12,7 @@ export interface FileRecordCreate {
   kind: string
   signed_by: string
   path: string
+  is_deleted: boolean
 }
 
 export interface FileRecordUpdate {
@@ -63,7 +65,33 @@ export const useFilesStore = defineStore('file', () => {
     }
   }
 
-  return { request, loading, listing, create }
+  async function update(id: number, file: FileRecordUpdate) {
+    const response = await supabase.from('order_files').update(file).eq('id', id).select()
+
+    console.log('response', response)
+
+    if (response.status == 200 && response.data?.length == 1) {
+      const record = response.data[0] as FileRecord
+
+      const list = Array.from(listing.value)
+
+      for (const index in list) {
+        const item = list[index]
+        if (item.id === record.id) {
+          list[index] = record
+          break
+        }
+      }
+
+      listing.value = list
+
+      return record
+    } else {
+      throw 'unexpended response status: ' + response.status
+    }
+  }
+
+  return { request, loading, listing, create, update }
 })
 
 if (import.meta.hot) {

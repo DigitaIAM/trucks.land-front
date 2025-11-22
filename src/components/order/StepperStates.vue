@@ -244,7 +244,7 @@ function selectExpenses(data) {
               <p class="text-md">
                 {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
               </p>
-              <p class="text-md">{{ eventDate.details }}</p>
+              <p class="text-md">{{ eventDate.details.note }}</p>
             </span>
           </template>
           <template v-if="eventDate.kind == 'expenses'">

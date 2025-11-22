@@ -119,6 +119,7 @@ async function upload() {
         kind: fileType.value,
         signed_by: signedBy.value,
         path: path,
+        is_deleted: false,
       })
 
       const sl = stages.value
@@ -156,7 +157,7 @@ function isPresent(file_type: string) {
   const list = filesStore.listing
   for (const idx in list) {
     const file = list[idx]
-    if (file.kind == file_type) {
+    if (file.kind == file_type && file.is_deleted == false) {
       return true
     }
   }
@@ -211,6 +212,7 @@ async function createAndPdfBI() {
         kind: 'BI',
         signed_by: '',
         path: path,
+        is_deleted: false,
       })
       console.log('createAndPdfBI', path)
 
@@ -257,6 +259,7 @@ async function createAndPdfFI() {
         kind: 'FI',
         signed_by: '',
         path: path,
+        is_deleted: false,
       })
       console.log('createAndPdfFI', path)
 
@@ -309,7 +312,7 @@ async function createAndPdfFI() {
   </Button>
 
   <Modal id="modal">
-    <ModalBox>
+    <ModalBox class="max-w-[calc(25vw-6.25rem)]">
       <div class="flex space-x-4 mb-6 w-full">
         <Text size="2xl" class="mr-4">Files</Text>
         <Button
@@ -323,7 +326,7 @@ async function createAndPdfFI() {
         >
           {{ ft }}
         </Button>
-        <div class="ml-32">
+        <div class="ml-36">
           <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
         </div>
       </div>
@@ -356,7 +359,10 @@ async function createAndPdfFI() {
               v-for="file in filesStore.listing"
               :key="file.path"
               @click="download(file)"
-              class="cursor-pointer"
+              :class="{
+                'marked-for-deletion': file.is_deleted,
+                'cursor-pointer': true,
+              }"
             >
               <td class="py-2 px-3">{{ file.kind }}</td>
               <td class="py-2 px-3">
@@ -364,6 +370,14 @@ async function createAndPdfFI() {
               </td>
               <td class="py-2 px-3">{{ file.signed_by }}</td>
               <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
+              <td>
+                <Button
+                  ghost
+                  sm
+                  @click.stop="filesStore.update(file.id, { is_deleted: !file.is_deleted })"
+                  >X
+                </Button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -382,4 +396,8 @@ async function createAndPdfFI() {
   </Modal>
 </template>
 
-<style scoped></style>
+<style scoped>
+.marked-for-deletion {
+  text-decoration: line-through;
+}
+</style>
