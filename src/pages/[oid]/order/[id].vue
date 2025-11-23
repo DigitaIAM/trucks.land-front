@@ -99,7 +99,7 @@ async function resetAndShow(str: string) {
     docnum.value = order.number
     posted_loads.value = order.posted_loads
     created_by.value = { id: order.created_by }
-    vehicle_found.value = {id: order.vehicle_found}
+    vehicle_found.value = { id: order.vehicle_found }
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs
@@ -173,7 +173,7 @@ useEventListener(document, 'keydown', handleKeyDown)
 </script>
 
 <template>
-  <div class="flex flex-col-3 m-6">
+  <div class="flex flex-col-3 px-6">
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
@@ -282,9 +282,7 @@ useEventListener(document, 'keydown', handleKeyDown)
         <StepperStates :orderId="_id"></StepperStates>
       </div>
     </div>
-    <div class="w-full flex-col">
-      <StepperUploading :order="_order"></StepperUploading>
-    </div>
+    <StepperUploading :order="_order"></StepperUploading>
   </div>
 </template>
 

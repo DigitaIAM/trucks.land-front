@@ -6,11 +6,9 @@ const useOrganizations = useOrganizationsStore()
 </script>
 
 <template>
-  <Navbar>
+  <Navbar class="pl-6 pr-6">
     <NavbarStart>
-      <div class="ml-6">
-        <QueryAndShow :id="authStore.oid" :store="useOrganizations" />
-      </div>
+      <QueryAndShow :id="authStore.oid" :store="useOrganizations" />
     </NavbarStart>
 
     <NavbarEnd>

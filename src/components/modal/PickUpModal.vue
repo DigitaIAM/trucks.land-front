@@ -105,7 +105,7 @@ function close() {
 
 <template>
   <Modal id="create_pickUp">
-    <ModalBox class="max-w-[calc(40vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(50vw)]">
       <div class="flex items-start justify-between">
         <div>
           <Text size="2xl">Pick up</Text>

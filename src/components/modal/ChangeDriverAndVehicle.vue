@@ -105,7 +105,7 @@ function close() {
 
 <template>
   <Modal id="create_change">
-    <ModalBox class="max-w-[calc(40vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(50vw)]">
       <div class="flex items-start justify-between">
         <div class="md:w-1/2 md:mb-0">
           <Text size="2xl">Change of driver and vehicle</Text>

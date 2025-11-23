@@ -275,44 +275,33 @@ async function createAndPdfFI() {
 </script>
 
 <template>
-  <Button link>
-    <div class="flex">
-      <label for="dropzone-file" class="flex">
-        <div class="w-60 pb-10 mt-8">
-          <div class="relative flex justify-between w-full">
-            <div class="absolute top-2/4 h-0.5 w-full bg-gray-500"></div>
-            <div
-              v-for="stage in stages"
-              class="relative z-8 grid w-8 h-8 font-bold text-white transition-all duration-300 bg-gray-500 rounded-full place-items-center cursor-pointer"
-              onclick="modal.showModal()"
+  <div class="flex-col mt-15">
+    <ol class="relative text-gray-500 border-l-2 border-gray-500">
+      <li class="mb-8 ms-6" v-for="stage in stages" :key="stage.label">
+        <span class="cursor-pointer" onclick="modal.showModal()">
+          <span
+            class="absolute flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full -start-4"
+          >
+            <svg
+              v-if="isPresent(stage.label)"
+              class="w-5 h-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
             >
-              <svg
-                v-if="isPresent(stage.label)"
-                class="w-5 h-5"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-              </svg>
-              <div class="absolute -bottom-[1.5rem] w-max text-center">
-                <h6
-                  class="block text-base font-semibold leading-relaxed tracking-normal text-gray-400"
-                >
-                  {{ stage.label }}
-                </h6>
-              </div>
-            </div>
-          </div>
-        </div>
-      </label>
-    </div>
-  </Button>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+          </span>
+          <Text>{{ stage.label }}</Text>
+        </span>
+      </li>
+    </ol>
+  </div>
 
   <Modal id="modal">
-    <ModalBox class="max-w-[calc(25vw-6.25rem)]">
+    <ModalBox class="max-w-[calc(50vw)]">
       <div class="flex space-x-4 mb-6 w-full">
         <Text size="2xl" class="mr-4">Files</Text>
         <Button
@@ -326,9 +315,8 @@ async function createAndPdfFI() {
         >
           {{ ft }}
         </Button>
-        <div class="ml-36">
-          <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
-        </div>
+        <div class="m-auto"></div>
+        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
       </div>
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
@@ -360,6 +348,7 @@ async function createAndPdfFI() {
               :key="file.path"
               @click="download(file)"
               :class="{
+                'text-gray-700': file.is_deleted,
                 'marked-for-deletion': file.is_deleted,
                 'cursor-pointer': true,
               }"
@@ -385,7 +374,7 @@ async function createAndPdfFI() {
       <div class="grid grid-cols-1 mb-2 mt-8 w-full">
         <Text size="xl" class="mt-6 mb-4">Invoice for</Text>
         <Button class="flex btn-soft font-light tracking-wider mb-6" @click="createAndPdfBI">
-          broker by
+          broker to
           <QueryAndShow name="email" :id="order?.broker" :store="brokersStore"></QueryAndShow>
         </Button>
         <Button class="btn-soft font-light tracking-wider" @click="createAndPdfFI"
