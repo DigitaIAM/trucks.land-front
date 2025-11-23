@@ -145,7 +145,7 @@ function selectExpenses(data) {
           </p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p class="text-md">{{ eventDate.address }}</p>
-          <p class="text-md">{{ eventDate.details }}</p>
+          <p class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'pick-up'">
@@ -172,7 +172,7 @@ function selectExpenses(data) {
           <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p class="text-md">{{ eventDate.address }}</p>
-          <p class="text-md">{{ eventDate.details }}</p>
+          <p class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'change'">
@@ -207,7 +207,7 @@ function selectExpenses(data) {
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p class="text-md">{{ eventDate.details }}</p>
+          <p class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'agreement'">
@@ -238,7 +238,7 @@ function selectExpenses(data) {
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p class="text-md">{{ eventDate.details }}</p>
+          <p class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'expenses'">
@@ -266,7 +266,7 @@ function selectExpenses(data) {
           <p class="text-md">
             <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
           </p>
-          <p class="text-md">{{ eventDate.details }}</p>
+          <p class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
     </li>
