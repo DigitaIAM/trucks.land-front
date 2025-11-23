@@ -10,8 +10,6 @@ const props = defineProps<{
 const paymentToOwnerOrdersStore = usePaymentToOwnerOrdersStore()
 const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const orderStore = useOrdersStore()
-const eventsStore = useEventsStore()
-const vehiclesStore = useVehiclesStore()
 const ownerStore = useOwnersStore()
 const organizationsStore = useOrganizationsStore()
 
@@ -216,7 +214,12 @@ const expensesCols = [
           <tr
             class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
           >
-            <th v-for="col in cols" class="p-4" :style="{ width: col.size + 'px' }">
+            <th
+              v-for="col in cols"
+              :key="col.label"
+              class="p-4"
+              :style="{ width: col.size + 'px' }"
+            >
               <p class="block antialiasing tracking-wider font-thin leading-none">
                 {{ col.label }}
               </p>

@@ -47,7 +47,7 @@ const classes = computed(() => {
   }
 })
 
-function onFileChanged($event: Event) {
+function onFileChanged($event: OrderEvent) {
   console.log('$event', $event)
   const target = $event.target as HTMLInputElement
   console.log('target', target)

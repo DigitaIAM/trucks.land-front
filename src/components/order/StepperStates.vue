@@ -144,8 +144,8 @@ function selectExpenses(data) {
             {{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}
           </p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
-          <p class="text-md">{{ eventDate.address }}</p>
-          <p class="text-md">{{ eventDate.details.notes }}</p>
+          <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
+          <p v-if="eventDate.details.notes" class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'pick-up'">
@@ -171,8 +171,8 @@ function selectExpenses(data) {
           <h3 class="font-bold text-[#68C3A8] leading-tight">Pick up</h3>
           <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
-          <p class="text-md">{{ eventDate.address }}</p>
-          <p class="text-md">{{ eventDate.details.notes }}</p>
+          <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
+          <p v-if="eventDate.details.notes" class="text-md">{{ eventDate.details.notes }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'change'">
@@ -238,7 +238,9 @@ function selectExpenses(data) {
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p class="text-md">{{ eventDate.details.notes }}</p>
+          <p v-if="eventDate.details?.notes" class="text-md">
+            {{ eventDate.details?.notes || '' }}
+          </p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'expenses'">
@@ -266,7 +268,7 @@ function selectExpenses(data) {
           <p class="text-md">
             <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
           </p>
-          <p class="text-md">{{ eventDate.details.notes }}</p>
+          <p class="text-md">{{ eventDate.details?.notes || '' }}</p>
         </span>
       </template>
     </li>

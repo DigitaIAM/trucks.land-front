@@ -6,7 +6,7 @@ const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{
   document: number | null
-  edit: Event | null
+  edit: OrderEvent | null
 }>()
 
 const id = ref(null)
@@ -35,7 +35,7 @@ watch(
 
 const eventsStore = useEventsStore()
 
-function resetAndShow(event: Event | null) {
+function resetAndShow(event: OrderEvent | null) {
   if (event?.kind != 'pick-up') {
     throw 'incorrect kind "' + event?.kind + '" expected "pick-up"'
   }

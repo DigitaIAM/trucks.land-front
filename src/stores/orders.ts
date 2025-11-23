@@ -115,9 +115,13 @@ export const useOrdersStore = defineStore('orders', () => {
 
     let query = supabase.from('orders_journal').select()
 
+    let limit = 20
+
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
-      if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+      if (f.key === 'limit') {
+        limit = f.val
+      } else if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
         query = query.eq(f.key, x.id)
       } else if (Array.isArray(x)) {
         query = query.in(f.key, x)
@@ -126,7 +130,13 @@ export const useOrdersStore = defineStore('orders', () => {
       }
     })
 
-    const response = await query.order('created_at', { ascending: false }).limit(20)
+    query = query.order('created_at', { ascending: false })
+
+    if (limit > 0) {
+      query = query.limit(limit)
+    }
+
+    const response = await query
 
     if (timestamp.value == localTime) {
       const map = new Map<number, Order>()

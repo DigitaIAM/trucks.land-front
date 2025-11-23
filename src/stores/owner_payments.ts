@@ -1,7 +1,4 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import type { PaymentToOwnerOrderCreate } from '@/stores/owner_payment_orders.ts'
-import type { Order } from '@/stores/orders.ts'
-import type { Event } from '@/stores/order_events.ts'
 import type { KV } from '@/utils/kv.ts'
 import { groupBy } from '@/utils/group-by.ts'
 
@@ -35,9 +32,9 @@ export interface PaymentToOwnerCreate {
 export interface PaymentToOwnerSummaryInDetails {
   document: number
   order: Order
-  agreements: Array<Event>
-  pickups: Array<Event>
-  deliveries: Array<Event>
+  agreements: Array<OrderEvent>
+  pickups: Array<OrderEvent>
+  deliveries: Array<OrderEvent>
 }
 
 export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
@@ -98,7 +95,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
       .in('document', ids)
       .in('kind', ['agreement', 'pick-up', 'delivery'])
     const events = groupBy(
-      responseEvents.data!.map((v) => v as Event),
+      responseEvents.data!.map((v) => v as OrderEvent),
       (v) => v.document,
     )
 
@@ -108,12 +105,12 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
 
         const order: Order = orders.get(orderId)![0]
 
-        const agreements: Array<Event> =
-          events.get(orderId)?.filter((v) => v.kind === 'agreement') || new Array<Event>()
-        const pickups: Array<Event> =
-          events.get(orderId)?.filter((v) => v.kind === 'pick-up') || new Array<Event>()
-        const deliveries: Array<Event> =
-          events.get(orderId)?.filter((v) => v.kind === 'delivery') || new Array<Event>()
+        const agreements: Array<OrderEvent> =
+          events.get(orderId)?.filter((v) => v.kind === 'agreement') || new Array<OrderEvent>()
+        const pickups: Array<OrderEvent> =
+          events.get(orderId)?.filter((v) => v.kind === 'pick-up') || new Array<OrderEvent>()
+        const deliveries: Array<OrderEvent> =
+          events.get(orderId)?.filter((v) => v.kind === 'delivery') || new Array<OrderEvent>()
 
         return {
           document: record['doc_payment'],

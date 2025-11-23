@@ -4,56 +4,23 @@ meta:
   layout: clean
 </route>
 
-<script lang="ts">
-import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-
-const ordersStore = useOrdersStore()
-
-export const useOrgData = defineBasicLoader(
-  'oid',
-  async (_) => {
-    ordersStore.reset()
-
-    // const org = await organizationsStore.resolve3(route.params.oid)
-    // authStore.org = org
-
-    // 3 - Loading stage
-    // 5 - Delivery stage
-    // 8 - Loading on site
-    // 21 - Delivery on site
-    await ordersStore.setContext([
-      // { key: 'organization', val: org.id } as KV,
-      { key: 'stage', val: ['2', '3', '5', '6'] } as KV,
-    ])
-    // return org
-  },
-  { key: 'org' },
-)
-</script>
-
 <script setup lang="ts">
+import moment from 'moment'
 import type { KV } from '@/utils/kv.ts'
-const ordersStore = useOrdersStore()
+
+const ordersTrackingStore = useOrdersTracking()
 const organizationsStore = useOrganizationsStore()
 const statusesStore = useStatusesStore()
-const eventsStore = useEventsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
 const filters = ref([] as Array<KV>)
 
-defineOptions({
-  __loaders: [useOrgData],
-})
-
-useOrgData()
-
 interface Col {
   label: string
   size: number
 
-  value(v: Order): string
-  color(v: Status): string
+  value(v: OrderTracking): string
 }
 
 const state = reactive({})
@@ -95,101 +62,106 @@ function generateStyle(col: Col, order: Order) {
   return {}
 }
 
+function formatDT(ts: Date) {
+  const date = new Date(ts)
+  const today = new Date()
+  if (today.getFullYear() === date.getFullYear()) {
+    if (today.getMonth() === date.getMonth()) {
+      if (today.getDate() === date.getDate()) {
+        return moment(date).format('h:mm a')
+      } else {
+        return moment(date).format('Do, h:mm a')
+      }
+    } else {
+      return moment(date).format('MMM Do, h:mm a')
+    }
+  } else {
+    return moment(date).format('MMM Do YYYY, h:mm a')
+  }
+}
+
 const cols: Col[] = [
   {
+    label: 'org',
+    value: (v: OrderTracking) =>
+      resolve(
+        v,
+        'org_' + v.order.organization,
+        () => ({ name: '-', color: '' }),
+        () => organizationsStore.resolve(v.order.organization),
+        (map) => map.code3,
+      ),
+    size: 40,
+  } as Col,
+  {
     label: '#',
-    value: (v: Order) => v.id.toString(),
-    color: (v: Status) => v.color,
-    size: 50,
+    value: (v: OrderTracking) => v.order.number.toString(),
+    size: 60,
   } as Col,
   {
     label: 'status',
-    value: (v: Order) =>
+    value: (v: OrderTracking) =>
       resolve(
         v,
-        'status_' + v.stage,
+        'status_' + v.order.stage,
         () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.stage),
+        () => statusesStore.resolve(v.order.stage),
         (map) => map.name,
       ),
-    color: (v: Status) => v.color,
-    size: 150,
+    size: 100,
   } as Col,
   {
     label: 'refs',
-    value: (v: Order) => v.refs,
-    color: (v: Status) => v.color,
+    value: (v: OrderTracking) => v.order.refs,
     size: 90,
   } as Col,
   {
     label: 'driver',
-    value: (v: Order) =>
+    value: (v: OrderTracking) =>
       resolve(
         v,
-        'driver_' + v.driver,
+        'driver_' + v.order.driver,
         () => ({ name: '-' }),
-        () => driversStore.resolve(v.driver),
+        () => driversStore.resolve(v.order.driver),
         (map) => map.name,
       ),
-    color: (v: Status) => v.color,
-    size: 180,
+    size: 150,
   } as Col,
   {
     label: 'vehicle',
-    value: (v: Order) =>
+    value: (v: OrderTracking) =>
       resolve(
         v,
-        'vehicle_' + v.vehicle,
+        'vehicle_' + v.order.vehicle,
         () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
-        (map) => map.name,
+        () => vehiclesStore.resolve(v.order.vehicle),
+        (map) => map.name?.toLowerCase() || '',
       ),
-    color: (v: Status) => v.color,
-    size: 120,
+    size: 80,
   } as Col,
   {
-    label: 'pick up',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'pick_up',
-        () => [],
-        () => eventsStore.pickUp(v.id),
-        (l) => {
-          let str = ''
-          l.forEach((v) => {
-            if (str) {
-              str += ', '
-            }
-            str += v.zip + ' ' + v.state + ' ' + v.city
-          })
-          return str
-        },
-      ),
-    color: (v: Status) => v.color,
-    size: 300,
+    label: 'kind',
+    value: (v: OrderTracking) => (v.event.kind ? v.event.kind.substring(0, 1).toUpperCase() : ''),
+    size: 12,
   } as Col,
   {
-    label: 'delivery',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'delivery',
-        () => [],
-        () => eventsStore.delivery(v.id),
-        (l) => {
-          let str = ''
-          l.forEach((v) => {
-            if (str) {
-              str += ', '
-            }
-            str += v.zip + ' ' + v.state + ' ' + v.city
-          })
-          return str
-        },
-      ),
-    color: (v: Status) => v.color,
-    size: 300,
+    label: 'time',
+    value: (v: OrderTracking) => (v.event.datetime ? formatDT(v.event.datetime) : ''),
+    size: 115,
+  } as Col,
+  {
+    label: 'address',
+    value: (v: OrderTracking) =>
+      (v.event.state ? v.event.state : '') +
+      (v.event.zip ? ' ' + v.event.zip : '') +
+      (v.event.city ? ' ' + v.event.city : '') +
+      (v.event.address ? ' ' + v.event.address : ''),
+    size: 200,
+  } as Col,
+  {
+    label: 'notes',
+    value: (v: OrderTracking) => v.event.details.notes || '',
+    size: 200,
   } as Col,
 ]
 
@@ -255,7 +227,7 @@ function capitalizeFirstLetter(val: string) {
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
-          class="p-4"
+          class="p-2"
           :style="{ width: col.size + 'px' }"
         >
           <p class="block antialiasing tracking-wider font-thin leading-none">
@@ -265,18 +237,23 @@ function capitalizeFirstLetter(val: string) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in ordersStore.listing" :key="order.id" class="hover:bg-base-200" @click="openOrder(order)">
+      <tr
+        v-for="record in ordersTrackingStore.listing"
+        :key="record.event.id"
+        class="hover:bg-base-200"
+        @click="openOrder(record.order)"
+      >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
-          class="py-3 px-4"
-          :style="generateStyle(col, order)"
+          :key="'row_' + col.label + '_' + record.event.id"
+          class="py-3 px-2"
+          :style="generateStyle(col, record.order)"
         >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(order) }}
+            {{ col.value(record) }}
           </p>
         </td>
       </tr>

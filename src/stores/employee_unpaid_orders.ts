@@ -49,7 +49,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         employee: json['employee'],
         driver_payment: json['driver_payment'],
         employee_payment: 0,
-        order: json as Order
+        order: json as Order,
       } as EmployeePaymentRecord
 
       const key = record.employee
@@ -58,7 +58,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       map.set(key, list)
     })
     mapping.value = map
-
 
     const responseSettlements = await supabase
       .from('employee_unpaid_settlements')
@@ -91,7 +90,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const orders = new Map<number, Order>()
       const paymentsByOrder = new Map<number, number>()
 
-
       const responseTerms = await supabase
         .from('user_conditions')
         .select()
@@ -116,7 +114,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
         orders.set(p.order.id, p.order)
       })
-
 
       const settlementsRecords = [] as Array<SettlementEmployee>
       let settlementsTotal = 0
@@ -147,18 +144,13 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         paymentTerms: paymentTerms,
         settlements: settlementsRecords,
         settlements_total: settlementsTotal,
-        payout: toPayment + settlementsTotal
-      } as DispatcherPaymentSummary)
+        payout: toPayment + settlementsTotal,
+      } as EmployeePaymentSummary)
     }
     return list
   }, [])
 
-  async function createPayment(
-    org: number,
-    year: number,
-    month: number,
-    ex_rate: number
-  ) {
+  async function createPayment(org: number, year: number, month: number, ex_rate: number) {
     const paymentToEmployeeStore = usePaymentToEmployeeStore()
 
     const data = employees.value.slice()
@@ -177,7 +169,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           doc_payment: -1,
           doc_order: order.id,
           order_cost: order.cost,
-          amount: payment
+          amount: payment,
         } as PaymentToDispatcherOrderCreate)
       }
 
@@ -186,10 +178,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         settlementsRecords.push({
           doc_payment: -1,
           doc_settlements: settlement.id,
-          amount: settlement.amount
+          amount: settlement.amount,
         } as EmployeePaymentSettlementsCreate)
       }
-
 
       await paymentToEmployeeStore.create(
         {
@@ -201,10 +192,10 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           percent_of_driver: summary.paymentTerms.percent_of_driver,
           to_pay: summary.toPayment,
           ex_rate: ex_rate,
-          income_tax: summary.paymentTerms.income_tax
+          income_tax: summary.paymentTerms.income_tax,
         } as PaymentToEmployeeCreate,
         records,
-        settlementsRecords
+        settlementsRecords,
       )
     }
 

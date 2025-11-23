@@ -4,7 +4,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps<{
   document: number | null
-  edit: Event | null
+  edit: OrderEvent | null
 }>()
 
 const id = ref(null)
@@ -32,7 +32,7 @@ const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
-function resetAndShow(event: Event | null) {
+function resetAndShow(event: OrderEvent | null) {
   if (event?.kind != 'agreement') {
     throw 'incorrect kind "' + event?.kind + '" expected "agreement"'
   }

@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
-export interface Event extends EventCreate {
+export interface OrderEvent extends EventCreate {
   id: number
   created_at: string
   created_by: number
@@ -39,7 +39,7 @@ export interface EventUpdate {
 
 export const useEventsStore = defineStore('event', () => {
   const orderId = ref<number | null>(null)
-  const mapping = ref(new Map<number, Event[]>()) // | Promise<Event[]>
+  const mapping = ref(new Map<number, OrderEvent[]>()) // | Promise<Event[]>
 
   function setOrderId(id: number) {
     orderId.value = id
@@ -60,7 +60,7 @@ export const useEventsStore = defineStore('event', () => {
     }
   }, [])
 
-  async function fetching(id: number): Promise<Array<Event>> {
+  async function fetching(id: number): Promise<Array<OrderEvent>> {
     if (id) {
       const response = await supabase
         .from('order_events')
@@ -71,10 +71,10 @@ export const useEventsStore = defineStore('event', () => {
       // console.log(response)
 
       if (response.status == 200) {
-        const list: Array<Event> = []
+        const list: Array<OrderEvent> = []
 
         response.data?.forEach((json) => {
-          const event = json as Event
+          const event = json as OrderEvent
           list.push(event)
         })
 
@@ -87,7 +87,7 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  async function pickUp(orderId: number): Promise<Array<Event>> {
+  async function pickUp(orderId: number): Promise<Array<OrderEvent>> {
     if (orderId) {
       const response = await supabase
         .from('order_events')
@@ -99,10 +99,10 @@ export const useEventsStore = defineStore('event', () => {
       // console.log(response)
 
       if (response.status == 200) {
-        const list: Array<Event> = []
+        const list: Array<OrderEvent> = []
 
         response.data?.forEach((json) => {
-          const event = json as Event
+          const event = json as OrderEvent
           list.push(event)
         })
 
@@ -117,7 +117,7 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  async function delivery(orderId: number): Promise<Array<Event>> {
+  async function delivery(orderId: number): Promise<Array<OrderEvent>> {
     if (orderId) {
       const response = await supabase
         .from('order_events')
@@ -129,10 +129,10 @@ export const useEventsStore = defineStore('event', () => {
       // console.log(response)
 
       if (response.status == 200) {
-        const list: Array<Event> = []
+        const list: Array<OrderEvent> = []
 
         response.data?.forEach((json) => {
-          const event = json as Event
+          const event = json as OrderEvent
           list.push(event)
         })
 
@@ -152,7 +152,7 @@ export const useEventsStore = defineStore('event', () => {
 
     if (response.status == 201) {
       response.data?.forEach((json) => {
-        const event = json as Event
+        const event = json as OrderEvent
 
         const map = mapping.value
 
@@ -186,7 +186,7 @@ export const useEventsStore = defineStore('event', () => {
       .then((response) => {
         if (response.status == 200) {
           response.data?.forEach((json) => {
-            const event = json as Event
+            const event = json as OrderEvent
 
             const map = mapping.value
 
