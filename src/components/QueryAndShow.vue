@@ -20,14 +20,14 @@ watch(
       console.log('error', r)
     }
   },
-  { deep: true },
+  { deep: true }
 )
 
 resetAndShow(props.id)
 
 function resetAndShow(id: number) {
   // console.log('resetAndShow', id)
-  state.value = { id: id, name: '?' }
+  state.value = { id: id, name: '-' }
   props.store.resolve(id).then((obj) => {
     if (obj) state.value = obj
   })

@@ -11,7 +11,9 @@ const id = ref(null)
 const datetime = ref(new Date() as Date | undefined)
 const note = ref<string>('')
 const driver = ref<Driver | null>(null)
+const company = ref<Owner | null>(null)
 const vehicle = ref<Vehicle | null>(null)
+const vehicle_found = ref<User | null>(null)
 const cost = ref<number | null>(null)
 const percent = ref<number | null>(null)
 
@@ -31,6 +33,8 @@ watch(
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const usersStore = useUsersStore()
+const ownersStore = useOwnersStore()
 
 function resetAndShow(event: OrderEvent | null) {
   if (event?.kind != 'agreement') {
@@ -39,9 +43,11 @@ function resetAndShow(event: OrderEvent | null) {
 
   id.value = event?.id
   datetime.value = event?.datetime
-  note.value = event?.details?.note || ''
+  note.value = event?.details?.notes || ''
   driver.value = event.driver ? { id: event.driver } : null
+  company.value = event.company ? { id: event.company } : null
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
+  vehicle_found.value = event && event.vehicle_found ? { id: event.vehicle_found } : null
   cost.value = event?.cost
   percent.value = event?.percent
 
@@ -61,7 +67,9 @@ async function saveAndEdit() {
         kind: 'agreement',
         datetime: datetime.value,
         driver: driver.value?.id,
+        company: company.value?.id,
         vehicle: vehicle.value?.id,
+        vehicle_found: vehicle_found.value?.id,
         cost: cost.value,
         percent: percent.value,
         details: {
@@ -74,7 +82,9 @@ async function saveAndEdit() {
         kind: 'agreement',
         datetime: datetime.value,
         driver: driver.value?.id,
+        company: company.value?.id,
         vehicle: vehicle.value?.id,
+        vehicle_found: vehicle_found.value?.id,
         cost: cost.value,
         percent: percent.value,
         details: {
@@ -117,24 +127,40 @@ function close() {
       <Label class="mt-2">Note</Label>
       <TextInput class="w-full" v-model="note" />
 
-      <div class="flex space-x-3 mb-2 mt-4 w-full">
+      <div class="flex space-x-3 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label>Driver</Label>
           <selector v-model="driver" :store="driversStore"></selector>
         </div>
-        <div class="md:w-1/4 md:mb-0">
-          <Label>Driver payment $</Label>
-          <TextInput v-model="cost" />
-        </div>
-        <Text class="py-8">or</Text>
-        <div class="md:w-1/4 md:mb-0">
-          <Label>Percent</Label>
-          <TextInput v-model="percent" />
+        <Text size="2xl" class="py-6">or</Text>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Company</Label>
+          <selector v-model="company" :store="ownersStore"></selector>
         </div>
       </div>
 
-      <Label class="mt-2">Vehicle</Label>
-      <selector v-model="vehicle" :store="vehiclesStore"></selector>
+      <div class="flex space-x-3 mb-2 mt-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mb-1">Driver payment $</Label>
+          <TextInput class="block w-full" v-model="cost" />
+        </div>
+        <Text size="2xl" class="py-6">or</Text>
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mb-1">Percent % </Label>
+          <TextInput class="block w-full" v-model="percent" />
+        </div>
+      </div>
+
+      <div class="flex space-x-3 mb-2 mt-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Vehicle</Label>
+          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Vehicle found by</Label>
+          <selector :modelValue="vehicle_found" :store="usersStore" />
+        </div>
+      </div>
 
       <ModalAction>
         <Button

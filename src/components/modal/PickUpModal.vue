@@ -132,23 +132,23 @@ function close() {
       <TextInput class="w-full px-3" v-model="address" />
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>City / town</Label>
           <TextInput v-model="city" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>State</Label>
           <TextInput v-model="state" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>Zip</Label>
           <TextInput v-model="zip" />
         </div>
       </div>
 
-      <div class="flex space-x-3 mb-2 w-full">
-        <Label class="mt-2 mr-4">Completed</Label>
-        <div class="flex items-center justify-between mt-4 mr-4">
+      <div class="grid grid-cols-2 justify-items-stretch space-x-3 mb-2 mt-4 w-full">
+        <div class="mt-4">
+          <Label class="mt-2 mr-4">Completed</Label>
           <Button
             sm
             class="mr-1 mb-2"
@@ -160,7 +160,7 @@ function close() {
             {{ item }}
           </Button>
         </div>
-        <div class="w-1/2 mt-4 ml-4">
+        <div class="md:w-7/8 md:mb-0 mt-4 justify-self-end">
           <VueDatePicker
             class="my-custom-datepicker"
             teleport-center

@@ -165,7 +165,7 @@ const cols = [
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
-    size: 180,
+    size: 150,
   },
   {
     label: 'vehicle',
@@ -178,7 +178,7 @@ const cols = [
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
-    size: 120,
+    size: 80,
   },
   {
     label: 'cost',
@@ -203,7 +203,7 @@ const cols = [
         (map) => map[0]?.notes ?? '',
       ),
     color: (v: Status) => v.color,
-    size: 300,
+    size: 200,
   },
 ]
 
@@ -278,7 +278,7 @@ function capitalizeFirstLetter(val) {
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
-          class="p-4"
+          class="p-2"
           :style="{ width: col.size + 'px' }"
         >
           <p class="block antialiasing tracking-wider font-thin leading-none">
@@ -297,7 +297,7 @@ function capitalizeFirstLetter(val) {
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.number"
-          class="py-3 px-4"
+          class="py-3 px-2"
           :style="generateStyle(col, order)"
         >
           <p

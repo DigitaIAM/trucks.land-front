@@ -16,7 +16,9 @@ export interface EventCreate {
   zip: string
   cost: number
   driver: number
+  company: number
   vehicle: number
+  vehicle_found: number
   details: object
   percent: number
 }
@@ -31,7 +33,9 @@ export interface EventUpdate {
   zip?: string
   cost?: number
   driver?: number
+  company?: number
   vehicle?: number
+  vehicle_found?: number
   owner?: number
   details?: object
   percent?: number
