@@ -66,30 +66,34 @@ async function saveAndEdit() {
         document: props.document,
         kind: 'agreement',
         datetime: datetime.value,
-        driver: driver.value?.id,
-        company: company.value?.id,
-        vehicle: vehicle.value?.id,
-        vehicle_found: vehicle_found.value?.id,
+        driver: driver.value?.id ?? null,
+        company: company.value?.id ?? null,
+        vehicle: vehicle.value?.id ?? null,
+        vehicle_found: vehicle_found.value?.id ?? null,
         cost: cost.value,
         percent: percent.value,
-        details: {
-          note: note.value,
-        },
+        details: note.value
+          ? {
+              note: note.value,
+            }
+          : null,
       } as EventUpdate)
     } else {
       await eventsStore.create({
         document: props.document,
         kind: 'agreement',
         datetime: datetime.value,
-        driver: driver.value?.id,
-        company: company.value?.id,
-        vehicle: vehicle.value?.id,
-        vehicle_found: vehicle_found.value?.id,
+        driver: driver.value?.id ?? null,
+        company: company.value?.id ?? null,
+        vehicle: vehicle.value?.id ?? null,
+        vehicle_found: vehicle_found.value?.id ?? null,
         cost: cost.value,
         percent: percent.value,
-        details: {
-          note: note.value,
-        },
+        details: note.value
+          ? {
+              note: note.value,
+            }
+          : null,
       } as EventCreate)
     }
 
@@ -130,35 +134,51 @@ function close() {
       <div class="flex space-x-3 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label>Driver</Label>
-          <selector v-model="driver" :store="driversStore"></selector>
+          <selector
+            v-model="driver"
+            :store="driversStore"
+            :disabled="company?.id != undefined"
+          ></selector>
         </div>
-        <Text size="2xl" class="py-6">or</Text>
+        <Text class="pt-8">or</Text>
         <div class="md:w-1/2 md:mb-0">
           <Label>Company</Label>
-          <selector v-model="company" :store="ownersStore"></selector>
-        </div>
-      </div>
-
-      <div class="flex space-x-3 mb-2 mt-2 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label class="mb-1">Driver payment $</Label>
-          <TextInput class="block w-full" v-model="cost" />
-        </div>
-        <Text size="2xl" class="py-6">or</Text>
-        <div class="md:w-1/2 md:mb-0">
-          <Label class="mb-1">Percent % </Label>
-          <TextInput class="block w-full" v-model="percent" />
+          <selector
+            v-model="company"
+            :store="ownersStore"
+            :disabled="driver?.id != undefined"
+          ></selector>
         </div>
       </div>
 
       <div class="flex space-x-3 mb-2 mt-2 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label>Vehicle</Label>
-          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+          <selector
+            v-model="vehicle"
+            :store="vehiclesStore"
+            :disabled="company?.id != undefined"
+          ></selector>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <Label>Vehicle found by</Label>
-          <selector :modelValue="vehicle_found" :store="usersStore" />
+          <selector
+            :modelValue="vehicle_found"
+            :store="usersStore"
+            :disabled="vehicle?.id === undefined || company?.id != undefined"
+          />
+        </div>
+      </div>
+
+      <div class="flex space-x-3 mb-2 mt-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mb-1">Payment $</Label>
+          <TextInput class="block w-full" v-model="cost" :disabled="percent > 0" />
+        </div>
+        <Text class="pt-8">or</Text>
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mb-1">Percent % </Label>
+          <TextInput class="block w-full" v-model="percent" :disabled="cost > 0" />
         </div>
       </div>
 

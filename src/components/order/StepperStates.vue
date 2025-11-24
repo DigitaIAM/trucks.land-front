@@ -8,6 +8,7 @@ const emit = defineEmits(['on-update'])
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const ownersStore = useOwnersStore()
 
 watch(
   () => props.orderId,
@@ -229,10 +230,13 @@ function selectExpenses(data) {
           </span>
           <h3 class="font-bold text-[#e35e87] leading-tight">Agreement</h3>
           <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
-          <p class="text-md">
+          <p v-if="eventDate.company" class="text-md">
+            <QueryAndShow :id="eventDate.company" :store="ownersStore" />
+          </p>
+          <p v-if="eventDate.driver" class="text-md">
             <QueryAndShow :id="eventDate.driver" :store="driversStore" />
           </p>
-          <p class="text-md">
+          <p v-if="eventDate.vehicle" class="text-md">
             <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
           </p>
           <p class="text-md">
