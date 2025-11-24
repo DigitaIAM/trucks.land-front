@@ -161,7 +161,7 @@ function close() {
           ></selector>
         </div>
         <div class="md:w-1/2 md:mb-0">
-          <Label>Vehicle found by</Label>
+          <Label>found by</Label>
           <selector
             :modelValue="vehicle_found"
             :store="usersStore"
