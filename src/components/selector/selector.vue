@@ -35,6 +35,9 @@ async function init(suggestion: Reference | Suggestion | null) {
   if (suggestion) {
     const obj = await props.store.resolve(suggestion.id)
     if (obj) {
+      if (obj.name !== suggestion.name) {
+        emit('update:modelValue', obj)
+      }
       isNotFound.value = obj ? false : true
       isSetResult.value = true
       valueAsText.value = obj?.name || ''
