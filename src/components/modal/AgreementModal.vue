@@ -5,6 +5,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 const props = defineProps<{
   document: number | null
   edit: OrderEvent | null
+  disabled?: boolean
 }>()
 
 const id = ref(null)
@@ -27,7 +28,7 @@ watch(
   (event) => {
     resetAndShow(event)
   },
-  { deep: true },
+  { deep: true }
 )
 
 const eventsStore = useEventsStore()
@@ -74,9 +75,9 @@ async function saveAndEdit() {
         percent: percent.value,
         details: note.value
           ? {
-              note: note.value,
-            }
-          : null,
+            note: note.value
+          }
+          : null
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -91,9 +92,9 @@ async function saveAndEdit() {
         percent: percent.value,
         details: note.value
           ? {
-              note: note.value,
-            }
-          : null,
+            note: note.value
+          }
+          : null
       } as EventCreate)
     }
 
@@ -124,69 +125,77 @@ function close() {
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
+            :disabled="props.disabled"
           ></VueDatePicker>
         </div>
       </div>
 
       <Label class="mt-2">Note</Label>
-      <TextInput class="w-full" v-model="note" />
+      <TextInput class="w-full" v-model="note" :disabled="props.disabled" />
 
-      <div class="flex space-x-3 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Driver</Label>
-          <selector
-            v-model="driver"
-            :store="driversStore"
-            :disabled="company?.id != undefined"
-          ></selector>
+      <fieldset :disabled="props.disabled">
+        <div class="flex space-x-3 mt-4 w-full">
+          <div class="md:w-1/2 md:mb-0">
+            <Label>Driver</Label>
+            <selector
+              v-model="driver"
+              :store="driversStore"
+              :disabled="company?.id != undefined"
+            ></selector>
+          </div>
+          <Text class="pt-8">or</Text>
+          <div class="md:w-1/2 md:mb-0">
+            <Label>Company</Label>
+            <selector
+              v-model="company"
+              :store="ownersStore"
+              :disabled="driver?.id != undefined"
+            ></selector>
+          </div>
         </div>
-        <Text class="pt-8">or</Text>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Company</Label>
-          <selector
-            v-model="company"
-            :store="ownersStore"
-            :disabled="driver?.id != undefined"
-          ></selector>
-        </div>
-      </div>
+      </fieldset>
 
-      <div class="flex space-x-3 mb-2 mt-2 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label>Vehicle</Label>
-          <selector
-            v-model="vehicle"
-            :store="vehiclesStore"
-            :disabled="company?.id != undefined"
-          ></selector>
+      <fieldset :disabled="props.disabled">
+        <div class="flex space-x-3 mb-2 mt-2 w-full">
+          <div class="md:w-1/2 md:mb-0">
+            <Label>Vehicle</Label>
+            <selector
+              v-model="vehicle"
+              :store="vehiclesStore"
+              :disabled="company?.id != undefined"
+            ></selector>
+          </div>
+          <div class="md:w-1/2 md:mb-0">
+            <Label>found by</Label>
+            <selector
+              :modelValue="vehicle_found"
+              :store="usersStore"
+              :disabled="vehicle?.id === undefined || company?.id != undefined"
+            />
+          </div>
         </div>
-        <div class="md:w-1/2 md:mb-0">
-          <Label>found by</Label>
-          <selector
-            :modelValue="vehicle_found"
-            :store="usersStore"
-            :disabled="vehicle?.id === undefined || company?.id != undefined"
-          />
-        </div>
-      </div>
+      </fieldset>
 
-      <div class="flex space-x-3 mb-2 mt-2 w-full">
-        <div class="md:w-1/2 md:mb-0">
-          <Label class="mb-1">Payment $</Label>
-          <TextInput class="block w-full" v-model="cost" :disabled="percent > 0" />
+      <fieldset :disabled="props.disabled">
+        <div class="flex space-x-3 mb-2 mt-2 w-full">
+          <div class="md:w-1/2 md:mb-0">
+            <Label class="mb-1">Payment $</Label>
+            <TextInput class="block w-full" v-model="cost" :disabled="percent > 0" />
+          </div>
+          <Text class="pt-8">or</Text>
+          <div class="md:w-1/2 md:mb-0">
+            <Label class="mb-1">Percent % </Label>
+            <TextInput class="block w-full" v-model="percent" :disabled="cost > 0" />
+          </div>
         </div>
-        <Text class="pt-8">or</Text>
-        <div class="md:w-1/2 md:mb-0">
-          <Label class="mb-1">Percent % </Label>
-          <TextInput class="block w-full" v-model="percent" :disabled="cost > 0" />
-        </div>
-      </div>
+      </fieldset>
 
       <ModalAction>
         <Button
           class="btn-soft font-light tracking-wider"
           :disabled="buttonDisabled"
           @click="saveAndEdit"
+          v-if="!props.disabled"
         >
           {{ id > 0 ? 'Update' : 'Create' }}
         </Button>

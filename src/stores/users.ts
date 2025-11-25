@@ -5,6 +5,7 @@ import { sleep } from '@/utils/datetime.ts'
 export interface User extends UserCreate {
   id: number
   created_at: string
+  access: Array<object>
 }
 
 export interface UserCreate {
@@ -111,6 +112,7 @@ export const useUsersStore = defineStore('user', () => {
   }
 
   async function resolveUUID(oid: number | null, uuid: string | null) {
+    console.log('resolveUUID', oid, uuid)
     if (oid && uuid) {
       const v = uuids.value.get(oid)?.get(uuid)
       if (v) {
@@ -128,6 +130,7 @@ export const useUsersStore = defineStore('user', () => {
 
         response.data?.forEach((json) => {
           const user = json as User
+          user.access = access.data
 
           const map = uuids.value.get(oid) || new Map()
           map.set(uuid, user)
@@ -172,7 +175,7 @@ export const useUsersStore = defineStore('user', () => {
     resolve,
     resolveUUID,
     search,
-    searchAndListing,
+    searchAndListing
   }
 })
 

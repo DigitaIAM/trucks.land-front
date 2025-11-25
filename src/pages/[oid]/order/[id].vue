@@ -41,11 +41,34 @@ const total_miles = ref<number>()
 const cost = ref<number>()
 const excluded = ref(false)
 
+const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
 const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
+
+const currentAccount = computedAsync(async () => {
+  return await usersStore.resolveUUID(authStore.org?.id, authStore.user?.id)
+}, null)
+
+const isReadOnly = computedAsync(async () => {
+  const account = currentAccount.value;
+  if (account && account.access) {
+    for (const record of account.access) {
+      if (record.is_admin) {
+        return false
+      } else if (record.is_dispatcher) {
+        const id = created_by.value?.id;
+        if (id && id === created_by.value) {
+          return false
+        }
+      }
+
+    }
+  }
+  return true
+}, true)
 
 const nextStatuses = computedAsync(async () => {
   const list = [] as List<Status>
@@ -169,7 +192,7 @@ useEventListener(document, 'keydown', handleKeyDown)
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
           <Button class="btn-soft font-light tracking-wider" @click="closeOrder()">Close</Button>
-          <Button class="btn-soft font-light tracking-wider" @click="saveOrder(null)"
+          <Button class="btn-soft font-light tracking-wider" @click="saveOrder(null)" v-if="!isReadOnly"
             >Update
           </Button>
         </div>
@@ -178,6 +201,7 @@ useEventListener(document, 'keydown', handleKeyDown)
           class="cursor-pointer btn-soft font-light tracking-wider"
           :class="{ 'exclude-active': excluded }"
           @click="handleClick"
+          :disabled="isReadOnly"
           >excluded from calculations with the dispatcher
         </Button>
       </div>
@@ -212,11 +236,11 @@ useEventListener(document, 'keydown', handleKeyDown)
             </div>
             <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Posted loads ID</Label>
-              <TextInput v-model="posted_loads" />
+              <TextInput v-model="posted_loads" :disabled="isReadOnly"/>
             </div>
             <div class="md:w-1/3 md:mb-0">
               <Label class="mb-1">Refs</Label>
-              <TextInput v-model="refs" />
+              <TextInput v-model="refs" :disabled="isReadOnly"/>
             </div>
           </div>
 
@@ -232,26 +256,26 @@ useEventListener(document, 'keydown', handleKeyDown)
             </div>
             <div class="md:w-1/2 md:mb-0">
               <Label class="mb-1">Broker</Label>
-              <selector label="Broker" v-model="broker" :store="brokersStore"></selector>
+              <selector label="Broker" v-model="broker" :store="brokersStore" :disabled="isReadOnly"></selector>
             </div>
           </div>
 
           <div class="flex space-x-3 mb-2 mt-6 w-full">
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total pieces</Label>
-              <TextInput v-model="total_pieces" />
+              <TextInput v-model="total_pieces" :disabled="isReadOnly"/>
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total weight</Label>
-              <TextInput v-model="total_weight" />
+              <TextInput v-model="total_weight" :disabled="isReadOnly"/>
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total miles</Label>
-              <TextInput v-model="total_miles" />
+              <TextInput v-model="total_miles" :disabled="isReadOnly"/>
             </div>
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Cost $</Label>
-              <TextInput v-model="cost" />
+              <TextInput v-model="cost" :disabled="isReadOnly"/>
             </div>
           </div>
           <div class="mb-6">
@@ -266,7 +290,7 @@ useEventListener(document, 'keydown', handleKeyDown)
 
     <div class="w-full flex-col">
       <div class="px-20 mt-1">
-        <StepperStates :orderId="_id"></StepperStates>
+        <StepperStates :orderId="_id" :disabled="isReadOnly"></StepperStates>
       </div>
     </div>
     <StepperUploading :order="_order"></StepperUploading>

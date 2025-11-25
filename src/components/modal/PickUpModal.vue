@@ -7,6 +7,7 @@ const listOfTimeliness = ['early', 'on time', 'behind']
 const props = defineProps<{
   document: number | null
   edit: OrderEvent | null
+  disabled?: boolean
 }>()
 
 const id = ref(null)
@@ -30,7 +31,7 @@ watch(
     console.log('watch', event)
     resetAndShow(event)
   },
-  { deep: true },
+  { deep: true }
 )
 
 const eventsStore = useEventsStore()
@@ -70,8 +71,8 @@ async function saveAndEdit() {
         details: {
           note: note.value,
           priority: priority.value,
-          timeliness: timeliness.value,
-        },
+          timeliness: timeliness.value
+        }
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -85,8 +86,8 @@ async function saveAndEdit() {
         details: {
           note: note.value,
           priority: priority.value,
-          timeliness: timeliness.value,
-        },
+          timeliness: timeliness.value
+        }
       } as EventCreate)
     }
     close()
@@ -100,6 +101,18 @@ async function saveAndEdit() {
 function close() {
   create_pickUp.close()
   emit('on-update')
+}
+
+function setPriority(v: string) {
+  if (!props.disabled) {
+    priority.value = v
+  }
+}
+
+function setTimeliness(v: string) {
+  if (!props.disabled) {
+    timeliness.value = v
+  }
 }
 </script>
 
@@ -118,7 +131,7 @@ function close() {
             v-for="ft in listOfPriorities"
             :key="ft"
             :class="{ 'bg-accent': priority == ft }"
-            @click="priority = ft"
+            @click="setPriority(ft)"
           >
             {{ ft }}
           </Button>
@@ -126,23 +139,23 @@ function close() {
       </div>
 
       <Label>Note</Label>
-      <TextInput class="w-full px-3" v-model="note" />
+      <TextInput class="w-full px-3" v-model="note" :disabled="props.disabled" />
 
       <Label class="mt-4">Address</Label>
-      <TextInput class="w-full px-3" v-model="address" />
+      <TextInput class="w-full px-3" v-model="address" :disabled="props.disabled" />
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">
           <Label>City / town</Label>
-          <TextInput v-model="city" />
+          <TextInput v-model="city" :disabled="props.disabled" />
         </div>
         <div class="md:w-1/3 md:mb-0">
           <Label>State</Label>
-          <TextInput v-model="state" />
+          <TextInput v-model="state" :disabled="props.disabled" />
         </div>
         <div class="md:w-1/3 md:mb-0">
           <Label>Zip</Label>
-          <TextInput v-model="zip" />
+          <TextInput v-model="zip" :disabled="props.disabled" />
         </div>
       </div>
 
@@ -155,7 +168,7 @@ function close() {
             v-for="item in listOfTimeliness"
             :key="item"
             :class="{ 'bg-accent': timeliness == item }"
-            @click="timeliness = item"
+            @click="setTimeliness(item)"
           >
             {{ item }}
           </Button>
@@ -166,6 +179,7 @@ function close() {
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
+            :disabled="props.disabled"
           ></VueDatePicker>
         </div>
       </div>
@@ -175,6 +189,7 @@ function close() {
           class="btn-soft font-light tracking-wider"
           :disabled="buttonDisabled"
           @click="saveAndEdit"
+          v-if="!props.disabled"
         >
           {{ id > 0 ? 'Update' : 'Create' }}
         </Button>

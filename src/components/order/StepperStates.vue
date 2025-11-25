@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   orderId: number | null
+  disabled?: boolean
 }>()
 
 const emit = defineEmits(['on-update'])
@@ -16,7 +17,7 @@ watch(
     // console.log('watch id', id, props.id)
     resetAndShow(id)
   },
-  { deep: true },
+  { deep: true }
 )
 
 resetAndShow(props.orderId)
@@ -58,27 +59,36 @@ function selectExpenses(data) {
 </script>
 
 <template>
-  <PickUpModal :document="props.orderId" :edit="selectedPickup" @on-update="onUpdate"></PickUpModal>
+  <PickUpModal
+    :disabled="props.disabled"
+    :document="props.orderId"
+    :edit="selectedPickup"
+    @on-update="onUpdate"
+  />
   <DeliveryModal
+    :disabled="props.disabled"
     :document="props.orderId"
     :edit="selectedDelivery"
     @on-update="onUpdate"
-  ></DeliveryModal>
+  />
   <ChangeDriverAndVehicle
+    :disabled="props.disabled"
     :document="props.orderId"
     :edit="selectedChange"
     @on-update="onUpdate"
-  ></ChangeDriverAndVehicle>
+  />
   <AgreementModal
+    :disabled="props.disabled"
     :document="props.orderId"
     :edit="selectedAgreement"
     @on-update="onUpdate"
-  ></AgreementModal>
+  />
   <ExpensesModal
+    :disabled="props.disabled"
     :document="props.orderId"
     :edit="selectedExpenses"
     @on-update="onUpdate"
-  ></ExpensesModal>
+  />
 
   <ol class="w-full relative text-gray-500 border-l-2 border-gray-500">
     <li class="mb-8 ms-6">
@@ -91,27 +101,27 @@ function selectExpenses(data) {
           >
             <li>
               <a class="text-white" @click="selectedPickup = { id: -1, kind: 'pick-up' }"
-                >Pick Up</a
+              >Pick Up</a
               >
             </li>
             <li>
               <a class="text-white" @click="selectedDelivery = { id: -1, kind: 'delivery' }"
-                >Delivery</a
+              >Delivery</a
               >
             </li>
             <li>
               <a class="text-white" @click="selectedAgreement = { id: -1, kind: 'agreement' }"
-                >Agreement</a
+              >Agreement</a
               >
             </li>
             <li>
               <a class="text-white" @click="selectedChange = { id: -1, kind: 'change' }"
-                >Change of driver and vehicle</a
+              >Change of driver and vehicle</a
               >
             </li>
             <li>
               <a class="text-white" @click="selectedExpenses = { id: -1, kind: 'expenses' }"
-                >Expenses</a
+              >Expenses</a
               >
             </li>
           </ul>

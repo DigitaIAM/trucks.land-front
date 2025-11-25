@@ -63,16 +63,33 @@ const handleSignup = async () => {
   }
 }
 const loginAndRedirect = (email: string, password: string) => {
-  console.log('loginAndRedirect', email, password)
   authStore
     .signInWithEmail(email, password)
     .then(({ data, error }) => {
       console.log('error', error)
       if (error == null) {
-        const redirectTo = authStore.loginRedirect || '/organisation'
-        console.log('redirectTo', redirectTo)
-        authStore.loginRedirect = null
-        router.push(redirectTo)
+        supabase
+          .from('access_matrix')
+          .select()
+          .eq('user_uuid', data.user.id)
+          .then((response) => {
+            let notFound = true
+
+              for (const record of response.data) {
+                if (record.is_tracking) {
+                  notFound = false
+                  authStore.loginRedirect = null
+                  router.replace('/tracking')
+                }
+              }
+
+              if (notFound) {
+                const redirectTo = authStore.loginRedirect || '/organisation'
+                console.log('redirectTo', redirectTo)
+                authStore.loginRedirect = null
+                router.replace(redirectTo)
+              }
+          })
       }
     })
     .catch((error: any) => {
@@ -129,20 +146,6 @@ const loginAndRedirect = (email: string, password: string) => {
           <Button v-if="inSignupMode" primary @click.prevent="handleSignup"> Signup</Button>
           <Button v-else primary @click.prevent="handleLogin"> Login</Button>
 
-<!--          <div class="text-center">-->
-<!--            <Flex v-if="inSignupMode" col>-->
-<!--              <span>Already signed up?</span>-->
-<!--              <Link @click="inSignupMode = !inSignupMode">-->
-<!--                <span>Login</span>-->
-<!--              </Link>-->
-<!--            </Flex>-->
-<!--            <Flex v-else col>-->
-<!--              <span>Need an account?</span>-->
-<!--              <Link @click="inSignupMode = !inSignupMode">-->
-<!--                <span>Signup</span>-->
-<!--              </Link>-->
-<!--            </Flex>-->
-<!--          </div>-->
         </form>
       </CardBody>
     </Card>

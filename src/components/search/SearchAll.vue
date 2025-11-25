@@ -1,6 +1,8 @@
 <script setup lang="ts">
+
 const emit = defineEmits(['selected'])
 
+const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
 const ownersStore = useOwnersStore()
 const driversStore = useDriversStore()
@@ -11,12 +13,13 @@ const statusesStore = useStatusesStore()
 const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
   () =>
+    orders_number.value?.length != 0 ||
     brokers.value?.length != 0 ||
     owners.value?.length != 0 ||
     drivers.value?.length != 0 ||
     vehicles.value?.length != 0 ||
     dispatchers.value?.length != 0 ||
-    statuses.value?.length != 0,
+    statuses.value?.length != 0
 )
 
 const searchQuery = ref('')
@@ -40,8 +43,16 @@ watch(
     } else {
       queryStr.value = ''
     }
-  },
+  }
 )
+
+const orders_number = computedAsync(async () => {
+  const str = queryStr.value
+  if (str) {
+    return await ordersStore.search(str)
+  }
+  return []
+}, [])
 
 const brokers = computedAsync(async () => {
   const str = queryStr.value
@@ -134,6 +145,7 @@ function select(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
+        <SearchBlock @click="select" id="order_number" label="numbers" :items="orders_number" />
         <SearchBlock @click="select" id="broker" label="brokers" :items="brokers" />
         <SearchBlock @click="select" id="driver" label="drivers" :items="drivers" />
         <SearchBlock @click="select" id="vehicle" label="vehicles" :items="vehicles" />
