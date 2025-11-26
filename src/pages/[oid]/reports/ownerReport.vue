@@ -6,6 +6,7 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
@@ -51,6 +52,29 @@ function onClose() {
   selectedOwner.value = null
 }
 
+const searchQuery = ref('')
+const queryStr = ref('')
+
+let timer: ReturnType<typeof setTimeout>
+const delay = 250
+
+watch(
+  () => searchQuery.value,
+  (query: string) => {
+    clearTimeout(timer)
+    if (query) {
+      const text = query
+      timer = setTimeout(() => {
+        const query = searchQuery.value
+        if (text === query) {
+          queryStr.value = query.toString().trim().toLowerCase()
+        }
+      }, delay)
+    } else {
+      queryStr.value = ''
+    }
+  },
+)
 function resolve(
   order: Order,
   name: string,
@@ -107,20 +131,15 @@ const cols = [
 ]
 
 async function createPayment() {
-  await reportOwnerStore.createPayment(
-    authStore.org?.id,
-    currentYear.value,
-    currentWeek.value,
-  )
+  await reportOwnerStore.createPayment(authStore.org?.id, currentYear.value, currentWeek.value)
 }
-
 </script>
 
 <template>
   <OwnerPayment :org-id="authStore.oid" :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
+  <Text class="px-4" size="2xl">Report</Text>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Report</Text>
-    <SearchVue :store="ownersStore"></SearchVue>
+    <SearchVue :store="reportOwnerStore" />
     <div>#{{ currentWeek }}</div>
     <div>{{ currentYear }}</div>
     <Button

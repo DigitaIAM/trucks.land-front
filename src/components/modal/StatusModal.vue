@@ -21,6 +21,7 @@ const palette = [
   'rgba(0,255,0,0.8)',
   'rgba(166,167,55,0.8)',
   'rgba(29,78,216,0.8)',
+  'rgba(228, 232, 235, 0.8)',
 ]
 const color = defineModel({
   default: '#00000000',

@@ -25,8 +25,6 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import BrokerIcon from '../../assets/icons/handshake.svg?url'
-import VehicleIcon from '../../assets/icons/vehicle.svg?url'
 import OwnerIcon from '../../assets/icons/bussness_center.svg?url'
 import DispatcherIcon from '../../assets/icons/dispatcher.svg?url'
 

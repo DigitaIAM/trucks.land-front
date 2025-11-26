@@ -26,6 +26,8 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
   const expenses = ref(new Map<number, Array<ExpensesToOwner>>())
   const processing = ref<Array<number>>([])
 
+  const searchQuery = ref<string | null>(null)
+
   async function loading(orgId: number | null) {
     org.value = orgId
     const responsePayments = await supabase
@@ -38,7 +40,7 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       const record = {
         owner: json['owner'],
         driver_payment: json['driver_cost'],
-        order: json as Order
+        order: json as Order,
       } as OwnerPaymentRecord
 
       const key = record.owner
@@ -66,7 +68,9 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
     expenses.value = expensesMap
   }
 
-  const owners = computed(() => {
+  const owners = computedAsync(async () => {
+    const ownersStore = useOwnersStore()
+
     const list = [] as OwnerPaymentSummary[]
 
     const paymentsMap = payments.value
@@ -100,6 +104,13 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         }
       })
 
+      if (searchQuery.value != null) {
+        const ownerRecord = await ownersStore.resolve(owner)
+        if (!ownerRecord?.name.toLowerCase().includes(searchQuery.value)) {
+          continue
+        }
+      }
+
       list.push({
         owner: owner,
         orders_number: orders.size,
@@ -109,13 +120,15 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         paymentsByOrder: paymentsByOrder,
         expenses: expensesRecords,
         expenses_total: expensesTotal,
-        payout: owner_payment - expensesTotal
+        payout: owner_payment - expensesTotal,
       } as OwnerPaymentSummary)
     }
 
+    list.sort((a, b) => b.payout - a.payout)
+
     // console.log('list', list)
     return list
-  })
+  }, [])
 
   async function createPayment(org: number, year: number, week: number) {
     const paymentToOwnerStore = usePaymentToOwnerStore()
@@ -140,7 +153,7 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
           doc_payment: -1,
           doc_order: order.id,
           order_cost: order.cost,
-          amount: payment
+          amount: payment,
         } as PaymentToOwnerOrderCreate)
       }
 
@@ -150,7 +163,7 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         expensesRecords.push({
           doc_payment: -1,
           doc_expense: expense.id,
-          amount: expense.amount
+          amount: expense.amount,
         } as PaymentToOwnerExpenseCreate)
       }
 
@@ -159,10 +172,10 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
           organization: org,
           owner: summary.owner,
           year: year,
-          week: week
+          week: week,
         } as PaymentToOwnerCreate,
         paymentRecords,
-        expensesRecords
+        expensesRecords,
       )
     }
 
@@ -174,7 +187,11 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
     processing.value = []
   }
 
-  return { loading, owners, processing, createPayment }
+  async function searchAndListing(text: string) {
+    searchQuery.value = text
+  }
+
+  return { loading, owners, processing, createPayment, searchAndListing }
 })
 
 if (import.meta.hot) {
