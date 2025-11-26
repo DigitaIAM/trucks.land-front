@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const emit = defineEmits(['selected'])
 
 const ordersStore = useOrdersStore()
@@ -19,7 +18,7 @@ const isSetResult = computed(
     drivers.value?.length != 0 ||
     vehicles.value?.length != 0 ||
     dispatchers.value?.length != 0 ||
-    statuses.value?.length != 0
+    statuses.value?.length != 0,
 )
 
 const searchQuery = ref('')
@@ -43,13 +42,13 @@ watch(
     } else {
       queryStr.value = ''
     }
-  }
+  },
 )
 
 const orders_number = computedAsync(async () => {
   const str = queryStr.value
   if (str) {
-    return await ordersStore.search(str)
+    return await ordersStore.searchNumber(str)
   }
   return []
 }, [])

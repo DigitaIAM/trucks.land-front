@@ -97,7 +97,14 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         .eq('organization', org.value)
         .maybeSingle()
 
-      const paymentTerms = responseTerms.data as PaymentTerms
+      const paymentTerms = (responseTerms.data || {
+        created_by: 1,
+        organization: org.value,
+        user: employee,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        income_tax: 0,
+      }) as PaymentTerms
 
       paymentsMap.get(employee)?.forEach((p) => {
         if (p.order.excluded) {
@@ -189,7 +196,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           month: month,
           year: year,
           percent_of_gross: summary.paymentTerms.percent_of_gross,
-          percent_of_driver: summary.paymentTerms.percent_of_driver,
+          percent_of_driver: summary.paymentTerms.percent_of_profit,
           to_pay: summary.toPayment,
           ex_rate: ex_rate,
           income_tax: summary.paymentTerms.income_tax,

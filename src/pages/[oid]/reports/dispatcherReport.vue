@@ -42,26 +42,26 @@ defineOptions({
 
 const state = reactive({})
 
-const selectedEmployee = ref(null)
+const selectedEmployee = ref<number | null>(null)
 
 function openPayment(record: EmployeePaymentRecord) {
   selectedEmployee.value = record.employee
 }
 
 function resolve(
-  summary: EmployeePaymentSummary,
+  order: EmployeePaymentSummary,
   create: () => object,
   request: () => Promise<object | null>,
   label: (obj: object) => string,
 ) {
-  let s = state[summary.employee]
+  let s = state[order.employee]
   if (s) {
     return label(s)
   } else {
     s = create()
-    state[summary.employee] = s
+    state[order.employee] = s
     request().then((obj) => {
-      state[summary.employee] = obj
+      state[order.employee] = obj
     })
     return label(s)
   }
@@ -95,8 +95,13 @@ const cols = [
     size: 100,
   },
   {
-    label: '% of gross',
+    label: 'gross %',
     value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
+    size: 100,
+  },
+  {
+    label: 'profit %',
+    value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
     size: 100,
   },
   {
@@ -112,7 +117,6 @@ const cols = [
 ]
 
 async function createPayment() {
-
   // console.log('exchangeRate', exchangeRate.value)
 
   const rate = Number(exchangeRate.value)

@@ -43,7 +43,7 @@ const buttons = [
     link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/ownerReport',
   },
   {
-    label: 'Dispatcher',
+    label: 'Employee',
     icon: DispatcherIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/dispatcherReport',
   },

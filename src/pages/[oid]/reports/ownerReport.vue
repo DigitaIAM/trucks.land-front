@@ -6,7 +6,6 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
