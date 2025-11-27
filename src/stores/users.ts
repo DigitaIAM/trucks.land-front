@@ -103,9 +103,12 @@ export const useUsersStore = defineStore('user', () => {
     }
 
     const v = mapping.value.get(id)
-    if (v) return v
+    if (v) {
+      return v
+    }
 
     const promise = _fetching(id)
+
     mapping.value.set(id, promise)
 
     return promise
@@ -175,7 +178,7 @@ export const useUsersStore = defineStore('user', () => {
     resolve,
     resolveUUID,
     search,
-    searchAndListing
+    searchAndListing,
   }
 })
 

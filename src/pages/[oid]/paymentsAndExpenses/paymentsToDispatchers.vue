@@ -26,7 +26,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import  { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
+import { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
+import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
 
 const paymentToEmployeeStore = usePaymentToEmployeeStore()
 const usersStore = useUsersStore()
@@ -39,9 +40,9 @@ defineOptions({
 
 const state = reactive({})
 
-const selectedDocument = ref<PaymentToDispatcherSummary | null>(null)
+const selectedDocument = ref<EmployeePaymentSummary | null>(null)
 
-function openPayment(record: PaymentToDispatcherSummary) {
+function openPayment(record: EmployeePaymentSummary) {
   selectedDocument.value = record
 }
 

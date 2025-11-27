@@ -10,7 +10,7 @@ export interface PaymentToDispatcherOrderCreate {
   doc_payment: number
   doc_order: number
   order_cost: number
-  amount: number
+  driver_cost: number
 }
 
 export const usePaymentToDispatcherOrdersStore = defineStore('employee_payment_orders', () => {

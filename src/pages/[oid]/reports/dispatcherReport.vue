@@ -42,10 +42,10 @@ defineOptions({
 
 const state = reactive({})
 
-const selectedEmployee = ref<number | null>(null)
+const selectedRecord = ref<EmployeePaymentRecord | null>(null)
 
 function openPayment(record: EmployeePaymentRecord) {
-  selectedEmployee.value = record.employee
+  selectedRecord.value = record
 }
 
 function resolve(
@@ -95,24 +95,29 @@ const cols = [
     size: 100,
   },
   {
-    label: 'gross %',
-    value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
+    label: 'profit',
+    value: (v: EmployeePaymentSummary) => '$' + v.orders_profit.toFixed(0),
     size: 100,
   },
-  {
-    label: 'profit %',
-    value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
-    size: 100,
-  },
-  {
-    label: 'to pay',
-    value: (v: EmployeePaymentSummary) => '$' + v.toPayment.toFixed(0),
-    size: 100,
-  },
+  // {
+  //   label: 'gross %',
+  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
+  //   size: 100,
+  // },
+  // {
+  //   label: 'profit %',
+  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
+  //   size: 100,
+  // },
   {
     label: 'settlements',
     value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,
     size: 80,
+  },
+  {
+    label: 'to pay',
+    value: (v: EmployeePaymentSummary) => '$' + v.payout.toFixed(0),
+    size: 100,
   },
 ]
 
@@ -133,10 +138,11 @@ async function createPayment() {
 </script>
 
 <template>
-  <DispatcherPayment :employee-id="selectedEmployee"></DispatcherPayment>
+  <DispatcherPayment :summary="selectedRecord" />
+
+  <Text class="px-4" size="2xl">Unpaid orders</Text>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Report</Text>
-    <SearchVue :store="usersStore"></SearchVue>
+    <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
     <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
     <Button
@@ -165,14 +171,14 @@ async function createPayment() {
     </thead>
     <tbody>
       <tr
-        v-for="line in reportDispatcherStore.employees"
-        :key="line.employee"
+        v-for="summary in reportDispatcherStore.employees"
+        :key="summary.employee"
         class="hover:bg-base-200"
-        @click="openPayment(line)"
+        @click="openPayment(summary)"
       >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + line.employee"
+          :key="'row_' + col.label + '_' + summary.employee"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
@@ -180,7 +186,7 @@ async function createPayment() {
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(line) }}
+            {{ col.value(summary) }}
           </p>
         </td>
       </tr>

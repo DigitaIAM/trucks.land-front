@@ -23,7 +23,7 @@ watch(
   (document) => {
     resetAndShow(document)
   },
-  { deep: true }
+  { deep: true },
 )
 
 // resetAndShow(props.id)
@@ -66,9 +66,9 @@ async function generatePdf() {
       {
         email_address: {
           address: 'shabanovanatali@gmail.com',
-          name: `${employee?.real_name}`
-        }
-      }
+          name: `${employee?.real_name}`,
+        },
+      },
     ],
     //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
     subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
@@ -92,9 +92,9 @@ async function generatePdf() {
       {
         name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
         content: base64String,
-        mime_type: 'plain/txt'
-      }
-    ]
+        mime_type: 'plain/txt',
+      },
+    ],
   }
 
   const myFetch = createFetch({
@@ -106,12 +106,12 @@ async function generatePdf() {
           ...options.headers,
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: token
+          Authorization: token,
         }
         return { options }
-      }
+      },
     },
-    fetchOptions: { mode: 'cors' }
+    fetchOptions: { mode: 'cors' },
   })
 
   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
@@ -128,7 +128,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string
+  label: (obj: object) => string,
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -152,40 +152,40 @@ const cols = [
         '#_' + v.doc_order,
         () => ({ name: '?' }),
         () => orderStore.resolve(v.doc_order),
-        (map) => map.number
+        (map) => map.number,
       ),
-    size: 50
+    size: 50,
   },
 
   {
     label: 'order amount',
     value: (v: PaymentToDispatcherOrder) => '$' + v.order_cost,
-    size: 120
+    size: 120,
   },
   {
     label: 'd/payments',
-    value: (v: PaymentToDispatcherOrder) => '$' + v.amount,
-    size: 120
-  }
+    value: (v: PaymentToDispatcherOrder) => '$' + v.driver_cost,
+    size: 120,
+  },
 ]
 
 const settlementsCols = [
   {
     label: '#',
     value: (v: SettlementEmployee) => v.id,
-    size: 50
+    size: 50,
   },
 
   {
     label: 'details',
     value: (v: SettlementEmployee) => v.notes,
-    size: 200
+    size: 200,
   },
   {
     label: 'amount',
     value: (v: SettlementEmployee) => '$' + v.amount,
-    size: 120
-  }
+    size: 120,
+  },
 ]
 
 function close() {
@@ -200,7 +200,7 @@ function close() {
       <div class="grid grid-cols-2">
         <div class="flex flex-cols-4 gap-10">
           <Text size="2xl"
-          >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
+            >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
           </Text>
           <Text size="2xl">to</Text>
           <div>
@@ -224,9 +224,20 @@ function close() {
         <Text size="lg">Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
         <Text size="lg">Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
         <Text size="lg">D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
-        <Text size="lg"> Percent of gross % {{ document?.percent_of_gross }}</Text>
+        <Text size="lg" v-if="(document?.percent_of_profit || 0) > 0">
+          % of profit
+          {{ document?.percent_of_profit }}
+        </Text>
+        <Text size="lg" v-if="(document?.percent_of_gross || 0) > 0">
+          % of gross
+          {{ document?.percent_of_gross }}
+        </Text>
+        <Text size="lg" v-if="(document?.fixed_salary || 0) > 0">
+          Fixed salary
+          {{ document?.fixed_salary }}
+        </Text>
         <Text size="lg">Settlements $ {{ document?.settlements }}</Text>
-        <Text size="lg">Payout $ {{ document?.payout }}</Text>
+        <Text size="lg">Payout $ {{ document?.to_pay }}</Text>
       </div>
       <div class="mb-2 mt-12">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
@@ -235,71 +246,33 @@ function close() {
         <table class="w-full table-fixed text-left">
           <!-- table-auto min-w-max -->
           <thead>
-          <tr
-            class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-          >
-            <th
-              v-for="col in cols"
-              class="p-4"
-              :key="col.label"
-              :style="{ width: col.size + 'px' }"
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
             >
-              <p class="block antialiasing tracking-wider font-thin leading-none">
-                {{ col.label }}
-              </p>
-            </th>
-          </tr>
+              <th
+                v-for="col in cols"
+                class="p-4"
+                :key="col.label"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
           </thead>
         </table>
         <div class="flex-1 overflow-y-auto">
           <table class="w-full table-fixed">
             <tbody>
-            <tr
-              v-for="line in paymentToDispatcherOrdersStore.listing"
-              :key="line.id"
-              class="hover:bg-base-200"
-            >
-              <td
-                v-for="col in cols"
-                :key="line.id + '_' + col.label"
-                class="py-3 px-4"
-                :style="{ width: col.size + 'px' }"
-              >
-                <p
-                  class="block antialiasing tracking-wide font-light leading-normal truncate"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  {{ col.value(line) }}
-                </p>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-          <div class="mt-10">
-            <Text bold size="lg" class="mb-4">Settlements</Text>
-            <table class="w-full text-left table-auto min-w-max">
-              <thead>
               <tr
-                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+                v-for="line in paymentToDispatcherOrdersStore.listing"
+                :key="line.id"
+                class="hover:bg-base-200"
               >
-                <th
-                  v-for="col in settlementsCols"
-                  :key="col.label"
-                  class="p-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p class="block antialiasing tracking-wider font-thin leading-none">
-                    {{ col.label }}
-                  </p>
-                </th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="settlement in employeePaymentSettlementsStore.listing"
-                  :key="settlement.id">
                 <td
-                  v-for="col in settlementsCols"
-                  :key="col.label"
+                  v-for="col in cols"
+                  :key="line.id + '_' + col.label"
                   class="py-3 px-4"
                   :style="{ width: col.size + 'px' }"
                 >
@@ -307,10 +280,50 @@ function close() {
                     class="block antialiasing tracking-wide font-light leading-normal truncate"
                     :style="{ width: col.size + 'px' }"
                   >
-                    {{ col.value(settlement) }}
+                    {{ col.value(line) }}
                   </p>
                 </td>
               </tr>
+            </tbody>
+          </table>
+          <div class="mt-10">
+            <Text bold size="lg" class="mb-4">Settlements</Text>
+            <table class="w-full text-left table-auto min-w-max">
+              <thead>
+                <tr
+                  class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+                >
+                  <th
+                    v-for="col in settlementsCols"
+                    :key="col.label"
+                    class="p-4"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    <p class="block antialiasing tracking-wider font-thin leading-none">
+                      {{ col.label }}
+                    </p>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="settlement in employeePaymentSettlementsStore.listing"
+                  :key="settlement.id"
+                >
+                  <td
+                    v-for="col in settlementsCols"
+                    :key="col.label"
+                    class="py-3 px-4"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    <p
+                      class="block antialiasing tracking-wide font-light leading-normal truncate"
+                      :style="{ width: col.size + 'px' }"
+                    >
+                      {{ col.value(settlement) }}
+                    </p>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

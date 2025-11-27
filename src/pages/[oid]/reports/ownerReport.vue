@@ -51,29 +51,6 @@ function onClose() {
   selectedOwner.value = null
 }
 
-const searchQuery = ref('')
-const queryStr = ref('')
-
-let timer: ReturnType<typeof setTimeout>
-const delay = 250
-
-watch(
-  () => searchQuery.value,
-  (query: string) => {
-    clearTimeout(timer)
-    if (query) {
-      const text = query
-      timer = setTimeout(() => {
-        const query = searchQuery.value
-        if (text === query) {
-          queryStr.value = query.toString().trim().toLowerCase()
-        }
-      }, delay)
-    } else {
-      queryStr.value = ''
-    }
-  },
-)
 function resolve(
   order: Order,
   name: string,
@@ -136,7 +113,7 @@ async function createPayment() {
 
 <template>
   <OwnerPayment :org-id="authStore.oid" :owner-id="selectedOwner" @closed="onClose"></OwnerPayment>
-  <Text class="px-4" size="2xl">Report</Text>
+  <Text class="px-4" size="2xl">Unpaid orders</Text>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportOwnerStore" />
     <div>#{{ currentWeek }}</div>

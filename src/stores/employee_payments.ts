@@ -2,7 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToDispatcherOrderCreate } from '@/stores/employee_payment_orders.ts'
 import type { KV } from '@/utils/kv.ts'
 import type { Order } from '@/stores/orders.ts'
-import type { EmployeePaymentSettlements } from '@/stores/employee_payment_settlements.ts'
+import type { EmployeePaymentSettlementsCreate } from '@/stores/employee_payment_settlements.ts'
 
 export interface PaymentToEmployeeSummary {
   id: number
@@ -11,7 +11,10 @@ export interface PaymentToEmployeeSummary {
   employee: number
   number_of_orders: number
   gross: number
+  driver_payment: number
   percent_of_gross: number
+  percent_of_profit: number
+  fixed_salary: number
   payment: number
   settlements: number
   to_pay: number
@@ -33,7 +36,8 @@ export interface PaymentToEmployeeCreate {
   year: number
   month: number
   percent_of_gross: number
-  percent_of_driver: number
+  percent_of_profit: number
+  fixed_salary: number
   to_pay: number
   ex_rate: number
   income_tax: number
@@ -48,7 +52,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
   const searchFilters = ref<Array<KV>>([])
 
   const mapping = ref(
-    new Map<number, PaymentToEmployeeSummary | Promise<PaymentToEmployeeSummary>>()
+    new Map<number, PaymentToEmployeeSummary | Promise<PaymentToEmployeeSummary>>(),
   )
   const timestamp = ref(Date.now())
 
@@ -100,9 +104,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
     }
   }
 
-  async function fetchingOrder(
-    paymentId: number
-  ): Promise<Array<PaymentToEmployeeSummaryDetails>> {
+  async function fetchingOrder(paymentId: number): Promise<Array<PaymentToEmployeeSummaryDetails>> {
     const list = [] as Array<PaymentToEmployeeSummaryDetails>
 
     const responsePayment = await supabase
@@ -121,7 +123,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
       const order = responseOrder.data as Order
 
       list.push({
-        order: order
+        order: order,
       } as PaymentToEmployeeSummaryDetails)
     }
     return list
@@ -140,7 +142,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
   async function create(
     payment: PaymentToEmployeeCreate,
     records: Array<PaymentToDispatcherOrderCreate>,
-    settlementsRecords: Array<EmployeePaymentSettlements>
+    settlementsRecords: Array<EmployeePaymentSettlementsCreate>,
   ) {
     const response = await supabase
       .from('employee_payments')
