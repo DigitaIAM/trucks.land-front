@@ -19,6 +19,8 @@ function resetAndShow(ownerId: number) {
   payment_owner.showModal(ownerId)
 }
 
+const emit = defineEmits(['close'])
+
 const state = reactive({})
 
 function resolve(
@@ -45,7 +47,7 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 50
+    size: 100
   },
 
   {
@@ -118,19 +120,34 @@ const expenses = computed(() => {
     return []
   }
 })
+
+function close() {
+  payment_owner.close()
+  emit('close')
+}
+
 </script>
 
 <template>
   <Modal id="payment_owner">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
-      <div class="flex flex-cols-3 gap-10">
-        <div>
-          <Text size="2xl">
-            <QueryAndShow :id="props.ownerId" :store="ownerStore" />
-          </Text>
-        </div>
+      <div class="flex place-self-end">
+        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
       </div>
-      <div class="mb-4 mt-4">
+      <div class="flex-col">
+        <Text size="2xl">
+          <QueryAndShow :id="props.ownerId" :store="ownerStore" />
+        </Text>
+      </div>
+      <div class="flex flex-cols-6 gap-40 mt-10">
+        <Text bold size="lg">Total</Text>
+        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
+        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
+        <Text size="lg">Payment $ {{ summary?.orders_driver }}</Text>
+        <Text size="lg">Expenses $ {{ summary?.expenses_total }}</Text>
+        <Text size="lg">Payout $ {{ summary?.payout }}</Text>
+      </div>
+      <div class="mb-4 mt-10">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
       <table class="w-full text-left table-auto min-w-max">
@@ -163,7 +180,7 @@ const expenses = computed(() => {
         </tr>
         </tbody>
       </table>
-      <div class="mt-10">
+      <div class="mt-10 mb-6">
         <Text bold size="lg" class="mb-4">Expenses</Text>
         <table class="w-full text-left table-auto min-w-max">
           <thead>
@@ -201,19 +218,6 @@ const expenses = computed(() => {
           </tbody>
         </table>
       </div>
-      <div class="flex flex-cols-6 gap-40 mt-10">
-        <Text bold size="lg">Total</Text>
-        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
-        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
-        <Text size="lg">Payment $ {{ summary?.orders_driver }}</Text>
-        <Text size="lg">Expenses $ {{ summary?.expenses_total }}</Text>
-        <Text size="lg">Payout $ {{ summary?.payout }}</Text>
-      </div>
-      <ModalAction>
-        <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
-        </form>
-      </ModalAction>
     </ModalBox>
   </Modal>
 </template>

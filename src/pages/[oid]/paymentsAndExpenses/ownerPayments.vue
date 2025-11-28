@@ -74,7 +74,7 @@ const cols = [
   {
     label: '#',
     value: (v: PaymentToOwnerSummary) => v.id,
-    size: 40,
+    size: 70,
   },
   {
     label: 'week',

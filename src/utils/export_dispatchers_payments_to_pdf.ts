@@ -2,10 +2,11 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
+import type { PaymentToEmployeeSummary } from '@/stores/employee_payments.ts'
 
 const margin = 50
 
-export async function generateDispatcherPaymentPdf(document: PaymentToDispatcherSummary | null) {
+export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSummary | null) {
   if (document == null) {
     throw 'missing document'
   }
@@ -35,24 +36,24 @@ export async function generateDispatcherPaymentPdf(document: PaymentToDispatcher
       text: 'Shipments Details',
       textSize: 12,
       font: font,
-      alignment: 'center'
+      alignment: 'center',
     },
     header: {
       hasHeaderRow: true,
       font: font,
       textSize: 10,
       backgroundColor: rgb(0.9, 0.9, 0.9),
-      contentAlignment: 'center'
+      contentAlignment: 'center',
     },
     border: {
       color: rgb(0.9, 0.9, 0.9),
-      width: 0.4
+      width: 0.4,
     },
     font: font,
     column: {
       widthMode: 'auto',
-      overrideWidths: [30, 150, 150]
-    } as ColumnOptions
+      overrideWidths: [30, 150, 150],
+    } as ColumnOptions,
   } as DrawTableOptions
 
   const fh12 = font.heightAtSize(options.title.textSize) * 1.8
@@ -88,9 +89,9 @@ async function _head(
   page: PDFPage,
   font: PDFFont,
   boldFont: PDFFont,
-  document: PaymentToDispatcherSummary,
+  document: PaymentToEmployeeSummary,
   org: Organization,
-  endX: number
+  endX: number,
 ): Promise<number> {
   const bls = font.heightAtSize(12) / 2
 
@@ -108,7 +109,7 @@ async function _head(
       x: startX,
       y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
       width: 100,
-      height: (100 * jpgDims.height) / jpgDims.width
+      height: (100 * jpgDims.height) / jpgDims.width,
     })
   }
   text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
@@ -151,7 +152,7 @@ async function _head(
   text_right(page, font, fs, 'Settlements:', cx, cy)
   cy -= bls + text_left(page, font, fs, `\$${document.settlements}`, cx + bls, cy)
 
-  const toPay = (document.to_pay + document.settlements).toFixed(2)
+  const toPay = (document.to_pay + document.settlements).valueOf()
   text_right(page, boldFont, fs, 'Total pay:', cx, cy)
   cy -= bls + text_left(page, boldFont, fs, `\$${toPay}`, cx + bls, cy)
 
@@ -173,7 +174,7 @@ async function _head(
       fs,
       `${document.ex_rate} sum`,
       font.widthOfTextAtSize('Ex rate:', fs) + 60,
-      cy
+      cy,
     )
 
   text_left(page, font, fs, 'Date:', textX + bls, cy)
@@ -189,7 +190,7 @@ async function _head(
       fs,
       `${toPaySum.toFixed(2)} sum`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
-      cy
+      cy,
     )
 
   text_left(page, font, fs, 'Taxes:', textX + bls, cy)
@@ -201,7 +202,7 @@ async function _head(
       fs,
       `${document.income_tax} %`,
       font.widthOfTextAtSize('Taxes:', fs) + 60,
-      cy
+      cy,
     )
 
   const perIn_tax = (toPaySum * (document.income_tax - 0.1)) / 100
@@ -214,7 +215,7 @@ async function _head(
       fs,
       `${perIn_tax.toFixed(2)} sum`,
       font.widthOfTextAtSize('Personal Income Tax:', fs) + 60,
-      cy
+      cy,
     )
 
   const inps_tax = (toPaySum * 0.1) / 100
@@ -227,7 +228,7 @@ async function _head(
       fs,
       `${inps_tax.toFixed(2)} sum`,
       font.widthOfTextAtSize('INPS:', fs) + 60,
-      cy
+      cy,
     )
 
   const totalInSum = toPaySum - perIn_tax
@@ -240,7 +241,7 @@ async function _head(
       fs,
       `${totalInSum.toFixed(2)} sum`,
       font.widthOfTextAtSize('Total pay:', fs) + 65,
-      cy
+      cy,
     )
 
   return cy
@@ -252,7 +253,7 @@ function text_left(
   fontSize: number,
   text: string,
   x: number,
-  y: number
+  y: number,
 ): number {
   // const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -260,7 +261,7 @@ function text_left(
     x: x,
     y: y,
     size: fontSize,
-    font: font
+    font: font,
   })
 
   return font.heightAtSize(fontSize)
@@ -272,7 +273,7 @@ function text_right(
   fontSize: number,
   text: string,
   x: number,
-  y: number
+  y: number,
 ): number {
   const textWidth = font.widthOfTextAtSize(text, fontSize)
 
@@ -280,7 +281,7 @@ function text_right(
     x: x - textWidth,
     y: y,
     size: fontSize,
-    font: font
+    font: font,
   })
 
   return font.heightAtSize(fontSize)
