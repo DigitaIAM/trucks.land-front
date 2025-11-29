@@ -4,65 +4,105 @@ import AvatarUser from '@/components/AvatarUser.vue'
 const router = useRouter()
 const route = useRoute()
 
+const authStore = useAuthStore()
+const usersStore = useUsersStore()
+
 const links = [
   {
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
-    path: '/order/all'
+    path: '/order/all',
+    perm: (access) => access.is_admin || access.is_tracking
   },
   {
     name: 'Dispatcher',
     icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
-    path: '/journals/dispatcherView'
+    path: '/journals/dispatcherView',
+    perm: (access) => access.is_admin || access.is_dispatcher
   },
   {
     name: 'Tracking',
     icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
-    path: '/tracking'
+    path: '/tracking',
+    perm: (access) => access.is_admin || access.is_tracking
   },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
-    path: '/journals/check-outView'
+    path: '/journals/check-outView',
+    perm: (access) => access.is_admin || access.is_dispatcher
   },
   {
     name: 'Income',
     icon: defineAsyncComponent(() => import('~icons/streamline/subscription-cashflow')),
-    path: '/journals/incomeView'
+    path: '/journals/incomeView',
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Quick pay',
     icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
-    path: '/journals/quick_payView'
+    path: '/journals/quick_payView',
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Factoring',
     icon: defineAsyncComponent(() => import('~icons/streamline/coin-share')), //'~icons/streamline/coin-share'
-    path: '/journals/factoring_journal'
+    path: '/journals/factoring_journal',
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
-    path: '/referenceBooks'
+    path: '/referenceBooks',
+    perm: (access) => access.is_admin || access.is_hr
   },
   {
     name: 'Reports',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-    path: '/reportsView'
+    path: '/reportsView',
+    perm: (access) => access.is_admin || access.is_accountant
   },
+  // {
+  //   name: 'Reports',
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+  //   path: '/reportsView',
+  //   perm: (access) => access.is_dispatcher
+  // },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
-    path: '/paymentsView'
+    path: '/paymentsView',
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
-    path: '/expensesView'
+    path: '/expensesView',
+    perm: (access) => access.is_accountant
   }
 ]
 
-const authStore = useAuthStore()
+
+const buildLinks = computed(() => {
+  const account = authStore.account
+  console.log('account', account)
+  if (account == null) {
+    return []
+  }
+
+  const list = []
+
+  const access = account.access
+  if (access && access.length > 0) {
+    for (const link of links) {
+      if (link.perm(access[0])) {
+        list.push(link)
+      }
+    }
+  }
+  console.log('list', list)
+  return list
+})
 
 function generateAndGo(path: string) {
   // console.log('generateAndGo', path)
@@ -144,7 +184,7 @@ function openNav(mode: string | null) {
     <!-- MAX SIDEBAR-->
     <div class="max hidden text-white mt-20 flex-col space-y-2 w-full h-[calc(100vh)]">
       <div
-        v-for="link in links"
+        v-for="link in buildLinks"
         :class="{ active: route.path.endsWith(link.path) }"
         :key="link.path"
         @click="generateAndGo(link.path)"
@@ -174,7 +214,7 @@ function openNav(mode: string | null) {
     <!-- MINI SIDEBAR-->
     <div class="mini mt-20 flex flex-col space-y-2 w-full h-[calc(100vh)]">
       <div
-        v-for="link in links"
+        v-for="link in buildLinks"
         :class="{ active: route.path.endsWith(link.path) }"
         :key="link.path"
         @click="generateAndGo(link.path)"

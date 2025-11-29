@@ -245,25 +245,8 @@ useEventListener(document, 'keydown', handleKeyDown)
             </div>
           </div>
 
-          <div class="flex space-x-3 mb-2 mt-6 w-full">
-            <div class="md:w-1/2 md:mb-0">
-              <Label class="mb-1">Dispatcher</Label>
-              <selector
-                disabled
-                label="Dispatcher"
-                v-model="created_by"
-                :store="usersStore"
-              ></selector>
-            </div>
-            <div class="md:w-1/2 md:mb-0">
-              <Label class="mb-1">Broker</Label>
-              <selector
-                label="Broker"
-                v-model="broker"
-                :store="brokersStore"
-                :disabled="isReadOnly"
-              ></selector>
-            </div>
+          <div class="mb-6">
+            <DriverAndVehicle :orderId="_id" />
           </div>
 
           <div class="flex space-x-3 mb-2 mt-6 w-full">
@@ -284,8 +267,25 @@ useEventListener(document, 'keydown', handleKeyDown)
               <TextInput v-model="cost" :disabled="isReadOnly" />
             </div>
           </div>
-          <div class="mb-6">
-            <DriverAndVehicle :orderId="_id" />
+          <div class="flex space-x-3 mb-2 mt-6 w-full">
+            <div class="md:w-1/2 md:mb-0">
+              <Label class="mb-1">Dispatcher</Label>
+              <selector
+                disabled
+                label="Dispatcher"
+                v-model="created_by"
+                :store="usersStore"
+              ></selector>
+            </div>
+            <div class="md:w-1/2 md:mb-0">
+              <Label class="mb-1">Broker</Label>
+              <selector
+                label="Broker"
+                v-model="broker"
+                :store="brokersStore"
+                :disabled="isReadOnly"
+              ></selector>
+            </div>
           </div>
         </form>
       </div>

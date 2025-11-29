@@ -4,6 +4,7 @@ meta:
   layout: clean
 </route>
 
+
 <script setup lang="ts">
 import moment from 'moment'
 import type { KV } from '@/utils/kv.ts'
@@ -15,6 +16,7 @@ const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
 const filters = ref([] as Array<KV>)
+
 
 interface Col {
   label: string
@@ -99,6 +101,11 @@ const cols: Col[] = [
     size: 60,
   } as Col,
   {
+    label: 'refs',
+    value: (v: OrderTracking) => v.order.refs,
+    size: 90,
+  } as Col,
+  {
     label: 'status',
     value: (v: OrderTracking) =>
       resolve(
@@ -108,12 +115,7 @@ const cols: Col[] = [
         () => statusesStore.resolve(v.order.stage),
         (map) => map.name,
       ),
-    size: 100,
-  } as Col,
-  {
-    label: 'refs',
-    value: (v: OrderTracking) => v.order.refs,
-    size: 90,
+    size: 112,
   } as Col,
   {
     label: 'driver',
@@ -139,11 +141,11 @@ const cols: Col[] = [
       ),
     size: 80,
   } as Col,
-  {
-    label: 'kind',
-    value: (v: OrderTracking) => (v.event.kind ? v.event.kind.substring(0, 1).toUpperCase() : ''),
-    size: 12,
-  } as Col,
+  // {
+  //   label: 'kind',
+  //   value: (v: OrderTracking) => (v.event.kind ? v.event.kind.substring(0, 1).toUpperCase() : ''),
+  //   size: 12,
+  // } as Col,
   {
     label: 'time',
     value: (v: OrderTracking) => (v.event.datetime ? formatDT(v.event.datetime) : ''),
@@ -240,7 +242,7 @@ function capitalizeFirstLetter(val: string) {
       <tr
         v-for="record in ordersTrackingStore.listing"
         :key="record.event.id"
-        class="hover:bg-base-200"
+        class="hover:bg-base-300"
         @click="openOrder(record.order)"
       >
         <td

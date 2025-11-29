@@ -70,7 +70,7 @@ export const useEventsStore = defineStore('event', () => {
         .from('order_events')
         .select()
         .eq('document', id)
-        .order('datetime', { ascending: false })
+        .order('datetime', { ascending: true })
       // .order('datetime') // .throwOnError()
       // console.log(response)
 

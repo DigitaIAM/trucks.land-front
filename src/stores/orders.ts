@@ -57,7 +57,7 @@ export const useOrdersStore = defineStore('orders', () => {
       {
         event: '*',
         schema: 'public',
-        table: 'order_stages'
+        table: 'order_stages',
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {
@@ -73,7 +73,7 @@ export const useOrdersStore = defineStore('orders', () => {
             mapping.value = map
           }
         }
-      }
+      },
     )
     .subscribe()
 
@@ -181,7 +181,7 @@ export const useOrdersStore = defineStore('orders', () => {
       .from('order_stages')
       .insert({
         document: order.id,
-        stage: stage.id
+        stage: stage.id,
       })
       .select()
 
@@ -244,7 +244,7 @@ export const useOrdersStore = defineStore('orders', () => {
     changeStatus,
     resolve,
     search,
-    changes
+    changes,
   }
 })
 

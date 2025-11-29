@@ -5,18 +5,20 @@ import type { RouteLocationNormalized } from 'vue-router'
 export const useAuthStore = defineStore('auth', () => {
   const promise = ref() as Ref<Promise<any>>
 
-  const session = ref<Session | null>(null)
-  const user = computed(() => session.value?.user)
-  const account = computedAsync(async () => {
-    return await currentAccount()
-  }, null)
-
-  const currentAccount = async () => {
-    return await useUsersStore().resolveUUID(org.value?.id, user.value?.id)
-  }
-
   const org = ref<Organization | null>(null)
   const oid = computed<number | null>(() => org.value?.id)
+
+  const session = ref<Session | null>(null)
+  const user = computed(() => session.value?.user)
+
+
+  const currentAccount = async () => {
+    console.log('currentAccount', useUsersStore().resolveUUID(org.value?.id, user.value?.id))
+    return await useUsersStore().resolveUUID(org.value?.id, user.value?.id)
+
+  }
+
+  const account = computedAsync(async () => await currentAccount(), null)
 
   const isInitDone = ref(false)
 
@@ -32,7 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
     promise.value = supabase.auth
       .signInWithPassword({
         email: email,
-        password: password,
+        password: password
       })
       .then(({ data, error }) => {
         // console.log('signInWithEmail data', data)
@@ -91,7 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
     getPromise: () => promise.value,
     logout,
     lastError,
-    clearError,
+    clearError
   }
 })
 

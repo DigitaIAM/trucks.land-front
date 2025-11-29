@@ -291,7 +291,7 @@ function capitalizeFirstLetter(val) {
       <tr
         v-for="order in ordersStore.listing"
         :key="order.id"
-        class="hover:bg-base-200"
+        class="hover:bg-base-300"
         @click="openOrder(order.id)"
       >
         <td

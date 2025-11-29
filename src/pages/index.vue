@@ -63,33 +63,16 @@ const handleSignup = async () => {
   }
 }
 const loginAndRedirect = (email: string, password: string) => {
+  console.log('loginAndRedirect', email, password)
   authStore
     .signInWithEmail(email, password)
     .then(({ data, error }) => {
       console.log('error', error)
       if (error == null) {
-        supabase
-          .from('access_matrix')
-          .select()
-          .eq('user_uuid', data.user.id)
-          .then((response) => {
-            let notFound = true
-
-              for (const record of response.data) {
-                if (record.is_tracking) {
-                  notFound = false
-                  authStore.loginRedirect = null
-                  router.replace('/tracking')
-                }
-              }
-
-              if (notFound) {
-                const redirectTo = authStore.loginRedirect || '/organisation'
-                console.log('redirectTo', redirectTo)
-                authStore.loginRedirect = null
-                router.replace(redirectTo)
-              }
-          })
+        const redirectTo = authStore.loginRedirect || '/organisation'
+        console.log('redirectTo', redirectTo)
+        authStore.loginRedirect = null
+        router.push(redirectTo)
       }
     })
     .catch((error: any) => {

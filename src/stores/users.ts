@@ -114,8 +114,7 @@ export const useUsersStore = defineStore('user', () => {
     return promise
   }
 
-  async function resolveUUID(oid: number | null, uuid: string | null) {
-    console.log('resolveUUID', oid, uuid)
+  async function resolveUUID(oid: number | null, uuid: string | null): Promise<User | null> {
     if (oid && uuid) {
       const v = uuids.value.get(oid)?.get(uuid)
       if (v) {
@@ -130,6 +129,7 @@ export const useUsersStore = defineStore('user', () => {
 
       if (access.data) {
         const response = await supabase.from('users').select().eq('id', access.data[0].user_id)
+
 
         response.data?.forEach((json) => {
           const user = json as User
@@ -178,7 +178,7 @@ export const useUsersStore = defineStore('user', () => {
     resolve,
     resolveUUID,
     search,
-    searchAndListing,
+    searchAndListing
   }
 })
 

@@ -5,7 +5,6 @@ meta:
 </route>
 
 <script setup lang="ts">
-//const authStore = useAuthStore()
 const router = useRouter()
 const organizationsStore = useOrganizationsStore()
 </script>
