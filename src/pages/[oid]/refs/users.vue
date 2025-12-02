@@ -4,7 +4,34 @@ meta:
   layout: nav-view
 </route>
 
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const orgData = useOrgData()
+
 const usersStore = useUsersStore()
 
 const selectedUser = ref<User | null>(null)
@@ -66,7 +93,7 @@ watch(
 </script>
 
 <template>
-  <UserModal :edit="selectedUser" @closed="onClose"></UserModal>
+  <UserModal :org="authStore.org" :edit="selectedUser" @closed="onClose"></UserModal>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr

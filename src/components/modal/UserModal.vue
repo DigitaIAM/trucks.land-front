@@ -1,42 +1,15 @@
-<script lang="ts">
-import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-import type { KV } from '@/utils/kv.ts'
-import { useUserConditionsStore } from '@/stores/user_conditions.ts'
-
-const organizationsStore = useOrganizationsStore()
-const authStore = useAuthStore()
-const userConditionsStore = useUserConditionsStore()
-
-export const useOrgData = defineBasicLoader(
-  'oid',
-  async (route) => {
-    const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.org = org
-    await userConditionsStore.setContext({ orgId: org.id })
-    // console.table(org)
-    return org
-  },
-  { key: 'org' }
-)
-</script>
-
 <script setup lang="ts">
-import { useUserConditionsStore } from '@/stores/user_conditions.ts'
-
-defineOptions({
-  __loaders: [useOrgData]
-})
-
-const orgData = useOrgData()
-
 const userConditionsStore = useUserConditionsStore()
+const accessMatrixStore = useAccessMatrixStore()
 
 const props = defineProps<{
+  org: Organization
   edit: User | null
 }>()
 
 const id = ref<number>()
 
+const title = ref('')
 const name = ref('')
 const real_name = ref('')
 const phone = ref('')
@@ -67,11 +40,31 @@ async function resetAndShow(user: User | null) {
   phone.value = user?.phone || ''
   email.value = user?.email || ''
 
-  const condition = await userConditionsStore.setContext({ userId: user?.id })
+  const condition = await userConditionsStore.getCondition(props.org.id, user?.id)
   percent_of_gross.value = condition?.percent_of_gross
   percent_of_profit.value = condition?.percent_of_profit
   fixed_salary.value = condition?.fixed_salary
   income_tax.value = condition?.income_tax
+
+  const access = await accessMatrixStore.getAccessMatrix(props.org.id, user?.id)
+
+  let str = ''
+  if (access?.is_admin) {
+    str += 'Admin, '
+  }
+  if (access?.is_dispatcher) {
+    str += 'Dispatcher, '
+  }
+  if (access?.is_tracking) {
+    str += 'Tracking, '
+  }
+  if (access?.is_hr) {
+    str += 'HR, '
+  }
+  if (access?.is_accountant) {
+    str += 'Accountant, '
+  }
+  title.value = str.substring(0, str.length - 2)
 
   edit_user.showModal()
 }
@@ -118,7 +111,7 @@ function saveUser() {
   <Modal id="edit_user">
     <ModalBox class="w-4/5">
       <div class="flex space-x-76 w-full">
-        <Text size="2xl">User</Text>
+        <Text size="2xl">{{ title }}</Text>
       </div>
 
       <div class="flex space-x-5 mb-4 mt-4 w-full">

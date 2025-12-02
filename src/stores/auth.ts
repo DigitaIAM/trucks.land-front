@@ -11,11 +11,9 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref<Session | null>(null)
   const user = computed(() => session.value?.user)
 
-
   const currentAccount = async () => {
-    console.log('currentAccount', useUsersStore().resolveUUID(org.value?.id, user.value?.id))
+    // console.log('currentAccount', await useUsersStore().resolveUUID(org.value?.id, user.value?.id))
     return await useUsersStore().resolveUUID(org.value?.id, user.value?.id)
-
   }
 
   const account = computedAsync(async () => await currentAccount(), null)
@@ -67,14 +65,14 @@ export const useAuthStore = defineStore('auth', () => {
     return supabase.auth
       .signOut()
       .then((response: any) => {
-        console.log('logout success', response)
+        //  console.log('logout success', response)
         session.value = null
         // userId.value = null
         // isAuthenticated.value = false
         return response
       })
       .catch((error: any) => {
-        console.log('logout error', error)
+        //  console.log('logout error', error)
         lastError.value = error
         // return onLogoutError(error)
         return error

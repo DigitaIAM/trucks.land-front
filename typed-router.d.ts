@@ -22,6 +22,7 @@ declare module 'vue-router/auto-routes' {
     '/_index': RouteRecordInfo<'/_index', '/_index', Record<never, never>, Record<never, never>>,
     '/[...NotFound]': RouteRecordInfo<'/[...NotFound]', '/:NotFound(.*)', { NotFound: ParamValue<true> }, { NotFound: ParamValue<false> }>,
     '/[oid]/': RouteRecordInfo<'/[oid]/', '/:oid', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/calculationEmployee': RouteRecordInfo<'/[oid]/calculationEmployee', '/:oid/calculationEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/expensesView': RouteRecordInfo<'/[oid]/expensesView', '/:oid/expensesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/check-outView': RouteRecordInfo<'/[oid]/journals/check-outView', '/:oid/journals/check-outView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -78,6 +79,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/index.vue': {
       routes: '/[oid]/'
+      views: never
+    }
+    'src/pages/[oid]/calculationEmployee.vue': {
+      routes: '/[oid]/calculationEmployee'
       views: never
     }
     'src/pages/[oid]/expensesView.vue': {

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
-import {
-  type EmployeePaymentSummary,
-  useReportDispatcher
-} from '@/stores/employee_unpaid_orders.ts'
+import { type EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
 import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 
 const props = defineProps<{
@@ -136,7 +133,7 @@ function close() {
           {{ summary?.paymentTerms.percent_of_gross }}
         </Text>
         <Text size="lg" v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
-          Fixed salary
+          Fixed salary $
           {{ summary?.paymentTerms.fixed_salary }}
         </Text>
         <Text size="lg">Settlements $ {{ summary?.settlements_total }}</Text>

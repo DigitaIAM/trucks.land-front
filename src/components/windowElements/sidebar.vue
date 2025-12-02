@@ -5,7 +5,6 @@ const router = useRouter()
 const route = useRoute()
 
 const authStore = useAuthStore()
-const usersStore = useUsersStore()
 
 const links = [
   {
@@ -62,30 +61,28 @@ const links = [
     path: '/reportsView',
     perm: (access) => access.is_admin || access.is_accountant
   },
-  // {
-  //   name: 'Reports',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-  //   path: '/reportsView',
-  //   perm: (access) => access.is_dispatcher
-  // },
+  {
+    name: 'Settlements',
+    icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
+    path: '/calculationEmployee',
+    perm: (access) => access.is_admin || access.is_dispatcher
+  },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
     path: '/paymentsView',
-    perm: (access) => access.is_accountant
+    perm: (access) => access.is_admin || access.is_accountant
   },
   {
     name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
     path: '/expensesView',
-    perm: (access) => access.is_accountant
+    perm: (access) => access.is_admin || access.is_accountant
   }
 ]
 
-
 const buildLinks = computed(() => {
   const account = authStore.account
-  console.log('account', account)
   if (account == null) {
     return []
   }
@@ -100,7 +97,6 @@ const buildLinks = computed(() => {
       }
     }
   }
-  console.log('list', list)
   return list
 })
 

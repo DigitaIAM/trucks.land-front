@@ -122,6 +122,7 @@ declare global {
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
+  const useAccessMatrixStore: typeof import('./stores/access_matrix')['useAccessMatrixStore']
   const useAccessTokenStore: typeof import('./stores/access_tokens')['useAccessTokenStore']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
@@ -373,6 +374,9 @@ declare global {
   export type { Suggestion } from './models/suggestion'
   import('./models/suggestion')
   // @ts-ignore
+  export type { AccessMatrix, AccessMatrixCreate } from './stores/access_matrix'
+  import('./stores/access_matrix')
+  // @ts-ignore
   export type { Broker, BrokerCreate, BrokerUpdate } from './stores/brokers'
   import('./stores/brokers')
   // @ts-ignore
@@ -563,6 +567,7 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
+    readonly useAccessMatrixStore: UnwrapRef<typeof import('./stores/access_matrix')['useAccessMatrixStore']>
     readonly useAccessTokenStore: UnwrapRef<typeof import('./stores/access_tokens')['useAccessTokenStore']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>

@@ -20,7 +20,7 @@ interface Key {
   user: number
 }
 
-export const useUserConditionsStore = defineStore('access_tokens', () => {
+export const useUserConditionsStore = defineStore('user_conditions', () => {
   const rOrgId = ref<number | null>(null)
   const rUserId = ref<number | null>(null)
   const mapping = ref(new Map<Key, Condition>())
@@ -49,8 +49,6 @@ export const useUserConditionsStore = defineStore('access_tokens', () => {
   })
 
   async function getCondition(orgId: number | null, userId: number | null): Promise<Condition | null> {
-    console.log('orgId', orgId)
-    console.log('userId', userId)
     if (orgId && userId) {
       const { data, error } = await supabase
         .from('user_conditions')
@@ -58,9 +56,6 @@ export const useUserConditionsStore = defineStore('access_tokens', () => {
         .eq('organization', orgId)
         .eq('user_id', userId)
         .maybeSingle()
-
-      console.log('data', data)
-      console.log('error', error)
 
       if (error) {
         console.log('error', error)
@@ -71,7 +66,7 @@ export const useUserConditionsStore = defineStore('access_tokens', () => {
     return null
   }
 
-  return { setContext, listing }
+  return { setContext, listing, getCondition }
 })
 
 if (import.meta.hot) {
