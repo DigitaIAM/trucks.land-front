@@ -25,16 +25,24 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
 import Create from '@/pages/[oid]/order/create.vue'
 
 const orders = useOrdersStore()
+const ordersTeamsDispatcherStore = useOrdersTeamsDispatcherStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
 
 const filters = ref([])
+
+interface Col {
+  label: string
+  size: number
+
+  value(v: OrdersTeamsDispatcher): string
+}
+
 const selectedOrder = ref(null)
 
 defineOptions({
@@ -71,72 +79,80 @@ function resolve(
 
 const cols = [
   {
+    label: 'team',
+    value: (v: OrdersTeamsDispatcher) => v.team || '',
+    size: 50,
+  } as Col,
+  {
     label: '#',
-    value: (v: Order) => v.number,
+    value: (v: OrdersTeamsDispatcher) => v.order.number || '',
     size: 70,
-  },
+  } as Col,
   {
     label: 'dispatcher',
-    value: (v: Order) =>
+    value: (v: OrdersTeamsDispatcher) =>
       resolve(
         v,
-        'dispatcher_' + v.created_by,
+        'dispatcher_' + v.order.created_by,
         () => ({ name: '?' }),
-        () => usersStore.resolve(v.created_by),
+        () => usersStore.resolve(v.order.created_by),
         (map) => map.name,
       ),
     size: 120,
-  },
+  } as Col,
   {
     label: 'broker',
-    value: (v: Order) =>
+    value: (v: OrdersTeamsDispatcher) =>
       resolve(
         v,
-        'broker_' + v.broker,
+        'broker_' + v.order.broker,
         () => ({ name: '?' }),
-        () => brokersStore.resolve(v.broker),
+        () => brokersStore.resolve(v.order.broker),
         (map) => map.name,
       ),
     size: 180,
-  },
+  } as Col,
   {
     label: 'driver',
-    value: (v: Order) =>
+    value: (v: OrdersTeamsDispatcher) =>
       resolve(
         v,
-        'driver_' + v.driver,
+        'driver_' + v.order.driver,
         () => ({ name: '-' }),
-        () => driversStore.resolve(v.driver),
+        () => driversStore.resolve(v.order.driver),
         (map) => map.name,
       ),
     size: 180,
-  },
+  } as Col,
   {
     label: 'vehicle',
-    value: (v: Order) =>
+    value: (v: OrdersTeamsDispatcher) =>
       resolve(
         v,
-        'vehicle_' + v.vehicle,
+        'vehicle_' + v.order.vehicle,
         () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
+        () => vehiclesStore.resolve(v.order.vehicle),
         (map) => map.name,
       ),
     size: 120,
-  },
+  } as Col,
   {
     label: 'cost',
-    value: (v: Order) => '$ ' + v.cost,
+    value: (v: OrdersTeamsDispatcher) => '$ ' + v.order.cost,
     size: 100,
-  },
+  } as Col,
   {
     label: 'total miles',
-    value: (v: Order) => v.total_miles,
+    value: (v: OrdersTeamsDispatcher) => v.order.total_miles || '',
     size: 100,
-  },
+  } as Col,
 ]
 
-function openOrder(id: number) {
-  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+async function openOrder(order: Order) {
+  const org = await organizationsStore.resolve(order.organization)
+  if (org) {
+    window.open('/' + org.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  }
 }
 
 function setFilter(key, val) {
@@ -205,10 +221,15 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders.listing" :key="order.id"  class="hover:bg-base-300" @click="openOrder(order.id)">
+      <tr
+        v-for="order in ordersTeamsDispatcherStore.listing"
+        :key="order.order.id"
+        class="hover:bg-base-300"
+        @click="openOrder(order.order)"
+      >
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
+          :key="'row_' + col.label + '_' + order.order"
           :style="{ width: col.size + 'px' }"
           class="py-3 px-4"
         >

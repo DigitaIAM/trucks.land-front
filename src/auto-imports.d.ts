@@ -242,6 +242,7 @@ declare global {
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
   const useOrdersStore: typeof import('./stores/orders')['useOrdersStore']
+  const useOrdersTeamsDispatcherStore: typeof import('./stores/orders_teams_dispatcher')['useOrdersTeamsDispatcherStore']
   const useOrdersTracking: typeof import('./stores/orders_tracking')['useOrdersTracking']
   const useOrganizationsStore: typeof import('./stores/organizations')['useOrganizationsStore']
   const useOwnersStore: typeof import('./stores/owners')['useOwnersStore']
@@ -409,6 +410,9 @@ declare global {
   // @ts-ignore
   export type { Order, OrderCreate, OrderUpdate, OrderStage } from './stores/orders'
   import('./stores/orders')
+  // @ts-ignore
+  export type { OrdersTeamsDispatcher } from './stores/orders_teams_dispatcher'
+  import('./stores/orders_teams_dispatcher')
   // @ts-ignore
   export type { OrderTracking } from './stores/orders_tracking'
   import('./stores/orders_tracking')
@@ -677,6 +681,7 @@ declare module 'vue' {
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
     readonly useOrdersStore: UnwrapRef<typeof import('./stores/orders')['useOrdersStore']>
+    readonly useOrdersTeamsDispatcherStore: UnwrapRef<typeof import('./stores/orders_teams_dispatcher')['useOrdersTeamsDispatcherStore']>
     readonly useOrdersTracking: UnwrapRef<typeof import('./stores/orders_tracking')['useOrdersTracking']>
     readonly useOrganizationsStore: UnwrapRef<typeof import('./stores/organizations')['useOrganizationsStore']>
     readonly useOwnersStore: UnwrapRef<typeof import('./stores/owners')['useOwnersStore']>

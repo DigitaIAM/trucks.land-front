@@ -32,7 +32,6 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 const reportDispatcherStore = useReportDispatcher()
-const authStore = useAuthStore()
 const usersStore = useUsersStore()
 
 defineOptions({
@@ -69,12 +68,13 @@ function resolve(
 const cols = [
   {
     label: 'employee',
-    value: (v: EmployeePaymentSummary) => resolve(
-      v,
-      () => ({ name: '?' }),
-      () => usersStore.resolve(v.employee),
-      (map) => map.real_name,
-    ),
+    value: (v: EmployeePaymentSummary) =>
+      resolve(
+        v,
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.employee),
+        (map) => map.real_name,
+      ),
     size: 200,
   },
   {
@@ -97,16 +97,6 @@ const cols = [
     value: (v: EmployeePaymentSummary) => '$' + v.orders_profit.toFixed(0),
     size: 100,
   },
-  // {
-  //   label: 'gross %',
-  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
-  //   size: 100,
-  // },
-  // {
-  //   label: 'profit %',
-  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
-  //   size: 100,
-  // },
   {
     label: 'settlements',
     value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,

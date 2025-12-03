@@ -14,11 +14,11 @@ const name = ref('')
 const real_name = ref('')
 const phone = ref('')
 const email = ref('')
+const team = ref('')
 const percent_of_gross = ref<number | null>(null)
 const percent_of_profit = ref<number | null>(null)
 const fixed_salary = ref<number | null>(null)
 const income_tax = ref<number | null>(null)
-
 
 const emit = defineEmits(['closed'])
 
@@ -27,7 +27,7 @@ watch(
   (user) => {
     resetAndShow(user)
   },
-  { deep: true }
+  { deep: true },
 )
 
 const usersStore = useUsersStore()
@@ -39,6 +39,7 @@ async function resetAndShow(user: User | null) {
   real_name.value = user?.real_name || ''
   phone.value = user?.phone || ''
   email.value = user?.email || ''
+  team.value = user?.team || ''
 
   const condition = await userConditionsStore.getCondition(props.org.id, user?.id)
   percent_of_gross.value = condition?.percent_of_gross
@@ -76,22 +77,22 @@ function saveUser() {
         name: name.value,
         real_name: real_name.value,
         phone: phone.value,
-        email: email.value
+        email: email.value,
+        team: team.value,
         // percent_of_gross: percent_of_gross.value,
         // percent_of_profit: percent_of_profit.value
         // fixed_salary.value
-
       } as UserCreate)
     } else {
       usersStore.update(id.value, {
         name: name.value,
         real_name: real_name.value,
         phone: phone.value,
-        email: email.value
+        email: email.value,
+        team: team.value,
         // percent_of_gross: percent_of_gross.value,
         // percent_of_profit: percent_of_profit.value
         // fixed_salary.value
-
       } as UserUpdate)
     }
     edit_user.close()
@@ -110,8 +111,10 @@ function saveUser() {
 
   <Modal id="edit_user">
     <ModalBox class="w-4/5">
-      <div class="flex space-x-76 w-full">
-        <Text size="2xl">{{ title }}</Text>
+      <div class="flex space-x-5 w-full">
+        <div class="md:w-2/3 md:mb-0">
+          <Text size="2xl">{{ title }}</Text>
+        </div>
       </div>
 
       <div class="flex space-x-5 mb-4 mt-4 w-full">
@@ -156,9 +159,15 @@ function saveUser() {
         </div>
       </div>
 
-      <div class="md:w-1/2 md:mb-0">
-        <Label> Income tax %</Label>
-        <TextInput disabled v-model="income_tax" />
+      <div class="flex space-x-3 mb-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label> Income tax %</Label>
+          <TextInput disabled v-model="income_tax" />
+        </div>
+        <div v-if="team" class="md:w-1/2 md:mb-0">
+          <Label>Team #</Label>
+          <TextInput v-model="team" disabled />
+        </div>
       </div>
 
       <ModalAction>

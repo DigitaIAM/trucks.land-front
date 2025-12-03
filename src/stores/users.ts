@@ -13,6 +13,7 @@ export interface UserCreate {
   real_name: string
   phone: string
   email: string
+  team: string
 }
 
 export interface UserUpdate {
@@ -20,6 +21,7 @@ export interface UserUpdate {
   real_name?: string
   phone?: string
   email?: string
+  team?: string
 }
 
 export const useUsersStore = defineStore('user', () => {
@@ -130,7 +132,6 @@ export const useUsersStore = defineStore('user', () => {
       if (access.data) {
         const response = await supabase.from('users').select().eq('id', access.data[0].user_id)
 
-
         response.data?.forEach((json) => {
           const user = json as User
           user.access = access.data
@@ -178,7 +179,7 @@ export const useUsersStore = defineStore('user', () => {
     resolve,
     resolveUUID,
     search,
-    searchAndListing
+    searchAndListing,
   }
 })
 
