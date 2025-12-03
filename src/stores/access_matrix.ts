@@ -15,6 +15,7 @@ export interface AccessMatrixCreate {
   is_tracking: boolean
   is_accountant: boolean
   is_hr: boolean
+  team: number
 }
 
 interface Key {
@@ -50,7 +51,10 @@ export const useAccessMatrixStore = defineStore('access_matrix', () => {
     return mapping.value[{ organization: rOrgId.value, user: rUserId.value } as Key]
   })
 
-  async function getAccessMatrix(orgId: number | null, userId: string | null): Promise<string | null> {
+  async function getAccessMatrix(
+    orgId: number | null,
+    userId: string | null,
+  ): Promise<string | null> {
     console.log('orgId', orgId)
     console.log('userId', userId)
     if (orgId && userId) {

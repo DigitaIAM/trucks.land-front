@@ -101,7 +101,7 @@ const cols = [
     label: '#',
     value: (v: Order) => v.number,
     color: (v: Status) => v.color,
-    size: 50,
+    size: 70,
   },
   {
     label: 'week',
