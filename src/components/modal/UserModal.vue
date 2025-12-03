@@ -39,7 +39,6 @@ async function resetAndShow(user: User | null) {
   real_name.value = user?.real_name || ''
   phone.value = user?.phone || ''
   email.value = user?.email || ''
-  team.value = user?.team || ''
 
   const condition = await userConditionsStore.getCondition(props.org.id, user?.id)
   percent_of_gross.value = condition?.percent_of_gross
@@ -48,6 +47,8 @@ async function resetAndShow(user: User | null) {
   income_tax.value = condition?.income_tax
 
   const access = await accessMatrixStore.getAccessMatrix(props.org.id, user?.id)
+
+  team.value = access?.team
 
   let str = ''
   if (access?.is_admin) {
