@@ -30,7 +30,7 @@ const _order = ref<Order | null>(null)
 const _id = ref<number | null>(null)
 const docnum = ref<number | null>(null)
 const created_by = ref<User | Reference>()
-const vehicle_found = ref<User>()
+const vehicle_found_by = ref<User | null>()
 const posted_loads = ref('')
 const refs = ref('')
 const broker = ref<Broker | Reference>()
@@ -115,7 +115,7 @@ async function resetAndShow(str: string) {
     docnum.value = order.number
     posted_loads.value = order.posted_loads
     created_by.value = { id: order.created_by }
-    vehicle_found.value = { id: order.vehicle_found }
+    vehicle_found_by.value = order.vehicle_found_by ? { id: order.vehicle_found_by } : null
     broker.value = { id: order.broker }
     total_pieces.value = order.total_pieces
     refs.value = order.refs
@@ -135,7 +135,7 @@ async function saveOrder(next: Status | null | undefined) {
       if (
         order.posted_loads != posted_loads.value ||
         order.refs != refs.value ||
-        order.vehicle_found != order.vehicle_found?.id ||
+        order.vehicle_found_by != vehicle_found_by?.id ||
         order.broker != broker.value?.id ||
         order.total_pieces != total_pieces.value ||
         order.total_weight != total_weight.value ||
@@ -147,7 +147,7 @@ async function saveOrder(next: Status | null | undefined) {
           posted_loads: posted_loads.value,
           refs: refs.value,
           broker: broker.value?.id,
-          vehicle_found: vehicle_found.value?.id,
+          vehicle_found_by: vehicle_found_by.value?.id,
           total_pieces: total_pieces.value,
           total_weight: total_weight.value,
           total_miles: total_miles.value,

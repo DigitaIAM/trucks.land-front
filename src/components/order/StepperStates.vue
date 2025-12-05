@@ -10,6 +10,7 @@ const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 const ownersStore = useOwnersStore()
+const usersStore = useUsersStore()
 
 watch(
   () => props.orderId,
@@ -254,6 +255,10 @@ function selectExpenses(data) {
           </p>
           <p v-if="eventDate.details?.notes" class="text-md">
             {{ eventDate.details?.notes || '' }}
+          </p>
+          <p v-if="eventDate.vehicle_found_by" class="text-md max-sm:text-accent">
+            <Text>vehicle found by: </Text>
+            <QueryAndShow :id="eventDate.vehicle_found_by" :store="usersStore" />
           </p>
         </span>
       </template>

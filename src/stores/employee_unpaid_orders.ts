@@ -145,9 +145,17 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           // ignore
         } else {
           const profit = p.order.cost - p.order.driver_cost
-          orders_amount += p.order.cost
-          orders_driver += p.order.driver_cost
-          orders_profit += profit
+          let pc = 1
+          if (p.order.vehicle_found_by) {
+            if (p.order.vehicle_found_by == employee) {
+              pc = 0.3
+            } else {
+              pc = 0.7
+            }
+          }
+          orders_amount += p.order.cost * pc
+          orders_driver += p.order.driver_cost * pc
+          orders_profit += profit * pc
         }
 
         const num = paymentsByOrder.get(p.order.id) ?? 0

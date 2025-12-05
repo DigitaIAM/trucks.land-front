@@ -18,7 +18,7 @@ export interface EventCreate {
   driver: number
   company: number
   vehicle: number
-  vehicle_found: number
+  vehicle_found_by: number
   details: object
   percent: number
 }
@@ -35,7 +35,7 @@ export interface EventUpdate {
   driver?: number
   company?: number
   vehicle?: number
-  vehicle_found?: number
+  vehicle_found_by?: number
   owner?: number
   details?: object
   percent?: number

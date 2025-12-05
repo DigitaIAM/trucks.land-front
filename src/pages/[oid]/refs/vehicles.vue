@@ -43,7 +43,7 @@ function onClose() {
 
 function leasing (vehicle: Vehicle) {
   if (vehicle.leasing_agreement) {
-    return 'signed';
+    return '+';
 } else {
   return '';
 }}

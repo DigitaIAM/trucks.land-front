@@ -14,7 +14,7 @@ const note = ref<string>('')
 const driver = ref<Driver | null>(null)
 const company = ref<Owner | null>(null)
 const vehicle = ref<Vehicle | null>(null)
-const vehicle_found = ref<User | null>(null)
+const vehicle_found_by = ref<User | null>(null)
 const cost = ref<number | null>(null)
 const percent = ref<number | null>(null)
 
@@ -48,12 +48,11 @@ function resetAndShow(event: OrderEvent | null) {
   driver.value = event.driver ? { id: event.driver } : null
   company.value = event.company ? { id: event.company } : null
   vehicle.value = event.vehicle ? { id: event.vehicle } : null
-  vehicle_found.value = event && event.vehicle_found ? { id: event.vehicle_found } : null
+  vehicle_found_by.value = event && event.vehicle_found_by ? { id: event.vehicle_found_by } : null
   cost.value = event?.cost
   percent.value = event?.percent
 
   console.log('document', props.document)
-
   create_agreement.showModal()
 }
 
@@ -70,7 +69,7 @@ async function saveAndEdit() {
         driver: driver.value?.id ?? null,
         company: company.value?.id ?? null,
         vehicle: vehicle.value?.id ?? null,
-        vehicle_found: vehicle_found.value?.id ?? null,
+        vehicle_found_by: vehicle_found_by.value?.id ?? null,
         cost: cost.value,
         percent: percent.value,
         details: note.value
@@ -87,7 +86,7 @@ async function saveAndEdit() {
         driver: driver.value?.id ?? null,
         company: company.value?.id ?? null,
         vehicle: vehicle.value?.id ?? null,
-        vehicle_found: vehicle_found.value?.id ?? null,
+        vehicle_found_by: vehicle_found_by.value?.id ?? null,
         cost: cost.value,
         percent: percent.value,
         details: note.value
@@ -103,6 +102,7 @@ async function saveAndEdit() {
     errorMsg.value = e
   } finally {
     buttonDisabled.value = false
+    // console.log('vehicle_found_by', vehicle_found_by.value?.id)
   }
 }
 
@@ -168,7 +168,7 @@ function close() {
           <div class="md:w-1/2 md:mb-0">
             <Label>found by</Label>
             <selector
-              :modelValue="vehicle_found"
+              v-model="vehicle_found_by"
               :store="usersStore"
               :disabled="vehicle?.id === undefined || company?.id != undefined"
             />

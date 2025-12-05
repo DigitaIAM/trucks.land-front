@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@vuepic/vue-datepicker/dist/main.css'
 
-const listOfVanTypes = ['cargo van', 'small straight', 'large straight']
+const listOfVanTypes = ['cargo van', 'small straight', 'large straight', 'dry van']
 
 const owners = useOwnersStore()
 
@@ -139,13 +139,11 @@ function handleClick() {
   </div>
   <Modal id="edit_vehicle">
     <ModalBox class="w-4/5">
-      <div class="flex space-x-3 mb-2 mt-2 w-full">
-        <div class="md:w-1/5 md:mb-0 mr-12">
-          <Text size="2xl">Vehicle</Text>
-        </div>
-        <div class="md:w-4/5 md:mb-0">
+      <div class="flex mb-2 mt-2 w-full">
+        <Text class="mr-3" size="xl">Vehicle</Text>
+        <div class="md:w-5/6 md:mb-0">
           <Button
-            class="mr-3"
+            class="mr-1"
             sm
             v-for="ft in listOfVanTypes"
             :key="ft"
@@ -156,6 +154,7 @@ function handleClick() {
           </Button>
         </div>
       </div>
+
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-4/5 md:mb-0">
