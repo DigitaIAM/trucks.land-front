@@ -53,7 +53,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       .eq('organization', orgId)
 
     if (userId) {
-      requestPayments = requestPayments.eq('employee', userId)
+      requestPayments = requestPayments.or(
+        'created_by.eq.' + userId + ',vehicle_found_by.eq.' + userId
+      )
     }
 
     const responsePayments = await requestPayments
@@ -61,7 +63,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
     const map = new Map<number, Array<EmployeePaymentRecord>>()
     responsePayments.data?.forEach((json) => {
       const record = {
-        employee: json['employee'],
+        employee: json['created_by'],
         employee_payment: 0,
         order: json as Order
       } as EmployeePaymentRecord
@@ -70,6 +72,19 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const list = map.get(key) ?? []
       list.push(record)
       map.set(key, list)
+
+      if (json['vehicle_found_by']) {
+        const record = {
+          employee: json['vehicle_found_by'],
+          employee_payment: 0,
+          order: json as Order
+        } as EmployeePaymentRecord
+
+        const key = record.employee
+        const list = map.get(key) ?? []
+        list.push(record)
+        map.set(key, list)
+      }
     })
     mapping.value = map
 
@@ -185,7 +200,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         toPayment += employeeTerms.fixed_salary
       }
       if (employeeTerms.fixed_salary && employeeTerms.percent_of_profit) {
-        toPayment += (orders_profit * employeeTerms.percent_of_profit) / 100 + employeeTerms.fixed_salary
+        toPayment +=
+          (orders_profit * employeeTerms.percent_of_profit) / 100 + employeeTerms.fixed_salary
       }
 
       list.push(<Record>{
@@ -258,12 +274,23 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const records = []
 
       for (const order of summary.orders.values()) {
-        records.push({
-          doc_payment: -1,
-          doc_order: order.id,
-          order_cost: order.cost,
-          driver_cost: order.driver_cost
-        } as PaymentToDispatcherOrderCreate)
+        if (order.vehicle_found_by == summary.employee && order.vehicle_found_by != order.created_by) {
+          records.push({
+            doc_payment: -1,
+            doc_order: order.id,
+            order_cost: order.cost,
+            driver_cost: order.driver_cost,
+            profit_kind: 'direct'
+          } as PaymentToDispatcherOrderCreate)
+        } else {
+          records.push({
+            doc_payment: -1,
+            doc_order: order.id,
+            order_cost: order.cost,
+            driver_cost: order.driver_cost,
+            profit_kind: 'profit'
+          } as PaymentToDispatcherOrderCreate)
+        }
       }
 
       const settlementsRecords = []

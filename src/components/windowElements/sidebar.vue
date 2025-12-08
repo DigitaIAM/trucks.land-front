@@ -11,7 +11,7 @@ const links = [
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
     path: '/order/all',
-    perm: (access) => access.is_admin || access.is_tracking || access.is_dispatcher,
+    perm: (access) => access.is_admin || access.is_tracking || access.is_dispatcher
   },
   // {
   //   name: 'Dispatcher',
@@ -23,62 +23,62 @@ const links = [
     name: 'Tracking',
     icon: defineAsyncComponent(() => import('~icons/streamline/location-pin-3')),
     path: '/tracking',
-    perm: (access) => access.is_admin || access.is_tracking,
+    perm: (access) => access.is_admin || access.is_tracking
   },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
     path: '/journals/check-outView',
-    perm: (access) => access.is_admin || access.is_dispatcher,
+    perm: (access) => access.is_admin || access.is_dispatcher
   },
   {
     name: 'Income',
     icon: defineAsyncComponent(() => import('~icons/streamline/subscription-cashflow')),
     path: '/journals/incomeView',
-    perm: (access) => access.is_accountant,
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Quick pay',
     icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
     path: '/journals/quick_payView',
-    perm: (access) => access.is_accountant,
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Factoring',
     icon: defineAsyncComponent(() => import('~icons/streamline/coin-share')), //'~icons/streamline/coin-share'
     path: '/journals/factoring_journal',
-    perm: (access) => access.is_accountant,
+    perm: (access) => access.is_accountant
   },
   {
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
-    perm: (access) => access.is_admin || access.is_hr,
+    perm: (access) => access.is_admin || access.is_hr
   },
   {
     name: 'Reports',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
     path: '/reportsView',
-    perm: (access) => access.is_admin || access.is_accountant,
+    perm: (access) => access.is_admin || access.is_accountant
   },
   {
-    name: 'Settlements',
-    icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
+    name: 'Employee',
+    icon: defineAsyncComponent(() => import('~icons/streamline/bill-1')),
     path: '/calculationEmployee',
-    perm: (access) => access.is_admin || access.is_dispatcher,
+    perm: (access) => access.is_admin || access.is_dispatcher || access.is_tracking
   },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
     path: '/paymentsView',
-    perm: (access) => access.is_admin || access.is_accountant,
+    perm: (access) => access.is_admin || access.is_accountant
   },
   {
     name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
     path: '/expensesView',
-    perm: (access) => access.is_admin || access.is_accountant,
-  },
+    perm: (access) => access.is_admin || access.is_accountant
+  }
 ]
 
 const buildLinks = computed(() => {
@@ -192,7 +192,7 @@ function openNav(mode: string | null) {
         <Text
           :class="{ active: route.path.endsWith(link.path) }"
           class="grow px-3 font-thin tracking-wider"
-          >{{ link.name }}
+        >{{ link.name }}
         </Text>
       </div>
     </div>

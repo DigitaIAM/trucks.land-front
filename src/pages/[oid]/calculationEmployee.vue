@@ -93,11 +93,6 @@ const cols = [
     size: 100,
   },
   {
-    label: 'profit',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_profit.toFixed(0),
-    size: 100,
-  },
-  {
     label: 'settlements',
     value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,
     size: 80,
@@ -112,7 +107,7 @@ const cols = [
 
 <template>
   <DispatcherPayment :summary="selectedRecord" />
-  <Text class="px-4" size="2xl">Settlements</Text>
+  <Text class="px-4" size="2xl">Unpaid orders</Text>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr
