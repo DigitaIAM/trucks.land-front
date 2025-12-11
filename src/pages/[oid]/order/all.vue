@@ -26,6 +26,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import Create from '@/pages/[oid]/order/create.vue'
 
 const changes = useChanges()
 const ordersStore = useOrdersStore()
