@@ -50,33 +50,6 @@ export const useOrdersStore = defineStore('orders', () => {
   const timestamp = ref(Date.now())
   const mapping = ref(new Map<number, Order>())
 
-  const changes = supabase
-    .channel('realtime_order_stages_channel')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'order_stages'
-      },
-      (payload) => {
-        if (payload.eventType == 'INSERT') {
-          const nextStatus = payload.new as OrderStage
-
-          const order = mapping.value.get(nextStatus.document)
-          if (order) {
-            const map = new Map<number, Order>(mapping.value)
-
-            order.stage = nextStatus.stage
-            map.set(order.id, order)
-
-            mapping.value = map
-          }
-        }
-      }
-    )
-    .subscribe()
-
   const listing = computed(() => {
     const list = [] as Order[]
 
@@ -270,6 +243,18 @@ export const useOrdersStore = defineStore('orders', () => {
     return []
   }
 
+  function onStateUpdate(nextState: OrderStage) {
+    const order = mapping.value.get(nextState.document)
+    if (order) {
+      const map = new Map<number, Order>(mapping.value)
+
+      order.stage = nextState.stage
+      map.set(order.id, order)
+
+      mapping.value = map
+    }
+  }
+
   return {
     reset,
     setContext,
@@ -282,7 +267,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByNumber,
     searchByReferences,
     searchByPL,
-    changes
+    onStateUpdate
   }
 })
 

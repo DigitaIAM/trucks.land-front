@@ -152,6 +152,7 @@ declare global {
   const useBrokersStore: typeof import('./stores/brokers')['useBrokersStore']
   const useBrowserLocation: typeof import('@vueuse/core')['useBrowserLocation']
   const useCached: typeof import('@vueuse/core')['useCached']
+  const useChanges: typeof import('./composables/use-supabase')['useChanges']
   const useClipboard: typeof import('@vueuse/core')['useClipboard']
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
   const useCloned: typeof import('@vueuse/core')['useCloned']
@@ -596,6 +597,7 @@ declare module 'vue' {
     readonly useBrokersStore: UnwrapRef<typeof import('./stores/brokers')['useBrokersStore']>
     readonly useBrowserLocation: UnwrapRef<typeof import('@vueuse/core')['useBrowserLocation']>
     readonly useCached: UnwrapRef<typeof import('@vueuse/core')['useCached']>
+    readonly useChanges: UnwrapRef<typeof import('./composables/use-supabase')['useChanges']>
     readonly useClipboard: UnwrapRef<typeof import('@vueuse/core')['useClipboard']>
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>
     readonly useCloned: UnwrapRef<typeof import('@vueuse/core')['useCloned']>

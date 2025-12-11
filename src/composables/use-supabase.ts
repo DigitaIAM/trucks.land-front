@@ -8,6 +8,32 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
+const changes = supabase
+  .channel('realtime_order_stages_channel')
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'order_stages'
+    },
+    (payload) => {
+      console.log('payload', payload)
+      if (payload.eventType == 'INSERT') {
+        const nextState = payload.new as OrderStage
+
+        useOrdersStore().onStateUpdate(nextState)
+        useOrdersTracking().onStateUpdate(nextState)
+      }
+      console.log('done')
+    }
+  )
+  .subscribe()
+
 export function useSupabase() {
   return supabase
+}
+
+export function useChanges() {
+  return changes
 }

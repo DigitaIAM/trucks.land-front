@@ -8,8 +8,8 @@ meta:
 <script setup lang="ts">
 import moment from 'moment'
 import type { KV } from '@/utils/kv.ts'
-import SearchTracking from '@/components/search/SearchTracking.vue'
 
+const changes = useChanges()
 const ordersTrackingStore = useOrdersTracking()
 const organizationsStore = useOrganizationsStore()
 const statusesStore = useStatusesStore()
@@ -203,6 +203,16 @@ function capitalizeFirstLetter(val: string) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchTracking @selected="setFilter" :list="ordersTrackingStore.listing"></SearchTracking>
+    <div class="flex items-center">
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': changes.state === 'joined',
+          'network-connecting': changes.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changes.state),
+        }"
+      ></span>
+    </div>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
@@ -264,4 +274,22 @@ function capitalizeFirstLetter(val: string) {
   </table>
 </template>
 
-<style scoped></style>
+<style scoped>
+.network-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.network-disconnected {
+  background-color: red;
+}
+
+.network-connecting {
+  background-color: yellow;
+}
+
+.network-connected {
+  background-color: green;
+}
+</style>

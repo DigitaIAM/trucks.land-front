@@ -26,11 +26,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import Create from '@/pages/[oid]/order/create.vue'
-import { useStatusesStore } from '@/stores/stages.ts'
-import { useUsersStore } from '@/stores/users.ts'
-import { useCommentsStore } from '@/stores/order_comments.ts'
 
+const changes = useChanges()
 const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
@@ -244,9 +241,9 @@ function capitalizeFirstLetter(val) {
       <span
         class="network-dot"
         :class="{
-          'network-connected': ordersStore.changes.state === 'joined',
-          'network-connecting': ordersStore.changes.state === 'joining',
-          'network-disconnected': !['joining', 'joined'].includes(ordersStore.changes.state),
+          'network-connected': changes.state === 'joined',
+          'network-connecting': changes.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changes.state),
         }"
       ></span>
     </div>

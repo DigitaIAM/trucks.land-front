@@ -94,7 +94,20 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     }
   }
 
-  return { initialized, loading, listing, setFilters }
+  function onStateUpdate(nextState: OrderStage) {
+    const list = Array.from(listing.value)
+    for (const index in list) {
+      const item = list[index]
+      if (item.order.id === nextState.document) {
+        item.order.stage = nextState.stage
+        list[index] = item
+      }
+    }
+
+    listing.value = list
+  }
+
+  return { initialized, loading, listing, setFilters, onStateUpdate }
 })
 
 if (import.meta.hot) {
