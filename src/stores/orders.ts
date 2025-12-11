@@ -57,7 +57,7 @@ export const useOrdersStore = defineStore('orders', () => {
       {
         event: '*',
         schema: 'public',
-        table: 'order_stages',
+        table: 'order_stages'
       },
       (payload) => {
         if (payload.eventType == 'INSERT') {
@@ -73,7 +73,7 @@ export const useOrdersStore = defineStore('orders', () => {
             mapping.value = map
           }
         }
-      },
+      }
     )
     .subscribe()
 
@@ -181,7 +181,7 @@ export const useOrdersStore = defineStore('orders', () => {
       .from('order_stages')
       .insert({
         document: order.id,
-        stage: stage.id,
+        stage: stage.id
       })
       .select()
 
@@ -220,15 +220,51 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
-  async function search(text: string) {
+  async function searchByNumber(orgId: number, text: string) {
     const response = await supabase
       .from('orders')
       .select()
-      .ilike('name', '%' + text + '%')
-      .limit(10)
+      .eq('organization', orgId)
+      .eq('number', text)
+      .order('created_at', { ascending: false })
+      .limit(1)
 
     if (response.status == 200) {
       return response.data?.map((json) => json as Order)
+    }
+
+    return []
+  }
+
+  async function searchByReferences(orgId: number, text: string) {
+    const response = await supabase
+      .from('orders')
+      .select('refs')
+      .eq('organization', orgId)
+      .ilike('refs', '%' + text + '%')
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (response.status == 200) {
+      const list = response.data?.map((json) => json.refs)
+      return Array.from(new Set(list || []))
+    }
+
+    return []
+  }
+
+  async function searchByPL(orgId: number, text: string) {
+    const response = await supabase
+      .from('orders')
+      .select('posted_loads')
+      .eq('organization', orgId)
+      .ilike('posted_loads', '%' + text + '%')
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (response.status == 200) {
+      const list = response.data?.map((json) => json.posted_loads)
+      return Array.from(new Set(list || []))
     }
 
     return []
@@ -243,8 +279,10 @@ export const useOrdersStore = defineStore('orders', () => {
     update,
     changeStatus,
     resolve,
-    search,
-    changes,
+    searchByNumber,
+    searchByReferences,
+    searchByPL,
+    changes
   }
 })
 

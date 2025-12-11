@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { defineProps } from 'vue'
+
+const props = defineProps<{
+  org: Organization
+}>()
+
 const emit = defineEmits(['selected'])
 
 const ordersStore = useOrdersStore()
@@ -13,12 +19,16 @@ const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
   () =>
     orders_number.value?.length != 0 ||
+    orders_references.value?.length != 0 ||
+    orders_pl.value?.length != 0 ||
+
     brokers.value?.length != 0 ||
     owners.value?.length != 0 ||
     drivers.value?.length != 0 ||
     vehicles.value?.length != 0 ||
     dispatchers.value?.length != 0 ||
-    statuses.value?.length != 0,
+
+    statuses.value?.length != 0
 )
 
 const searchQuery = ref('')
@@ -42,13 +52,40 @@ watch(
     } else {
       queryStr.value = ''
     }
-  },
+  }
 )
 
 const orders_number = computedAsync(async () => {
   const str = queryStr.value
-  if (str) {
-    return await ordersStore.searchNumber(str)
+  if (str && str.length >= 5 && str.length <= 6) {
+    return await ordersStore.searchByNumber(props.org.id, str)
+  }
+  return []
+}, [])
+
+const orders_references = computedAsync(async () => {
+  const str = queryStr.value
+  if (str && str.length >= 2) {
+    const list = await ordersStore.searchByReferences(props.org.id, str)
+    return list.map((v) => ({ 'id': v, 'name': v }))
+  }
+  return []
+}, [])
+
+const orders_pl = computedAsync(async () => {
+  const str = queryStr.value
+  if (str && str.length >= 2) {
+    const list = await ordersStore.searchByPL(props.org.id, str)
+    return list.map((v) => ({ 'id': v, 'name': v }))
+  }
+  return []
+}, [])
+
+const orders_pickup_state = computedAsync(async () => {
+  const str = queryStr.value
+  if (str && str.length >= 2) {
+    const list = await ordersStore.searchByPL(props.org.id, str)
+    return list.map((v) => ({ 'id': v, 'name': v }))
   }
   return []
 }, [])
@@ -105,6 +142,12 @@ function select(field: string, value: any) {
   emit('selected', field, value)
   searchQuery.value = ''
 }
+
+function openOrder(field: string, value: any) {
+  if (value && value.id) {
+    window.open('/' + props.org.code3.toLowerCase() + '/order/' + value.id, '_blank')
+  }
+}
 </script>
 
 <template>
@@ -144,7 +187,13 @@ function select(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="select" id="order_number" label="numbers" :items="orders_number" />
+        <SearchBlock @click="openOrder" id="order_number" label="orders" :items="orders_number"
+                     :value="(v: Order) => v.number + ' @ ' + v.created_at.substring(0, 10)" />
+        <SearchBlock @click="select" id="refs" label="references"
+                     :items="orders_references"
+        />
+        <SearchBlock @click="select" id="posted_loads" label="posted load" :items="orders_pl"
+        />
         <SearchBlock @click="select" id="broker" label="brokers" :items="brokers" />
         <SearchBlock @click="select" id="driver" label="drivers" :items="drivers" />
         <SearchBlock @click="select" id="vehicle" label="vehicles" :items="vehicles" />

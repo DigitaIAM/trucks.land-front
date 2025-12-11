@@ -5,6 +5,7 @@ const props = defineProps<{
   id: string
   label: string
   items: Array
+  value?: (a: any) => string
 }>()
 
 const emit = defineEmits(['click'])
@@ -20,7 +21,7 @@ const emit = defineEmits(['click'])
       :tabindex="index"
       @click="emit('click', id, item)"
     >
-      {{ item.name }}
+      {{ value == null ? item.name : value(item) }}
     </div>
   </div>
 </template>

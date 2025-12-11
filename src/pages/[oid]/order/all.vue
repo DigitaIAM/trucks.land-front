@@ -239,7 +239,7 @@ function capitalizeFirstLetter(val) {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <SearchAll @selected="setFilter"></SearchAll>
+    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
     <div class="flex items-center">
       <span
         class="network-dot"
