@@ -8,6 +8,7 @@ meta:
 <script setup lang="ts">
 import moment from 'moment'
 import type { KV } from '@/utils/kv.ts'
+import SearchTracking from '@/components/search/SearchTracking.vue'
 
 const ordersTrackingStore = useOrdersTracking()
 const organizationsStore = useOrganizationsStore()
@@ -182,7 +183,7 @@ function setFilter(key: string, val: never) {
     filters.value[index] = { key: key, val: val } as KV
   }
 
-  ordersStore.setFilters(filters.value)
+  ordersTrackingStore.setFilters(filters.value)
 }
 
 function delFilter(key: string) {
@@ -191,7 +192,7 @@ function delFilter(key: string) {
     filters.value.splice(index, 1)
   }
 
-  ordersStore.setFilters(filters.value)
+  ordersTrackingStore.setFilters(filters.value)
 }
 
 function capitalizeFirstLetter(val: string) {
@@ -201,7 +202,7 @@ function capitalizeFirstLetter(val: string) {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <SearchAll @selected="setFilter"></SearchAll>
+    <SearchTracking @selected="setFilter" :list="ordersTrackingStore.listing"></SearchTracking>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

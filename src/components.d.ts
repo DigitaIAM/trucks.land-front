@@ -140,6 +140,7 @@ declare module 'vue' {
     SearchBlock: typeof import('./components/search/SearchBlock.vue')['default']
     SearchForPaymentsDispatcher: typeof import('./components/search/SearchForPaymentsDispatcher.vue')['default']
     SearchForPaymentsOwner: typeof import('./components/search/SearchForPaymentsOwner.vue')['default']
+    SearchTracking: typeof import('./components/search/SearchTracking.vue')['default']
     SearchVue: typeof import('./components/search/SearchVue.vue')['default']
     Select: typeof import('./components/widgets/Select.vue')['default']
     Selector: typeof import('./components/selector/selector.vue')['default']

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import type { OrderTracking } from '@/stores/orders_tracking.ts'
 
 const props = defineProps<{
-  org: Organization
+  list: Array<OrderTracking>
 }>()
 
 const emit = defineEmits(['selected'])
@@ -19,8 +20,9 @@ const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
   () =>
     orders_number.value?.length != 0 ||
-    orders_references.value?.length != 0 ||
+    orders_refs.value?.length != 0 ||
     orders_pl.value?.length != 0 ||
+    states.value?.length != 0 ||
 
     brokers.value?.length != 0 ||
     owners.value?.length != 0 ||
@@ -57,26 +59,61 @@ watch(
 
 const orders_number = computedAsync(async () => {
   const str = queryStr.value
-  if (str && str.length >= 5 && str.length <= 6) {
-    return await ordersStore.searchByNumber(props.org.id, str)
+  if (str) {
+    const set = new Set()
+    for (const record of props.list) {
+      const val = record.order.number.toString()
+      if (val.includes(str)) {
+        set.add(record.order)
+      }
+    }
+    return Array.from(set)
   }
   return []
 }, [])
 
-const orders_references = computedAsync(async () => {
-  const str = queryStr.value
-  if (str && str.length >= 2) {
-    const list = await ordersStore.searchByReferences(props.org.id, str)
-    return list.map((v) => ({ 'id': v, 'name': v }))
+const orders_refs = computedAsync(async () => {
+  const str = queryStr.value?.toLowerCase()
+  if (str) {
+    const set = new Set()
+    for (const record of props.list) {
+      const val = record.order.refs.toLowerCase()
+      if (val.includes(str)) {
+        set.add(val)
+      }
+    }
+
+    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
   }
   return []
 }, [])
 
 const orders_pl = computedAsync(async () => {
-  const str = queryStr.value
-  if (str && str.length >= 2) {
-    const list = await ordersStore.searchByPL(props.org.id, str)
-    return list.map((v) => ({ 'id': v, 'name': v }))
+  const str = queryStr.value?.toLowerCase()
+  if (str) {
+    const set = new Set()
+    for (const record of props.list) {
+      const val = record.order.posted_loads.toLowerCase()
+      if (val.includes(str)) {
+        set.add(val)
+      }
+    }
+    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
+  }
+  return []
+}, [])
+
+const states = computedAsync(async () => {
+  const str = queryStr.value?.toUpperCase()
+  if (str) {
+    const set = new Set()
+    for (const record of props.list) {
+      const val = record.event.state.trim().toUpperCase()
+      if (val.includes(str)) {
+        set.add(val)
+      }
+    }
+    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
   }
   return []
 }, [])
@@ -178,12 +215,11 @@ function openOrder(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="openOrder" id="order_number" label="orders" :items="orders_number"
-                     :value="(v: Order) => v.number + ' @ ' + v.created_at.substring(0, 10)" />
-        <SearchBlock @click="select" id="refs" label="references"
-                     :items="orders_references"
-        />
+        <SearchBlock @click="openOrder" id="number" label="orders" :items="orders_number"
+                     :value="(v: Order) => v.number + ' @ ' + v.created_at" />
+        <SearchBlock @click="select" id="refs" label="refs" :items="orders_refs" />
         <SearchBlock @click="select" id="posted_loads" label="posted load" :items="orders_pl" />
+        <SearchBlock @click="select" id="event_state" label="states" :items="states" />
         <SearchBlock @click="select" id="broker" label="brokers" :items="brokers" />
         <SearchBlock @click="select" id="driver" label="drivers" :items="drivers" />
         <SearchBlock @click="select" id="vehicle" label="vehicles" :items="vehicles" />

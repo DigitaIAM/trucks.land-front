@@ -47,8 +47,8 @@ export const useOrdersStore = defineStore('orders', () => {
   const contextFilters = ref<Array<KV>>([])
   const searchFilters = ref<Array<KV>>([])
 
-  const mapping = ref(new Map<number, Order>())
   const timestamp = ref(Date.now())
+  const mapping = ref(new Map<number, Order>())
 
   const changes = supabase
     .channel('realtime_order_stages_channel')
