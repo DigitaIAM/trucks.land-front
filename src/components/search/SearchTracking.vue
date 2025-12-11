@@ -171,11 +171,11 @@ function select(field: string, value: any) {
   searchQuery.value = ''
 }
 
-function openOrder(field: string, value: any) {
-  if (value && value.id) {
-    window.open('/' + props.org.code3.toLowerCase() + '/order/' + value.id, '_blank')
-  }
-}
+// function openOrder(field: string, value: any, org: number) {
+//   if (value && value.id) {
+//     window.open('/' + org.code3.toLowerCase() + '/order/' + value.id, '_blank')
+//   }
+// }
 </script>
 
 <template>
@@ -215,7 +215,7 @@ function openOrder(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="openOrder" id="number" label="orders" :items="orders_number"
+        <SearchBlock @click="select" id="number" label="orders" :items="orders_number"
                      :value="(v: Order) => v.number + ' @ ' + v.created_at" />
         <SearchBlock @click="select" id="refs" label="refs" :items="orders_refs" />
         <SearchBlock @click="select" id="posted_loads" label="posted load" :items="orders_pl" />

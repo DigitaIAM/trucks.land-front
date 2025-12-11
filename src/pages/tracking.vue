@@ -18,6 +18,9 @@ const driversStore = useDriversStore()
 
 const filters = ref([] as Array<KV>)
 
+const ts = moment().subtract(3, 'days')
+const currentDay = ref(moment())
+
 
 interface Col {
   label: string
@@ -201,7 +204,7 @@ function capitalizeFirstLetter(val: string) {
 </script>
 
 <template>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+  <div class="flex flex-row gap-6 px-4 mb-2">
     <SearchTracking @selected="setFilter" :list="ordersTrackingStore.listing"></SearchTracking>
     <div class="flex items-center">
       <span
@@ -213,6 +216,7 @@ function capitalizeFirstLetter(val: string) {
         }"
       ></span>
     </div>
+    <Text class="flex items-center">{{ currentDay.format('MMMM Do YYYY, h:mm a') }}</Text>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
