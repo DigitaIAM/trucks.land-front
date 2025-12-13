@@ -6,7 +6,7 @@ const props = defineProps<{
   edit: OrderEvent | null
 }>()
 
-const id = ref(null)
+const id = ref<number | null>(null)
 const datetime = ref(new Date() as Date | undefined)
 const note = ref<string>('')
 const driver = ref<Driver | null>(null)
@@ -31,18 +31,22 @@ const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
 function resetAndShow(event: OrderEvent | null) {
-  if (event?.kind != 'expenses') {
-    throw 'incorrect kind "' + event?.kind + '" expected "expenses"'
+  if (event) {
+    if (event.kind != 'expenses') {
+      throw 'incorrect kind "' + event?.kind + '" expected "expenses"'
+    }
+
+    id.value = event.id
+    datetime.value = event.datetime || ''
+    note.value = event.details?.note || ''
+    driver.value = event.driver ? { id: event.driver } : null
+    vehicle.value = event.vehicle ? { id: event.vehicle } : null
+    cost.value = event.cost
+
+    create_expenses.showModal()
+  } else {
+    create_expenses.close()
   }
-
-  id.value = event?.id
-  datetime.value = event?.datetime || ''
-  note.value = event?.details?.note || ''
-  driver.value = event.driver ? { id: event.driver } : null
-  vehicle.value = event.vehicle ? { id: event.vehicle } : null
-  cost.value = event?.cost
-
-  create_expenses.showModal()
 }
 
 async function saveAndEdit() {

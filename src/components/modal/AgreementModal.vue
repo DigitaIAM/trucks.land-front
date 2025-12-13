@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { useFocus } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
 
 const props = defineProps<{
   document: number | null
@@ -8,7 +10,7 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-const id = ref(null)
+const id = ref<number | null>(null)
 const datetime = ref(new Date() as Date | undefined)
 const note = ref<string>('')
 const driver = ref<Driver | null>(null)
@@ -20,6 +22,9 @@ const percent = ref<number | null>(null)
 
 const emit = defineEmits(['on-update'])
 
+const firstInput = useTemplateRef('firstFocus')
+const { focused: inputFocus } = useFocus(firstInput, { initialValue: true })
+
 const buttonDisabled = ref(false)
 const errorMsg = ref<string | null>(null)
 
@@ -28,7 +33,7 @@ watch(
   (event) => {
     resetAndShow(event)
   },
-  { deep: true }
+  { deep: true },
 )
 
 const eventsStore = useEventsStore()
@@ -38,22 +43,26 @@ const usersStore = useUsersStore()
 const ownersStore = useOwnersStore()
 
 function resetAndShow(event: OrderEvent | null) {
-  if (event?.kind != 'agreement') {
-    throw 'incorrect kind "' + event?.kind + '" expected "agreement"'
+  if (event) {
+    if (event.kind != 'agreement') {
+      throw 'incorrect kind "' + event?.kind + '" expected "agreement"'
+    }
+
+    id.value = event.id
+    datetime.value = event.datetime
+    note.value = event.details?.notes || ''
+    driver.value = event.driver ? { id: event.driver } : null
+    company.value = event.company ? { id: event.company } : null
+    vehicle.value = event.vehicle ? { id: event.vehicle } : null
+    vehicle_found_by.value = event && event.vehicle_found_by ? { id: event.vehicle_found_by } : null
+    cost.value = event.cost
+    percent.value = event.percent
+
+    create_agreement.showModal()
+    setTimeout(() => (inputFocus.value = true), 50)
+  } else {
+    create_agreement.close()
   }
-
-  id.value = event?.id
-  datetime.value = event?.datetime
-  note.value = event?.details?.notes || ''
-  driver.value = event.driver ? { id: event.driver } : null
-  company.value = event.company ? { id: event.company } : null
-  vehicle.value = event.vehicle ? { id: event.vehicle } : null
-  vehicle_found_by.value = event && event.vehicle_found_by ? { id: event.vehicle_found_by } : null
-  cost.value = event?.cost
-  percent.value = event?.percent
-
-  console.log('document', props.document)
-  create_agreement.showModal()
 }
 
 async function saveAndEdit() {
@@ -74,9 +83,9 @@ async function saveAndEdit() {
         percent: percent.value,
         details: note.value
           ? {
-            note: note.value
-          }
-          : null
+              note: note.value,
+            }
+          : null,
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -91,9 +100,9 @@ async function saveAndEdit() {
         percent: percent.value,
         details: note.value
           ? {
-            note: note.value
-          }
-          : null
+              note: note.value,
+            }
+          : null,
       } as EventCreate)
     }
 
@@ -131,7 +140,7 @@ function close() {
       </div>
 
       <Label class="mt-2">Note</Label>
-      <TextInput class="w-full" v-model="note" :disabled="props.disabled" />
+      <TextInput class="w-full" v-model="note" :disabled="props.disabled" ref="firstFocus" />
 
       <fieldset :disabled="props.disabled">
         <div class="flex space-x-3 mt-4 w-full">

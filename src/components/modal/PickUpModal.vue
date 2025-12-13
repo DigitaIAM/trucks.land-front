@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useFocus } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
+
 import VueDatePicker from '@vuepic/vue-datepicker'
 
 const listOfPriorities = ['normal', 'ASAP']
@@ -10,7 +13,7 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-const id = ref(null)
+const id = ref<number | null>(null)
 const address = ref<string>('')
 const city = ref<string>('')
 const state = ref<string>('')
@@ -22,36 +25,43 @@ const timeliness = ref<string>('')
 
 const emit = defineEmits(['on-update'])
 
+const firstInput = useTemplateRef('firstFocus')
+const { focused: inputFocus } = useFocus(firstInput, { initialValue: true })
+
 const buttonDisabled = ref(false)
 const errorMsg = ref<string | null>(null)
 
 watch(
   () => props.edit,
   (event) => {
-    console.log('watch', event)
     resetAndShow(event)
   },
-  { deep: true }
+  { deep: true },
 )
 
 const eventsStore = useEventsStore()
 
 function resetAndShow(event: OrderEvent | null) {
-  if (event?.kind != 'pick-up') {
-    throw 'incorrect kind "' + event?.kind + '" expected "pick-up"'
+  if (event) {
+    if (event.kind != 'pick-up') {
+      throw 'incorrect kind "' + event?.kind + '" expected "pick-up"'
+    }
+
+    id.value = event.id
+    address.value = event.address || ''
+    city.value = event.city || ''
+    state.value = event.state || ''
+    zip.value = event.zip
+    datetime.value = event.datetime || ''
+    note.value = event.details?.note || ''
+    priority.value = event.details?.priority ?? 'normal'
+    timeliness.value = event.details?.timeliness ?? 'on time'
+
+    create_pickUp.showModal()
+    setTimeout(() => (inputFocus.value = true), 50)
+  } else {
+    create_pickUp.close()
   }
-
-  id.value = event?.id
-  address.value = event?.address || ''
-  city.value = event?.city || ''
-  state.value = event?.state || ''
-  zip.value = event?.zip
-  datetime.value = event?.datetime || ''
-  note.value = event?.details?.note || ''
-  priority.value = event?.details?.priority ?? 'normal'
-  timeliness.value = event?.details?.timeliness ?? 'on time'
-
-  create_pickUp.showModal()
 }
 
 async function saveAndEdit() {
@@ -71,8 +81,8 @@ async function saveAndEdit() {
         details: {
           note: note.value,
           priority: priority.value,
-          timeliness: timeliness.value
-        }
+          timeliness: timeliness.value,
+        },
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -86,8 +96,8 @@ async function saveAndEdit() {
         details: {
           note: note.value,
           priority: priority.value,
-          timeliness: timeliness.value
-        }
+          timeliness: timeliness.value,
+        },
       } as EventCreate)
     }
     close()
@@ -137,9 +147,9 @@ function setTimeliness(v: string) {
           </Button>
         </div>
       </div>
-
+      
       <Label>Note</Label>
-      <TextInput class="w-full px-3" v-model="note" :disabled="props.disabled" />
+      <TextInput class="w-full px-3" v-model="note" :disabled="props.disabled" ref="firstFocus" />
 
       <Label class="mt-4">Address</Label>
       <TextInput class="w-full px-3" v-model="address" :disabled="props.disabled" />

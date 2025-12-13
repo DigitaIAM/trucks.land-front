@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import VueDatePicker from '@vuepic/vue-datepicker'
+import { useFocus } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
 
 const props = defineProps<{
   document: number | null
@@ -18,6 +20,9 @@ const zip = ref<string>('')
 
 const emit = defineEmits(['on-update'])
 
+const firstInput = useTemplateRef('firstFocus')
+const { focused: inputFocus } = useFocus(firstInput, { initialValue: true })
+
 const buttonDisabled = ref(false)
 const errorMsg = ref<string | null>(null)
 
@@ -35,21 +40,26 @@ const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
 function resetAndShow(event: OrderEvent | null) {
-  if (event?.kind != 'change') {
-    throw 'incorrect kind "' + event?.kind + '" expected "change"'
+  if (event) {
+    if (event.kind != 'change') {
+      throw 'incorrect kind "' + event?.kind + '" expected "change"'
+    }
+
+    id.value = event.id
+    datetime.value = event.datetime || ''
+    note.value = event.details?.note || ''
+    driver.value = event.driver ? { id: event.driver } : null
+    vehicle.value = event.vehicle ? { id: event.vehicle } : null
+    cost.value = event.cost
+    city.value = event.city || ''
+    state.value = event.state || ''
+    zip.value = event.zip
+
+    create_change.showModal()
+    setTimeout(() => (inputFocus.value = true), 50)
+  } else {
+    create_change.close()
   }
-
-  id.value = event?.id
-  datetime.value = event?.datetime || ''
-  note.value = event?.details?.note || ''
-  driver.value = event.driver ? { id: event.driver } : null
-  vehicle.value = event.vehicle ? { id: event.vehicle } : null
-  cost.value = event?.cost
-  city.value = event?.city || ''
-  state.value = event?.state || ''
-  zip.value = event?.zip
-
-  create_change.showModal()
 }
 
 async function saveAndEdit() {
@@ -121,7 +131,7 @@ function close() {
       </div>
 
       <Label class="mt-2">Note</Label>
-      <TextInput class="w-full" v-model="note" />
+      <TextInput class="w-full" v-model="note" ref="firstFocus" />
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-2/3 md:mb-0">

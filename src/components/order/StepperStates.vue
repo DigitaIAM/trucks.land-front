@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMagicKeys } from '@vueuse/core'
+
 const props = defineProps<{
   orderId: number | null
   disabled?: boolean
@@ -18,7 +20,7 @@ watch(
     // console.log('watch id', id, props.id)
     resetAndShow(id)
   },
-  { deep: true }
+  { deep: true },
 )
 
 resetAndShow(props.orderId)
@@ -32,29 +34,92 @@ function onUpdate() {
   emit('on-update')
 }
 
-const selectedPickup = ref<object | null>(null)
-const selectedDelivery = ref<object | null>(null)
-const selectedChange = ref<object | null>(null)
-const selectedAgreement = ref<object | null>(null)
-const selectedExpenses = ref<object | null>(null)
+const selectedPickup = ref<OrderEvent | null>(null)
+const selectedDelivery = ref<OrderEvent | null>(null)
+const selectedChange = ref<OrderEvent | null>(null)
+const selectedAgreement = ref<OrderEvent | null>(null)
+const selectedExpenses = ref<OrderEvent | null>(null)
 
-function selectPickup(data) {
+const keys = useMagicKeys()
+const ctrlA = keys['Ctrl+A']
+const ctrlP = keys['Ctrl+P']
+const ctrlD = keys['Ctrl+D']
+
+watch(ctrlA, (v) => {
+  if (v) {
+    selectedAgreement.value = { id: -1, kind: 'agreement' }
+  }
+})
+
+watch(ctrlP, (v) => {
+  if (v) {
+    selectedPickup.value = { id: -1, kind: 'pick-up' }
+  }
+})
+
+watch(ctrlD, (v) => {
+  if (v) {
+    selectedDelivery.value = { id: -1, kind: 'delivery' }
+  }
+})
+
+const handleKeyDown = (event) => {
+  if (event.key === 'Escape') {
+    console.log('Escape key pressed @ events')
+    let stop = false
+
+    if (selectedPickup.value) {
+      selectedPickup.value = null
+      stop = true
+    }
+
+    if (selectedDelivery.value) {
+      selectedDelivery.value = null
+      stop = true
+    }
+
+    if (selectedChange.value) {
+      selectedChange.value = null
+      stop = true
+    }
+
+    if (selectedAgreement.value) {
+      selectedAgreement.value = null
+      stop = true
+    }
+
+    if (selectedExpenses.value) {
+      selectedExpenses.value = null
+      stop = true
+    }
+
+    if (stop) {
+      event.stopPropagation()
+      event.preventDefault()
+    } else {
+      window.close()
+    }
+  }
+}
+useEventListener(document, 'keydown', handleKeyDown)
+
+function selectPickup(data: OrderEvent) {
   selectedPickup.value = data
 }
 
-function selectDelivery(data) {
+function selectDelivery(data: OrderEvent) {
   selectedDelivery.value = data
 }
 
-function selectChange(data) {
+function selectChange(data: OrderEvent) {
   selectedChange.value = data
 }
 
-function selectAgreement(data) {
+function selectAgreement(data: OrderEvent) {
   selectedAgreement.value = data
 }
 
-function selectExpenses(data) {
+function selectExpenses(data: OrderEvent) {
   selectedExpenses.value = data
 }
 </script>
@@ -101,28 +166,51 @@ function selectExpenses(data) {
             class="dropdown-content menu rounded-box z-1 w-70 p-2 shadow-sm text-base bg-accent-content"
           >
             <li>
-              <a class="text-white" @click="selectedPickup = { id: -1, kind: 'pick-up' }"
-              >Pick Up</a
+              <div
+                class="flex-row"
+                @click="selectedPickup = <OrderEvent>{ id: -1, kind: 'pick-up' }"
+              >
+                <div class="text-white">Pick Up</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + p</kbd
+                >
+              </div>
+            </li>
+            <li>
+              <div
+                class="flex-row"
+                @click="selectedDelivery = <OrderEvent>{ id: -1, kind: 'delivery' }"
+              >
+                <div class="text-white">Delivery</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + d</kbd
+                >
+              </div>
+            </li>
+            <li>
+              <div
+                class="flex-row"
+                @click="selectedAgreement = <OrderEvent>{ id: -1, kind: 'agreement' }"
+              >
+                <div class="text-white">Agreement</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + a</kbd
+                >
+              </div>
+            </li>
+            <li>
+              <a class="text-white" @click="selectedChange = <OrderEvent>{ id: -1, kind: 'change' }"
+                >Change of driver and vehicle</a
               >
             </li>
             <li>
-              <a class="text-white" @click="selectedDelivery = { id: -1, kind: 'delivery' }"
-              >Delivery</a
-              >
-            </li>
-            <li>
-              <a class="text-white" @click="selectedAgreement = { id: -1, kind: 'agreement' }"
-              >Agreement</a
-              >
-            </li>
-            <li>
-              <a class="text-white" @click="selectedChange = { id: -1, kind: 'change' }"
-              >Change of driver and vehicle</a
-              >
-            </li>
-            <li>
-              <a class="text-white" @click="selectedExpenses = { id: -1, kind: 'expenses' }"
-              >Expenses</a
+              <a
+                class="text-white"
+                @click="selectedExpenses = <OrderEvent>{ id: -1, kind: 'expenses' }"
+                >Expenses</a
               >
             </li>
           </ul>
