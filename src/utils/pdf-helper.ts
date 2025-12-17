@@ -10,7 +10,7 @@ export async function openInNewTab(pdfDoc: PDFDocument) {
   window.open(pdfUrl, '_blank')
 }
 
-export function filterCharSet(text: String, font) {
+export function filterCharSet(text: string, font) {
   let str = text.split('')
   const charSet = font.getCharacterSet()
   for (let i = 0; i < str.length; i++) {

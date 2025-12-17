@@ -3,6 +3,8 @@ import * as tus from 'tus-js-client'
 import { generateBI } from '@/utils/invoice_broker.ts'
 import moment from 'moment/moment'
 import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
+import { generateRC } from '@/utils/createRC.ts'
+import { openInNewTab } from '@/utils/pdf-helper.ts'
 
 const props = defineProps<{
   order: Order | null
@@ -10,6 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
+const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const filesStore = useFilesStore()
 const organizationsStore = useOrganizationsStore()
@@ -20,7 +23,7 @@ const stages = ref([
   { label: 'BOL', check: false },
   { label: 'POD', check: false },
   { label: 'BI', check: false },
-  { label: 'FI', check: false }
+  { label: 'FI', check: false },
 ])
 
 const uploadProgress = ref<number | null>(null)
@@ -56,10 +59,10 @@ async function uploadFile(
   bucketName: string,
   fileName: string,
   file: File | Blob,
-  onProgress: (percentage: number) => void
+  onProgress: (percentage: number) => void,
 ) {
   const {
-    data: { session }
+    data: { session },
   } = await supabase.auth.getSession()
 
   return new Promise((resolve, reject) => {
@@ -69,7 +72,7 @@ async function uploadFile(
       retryDelays: [0, 3000, 5000, 10000, 20000],
       headers: {
         authorization: `Bearer ${session.access_token}`,
-        'x-upsert': 'true' // optionally set upsert to true to overwrite existing files
+        'x-upsert': 'true', // optionally set upsert to true to overwrite existing files
       },
       uploadDataDuringCreation: true,
       removeFingerprintOnSuccess: true, // Important if you want to allow re-uploading the same file https://github.com/tus/tus-js-client/blob/main/docs/api.md#removefingerprintonsuccess
@@ -80,27 +83,27 @@ async function uploadFile(
         cacheControl: '3600',
         metadata: JSON.stringify({
           // custom metadata passed to the user_metadata column
-          yourCustomMetadata: true
-        })
+          yourCustomMetadata: true,
+        }),
       },
       chunkSize: 6 * 1024 * 1024, // NOTE: it must be set to 6MB (for now) do not change it
-      onError: function(error) {
+      onError: function (error) {
         console.log('Failed because: ' + error)
         reject(error)
       },
-      onProgress: function(bytesUploaded, bytesTotal) {
+      onProgress: function (bytesUploaded, bytesTotal) {
         const percentage = (bytesUploaded / bytesTotal) * 100
         // const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2)
         console.log(bytesUploaded, bytesTotal, percentage + '%')
         onProgress(percentage)
       },
-      onSuccess: function() {
+      onSuccess: function () {
         console.log('Download %s from %s', upload.file.name, upload.url)
         resolve()
-      }
+      },
     })
     // Check if there are any previous uploads to continue.
-    return upload.findPreviousUploads().then(function(previousUploads) {
+    return upload.findPreviousUploads().then(function (previousUploads) {
       // Found previous uploads so we select the first one.
       if (previousUploads.length) {
         upload.resumeFromPreviousUpload(previousUploads[0])
@@ -140,7 +143,7 @@ async function upload() {
         kind: fileType.value,
         signed_by: signedBy.value,
         path: path,
-        is_deleted: false
+        is_deleted: false,
       })
 
       const sl = stages.value
@@ -165,7 +168,7 @@ watch(
   (order) => {
     resetAndShow(order?.id)
   },
-  { deep: true }
+  { deep: true },
 )
 
 resetAndShow(props.order?.id)
@@ -233,7 +236,7 @@ async function createAndPdfBI() {
         kind: 'BI',
         signed_by: '',
         path: path,
-        is_deleted: false
+        is_deleted: false,
       })
       console.log('createAndPdfBI', path)
 
@@ -280,9 +283,8 @@ async function createAndPdfFI() {
         kind: 'FI',
         signed_by: '',
         path: path,
-        is_deleted: false
+        is_deleted: false,
       })
-      console.log('createAndPdfFI', path)
 
       const blob = await generateFI(order, org)
 
@@ -292,6 +294,25 @@ async function createAndPdfFI() {
       await download(record)
     }
   }
+}
+
+async function createRC() {
+  const order = props.order
+  if (order == null) {
+    throw 'missing order'
+  }
+
+  const org = await organizationsStore.resolve(order.organization)
+  if (org == null) {
+    throw 'missing organization'
+  }
+
+  const token = await useAccessTokenStore().getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
+
+  await generateRC(order, org)
 }
 </script>
 
@@ -336,8 +357,14 @@ async function createAndPdfFI() {
         >
           {{ ft }}
         </Button>
-        <div class="m-auto"></div>
-        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+        <div class="ml-auto">
+          <Button
+            class="btn-soft font-light tracking-wider"
+            @click="createRC"
+            :disabled="isDisabled"
+            >Create RC
+          </Button>
+        </div>
       </div>
       <div class="flex space-x-4 mb-6 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
@@ -346,64 +373,69 @@ async function createAndPdfFI() {
         <div class="md:w-1/2 md:mb-0">
           <FileInput :disabled="isReadOnly" @file="(f) => (fileInfo = f)"></FileInput>
         </div>
-      </div>
-
-      <ModalAction>
         <Progress v-if="uploadProgress" :value="uploadProgress" :max="100" />
         <Button v-else class="btn-soft font-light tracking-wider" @click="upload">Upload</Button>
-      </ModalAction>
+      </div>
 
       <div class="mt-6">
         <table class="w-full text-left table-auto min-w-max">
           <thead>
-          <tr>
-            <th class="py-2 px-3">Type</th>
-            <th class="py-2 px-3">Created by</th>
-            <th class="py-2 px-3">Signed by</th>
-            <th class="py-2 px-3">Created at</th>
-          </tr>
+            <tr>
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Created by</th>
+              <th class="py-2 px-3">Signed by</th>
+              <th class="py-2 px-3">Created at</th>
+            </tr>
           </thead>
           <tbody>
-          <tr
-            v-for="file in filesStore.listing"
-            :key="file.path"
-            @click="download(file)"
-            :class="{
+            <tr
+              v-for="file in filesStore.listing"
+              :key="file.path"
+              @click="download(file)"
+              :class="{
                 'text-gray-700': file.is_deleted,
                 'marked-for-deletion': file.is_deleted,
                 'cursor-pointer': true,
               }"
-          >
-            <td class="py-2 px-3">{{ file.kind }}</td>
-            <td class="py-2 px-3">
-              <QueryAndShow :id="file.created_by" :store="usersStore" />
-            </td>
-            <td class="py-2 px-3">{{ file.signed_by }}</td>
-            <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
-            <td>
-              <Button
-                ghost
-                sm
-                @click.stop="filesStore.update(file.id, { is_deleted: !file.is_deleted })"
-              >X
-              </Button>
-            </td>
-          </tr>
+            >
+              <td class="py-2 px-3">{{ file.kind }}</td>
+              <td class="py-2 px-3">
+                <QueryAndShow :id="file.created_by" :store="usersStore" />
+              </td>
+              <td class="py-2 px-3">{{ file.signed_by }}</td>
+              <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
+              <td>
+                <Button
+                  ghost
+                  sm
+                  @click.stop="filesStore.update(file.id, { is_deleted: !file.is_deleted })"
+                  >X
+                </Button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
       <div class="grid grid-cols-1 mb-2 mt-8 w-full">
         <Text size="xl" class="mt-6 mb-4">Invoice for</Text>
-        <Button class="flex btn-soft font-light tracking-wider mb-6" @click="createAndPdfBI"
-                :disabled="isDisabled">
+        <Button
+          class="flex btn-soft font-light tracking-wider mb-6"
+          @click="createAndPdfBI"
+          :disabled="isDisabled"
+        >
           broker to
           <QueryAndShow name="email" :id="order?.broker" :store="brokersStore"></QueryAndShow>
         </Button>
-        <Button class="btn-soft font-light tracking-wider" @click="createAndPdfFI"
-                :disabled="isDisabled"
-        >factoring company
+        <Button
+          class="btn-soft font-light tracking-wider"
+          @click="createAndPdfFI"
+          :disabled="isDisabled"
+          >factoring company
         </Button>
       </div>
+      <ModalAction>
+        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+      </ModalAction>
     </ModalBox>
   </Modal>
 </template>
