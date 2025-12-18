@@ -50,7 +50,7 @@ function resetAndShow(event: OrderEvent | null) {
 
     id.value = event.id
     datetime.value = event.datetime
-    note.value = event.details?.notes || ''
+    note.value = event.details?.note || ''
     driver.value = event.driver ? { id: event.driver } : null
     company.value = event.company ? { id: event.company } : null
     vehicle.value = event.vehicle ? { id: event.vehicle } : null
@@ -166,7 +166,13 @@ function close() {
 
       <fieldset :disabled="props.disabled">
         <div class="flex space-x-3 mb-2 mt-2 w-full">
-          <div class="md:w-1/2 md:mb-0">
+          <div class="md:w-1/3 md:mb-0">
+            <Label class="mb-3">Vehicle owner</Label>
+            <div>
+              <QueryAndShow :id="vehicle?.owner" :store="ownersStore"></QueryAndShow>
+            </div>
+          </div>
+          <div class="md:w-1/3 md:mb-0">
             <Label>Vehicle</Label>
             <selector
               v-model="vehicle"
@@ -174,7 +180,7 @@ function close() {
               :disabled="company?.id != undefined"
             ></selector>
           </div>
-          <div class="md:w-1/2 md:mb-0">
+          <div class="md:w-1/3 md:mb-0">
             <Label>found by</Label>
             <selector
               v-model="vehicle_found_by"

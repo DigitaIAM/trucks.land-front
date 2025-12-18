@@ -245,7 +245,7 @@ function selectExpenses(data: OrderEvent) {
           </p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
-          <p v-if="eventDate.details.notes" class="text-md">{{ eventDate.details.notes }}</p>
+          <p v-if="eventDate.details.note" class="text-md">{{ eventDate.details.note }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'pick-up'">
@@ -272,7 +272,7 @@ function selectExpenses(data: OrderEvent) {
           <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
-          <p v-if="eventDate.details.notes" class="text-md">{{ eventDate.details.notes }}</p>
+          <p v-if="eventDate.details.note" class="text-md">{{ eventDate.details.note }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'change'">
@@ -307,7 +307,7 @@ function selectExpenses(data: OrderEvent) {
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p class="text-md">{{ eventDate.details.notes }}</p>
+          <p class="text-md">{{ eventDate.details.note }}</p>
         </span>
       </template>
       <template v-if="eventDate.kind == 'agreement'">
@@ -341,8 +341,8 @@ function selectExpenses(data: OrderEvent) {
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p v-if="eventDate.details?.notes" class="text-md">
-            {{ eventDate.details?.notes || '' }}
+          <p v-if="eventDate.details?.note" class="text-md">
+            {{ eventDate.details?.note || '' }}
           </p>
           <p v-if="eventDate.vehicle_found_by" class="text-md max-sm:text-accent">
             <Text>vehicle found by: </Text>
@@ -375,7 +375,7 @@ function selectExpenses(data: OrderEvent) {
           <p class="text-md">
             <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
           </p>
-          <p class="text-md">{{ eventDate.details?.notes || '' }}</p>
+          <p class="text-md">{{ eventDate.details?.note || '' }}</p>
         </span>
       </template>
     </li>
