@@ -291,7 +291,7 @@ export async function generateRC(order: Order, org: Organization) {
   const size = 10
   page.moveTo(textX, textY - 100)
 
-  page.drawText('All Invoices should be sent to emily@cnulogistics.com', {
+  page.drawText('All Invoices should be sent to billing@cnulogistics.com', {
     size: size, // Font size
     font: font, // Embedded font
     color: rgb(0, 0, 0),
@@ -501,63 +501,5 @@ export async function generateRC(order: Order, org: Organization) {
     page.moveDown(15)
   }
 
-  //Save the PDF and send email
-  const pdfBytes = await pdfDoc.save()
-  await openInNewTab(pdfDoc)
-
-  const base64String = await pdfDoc.saveAsBase64()
-
-  const email = {
-    from: { address: `noreply@${org.domain}` },
-    to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
-    subject: `RC_${org.code2}-${order.number}`,
-    htmlbody:
-      'Greetings,<br />' +
-      '<br />' +
-      'RC #&nbsp;' +
-      `${org.code2}` +
-      '-' +
-      `${order.number}` +
-      '&nbsp;is attached.<br />' +
-      '<br />' +
-      'For any inquiries regarding calculations, please contact us at tom@cvslogisticsllc.com <br />' +
-      '<br />' +
-      'Best Regards,<br />' +
-      '<br />' +
-      `${org.name}<br />` +
-      `${org.address1}<br />` +
-      `${org.address2}<br />`,
-    attachments: [
-      {
-        name: `RC_${org.code2}-${order.number}.pdf`,
-        content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
-  }
-
-  const myFetch = createFetch({
-    // baseUrl: 'https://api.zeptomail.com/',
-    // baseUrl: 'http://localhost:5173/',
-    options: {
-      async beforeFetch({ options }) {
-        options.headers = {
-          ...options.headers,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: token,
-        }
-        return { options }
-      },
-    },
-    fetchOptions: { mode: 'cors' },
-  })
-
-  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-
-  console.log('isFetching', isFetching)
-  console.log('error', error)
-  console.log('data', data)
-
-  return new Blob([pdfBytes], { type: 'application/pdf' })
+  return pdfDoc
 }

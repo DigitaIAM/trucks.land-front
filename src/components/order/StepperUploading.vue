@@ -5,6 +5,7 @@ import moment from 'moment/moment'
 import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
 import { generateRC } from '@/utils/createRC.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
+import { createFetch } from '@vueuse/core'
 
 const props = defineProps<{
   order: Order | null
@@ -26,6 +27,7 @@ const stages = ref([
   { label: 'FI', check: false },
 ])
 
+const enteredEmail = ref<string>('')
 const uploadProgress = ref<number | null>(null)
 
 const isReadOnly = computed(() => uploadProgress.value != null)
@@ -203,6 +205,82 @@ function close() {
   emit('close')
 }
 
+async function closeEmailModal() {
+  const order = props.order
+  if (order == null) {
+    throw 'missing order'
+  }
+
+  const org = await organizationsStore.resolve(order.organization)
+  if (org == null) {
+    throw 'missing organization'
+  }
+
+  const token = await useAccessTokenStore().getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
+  const pdfDoc = await generateRC(order, org)
+
+  // Send by email
+  const base64String = await pdfDoc.saveAsBase64()
+
+  const email = {
+    from: { address: `noreply@${org.domain}` },
+    to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    subject: `RC_${org.code2}-${order.number}`,
+    htmlbody:
+      'Greetings,<br />' +
+      '<br />' +
+      'RC #&nbsp;' +
+      `${org.code2}` +
+      '-' +
+      `${order.number}` +
+      '&nbsp;is attached.<br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at tom@cnulogistics.com <br />' +
+      '<br />' +
+      'Best Regards,<br />' +
+      '<br />' +
+      `${org.name}<br />` +
+      `${org.address1}<br />` +
+      `${org.address2}<br />`,
+    attachments: [
+      {
+        name: `RC_${org.code2}-${order.number}.pdf`,
+        content: base64String,
+        mime_type: 'plain/txt',
+      },
+    ],
+  }
+
+  const myFetch = createFetch({
+    // baseUrl: 'https://api.zeptomail.com/',
+    // baseUrl: 'http://localhost:5173/',
+    options: {
+      async beforeFetch({ options }) {
+        options.headers = {
+          ...options.headers,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
+        return { options }
+      },
+    },
+    fetchOptions: { mode: 'cors' },
+  })
+
+  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+
+  console.log('isFetching', isFetching)
+  console.log('error', error)
+  console.log('data', data)
+
+  entered_email.close()
+  emit('close')
+}
+
 async function createAndPdfBI() {
   const ts = moment().subtract(3, 'days')
   const currentWeek = ref(ts.isoWeek())
@@ -307,12 +385,9 @@ async function createRC() {
     throw 'missing organization'
   }
 
-  const token = await useAccessTokenStore().getTokenZoho(org.id)
-  if (token == null) {
-    throw 'missing token'
-  }
+  const pdfDoc = await generateRC(order, org)
 
-  await generateRC(order, org)
+  await openInNewTab(pdfDoc)
 }
 </script>
 
@@ -360,7 +435,7 @@ async function createRC() {
         <div class="ml-auto">
           <Button
             class="btn-soft font-light tracking-wider"
-            @click="createRC"
+            onclick="entered_email.showModal()"
             :disabled="isDisabled"
             >Create RC
           </Button>
@@ -435,6 +510,21 @@ async function createRC() {
       </div>
       <ModalAction>
         <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+      </ModalAction>
+    </ModalBox>
+  </Modal>
+
+  <Modal id="entered_email">
+    <ModalBox class="max-w-[calc(20vw)]">
+      <div class="mb-2">
+        <Text size="2xl">Email</Text>
+      </div>
+      <TextInput type="email" class="w-full px-3" v-model="enteredEmail"></TextInput>
+      <ModalAction>
+        <Button class="btn-soft font-light tracking-wider ml-3" @click="createRC">View</Button>
+        <Button class="btn-soft font-light tracking-wider ml-3" @click="closeEmailModal"
+          >Send
+        </Button>
       </ModalAction>
     </ModalBox>
   </Modal>
