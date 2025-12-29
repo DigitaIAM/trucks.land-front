@@ -48,19 +48,19 @@ const ctrlD = keys['Ctrl+D']
 
 watch(ctrlA, (v) => {
   if (v) {
-    selectedAgreement.value = { id: -1, kind: 'agreement' }
+    selectedAgreement.value = <OrderEvent>{ id: -1, kind: 'agreement' }
   }
 })
 
 watch(ctrlP, (v) => {
   if (v) {
-    selectedPickup.value = { id: -1, kind: 'pick-up' }
+    selectedPickup.value = <OrderEvent>{ id: -1, kind: 'pick-up' }
   }
 })
 
 watch(ctrlD, (v) => {
   if (v) {
-    selectedDelivery.value = { id: -1, kind: 'delivery' }
+    selectedDelivery.value = <OrderEvent>{ id: -1, kind: 'delivery' }
   }
 })
 

@@ -205,6 +205,11 @@ function close() {
   emit('close')
 }
 
+function closeEmail() {
+  entered_email.close()
+  emit('close')
+}
+
 async function closeEmailModal() {
   const order = props.order
   if (order == null) {
@@ -516,10 +521,16 @@ async function createRC() {
 
   <Modal id="entered_email">
     <ModalBox class="max-w-[calc(20vw)]">
-      <div class="mb-2">
-        <Text size="2xl">Email</Text>
+      <div class="ml-68 mb-2">
+        <Button ghost s @click="closeEmail">X</Button>
       </div>
-      <TextInput type="email" class="w-full px-3" v-model="enteredEmail"></TextInput>
+
+      <TextInput
+        type="email"
+        class="w-full px-3"
+        v-model="enteredEmail"
+        placeholder="Email"
+      ></TextInput>
       <ModalAction>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="createRC">View</Button>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="closeEmailModal"

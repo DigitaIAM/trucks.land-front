@@ -45,6 +45,7 @@ const usersStore = useUsersStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
+const eventsStore = useEventsStore()
 
 const currentAccount = computedAsync(async () => {
   return await usersStore.resolveUUID(authStore.org?.id, authStore.user?.id)
@@ -126,6 +127,22 @@ async function resetAndShow(str: string) {
   }
 }
 
+const allowChangeStage = computed(() => {
+  let agreement = false
+  let pickup = false
+  let delivery = false
+  for (const event of eventsStore.listing) {
+    if (event.kind === 'agreement') {
+      agreement = true
+    } else if (event.kind === 'pick-up') {
+      pickup = true
+    } else if (event.kind === 'delivery') {
+      delivery = true
+    }
+  }
+  return agreement && pickup && delivery
+})
+
 async function saveOrder(next: Status | null | undefined) {
   try {
     const order = _order.value
@@ -163,6 +180,10 @@ async function saveOrder(next: Status | null | undefined) {
   }
 }
 
+function closeOrder() {
+  window.close()
+}
+
 function handleClick() {
   excluded.value = !excluded.value
 }
@@ -173,7 +194,7 @@ function handleClick() {
     <div class="flex flex-col w-full h-full">
       <div class="flex w-full space-x-6">
         <div class="flex space-x-3 w-full">
-          <Button class="btn-soft font-light tracking-wider">Close</Button>
+          <Button class="btn-soft font-light tracking-wider" @click="closeOrder">Close</Button>
           <Button
             class="btn-soft font-light tracking-wider"
             @click="saveOrder(null)"
@@ -199,16 +220,18 @@ function handleClick() {
             class="btn-soft font-light tracking-wider text-white"
             >{{ currentStatus?.name }}
           </Button>
-          <Text class="mt-2" v-if="nextStatuses.length != 0">change to</Text>
-          <Button
-            v-for="next in nextStatuses"
-            :key="next?.id"
-            @click="saveOrder(next)"
-            :style="'background-color: ' + (next?.color ?? '#333333')"
-            class="btn-soft font-light tracking-wider text-white"
-          >
-            {{ next.name }}
-          </Button>
+          <template v-if="allowChangeStage">
+            <Text class="mt-2" v-if="nextStatuses.length != 0">change to</Text>
+            <Button
+              v-for="next in nextStatuses"
+              :key="next?.id"
+              @click="saveOrder(next)"
+              :style="'background-color: ' + (next?.color ?? '#333333')"
+              class="btn-soft font-light tracking-wider text-white"
+            >
+              {{ next.name }}
+            </Button>
+          </template>
         </div>
       </div>
 

@@ -14,11 +14,12 @@ const props = defineProps<{
 }>()
 
 const id = ref<number | null>(null)
+const company_at_location = ref<string | undefined>(undefined)
 const address = ref<string>('')
 const city = ref<string>('')
 const state = ref<string>('')
 const zip = ref<string>('')
-const datetime = ref(new Date() as Date | undefined)
+const datetime = ref<Date | undefined>(new Date() as Date)
 const note = ref<string>('')
 const priority = ref<string>('')
 const timeliness = ref<string>('')
@@ -48,6 +49,7 @@ function resetAndShow(event: OrderEvent | null) {
     }
 
     id.value = event.id
+    company_at_location.value = event.company_at_location
     address.value = event.address || ''
     city.value = event.city || ''
     state.value = event.state || ''
@@ -73,6 +75,7 @@ async function saveAndEdit() {
       await eventsStore.update(id, {
         document: props.document,
         kind: 'pick-up',
+        company_at_location: company_at_location.value,
         address: address.value,
         city: city.value,
         state: state.value,
@@ -88,6 +91,7 @@ async function saveAndEdit() {
       await eventsStore.create({
         document: props.document,
         kind: 'pick-up',
+        company_at_location: company_at_location.value,
         address: address.value,
         city: city.value,
         state: state.value,
@@ -147,12 +151,20 @@ function setTimeliness(v: string) {
           </Button>
         </div>
       </div>
-      
+
       <Label>Note</Label>
       <TextInput class="w-full px-3" v-model="note" :disabled="props.disabled" ref="firstFocus" />
 
-      <Label class="mt-4">Address</Label>
-      <TextInput class="w-full px-3" v-model="address" :disabled="props.disabled" />
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mt-4">Company at location</Label>
+          <TextInput class="w-full px-3" v-model="company_at_location" :disabled="props.disabled" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mt-4">Address</Label>
+          <TextInput class="w-full px-3" v-model="address" :disabled="props.disabled" />
+        </div>
+      </div>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">

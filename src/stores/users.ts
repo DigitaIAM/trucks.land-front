@@ -148,7 +148,7 @@ export const useUsersStore = defineStore('user', () => {
     }
   }
 
-  async function search(text: string) {
+  async function search(text: string): Promise<Array<User>> {
     const response = await supabase
       .from('users')
       .select()
