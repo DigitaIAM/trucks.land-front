@@ -93,7 +93,12 @@ export const useOrdersStore = defineStore('orders', () => {
       if (f.key === 'limit') {
         limit = f.val
       } else if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
-        query = query.eq(f.key, x.id)
+        // workaround
+        if (f.key === 'dispatcher') {
+          query = query.eq('created_by', x.id)
+        } else {
+          query = query.eq(f.key, x.id)
+        }
       } else if (Array.isArray(x)) {
         query = query.in(f.key, x)
       } else {
@@ -154,7 +159,7 @@ export const useOrdersStore = defineStore('orders', () => {
       .from('order_stages')
       .insert({
         document: order.id,
-        stage: stage.id
+        stage: stage.id,
       })
       .select()
 
@@ -267,7 +272,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByNumber,
     searchByReferences,
     searchByPL,
-    onStateUpdate
+    onStateUpdate,
   }
 })
 
