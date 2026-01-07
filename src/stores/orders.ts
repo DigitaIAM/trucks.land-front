@@ -260,6 +260,19 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  function onUpdate(id: number, newOrder: Order) {
+    const order = mapping.value.get(id)
+    if (order) {
+      const map = new Map<number, Order>(mapping.value)
+
+      const copyOrder = Object.assign(order, newOrder)
+
+      map.set(copyOrder.id, copyOrder)
+
+      mapping.value = map
+    }
+  }
+
   return {
     reset,
     setContext,
@@ -273,6 +286,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByReferences,
     searchByPL,
     onStateUpdate,
+    onUpdate,
   }
 })
 

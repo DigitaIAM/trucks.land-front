@@ -15,7 +15,7 @@ const changes = supabase
     {
       event: '*',
       schema: 'public',
-      table: 'order_stages'
+      table: 'order_stages',
     },
     (payload) => {
       console.log('payload', payload)
@@ -26,7 +26,31 @@ const changes = supabase
         useOrdersTracking().onStateUpdate(nextState)
       }
       console.log('done')
-    }
+    },
+  )
+  .subscribe()
+
+const changesOrders = supabase
+  .channel('realtime_orders_channel')
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'orders',
+    },
+    (payload) => {
+      console.log('payload', payload)
+      if (payload.eventType == 'INSERT') {
+      } else if (payload.eventType == 'UPDATE') {
+        const id = payload.old.id
+        const newOrder = payload.new as Order
+
+        useOrdersStore().onUpdate(id, newOrder)
+        // TODO useOrdersTracking().onStateUpdate(newOrder)
+      }
+      console.log('done')
+    },
   )
   .subscribe()
 
