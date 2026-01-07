@@ -179,42 +179,42 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
             tabindex="0"
             class="dropdown-content menu rounded-box z-1 w-70 p-2 shadow-sm text-base bg-accent-content"
           >
-            <!--            <li>-->
-            <!--              <div-->
-            <!--                class="flex-row"-->
-            <!--                @click="selectedPickup = <OrderEvent>{ id: -1, kind: 'pick-up' }"-->
-            <!--              >-->
-            <!--                <div class="text-white">Pick Up</div>-->
-            <!--                <div />-->
-            <!--                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"-->
-            <!--                  >ctrl + p</kbd-->
-            <!--                >-->
-            <!--              </div>-->
-            <!--            </li>-->
-            <!--            <li>-->
-            <!--              <div-->
-            <!--                class="flex-row"-->
-            <!--                @click="selectedDelivery = <OrderEvent>{ id: -1, kind: 'delivery' }"-->
-            <!--              >-->
-            <!--                <div class="text-white">Delivery</div>-->
-            <!--                <div />-->
-            <!--                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"-->
-            <!--                  >ctrl + d</kbd-->
-            <!--                >-->
-            <!--              </div>-->
-            <!--            </li>-->
-            <!--            <li>-->
-            <!--              <div-->
-            <!--                class="flex-row"-->
-            <!--                @click="selectedAgreement = <OrderEvent>{ id: -1, kind: 'agreement' }"-->
-            <!--              >-->
-            <!--                <div class="text-white">Agreement</div>-->
-            <!--                <div />-->
-            <!--                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"-->
-            <!--                  >ctrl + a</kbd-->
-            <!--                >-->
-            <!--              </div>-->
-            <!--            </li>-->
+            <li>
+              <div
+                class="flex-row"
+                @click="selectedPickup = <OrderEvent>{ id: -1, kind: 'pick-up' }"
+              >
+                <div class="text-white">Pick Up</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + p</kbd
+                >
+              </div>
+            </li>
+            <li>
+              <div
+                class="flex-row"
+                @click="selectedDelivery = <OrderEvent>{ id: -1, kind: 'delivery' }"
+              >
+                <div class="text-white">Delivery</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + d</kbd
+                >
+              </div>
+            </li>
+            <li>
+              <div
+                class="flex-row"
+                @click="selectedAgreement = <OrderEvent>{ id: -1, kind: 'agreement' }"
+              >
+                <div class="text-white">Agreement</div>
+                <div />
+                <kbd class="px-2 py-1.5 text-xs font-semibold text-heading bg-neutral-tertiary"
+                  >ctrl + a</kbd
+                >
+              </div>
+            </li>
             <li>
               <a class="text-white" @click="selectedChange = <OrderEvent>{ id: -1, kind: 'change' }"
                 >Change of driver and vehicle</a
