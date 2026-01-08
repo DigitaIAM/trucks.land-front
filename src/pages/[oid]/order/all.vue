@@ -29,6 +29,8 @@ export const useOrgData = defineBasicLoader(
 import Create from '@/pages/[oid]/order/create.vue'
 
 const changes = useChanges()
+const changesOrders = useChangesOrders()
+
 const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
 const statusesStore = useStatusesStore()
@@ -239,6 +241,14 @@ function capitalizeFirstLetter(val) {
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
     <div class="flex items-center">
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': changesOrders.state === 'joined',
+          'network-connecting': changesOrders.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changesOrders.state),
+        }"
+      ></span>
       <span
         class="network-dot"
         :class="{

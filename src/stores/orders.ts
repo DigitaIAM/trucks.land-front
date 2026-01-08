@@ -55,6 +55,8 @@ export const useOrdersStore = defineStore('orders', () => {
 
     mapping.value.forEach((v) => list.push(v))
 
+    list.sort((a, b) => b.id - a.id)
+
     return list
   })
 
@@ -273,6 +275,28 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  function onInsert(newOrder: Order) {
+    const order = mapping.value.get(newOrder.id)
+    if (order) {
+      console.log('onInsert old', order)
+
+      const map = new Map<number, Order>(mapping.value)
+
+      const copyOrder = Object.assign(order, newOrder)
+
+      map.set(copyOrder.id, copyOrder)
+
+      mapping.value = map
+    } else {
+      console.log('onInsert new', newOrder)
+      const map = new Map<number, Order>(mapping.value)
+
+      map.set(newOrder.id, newOrder)
+
+      mapping.value = map
+    }
+  }
+
   return {
     reset,
     setContext,
@@ -287,6 +311,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByPL,
     onStateUpdate,
     onUpdate,
+    onInsert,
   }
 })
 
