@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 import type { KV } from '@/utils/kv.ts'
+import type { Order } from '@/stores/orders.ts'
 
 export interface OrderTracking {
   event: OrderEvent
@@ -12,12 +13,12 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
   const searchFilters = ref<Array<KV>>([])
 
   const timestamp = ref(Date.now())
-  const listing = ref(new Array<OrderTracking>())
+  const listing = ref<OrderTracking[]>([])
 
   const { initialized, loading } = useInitializeStore(async () => {
     const response = await supabase.from('orders_tracking').select()
 
-    const list = [] as Array<OrderTracking>
+    const list: OrderTracking[] = []
     response.data?.forEach((json) => {
       list.push(<OrderTracking>{
         event: <OrderEvent>{
@@ -30,9 +31,9 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
           city: json.event_city,
           state: json.event_state,
           zip: json.event_zip,
-          details: (json.event_details as object) || {}
+          details: (json.event_details as object) || {},
         },
-        order: json as Order
+        order: json as Order,
       })
     })
 
@@ -71,7 +72,7 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     const response = await query
 
     if (timestamp.value == localTime) {
-      const list = [] as Array<OrderTracking>
+      const list: OrderTracking[] = []
       response.data?.forEach((json) => {
         list.push(<OrderTracking>{
           event: <OrderEvent>{
@@ -84,9 +85,9 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
             city: json.event_city,
             state: json.event_state,
             zip: json.event_zip,
-            details: (json.event_details as object) || {}
+            details: (json.event_details as object) || {},
           },
-          order: json as Order
+          order: json as Order,
         })
       })
 
@@ -107,7 +108,21 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     listing.value = list
   }
 
-  return { initialized, loading, listing, setFilters, onStateUpdate }
+  function onUpdate(id: number, newOrder: Order) {
+    const list = Array.from(listing.value)
+    for (const index in list) {
+      const item = list[index]
+      if (item.order.id === id) {
+        list[index] = <OrderTracking>{
+          event: item.event,
+          order: Object.assign(item.order, newOrder),
+        }
+      }
+    }
+    listing.value = list
+  }
+
+  return { initialized, loading, listing, setFilters, onStateUpdate, onUpdate }
 })
 
 if (import.meta.hot) {

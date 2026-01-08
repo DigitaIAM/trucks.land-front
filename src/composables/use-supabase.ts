@@ -47,7 +47,7 @@ const changesOrders = supabase
         const newOrder = payload.new as Order
 
         useOrdersStore().onUpdate(id, newOrder)
-        // TODO useOrdersTracking().onStateUpdate(newOrder)
+        useOrdersTracking().onUpdate(id, newOrder)
       }
       console.log('done')
     },
