@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { OrderEvent } from '@/stores/order_events.ts'
 
 // const supabaseUrl = process.env.SUPABASE_URL
 // const supabaseKey = process.env.SUPABASE_KEY
@@ -58,18 +59,36 @@ const changesOrders = supabase
   )
   .subscribe()
 
-// const changesE = supabase
-//   .channel('realtime_order_events_channel')
-//   .on(
-//     'postgres_changes',
-//     {
-//       schema: 'public', // Subscribes to the "public" schema in Postgres
-//       event: '*',
-//       table: 'order_events', // Listen to all changes
-//     },
-//     (payload) => console.log('changesE', payload),
-//   )
-//   .subscribe()
+const changesE = supabase
+  .channel('realtime_order_events_channel')
+  .on(
+    'postgres_changes',
+    {
+      schema: 'public', // Subscribes to the "public" schema in Postgres
+      event: '*',
+      table: 'order_events', // Listen to all changes
+    },
+    (payload) => {
+      console.log('changesE', payload)
+      if (payload.eventType == 'INSERT') {
+        const event = payload.new as OrderEvent
+
+        // TODO useEventsStore().onEventInsert(event)
+
+        useOrdersStore().onEventChange(event)
+        // useOrdersTracking().onEventChange(event)
+      } else if (payload.eventType == 'UPDATE') {
+        const id = payload.old.id
+        const event = payload.new as OrderEvent
+
+        useEventsStore().onUpdate(id, event)
+        useOrdersStore().onEventChange(event)
+        useOrdersTracking().onEventChange(event)
+      }
+      // console.log('done')
+    },
+  )
+  .subscribe()
 
 export function useSupabase() {
   return supabase
@@ -81,4 +100,8 @@ export function useChanges() {
 
 export function useChangesOrders() {
   return changesOrders
+}
+
+export function useChangesEvents() {
+  return changesE
 }

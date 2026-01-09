@@ -4,12 +4,14 @@ meta:
   layout: clean
 </route>
 
-
 <script setup lang="ts">
 import moment from 'moment'
 import type { KV } from '@/utils/kv.ts'
 
 const changes = useChanges()
+const changesOrders = useChangesOrders()
+const changesE = useChangesEvents()
+
 const ordersTrackingStore = useOrdersTracking()
 const organizationsStore = useOrganizationsStore()
 const statusesStore = useStatusesStore()
@@ -20,7 +22,6 @@ const filters = ref([] as Array<KV>)
 
 const ts = moment().subtract(3, 'days')
 const currentDay = ref(moment())
-
 
 interface Col {
   label: string
@@ -207,6 +208,22 @@ function capitalizeFirstLetter(val: string) {
   <div class="flex flex-row gap-6 px-4 mb-2">
     <SearchTracking @selected="setFilter" :list="ordersTrackingStore.listing"></SearchTracking>
     <div class="flex items-center">
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': changesE.state === 'joined',
+          'network-connecting': changesE.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changesE.state),
+        }"
+      ></span>
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': changesOrders.state === 'joined',
+          'network-connecting': changesOrders.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changesOrders.state),
+        }"
+      ></span>
       <span
         class="network-dot"
         :class="{

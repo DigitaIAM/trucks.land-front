@@ -297,6 +297,23 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  async function onEventChange(event: OrderEvent) {
+    const record = await supabase
+      .from('orders_journal')
+      .select()
+      .eq('id', event.document)
+      .maybeSingle()
+
+    if (record.data) {
+      const map = new Map<number, Order>(mapping.value)
+
+      const order = record.data as Order
+      map.set(order.id, order)
+
+      mapping.value = map
+    }
+  }
+
   return {
     reset,
     setContext,
@@ -310,6 +327,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByReferences,
     searchByPL,
     onStateUpdate,
+    onEventChange,
     onUpdate,
     onInsert,
   }

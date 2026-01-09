@@ -122,7 +122,48 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     listing.value = list
   }
 
-  return { initialized, loading, listing, setFilters, onStateUpdate, onUpdate }
+  async function onEventChange(event: OrderEvent) {
+    const record = await supabase
+      .from('orders_tracking')
+      .select()
+      .eq('id', event.document)
+      .maybeSingle()
+
+    const json = record.data
+
+    console.log('json', record.data)
+
+    if (json) {
+      const obj = <OrderTracking>{
+        event: <OrderEvent>{
+          id: json.event_id,
+          created_at: json.event_created_at,
+          created_by: json.event_created_by,
+          kind: json.event_kind,
+          datetime: json.event_datetime,
+          address: json.event_address,
+          city: json.event_city,
+          state: json.event_state,
+          zip: json.event_zip,
+          details: (json.event_details as object) || {},
+        },
+        order: json as Order,
+      }
+
+      const list = Array.from(listing.value)
+
+      for (const index in list) {
+        const item = list[index]
+        if (item.order.id === event.document) {
+          list[index] = obj
+        }
+      }
+
+      listing.value = list
+    }
+  }
+
+  return { initialized, loading, listing, setFilters, onStateUpdate, onUpdate, onEventChange }
 })
 
 if (import.meta.hot) {

@@ -153,6 +153,7 @@ declare global {
   const useBrowserLocation: typeof import('@vueuse/core')['useBrowserLocation']
   const useCached: typeof import('@vueuse/core')['useCached']
   const useChanges: typeof import('./composables/use-supabase')['useChanges']
+  const useChangesEvents: typeof import('./composables/use-supabase')['useChangesEvents']
   const useChangesOrders: typeof import('./composables/use-supabase')['useChangesOrders']
   const useClipboard: typeof import('@vueuse/core')['useClipboard']
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
@@ -599,6 +600,7 @@ declare module 'vue' {
     readonly useBrowserLocation: UnwrapRef<typeof import('@vueuse/core')['useBrowserLocation']>
     readonly useCached: UnwrapRef<typeof import('@vueuse/core')['useCached']>
     readonly useChanges: UnwrapRef<typeof import('./composables/use-supabase')['useChanges']>
+    readonly useChangesEvents: UnwrapRef<typeof import('./composables/use-supabase')['useChangesEvents']>
     readonly useChangesOrders: UnwrapRef<typeof import('./composables/use-supabase')['useChangesOrders']>
     readonly useClipboard: UnwrapRef<typeof import('@vueuse/core')['useClipboard']>
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>

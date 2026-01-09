@@ -45,7 +45,7 @@ export interface EventUpdate {
 
 export const useEventsStore = defineStore('event', () => {
   const orderId = ref<number | null>(null)
-  const mapping = ref(new Map<number, OrderEvent[]>()) // | Promise<Event[]>
+  const mapping = ref(new Map<number, OrderEvent[]>())
 
   function setOrderId(id: number) {
     orderId.value = id
@@ -230,7 +230,20 @@ export const useEventsStore = defineStore('event', () => {
       })
   }
 
-  return { setOrderId, listing, create, update, fetching, pickUp, delivery }
+  function onUpdate(id: number, changes: OrderEvent) {
+    const event = mapping.value.get(id)
+    if (event) {
+      const map = new Map<number, OrderEvent[]>(mapping.value)
+
+      const copyEvent = Object.assign(event, changes)
+
+      map.set(copyEvent.id, copyEvent)
+
+      mapping.value = map
+    }
+  }
+
+  return { setOrderId, listing, create, update, fetching, pickUp, delivery, onUpdate }
 })
 
 if (import.meta.hot) {
