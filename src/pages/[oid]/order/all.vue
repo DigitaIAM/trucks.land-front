@@ -30,6 +30,7 @@ import Create from '@/pages/[oid]/order/create.vue'
 
 const changes = useChanges()
 const changesOrders = useChangesOrders()
+const changesE = useChangesEvents()
 
 const ordersStore = useOrdersStore()
 const brokersStore = useBrokersStore()
@@ -240,7 +241,16 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
+
     <div class="flex items-center">
+      <span
+        class="network-dot"
+        :class="{
+          'network-connected': changesE.state === 'joined',
+          'network-connecting': changesE.state === 'joining',
+          'network-disconnected': !['joining', 'joined'].includes(changesE.state),
+        }"
+      ></span>
       <span
         class="network-dot"
         :class="{
