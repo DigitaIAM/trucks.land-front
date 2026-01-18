@@ -72,7 +72,7 @@ export async function generateRC(order: Order, org: Organization) {
   }
 
   const signatureURL =
-    'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/signatures/signature_1IBBA1XfO3Rc3Ay4.png'
+    'https://supabase.trucks.land/storage/v1/object/public/files/signatures/signature_1IBBA1XfO3Rc3Ay4.png'
   const signatureImageBytes = await fetch(signatureURL).then((res) => res.arrayBuffer())
 
   const pdfDoc = await PDFDocument.create()
