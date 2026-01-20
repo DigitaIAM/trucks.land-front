@@ -2,7 +2,6 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { filterCharSet, openInNewTab } from '@/utils/pdf-helper.ts'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { drawTable } from 'pdf-lib-draw-table-beta'
-import { createFetch } from '@vueuse/core'
 import moment from 'moment/moment'
 
 const eventsStore = useEventsStore()
@@ -119,6 +118,7 @@ export async function generateRC(order: Order, org: Organization) {
     if (event.kind === 'pick-up') {
       pickup.push(filterCharSet(`Pick up`, boldFont))
       pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+      pickup.push(filterCharSet(event.company_at_location, font))
       pickup.push(filterCharSet(`Address`, boldFont))
       pickup.push(filterCharSet(event.address, font))
       pickup.push(filterCharSet(event.city, font))
@@ -129,6 +129,7 @@ export async function generateRC(order: Order, org: Organization) {
     if (event.kind === 'delivery') {
       delivery.push(filterCharSet(`Drop`, boldFont))
       delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+      delivery.push(filterCharSet(event.company_at_location, font))
       delivery.push(filterCharSet(`Address`, boldFont))
       delivery.push(filterCharSet(event.address, font))
       delivery.push(filterCharSet(event.city, font))
@@ -317,6 +318,10 @@ export async function generateRC(order: Order, org: Organization) {
     page.moveDown(15)
   }
 
+  page = pdfDoc.addPage()
+
+  page.moveTo(textX, 800)
+
   page.moveDown(10)
   page.drawText('Accessorials, Delays and OS&D:', {
     size: 10, // Font size
@@ -339,9 +344,9 @@ export async function generateRC(order: Order, org: Organization) {
     page.moveDown(15)
   }
 
-  page = pdfDoc.addPage()
-
-  page.moveTo(textX, 800)
+  // page = pdfDoc.addPage()
+  //
+  // page.moveTo(textX, 800)
 
   page.drawText(
     'Carriers must request detention or other charges at time of services rendered or else request may be denied.',

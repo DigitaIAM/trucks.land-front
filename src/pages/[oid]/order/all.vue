@@ -39,6 +39,7 @@ const usersStore = useUsersStore()
 // const organizationsStore = useOrganizationsStore()
 const vehiclesStore = useVehiclesStore()
 const driversStore = useDriversStore()
+const ownersStore = useOwnersStore()
 const commentsStore = useCommentsStore()
 
 defineOptions({
@@ -163,6 +164,19 @@ const cols = [
         'driver_' + v.driver,
         () => ({ name: '-' }),
         () => driversStore.resolve(v.driver),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
+    label: 'company',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'driver_' + v.company,
+        () => ({ name: '-' }),
+        () => ownersStore.resolve(v.company),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,

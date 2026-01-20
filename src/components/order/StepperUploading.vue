@@ -521,9 +521,9 @@ async function createRC() {
 
   <Modal id="entered_email">
     <ModalBox class="max-w-[calc(20vw)]">
-      <div class="ml-68 mb-2">
-        <Button ghost s @click="closeEmail">X</Button>
-      </div>
+      <ModalAction class="mt-0">
+        <Button class="flex mb-2" ghost s @click="closeEmail">X</Button>
+      </ModalAction>
 
       <TextInput
         type="email"

@@ -10,7 +10,7 @@ export interface EventCreate {
   document: number
   kind: string
   datetime: Date
-  company_at_location?: string
+  company_at_location: string
   address: string
   city: string
   state: string
