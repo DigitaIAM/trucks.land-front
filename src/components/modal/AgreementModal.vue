@@ -17,6 +17,7 @@ const driver = ref<Driver | null>(null)
 const company = ref<Owner | null>(null)
 const vehicle = ref<Vehicle | null>(null)
 const vehicle_found_by = ref<User | null>(null)
+const percent_vf = ref<number | null>(null)
 const cost = ref<number | null>(null)
 const percent = ref<number | null>(null)
 
@@ -55,6 +56,7 @@ function resetAndShow(event: OrderEvent | null) {
     company.value = event.company ? { id: event.company } : null
     vehicle.value = event.vehicle ? { id: event.vehicle } : null
     vehicle_found_by.value = event && event.vehicle_found_by ? { id: event.vehicle_found_by } : null
+    percent_vf.value = event.percent_vf
     cost.value = event.cost
     percent.value = event.percent
 
@@ -79,6 +81,7 @@ async function saveAndEdit() {
         company: company.value?.id ?? null,
         vehicle: vehicle.value?.id ?? null,
         vehicle_found_by: vehicle_found_by.value?.id ?? null,
+        percent_vf: percent_vf.value,
         cost: cost.value,
         percent: percent.value,
         details: note.value
@@ -96,6 +99,7 @@ async function saveAndEdit() {
         company: company.value?.id ?? null,
         vehicle: vehicle.value?.id ?? null,
         vehicle_found_by: vehicle_found_by.value?.id ?? null,
+        percent_vf: percent_vf.value,
         cost: cost.value,
         percent: percent.value,
         details: note.value
@@ -165,14 +169,14 @@ function close() {
       </fieldset>
 
       <fieldset :disabled="props.disabled">
-        <div class="flex space-x-3 mb-2 mt-2 w-full">
-          <div class="md:w-1/3 md:mb-0">
+        <div class="flex space-x-3 mb-2 mt-4 w-full">
+          <div class="md:w-1/4 md:mb-0">
             <Label class="mb-3">Vehicle owner</Label>
             <div>
               <QueryAndShow :id="vehicle?.owner" :store="ownersStore"></QueryAndShow>
             </div>
           </div>
-          <div class="md:w-1/3 md:mb-0">
+          <div class="md:w-1/4 md:mb-0">
             <Label>Vehicle</Label>
             <selector
               v-model="vehicle"
@@ -180,13 +184,17 @@ function close() {
               :disabled="company?.id != undefined"
             ></selector>
           </div>
-          <div class="md:w-1/3 md:mb-0">
+          <div class="md:w-1/4 md:mb-0">
             <Label>found by</Label>
             <selector
               v-model="vehicle_found_by"
               :store="usersStore"
               :disabled="vehicle?.id === undefined || company?.id != undefined"
             />
+          </div>
+          <div class="md:w-1/4 md:mb-0">
+            <Label>percent % </Label>
+            <TextInput class="block w-full" v-model="percent_vf" />
           </div>
         </div>
       </fieldset>

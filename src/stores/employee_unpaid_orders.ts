@@ -54,7 +54,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
     if (userId) {
       requestPayments = requestPayments.or(
-        'created_by.eq.' + userId + ',vehicle_found_by.eq.' + userId
+        'created_by.eq.' + userId + ',vehicle_found_by.eq.' + userId,
       )
     }
 
@@ -65,7 +65,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const record = {
         employee: json['created_by'],
         employee_payment: 0,
-        order: json as Order
+        order: json as Order,
       } as EmployeePaymentRecord
 
       const key = record.employee
@@ -77,7 +77,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         const record = {
           employee: json['vehicle_found_by'],
           employee_payment: 0,
-          order: json as Order
+          order: json as Order,
         } as EmployeePaymentRecord
 
         const key = record.employee
@@ -132,7 +132,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
     const terms = groupBy(
       responseTerms.data!.map((v) => v as PaymentTerms),
-      (v) => v.user_id
+      (v) => v.user_id,
     )
 
     const list = [] as Record[]
@@ -152,7 +152,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         percent_of_gross: 0,
         percent_of_profit: 0,
         fixed_salary: 0,
-        income_tax: 0
+        income_tax: 0,
       }) as PaymentTerms
 
       paymentsMap.get(employee)?.forEach((p) => {
@@ -163,9 +163,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           let pc = 1
           if (p.order.vehicle_found_by) {
             if (p.order.vehicle_found_by == employee) {
-              pc = 0.3
+              pc = p.order.percent_vf / 100
             } else {
-              pc = 0.7
+              pc = (100 - p.order.percent_vf) / 100
             }
           }
           orders_amount += p.order.cost * pc
@@ -218,8 +218,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           paymentTerms: employeeTerms,
           settlements: settlementsRecords,
           settlements_total: settlementsTotal,
-          payout: toPayment + settlementsTotal
-        } as EmployeePaymentSummary
+          payout: toPayment + settlementsTotal,
+        } as EmployeePaymentSummary,
       })
     }
 
@@ -274,13 +274,16 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const records = []
 
       for (const order of summary.orders.values()) {
-        if (order.vehicle_found_by == summary.employee && order.vehicle_found_by != order.created_by) {
+        if (
+          order.vehicle_found_by == summary.employee &&
+          order.vehicle_found_by != order.created_by
+        ) {
           records.push({
             doc_payment: -1,
             doc_order: order.id,
             order_cost: order.cost,
             driver_cost: order.driver_cost,
-            profit_kind: 'direct'
+            profit_kind: 'direct',
           } as PaymentToDispatcherOrderCreate)
         } else {
           records.push({
@@ -288,7 +291,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
             doc_order: order.id,
             order_cost: order.cost,
             driver_cost: order.driver_cost,
-            profit_kind: 'profit'
+            profit_kind: 'profit',
           } as PaymentToDispatcherOrderCreate)
         }
       }
@@ -298,7 +301,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         settlementsRecords.push({
           doc_payment: -1,
           doc_settlements: settlement.id,
-          amount: settlement.amount
+          amount: settlement.amount,
         } as EmployeePaymentSettlementsCreate)
       }
 
@@ -313,10 +316,10 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           fixed_salary: summary.paymentTerms.fixed_salary,
           to_pay: summary.toPayment,
           ex_rate: ex_rate,
-          income_tax: summary.paymentTerms.income_tax
+          income_tax: summary.paymentTerms.income_tax,
         } as PaymentToEmployeeCreate,
         records,
-        settlementsRecords
+        settlementsRecords,
       )
     }
 
