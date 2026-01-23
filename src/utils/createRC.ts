@@ -119,10 +119,8 @@ export async function generateRC(order: Order, org: Organization) {
       pickup.push(filterCharSet(`Pick up`, boldFont))
       pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
       pickup.push(filterCharSet(event.company_at_location, font))
-      pickup.push(filterCharSet(`Address`, boldFont))
       pickup.push(filterCharSet(event.address, font))
-      pickup.push(filterCharSet(event.city, font))
-      pickup.push(filterCharSet(`${event.state} ${event.zip}`, font))
+      pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
       pickup.push(filterCharSet(`Instructions:`, boldFont))
       pickup.push(`${event.details.note}`, boldFont)
     }
@@ -130,10 +128,8 @@ export async function generateRC(order: Order, org: Organization) {
       delivery.push(filterCharSet(`Drop`, boldFont))
       delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
       delivery.push(filterCharSet(event.company_at_location, font))
-      delivery.push(filterCharSet(`Address`, boldFont))
       delivery.push(filterCharSet(event.address, font))
-      delivery.push(filterCharSet(event.city, font))
-      delivery.push(filterCharSet(`${event.state} ${event.zip}`, font))
+      delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
       delivery.push(filterCharSet(`Instructions:`, boldFont))
       delivery.push(`${event.details.note}`, boldFont)
     }
@@ -170,10 +166,6 @@ export async function generateRC(order: Order, org: Organization) {
 
   text_left(page, font, 10, `Broker`, startX + bls, 585)
   text_left(page, font, 10, `Signature:`, startX + bls, 570)
-
-  // const signatureURL =
-  //   'https://mckvgyjkhbwfyilzeakw.supabase.co/storage/v1/object/public/files/signatures/signature_1IBBA1XfO3Rc3Ay4.png'
-  // const signatureImageBytes = await fetch(signatureURL).then((res) => res.arrayBuffer())
 
   const signatureImg = await pdfDoc.embedPng(signatureImageBytes)
 
@@ -250,15 +242,15 @@ export async function generateRC(order: Order, org: Organization) {
     630,
   )
 
+  let manager_email = ''
+  if (org.id == 2) {
+    manager_email = 'tom@cvslogisticsllc.com'
+  } else if (org.id == 3) {
+    manager_email = 'tom@cnulogistics.com'
+  }
+
   text_left(page, font, 12, 'Email:', cx - 100, 615)
-  text_left(
-    page,
-    font,
-    12,
-    `${dispatcher?.email}`,
-    font.widthOfTextAtSize('Email:', 12) + cx - 96,
-    615,
-  )
+  text_left(page, font, 12, `${manager_email}`, font.widthOfTextAtSize('Email:', 12) + cx - 96, 615)
 
   //tableBottom
   const tableBottomY = tableDimensions.endY // Calculate the bottom edge of the table
@@ -292,7 +284,7 @@ export async function generateRC(order: Order, org: Organization) {
   const size = 10
   page.moveTo(textX, textY - 100)
 
-  page.drawText('All Invoices should be sent to billing@cnulogistics.com', {
+  page.drawText(`All Invoices should be sent to ${org.billing_email}`, {
     size: size, // Font size
     font: font, // Embedded font
     color: rgb(0, 0, 0),
