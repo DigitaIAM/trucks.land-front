@@ -32,6 +32,7 @@ import OwnerIcon from '~/assets/icons/bussness_center.svg?url'
 import UsersIcon from '~/assets/icons/users.svg?url'
 import StatusIcon from '~/assets/icons/status.svg?url'
 import OrganizationsIcon from '~/assets/icons/organizations.svg?url'
+import InsuranceIcon from '~/assets/icons/insurance.svg?url'
 
 defineOptions({
   __loaders: [useOrgData],
@@ -48,6 +49,16 @@ const buttons = [
     link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/brokers',
   },
   {
+    label: 'Owners',
+    icon: OwnerIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/owners',
+  },
+  {
+    label: 'Insurances',
+    icon: InsuranceIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/insurances',
+  },
+  {
     label: 'Drivers',
     icon: DriverIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/drivers',
@@ -56,11 +67,6 @@ const buttons = [
     label: 'Vehicles',
     icon: VehicleIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/vehicles',
-  },
-  {
-    label: 'Owners',
-    icon: OwnerIcon,
-    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/owners',
   },
   {
     label: 'Users',

@@ -42,6 +42,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/referenceBooks': RouteRecordInfo<'/[oid]/referenceBooks', '/:oid/referenceBooks', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/brokers': RouteRecordInfo<'/[oid]/refs/brokers', '/:oid/refs/brokers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/drivers': RouteRecordInfo<'/[oid]/refs/drivers', '/:oid/refs/drivers', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/refs/insurances': RouteRecordInfo<'/[oid]/refs/insurances', '/:oid/refs/insurances', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/organizations': RouteRecordInfo<'/[oid]/refs/organizations', '/:oid/refs/organizations', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/owners': RouteRecordInfo<'/[oid]/refs/owners', '/:oid/refs/owners', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/refs/statuses': RouteRecordInfo<'/[oid]/refs/statuses', '/:oid/refs/statuses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -159,6 +160,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/refs/drivers.vue': {
       routes: '/[oid]/refs/drivers'
+      views: never
+    }
+    'src/pages/[oid]/refs/insurances.vue': {
+      routes: '/[oid]/refs/insurances'
       views: never
     }
     'src/pages/[oid]/refs/organizations.vue': {

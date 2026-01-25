@@ -39,7 +39,6 @@ export async function weekExportToExcel(
     { header: 'driver payment', key: 'd_payment', width: 20 },
     { header: 'profit', key: 'profit', width: 20 },
     { header: '%', key: 'percent', width: 20 },
-    { header: 'comments', key: 'comments', width: 30 },
   ]
 
   let n = 0
@@ -118,7 +117,6 @@ export async function weekExportToExcel(
         d_payment: order.driver_cost,
         profit: profit,
         percent: percent,
-        comments: '',
       })
 
       for (const col of ['S', 'T', 'U', 'V']) {
@@ -152,6 +150,6 @@ export async function weekExportToExcel(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    `week_data.xlsx`,
+    `Week-report.xlsx`,
   )
 }

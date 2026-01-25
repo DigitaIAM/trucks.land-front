@@ -47,16 +47,6 @@ const buttons = [
     icon: DispatcherIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/reports/dispatcherReport',
   },
-  // {
-  //   label: 'Broker',
-  //   icon: BrokerIcon,
-  //   link: '',
-  // },
-  // {
-  //   label: 'Vehicle',
-  //   icon: VehicleIcon,
-  //   link: '',
-  // },
 ]
 </script>
 

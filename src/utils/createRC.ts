@@ -247,6 +247,8 @@ export async function generateRC(order: Order, org: Organization) {
     manager_email = 'tom@cvslogisticsllc.com'
   } else if (org.id == 3) {
     manager_email = 'tom@cnulogistics.com'
+  } else {
+    manager_email = 'gus.haddad@caravanfreight.net'
   }
 
   text_left(page, font, 12, 'Email:', cx - 100, 615)
