@@ -26,7 +26,7 @@ const props = defineProps<{
   edit: Insurance | null
 }>()
 
-const id = ref<number | null>(null)
+const id = ref<number>()
 const created_by = ref<User>()
 const policy_number = ref<string>('')
 const end_date = ref(new Date() as Date | undefined)
@@ -58,10 +58,10 @@ async function resetAndShow(insurance: Insurance | null) {
 }
 
 function openNewWindow(insurance: Insurance, org: Organization) {
-  window.open('/' + org.code3.toLowerCase() + insurance.id, '_blank')
+  window.open('/' + org.code3.toLowerCase() + '/insurance/' + insurance.id, '_blank')
 }
 
-async function saveAndEdit() {
+async function save() {
   try {
     const org = cOrg.data.value
     const insurance = await insurancesStore.create({
@@ -113,7 +113,7 @@ function close() {
       </div>
 
       <ModalAction>
-        <Button class="btn-soft font-light tracking-wider" @click="saveAndEdit">
+        <Button class="btn-soft font-light tracking-wider" @click="save">
           {{ id > 0 ? 'Update' : 'Create' }}
         </Button>
         <Button class="btn-soft font-light tracking-wider ml-3" @click="close">Close</Button>

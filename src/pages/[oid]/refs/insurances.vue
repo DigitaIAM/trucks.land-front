@@ -4,11 +4,40 @@ meta:
   layout: nav-view
 </route>
 
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const insurancesStore = useInsuranceStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    await insurancesStore.loading(org.id)
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const orgData = useOrgData()
+
 const selectedRecord = ref<Insurance | null>(null)
 
-function editRecord(record: Insurance) {
-  selectedRecord.value = record
+const insurancesStore = useInsuranceStore()
+
+function openRecord(id: number) {
+  window.open('/' + orgData.data.value.code3.toLowerCase() + '/insurance/' + id, '_blank')
+  console.log('openRecord', id)
 }
 
 function onClose() {
@@ -17,30 +46,45 @@ function onClose() {
 
 const cols = [
   {
-    label: 'Owner',
-    value: (v: Owner) => v.name,
+    label: 'Policy number',
+    value: (v: Insurance) => v.policy_number,
     size: 300,
   },
   {
-    label: 'UnitId',
-    value: (v: Owner) => v.phone,
+    label: 'POLICY EFF',
+    value: (v: Insurance) => v.start_date,
     size: 300,
   },
   {
-    label: 'Drivers',
-    value: (v: Owner) => v.email,
+    label: 'POLICY EXP',
+    value: (v: Insurance) => v.end_date,
     size: 300,
   },
-  {
-    label: 'Expiry date',
-    value: (v: Owner) => v.email,
-    size: 300,
-  },
+  // {
+  //   label: 'Owner',
+  //   value: (v: Owner) => v.name,
+  //   size: 300,
+  // },
+  // {
+  //   label: 'UnitId',
+  //   value: (v: Owner) => v.phone,
+  //   size: 300,
+  // },
+  // {
+  //   label: 'Drivers',
+  //   value: (v: Owner) => v.email,
+  //   size: 300,
+  // },
+  // {
+  //   label: 'Expiry date',
+  //   value: (v: Owner) => v.email,
+  //   size: 300,
+  // },
 ]
 </script>
 
 <template>
-  <InsuranceCreate :edit="editRecord" @closed="onClose"></InsuranceCreate>
+  <InsuranceCreate :edit="openRecord" @closed="onClose"></InsuranceCreate>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr
@@ -54,26 +98,26 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <!--      <tr-->
-      <!--        v-for="owner in ownersStore.listing"-->
-      <!--        :key="owner.id"-->
-      <!--        class="hover:bg-base-200"-->
-      <!--        @click="editOwner(owner)"-->
-      <!--      >-->
-      <!--        <td-->
-      <!--          v-for="col in cols"-->
-      <!--          class="py-3 px-4"-->
-      <!--          :key="col.label"-->
-      <!--          :style="{ width: col.size + 'px' }"-->
-      <!--        >-->
-      <!--          <p-->
-      <!--            class="block antialiasing tracking-wide font-light leading-normal truncate"-->
-      <!--            :style="{ width: col.size + 'px' }"-->
-      <!--          >-->
-      <!--            {{ col.value(owner) }}-->
-      <!--          </p>-->
-      <!--        </td>-->
-      <!--      </tr>-->
+      <tr
+        v-for="insurance in insurancesStore.listing"
+        :key="insurance.id"
+        class="hover:bg-base-200"
+        @click="openRecord(insurance.id)"
+      >
+        <td
+          v-for="col in cols"
+          class="py-3 px-4"
+          :key="col.label"
+          :style="{ width: col.size + 'px' }"
+        >
+          <p
+            class="block antialiasing tracking-wide font-light leading-normal truncate"
+            :style="{ width: col.size + 'px' }"
+          >
+            {{ col.value(insurance) }}
+          </p>
+        </td>
+      </tr>
     </tbody>
   </table>
 </template>
