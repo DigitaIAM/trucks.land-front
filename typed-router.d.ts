@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/': RouteRecordInfo<'/[oid]/', '/:oid', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/calculationEmployee': RouteRecordInfo<'/[oid]/calculationEmployee', '/:oid/calculationEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/expensesView': RouteRecordInfo<'/[oid]/expensesView', '/:oid/expensesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/insurance/[id]': RouteRecordInfo<'/[oid]/insurance/[id]', '/:oid/insurance/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/journals/check-outView': RouteRecordInfo<'/[oid]/journals/check-outView', '/:oid/journals/check-outView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/factoring_journal': RouteRecordInfo<'/[oid]/journals/factoring_journal', '/:oid/journals/factoring_journal', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -88,6 +89,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/expensesView.vue': {
       routes: '/[oid]/expensesView'
+      views: never
+    }
+    'src/pages/[oid]/insurance/[id].vue': {
+      routes: '/[oid]/insurance/[id]'
       views: never
     }
     'src/pages/[oid]/journals/check-outView.vue': {

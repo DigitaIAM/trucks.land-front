@@ -20,6 +20,7 @@ export interface InsuranceUpdate {
 
 export const useInsuranceStore = defineStore('insurances', () => {
   const listing = ref<Array<Insurance>>([])
+  const mapping = ref(new Map<number, Insurance>())
 
   async function loading() {
     const response = await supabase
@@ -35,7 +36,7 @@ export const useInsuranceStore = defineStore('insurances', () => {
         const insurance = json as Insurance
         list.push(insurance)
       })
-      
+
       listing.value = list
     } else {
       throw 'unexpended response status: ' + response.status
@@ -81,7 +82,25 @@ export const useInsuranceStore = defineStore('insurances', () => {
       })
   }
 
-  return { listing, loading, create, update }
+  async function resolve(id: number) {
+    const v = mapping.value.get(id)
+    if (v) {
+      return v
+    }
+
+    const response = await supabase.from('insurances').select().eq('id', id)
+
+    const map = new Map<number, Insurance>()
+    response.data?.forEach((json) => {
+      const insurance = json as Insurance
+      map.set(insurance.id, insurance)
+      mapping.value.set(insurance.id, insurance)
+    })
+
+    return map.get(id)
+  }
+
+  return { listing, loading, create, update, resolve }
 })
 
 if (import.meta.hot) {
