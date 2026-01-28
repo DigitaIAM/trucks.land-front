@@ -220,6 +220,7 @@ declare global {
   const useInitializeStore: typeof import('./composables/use-initialize-store')['useInitializeStore']
   const useInstanceDefaults: (typeof import('feathers-pinia'))['useInstanceDefaults']
   const useInsuranceStore: typeof import('./stores/insurances')['useInsuranceStore']
+  const useInsuranceVehicleStore: typeof import('./stores/insurance_vehicle')['useInsuranceVehicleStore']
   const useIntersectionObserver: typeof import('@vueuse/core')['useIntersectionObserver']
   const useInterval: typeof import('@vueuse/core')['useInterval']
   const useIntervalFn: typeof import('@vueuse/core')['useIntervalFn']
@@ -246,7 +247,7 @@ declare global {
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
   const useOrdersStore: typeof import('./stores/orders')['useOrdersStore']
-  const useOrdersTeamsDispatcherStore: typeof import('./stores/orders_teams_dispatcher')['useOrdersTeamsDispatcherStore']
+  const useOrdersTeamsDispatcherStore: (typeof import('./stores/orders_teams_dispatcher'))['useOrdersTeamsDispatcherStore']
   const useOrdersTracking: typeof import('./stores/orders_tracking')['useOrdersTracking']
   const useOrganizationsStore: typeof import('./stores/organizations')['useOrganizationsStore']
   const useOwnerVehicleStore: typeof import('./stores/owner_vehicle')['useOwnerVehicleStore']
@@ -404,6 +405,9 @@ declare global {
   export type { EmployeePaymentRecord, EmployeePaymentSummary, PaymentTerms } from './stores/employee_unpaid_orders'
   import('./stores/employee_unpaid_orders')
   // @ts-ignore
+  export type { InsuranceVehicle, InsuranceVehicleCreate, InsuranceVehicleUpdate } from './stores/insurance_vehicle'
+  import('./stores/insurance_vehicle')
+  // @ts-ignore
   export type { Insurance, InsuranceCreate, InsuranceUpdate } from './stores/insurances'
   import('./stores/insurances')
   // @ts-ignore
@@ -439,9 +443,6 @@ declare global {
   // @ts-ignore
   export type { OwnerPaymentRecord, OwnerPaymentSummary } from './stores/owner_unpaid_orders'
   import('./stores/owner_unpaid_orders')
-  // @ts-ignore
-  export type { OwnerVehicle, OwnerVehicleCreate, OwnerVehicleUpdate } from './stores/owner_vehicle'
-  import('./stores/owner_vehicle')
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
@@ -667,6 +668,7 @@ declare module 'vue' {
     readonly useInfiniteScroll: UnwrapRef<typeof import('@vueuse/core')['useInfiniteScroll']>
     readonly useInitializeStore: UnwrapRef<typeof import('./composables/use-initialize-store')['useInitializeStore']>
     readonly useInsuranceStore: UnwrapRef<typeof import('./stores/insurances')['useInsuranceStore']>
+    readonly useInsuranceVehicleStore: UnwrapRef<typeof import('./stores/insurance_vehicle')['useInsuranceVehicleStore']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('@vueuse/core')['useIntersectionObserver']>
     readonly useInterval: UnwrapRef<typeof import('@vueuse/core')['useInterval']>
     readonly useIntervalFn: UnwrapRef<typeof import('@vueuse/core')['useIntervalFn']>
@@ -695,7 +697,6 @@ declare module 'vue' {
     readonly useOrdersStore: UnwrapRef<typeof import('./stores/orders')['useOrdersStore']>
     readonly useOrdersTracking: UnwrapRef<typeof import('./stores/orders_tracking')['useOrdersTracking']>
     readonly useOrganizationsStore: UnwrapRef<typeof import('./stores/organizations')['useOrganizationsStore']>
-    readonly useOwnerVehicleStore: UnwrapRef<typeof import('./stores/owner_vehicle')['useOwnerVehicleStore']>
     readonly useOwnersStore: UnwrapRef<typeof import('./stores/owners')['useOwnersStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>

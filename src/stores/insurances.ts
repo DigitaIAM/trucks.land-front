@@ -7,12 +7,14 @@ export interface Insurance extends InsuranceCreate {
 }
 
 export interface InsuranceCreate {
+  owner: number
   policy_number: string
   start_date: Date
   end_date: Date
 }
 
 export interface InsuranceUpdate {
+  owner?: number
   policy_number?: string
   start_date?: Date
   end_date?: Date
@@ -26,7 +28,7 @@ export const useInsuranceStore = defineStore('insurances', () => {
     const response = await supabase
       .from('insurances')
       .select()
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
       .limit(50)
 
     if (response.status == 200) {

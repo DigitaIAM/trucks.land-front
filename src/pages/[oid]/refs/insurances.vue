@@ -34,6 +34,7 @@ const orgData = useOrgData()
 const selectedRecord = ref<Insurance | null>(null)
 
 const insurancesStore = useInsuranceStore()
+const ownersStore = useOwnersStore()
 
 function openRecord(id: number) {
   window.open('/' + orgData.data.value.code3.toLowerCase() + '/insurance/' + id, '_blank')
@@ -44,7 +45,41 @@ function onClose() {
   selectedRecord.value = null
 }
 
+const state = reactive({})
+
+function resolve(
+  order: Order,
+  name: string,
+  create: () => object,
+  request: () => Promise<object | null>,
+  label: (obj: object) => string,
+) {
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
+  } else {
+    s[name] = create()
+    state[order.id] = s
+    request().then((obj) => {
+      if (obj) state[order.id][name] = obj
+    })
+    return label(s[name])
+  }
+}
+
 const cols = [
+  {
+    label: 'Owner',
+    value: (v: Insurance) =>
+      resolve(
+        v,
+        'owner_' + v.owner,
+        () => ({ name: '_' }),
+        () => ownersStore.resolve(v.owner),
+        (map) => map.name,
+      ),
+    size: 300,
+  },
   {
     label: 'Policy number',
     value: (v: Insurance) => v.policy_number,

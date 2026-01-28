@@ -80,6 +80,7 @@ declare module 'vue' {
     IndicatorItem: typeof import('./components/widgets/IndicatorItem.vue')['default']
     InsuranceCreate: typeof import('./components/modal/InsuranceCreate.vue')['default']
     InsuranceModal: typeof import('./components/modal/InsuranceModal.vue')['default']
+    InsuranceVehicleModal: typeof import('./components/modal/InsuranceVehicleModal.vue')['default']
     Join: typeof import('./components/widgets/Join.vue')['default']
     Kbd: typeof import('./components/widgets/Kbd.vue')['default']
     Label: typeof import('./components/widgets/Label.vue')['default']

@@ -28,6 +28,7 @@ const props = defineProps<{
 
 const id = ref<number>()
 const created_by = ref<User>()
+const owner = ref<Owner>()
 const policy_number = ref<string>('')
 const end_date = ref(new Date() as Date | undefined)
 const start_date = ref(new Date() as Date | undefined)
@@ -44,12 +45,14 @@ watch(
 
 const insurancesStore = useInsuranceStore()
 const authStore = useAuthStore()
+const ownerStore = useOwnersStore()
 
 async function resetAndShow(insurance: Insurance | null) {
   const account = await authStore.currentAccount()
 
   id.value = insurance?.id
   created_by.value = insurance ? { id: insurance?.created_by } : account ? { id: account.id } : null
+  owner.value = insurance && insurance.owner ? { id: insurance.owner } : null
   policy_number.value = insurance?.policy_number
   end_date.value = insurance?.end_date
   start_date.value = insurance?.start_date
@@ -66,6 +69,7 @@ async function save() {
     const org = cOrg.data.value
     const insurance = await insurancesStore.create({
       created_by: created_by.value?.id,
+      owner: owner.value?.id,
       policy_number: policy_number.value,
       start_date: start_date.value,
       end_date: end_date.value,
@@ -96,6 +100,10 @@ function close() {
     <ModalBox class="max-w-[calc(50vw)]">
       <div class="mb-4">
         <Text size="2xl">Insurance</Text>
+      </div>
+      <div class="mb-4">
+        <Label>Owner</Label>
+        <selector v-model="owner" :store="ownerStore"></selector>
       </div>
       <Label>Policy number</Label>
       <TextInput class="w-full mb-4" v-model="policy_number" />
