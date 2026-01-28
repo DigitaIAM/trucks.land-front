@@ -117,8 +117,8 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const cx = rightSide - margin
 
   const fs = 10
-  text_right(page, boldFont, fs, 'Total gross:', cx, cy)
-  cy -= bls + text_left(page, boldFont, fs, `\$${document.amount.toFixed(2)}`, cx + bls, cy)
+  // text_right(page, boldFont, fs, 'Total gross:', cx, cy)
+  // cy -= bls + text_left(page, boldFont, fs, `\$${document.orders.toFixed(2)}`, cx + bls, cy)
 
   // text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
   // cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
@@ -244,19 +244,29 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   let textY = tableBottomY - textMargin // Y-coordinate for the start of the text
   const textX = 50
 
-  text_left(page, font, fs, 'Dispatch fee:', textX + bls, textY)
-  textY -=
-    bls + text_left(page, font, fs, '4%', font.widthOfTextAtSize('Dispatch fee:', fs) + 60, textY)
-
-  text_left(page, font, fs, 'Factoring/Quick pay fee:', textX + bls, textY)
+  const dispatch_fee = 4
+  const quick_pay = 1.5
+  text_left(page, font, fs, 'Dispatch fee %:', textX + bls, textY)
   textY -=
     bls +
     text_left(
       page,
       font,
       fs,
-      '1.5%',
-      font.widthOfTextAtSize('Factoring/Quick pay fee:', fs) + 60,
+      `${dispatch_fee}`,
+      font.widthOfTextAtSize('Dispatch fee %:', fs) + 60,
+      textY,
+    )
+
+  text_left(page, font, fs, 'Factoring/Quick pay fee %:', textX + bls, textY)
+  textY -=
+    bls +
+    text_left(
+      page,
+      font,
+      fs,
+      `${quick_pay}`,
+      font.widthOfTextAtSize('Factoring/Quick pay fee %:', fs) + 60,
       textY,
     )
 
@@ -279,7 +289,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       page,
       boldFont,
       fs,
-      `\$${(document?.orders - document?.orders * (0.04 + 0.015)).toFixed(2)}`,
+      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100).toFixed(2)}`,
       boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
       textY,
     )
@@ -298,7 +308,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       page,
       boldFont,
       fs,
-      `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(2)}`,
+      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(2)}`,
       boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
       textY,
     )
@@ -310,7 +320,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       page,
       boldFont,
       fs,
-      `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
+      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(0)}`,
       boldFont.widthOfTextAtSize('Total Pay:', fs) + 60,
       textY,
     )

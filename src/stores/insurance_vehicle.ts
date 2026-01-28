@@ -49,7 +49,7 @@ export const useInsuranceVehicleStore = defineStore('insurance_vehicle', () => {
             listing.value.push(record)
           })
         }
-        console.log('response', response)
+        console.log('response', listing)
       })
   }
 

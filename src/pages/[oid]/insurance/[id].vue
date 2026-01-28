@@ -26,15 +26,13 @@ defineOptions({
   __loaders: [useOrgData],
 })
 
-const owner = ref<number>()
+const _insurance = ref<Insurance | null>(null)
+const owner = ref<Owner | null>(null)
 const policy_number = ref('')
 const start_date = ref<Date | null>(null)
 const end_date = ref<Date | null>(null)
 
-const id = ref<number>()
-const created_by = ref<User>()
-const vehicle = ref<number>()
-const insurance = ref('')
+const vehicle = ref<Vehicle | null>(null)
 
 const insurancesStore = useInsuranceStore()
 const insuranceVehicleStore = useInsuranceVehicleStore()
@@ -62,7 +60,8 @@ async function resetAndShow(str: string) {
   const insurance = await insurancesStore.resolve(id)
 
   if (insurance) {
-    owner.value = { id: insurance.owner }
+    _insurance.value = insurance
+    owner.value = { id: insurance.owner } as Owner
     policy_number.value = insurance.policy_number
     start_date.value = insurance.start_date
     end_date.value = insurance.end_date
@@ -144,24 +143,26 @@ const cols = [
   },
 ]
 
-function addVehicle(doc: string) {
-  const insurance = Number(doc)
-
-  if (id.value == null) {
-    insuranceVehicleStore.create({
-      created_by: created_by.value?.id,
-      vehicle: vehicle.value,
-      insurance: insurance,
-    } as InsuranceVehicleCreate)
+function addVehicle() {
+  const docId = _insurance.value?.id
+  const vehicleId = vehicle.value?.id
+  try {
+    if (docId && vehicleId) {
+      insuranceVehicleStore.create({
+        insurance: docId,
+        vehicle: vehicleId,
+      } as InsuranceVehicleCreate)
+    }
+  } catch (e) {
+    console.log('error', e)
   }
-  console.log('addVehicle', route.params.id)
 }
 </script>
 
 <template>
   <Text size="xl" class="ml-6 mt-5">Insurance</Text>
   <div class="flex w-full mt-5">
-    <form class="w-[90vw] md:w-[50vw]">
+    <div class="w-[90vw] md:w-[50vw]">
       <div class="ml-5 mb-3">
         <Label class="mb-1">Owner</Label>
         <selector disabled v-model="owner" :store="ownerStore"></selector>
@@ -226,12 +227,10 @@ function addVehicle(doc: string) {
           :store="vehicleStore"
         ></selector>
         <div class="md:w-1/5 md:mb-0">
-          <Button class="btn-soft font-light tracking-wider" @click="addVehicle(route.params.id)">
-            Add
-          </Button>
+          <Button class="btn-soft font-light tracking-wider" @click.stop="addVehicle"> Add </Button>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 </template>
 
