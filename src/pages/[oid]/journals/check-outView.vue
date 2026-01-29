@@ -16,7 +16,11 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await ordersStore.setContext([
+      { key: 'organization', val: org.id } as KV,
+      // 7 - Delivered
+      { key: 'stage', val: '7' } as KV,
+    ])
     // console.table(org)
     return org
   },
@@ -37,9 +41,6 @@ defineOptions({
 })
 
 const orgData = useOrgData()
-
-ordersStore.setContext([{ key: 'stage', val: '7' } as KV])
-//7 - Delivered
 
 const filters = ref([])
 
@@ -219,7 +220,12 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in ordersStore.listing" :key="order.id" class="hover:bg-base-200" @click="openOrder(order.id)">
+      <tr
+        v-for="order in ordersStore.listing"
+        :key="order.id"
+        class="hover:bg-base-200"
+        @click="openOrder(order.id)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
