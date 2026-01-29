@@ -33,11 +33,14 @@ const start_date = ref<Date | null>(null)
 const end_date = ref<Date | null>(null)
 
 const vehicle = ref<Vehicle | null>(null)
+const driver = ref<Driver | null>(null)
 
 const insurancesStore = useInsuranceStore()
 const insuranceVehicleStore = useInsuranceVehicleStore()
+const insuranceDriverStore = useInsuranceDriverStore()
 const ownerStore = useOwnersStore()
 const vehicleStore = useVehiclesStore()
+const driverStore = useDriversStore()
 
 const route = useRoute()
 
@@ -54,9 +57,8 @@ resetAndShow(route.params.id)
 async function resetAndShow(str: string) {
   const id = Number(str)
 
-  console.log('id', id, str)
-
   await insuranceVehicleStore.loading(id)
+  await insuranceDriverStore.loading(id)
   const insurance = await insurancesStore.resolve(id)
 
   if (insurance) {
@@ -143,6 +145,21 @@ const cols = [
   },
 ]
 
+const colDs = [
+  {
+    label: 'Name',
+    value: (v: InsuranceDriver) =>
+      resolve(
+        v,
+        'driver_' + v.driver,
+        () => ({ name: '-' }),
+        () => driverStore.resolve(v.driver),
+        (map) => map.name,
+      ),
+    size: 300,
+  },
+]
+
 function addVehicle() {
   const docId = _insurance.value?.id
   const vehicleId = vehicle.value?.id
@@ -152,6 +169,21 @@ function addVehicle() {
         insurance: docId,
         vehicle: vehicleId,
       } as InsuranceVehicleCreate)
+    }
+  } catch (e) {
+    console.log('error', e)
+  }
+}
+
+function addDriver() {
+  const docId = _insurance.value?.id
+  const driverId = driver.value?.id
+  try {
+    if (docId && driverId) {
+      insuranceDriverStore.create({
+        insurance: docId,
+        driver: driverId,
+      } as InsuranceDriverCreate)
     }
   } catch (e) {
     console.log('error', e)
@@ -227,7 +259,57 @@ function addVehicle() {
           :store="vehicleStore"
         ></selector>
         <div class="md:w-1/5 md:mb-0">
-          <Button class="btn-soft font-light tracking-wider" @click.stop="addVehicle"> Add </Button>
+          <Button class="btn-soft font-light tracking-wider" @click="addVehicle"> Add </Button>
+        </div>
+      </div>
+
+      <Text size="xl" class="ml-6 mt-10">Drivers</Text>
+      <div class="ml-6 mb-6">
+        <table class="w-full text-left table-fixed">
+          <thead>
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="colD in colDs"
+                :key="colD.label"
+                class="p-4"
+                :style="{ width: colD.size + 'px' }"
+              >
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ colD.label }}
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="driver in insuranceDriverStore.listing" :key="driver.id">
+              <td
+                v-for="colD in colDs"
+                class="py-3 px-4"
+                :key="colD.label"
+                :style="{ width: colD.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  :style="{ width: colD.size + 'px' }"
+                >
+                  {{ colD.value(driver) }}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex space-x-3 mb-6 w-full">
+        <selector
+          class="md:w-4/5 md:mb-0 ml-5"
+          label="Select a driver"
+          v-model="driver"
+          :store="driverStore"
+        ></selector>
+        <div class="md:w-1/5 md:mb-0">
+          <Button class="btn-soft font-light tracking-wider" @click="addDriver"> Add </Button>
         </div>
       </div>
     </div>

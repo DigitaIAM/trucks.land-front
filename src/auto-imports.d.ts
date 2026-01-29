@@ -219,6 +219,7 @@ declare global {
   const useInfiniteScroll: typeof import('@vueuse/core')['useInfiniteScroll']
   const useInitializeStore: typeof import('./composables/use-initialize-store')['useInitializeStore']
   const useInstanceDefaults: (typeof import('feathers-pinia'))['useInstanceDefaults']
+  const useInsuranceDriverStore: typeof import('./stores/insurance_driver')['useInsuranceDriverStore']
   const useInsuranceStore: typeof import('./stores/insurances')['useInsuranceStore']
   const useInsuranceVehicleStore: typeof import('./stores/insurance_vehicle')['useInsuranceVehicleStore']
   const useIntersectionObserver: typeof import('@vueuse/core')['useIntersectionObserver']
@@ -404,6 +405,9 @@ declare global {
   // @ts-ignore
   export type { EmployeePaymentRecord, EmployeePaymentSummary, PaymentTerms } from './stores/employee_unpaid_orders'
   import('./stores/employee_unpaid_orders')
+  // @ts-ignore
+  export type { InsuranceDriver, InsuranceDriverCreate, InsuranceDriverUpdate } from './stores/insurance_driver'
+  import('./stores/insurance_driver')
   // @ts-ignore
   export type { InsuranceVehicle, InsuranceVehicleCreate, InsuranceVehicleUpdate } from './stores/insurance_vehicle'
   import('./stores/insurance_vehicle')
@@ -667,6 +671,7 @@ declare module 'vue' {
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('@vueuse/core')['useInfiniteScroll']>
     readonly useInitializeStore: UnwrapRef<typeof import('./composables/use-initialize-store')['useInitializeStore']>
+    readonly useInsuranceDriverStore: UnwrapRef<typeof import('./stores/insurance_driver')['useInsuranceDriverStore']>
     readonly useInsuranceStore: UnwrapRef<typeof import('./stores/insurances')['useInsuranceStore']>
     readonly useInsuranceVehicleStore: UnwrapRef<typeof import('./stores/insurance_vehicle')['useInsuranceVehicleStore']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('@vueuse/core')['useIntersectionObserver']>
