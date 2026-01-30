@@ -3,7 +3,7 @@ import { useFocus } from '@vueuse/core'
 import { useTemplateRef } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 
-const listOfPriorities = ['normal', 'direct']
+const listOfPriorities = ['normal', 'DIRECT']
 const listOfTimeliness = ['early', 'on time', 'behind']
 
 const props = defineProps<{

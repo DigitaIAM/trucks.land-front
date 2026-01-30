@@ -116,22 +116,42 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const event of events) {
     if (event.kind === 'pick-up') {
-      pickup.push(filterCharSet(`Pick up`, boldFont))
-      pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
-      pickup.push(filterCharSet(event.company_at_location, font))
-      pickup.push(filterCharSet(event.address, font))
-      pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-      pickup.push(filterCharSet(`Instructions:`, boldFont))
-      pickup.push(`${event.details.note}`, boldFont)
+      if (event.details.priority === 'normal') {
+        pickup.push(filterCharSet(`Pick up`, boldFont))
+        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+        pickup.push(filterCharSet(event.company_at_location, font))
+        pickup.push(filterCharSet(event.address, font))
+        pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+        pickup.push(filterCharSet(`Instructions:`, boldFont))
+        pickup.push(`${event.details.note}`, boldFont)
+      } else {
+        pickup.push(filterCharSet(`Pick up`, boldFont))
+        pickup.push(`${event.details.priority}`, font)
+        pickup.push(filterCharSet(event.company_at_location, font))
+        pickup.push(filterCharSet(event.address, font))
+        pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+        pickup.push(filterCharSet(`Instructions:`, boldFont))
+        pickup.push(`${event.details.note}`, boldFont)
+      }
     }
     if (event.kind === 'delivery') {
-      delivery.push(filterCharSet(`Drop`, boldFont))
-      delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
-      delivery.push(filterCharSet(event.company_at_location, font))
-      delivery.push(filterCharSet(event.address, font))
-      delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-      delivery.push(filterCharSet(`Instructions:`, boldFont))
-      delivery.push(`${event.details.note}`, boldFont)
+      if (event.details.priority === 'normal') {
+        delivery.push(filterCharSet(`Drop`, boldFont))
+        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+        delivery.push(filterCharSet(event.company_at_location, font))
+        delivery.push(filterCharSet(event.address, font))
+        delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+        delivery.push(filterCharSet(`Instructions:`, boldFont))
+        delivery.push(`${event.details.note}`, boldFont)
+      } else {
+        delivery.push(filterCharSet(`Drop`, boldFont))
+        delivery.push(`${event.details.priority}`, font)
+        delivery.push(filterCharSet(event.company_at_location, font))
+        delivery.push(filterCharSet(event.address, font))
+        delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+        delivery.push(filterCharSet(`Instructions:`, boldFont))
+        delivery.push(`${event.details.note}`, boldFont)
+      }
     }
   }
 
