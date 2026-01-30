@@ -16,7 +16,10 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await ordersStore.setContext([
+      { key: 'organization', val: org.id } as KV,
+      { key: 'stage', val: '9' } as KV,
+    ])
     // console.table(org)
     return org
   },
@@ -25,6 +28,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import { weekExportToExcel } from '@/utils/export_week_orders.ts'
+import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
@@ -37,8 +42,6 @@ defineOptions({
 })
 
 const orgData = useOrgData()
-
-orders.setContext([{ key: 'stage', val: '9' } as KV])
 
 const filters = ref([])
 
@@ -179,8 +182,13 @@ function capitalizeFirstLetter(val) {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
-    <SearchAll @selected="setFilter"></SearchAll>
+    <Text size="2xl">Orders with quick pay</Text>
+    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
+    <Button
+      class="btn-soft font-light tracking-wider ml-6"
+      @click="weekExportQuickPay(orders.listing)"
+      >Excel
+    </Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

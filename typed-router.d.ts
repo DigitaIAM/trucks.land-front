@@ -25,11 +25,11 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/calculationEmployee': RouteRecordInfo<'/[oid]/calculationEmployee', '/:oid/calculationEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/expensesView': RouteRecordInfo<'/[oid]/expensesView', '/:oid/expensesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/insurance/[id]': RouteRecordInfo<'/[oid]/insurance/[id]', '/:oid/insurance/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
-    '/[oid]/journals/check-outView': RouteRecordInfo<'/[oid]/journals/check-outView', '/:oid/journals/check-outView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/journals/checkOut': RouteRecordInfo<'/[oid]/journals/checkOut', '/:oid/journals/checkOut', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/factoring_journal': RouteRecordInfo<'/[oid]/journals/factoring_journal', '/:oid/journals/factoring_journal', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/incomeView': RouteRecordInfo<'/[oid]/journals/incomeView', '/:oid/journals/incomeView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/journals/quick_payView': RouteRecordInfo<'/[oid]/journals/quick_payView', '/:oid/journals/quick_payView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/journals/quickPay': RouteRecordInfo<'/[oid]/journals/quickPay', '/:oid/journals/quickPay', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/me': RouteRecordInfo<'/[oid]/me', '/:oid/me', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/[id]': RouteRecordInfo<'/[oid]/order/[id]', '/:oid/order/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -95,8 +95,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/insurance/[id]'
       views: never
     }
-    'src/pages/[oid]/journals/check-outView.vue': {
-      routes: '/[oid]/journals/check-outView'
+    'src/pages/[oid]/journals/checkOut.vue': {
+      routes: '/[oid]/journals/checkOut'
       views: never
     }
     'src/pages/[oid]/journals/dispatcherView.vue': {
@@ -111,8 +111,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/[oid]/journals/incomeView'
       views: never
     }
-    'src/pages/[oid]/journals/quick_payView.vue': {
-      routes: '/[oid]/journals/quick_payView'
+    'src/pages/[oid]/journals/quickPay.vue': {
+      routes: '/[oid]/journals/quickPay'
       views: never
     }
     'src/pages/[oid]/me.vue': {
