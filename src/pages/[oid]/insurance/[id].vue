@@ -169,6 +169,7 @@ function addVehicle() {
         insurance: docId,
         vehicle: vehicleId,
       } as InsuranceVehicleCreate)
+      vehicle.value = null
     }
   } catch (e) {
     console.log('error', e)
@@ -184,6 +185,7 @@ function addDriver() {
         insurance: docId,
         driver: driverId,
       } as InsuranceDriverCreate)
+      driver.value = null
     }
   } catch (e) {
     console.log('error', e)
