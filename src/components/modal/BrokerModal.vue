@@ -151,11 +151,11 @@ function saveBroker() {
           <TextInput type="email" v-model="email" />
         </div>
         <div class="md:w-1/4 px-3 md:mb-0">
-          <Label>MS</Label>
+          <Label>MC</Label>
           <TextInput v-model="ms" />
         </div>
         <div class="md:w-1/4 md:mb-0">
-          <Label>DOT</Label>
+          <Label>USDOT</Label>
           <TextInput v-model="dot" />
         </div>
       </div>
