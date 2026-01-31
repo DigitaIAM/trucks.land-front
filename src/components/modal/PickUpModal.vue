@@ -157,7 +157,7 @@ function setTimeliness(v: string) {
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <Label class="mt-4">Company at location</Label>
+          <Label class="mt-4">Company name</Label>
           <TextInput class="w-full px-3" v-model="company_at_location" :disabled="props.disabled" />
         </div>
         <div class="md:w-1/2 md:mb-0">
