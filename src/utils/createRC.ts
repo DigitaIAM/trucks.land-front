@@ -1,7 +1,7 @@
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { filterCharSet } from '@/utils/pdf-helper.ts'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
-import { drawTable } from 'pdf-lib-draw-table-beta'
+import { type CustomStyledText, drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment/moment'
 
 const eventsStore = useEventsStore()
@@ -118,50 +118,91 @@ export async function generateRC(order: Order, org: Organization) {
   for (const event of events) {
     if (event.kind === 'pick-up') {
       if (event.details.priority === 'normal') {
-        pickup.push(filterCharSet(`Pick up`, boldFont))
+        pickup.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Pick up`, boldFont),
+          font: boldFont,
+        })
         pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
-        pickup.push(filterCharSet(event.company_at_location, font))
-        pickup.push(filterCharSet(event.address, font))
-        pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-        pickup.push(filterCharSet(`Instruction:`, boldFont))
       } else {
-        pickup.push(
-          filterCharSet(`Pick up  ${useDateFormat(event.datetime, 'MM/DD/YYYY').value}`, boldFont),
-        )
-        pickup.push(`${event.details.priority}`, font)
-        pickup.push(filterCharSet(``, boldFont))
-        pickup.push(filterCharSet(event.company_at_location, font))
-        pickup.push(filterCharSet(event.address, font))
-        pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-        pickup.push(filterCharSet(`Instruction:`, boldFont))
-        pickup.push(`${event.details.note}`, boldFont)
+        pickup.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Pick up ${event.details.priority}`, boldFont),
+          font: boldFont,
+        })
+        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY').value, font))
       }
-    }
-    if (event.kind === 'delivery') {
+
+      pickup.push(filterCharSet(event.company_at_location, font))
+      pickup.push(filterCharSet(event.address, font))
+      pickup.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+
+      const note = filterCharSet(`${event.details.note}`, font).trim()
+      if (note) {
+        pickup.push('\n')
+        pickup.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Instruction:`, boldFont),
+          font: boldFont,
+        })
+        pickup.push(note)
+      }
+    } else if (event.kind === 'delivery') {
       if (event.details.priority === 'normal') {
-        delivery.push(filterCharSet(`Drop`, boldFont))
+        delivery.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Drop`, boldFont),
+          font: boldFont,
+        })
         delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
-        delivery.push(filterCharSet(event.company_at_location, font))
-        delivery.push(filterCharSet(event.address, font))
-        delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-        delivery.push(filterCharSet(`Instruction:`, boldFont))
-        delivery.push(`${event.details.note}`, boldFont)
       } else {
-        delivery.push(
-          filterCharSet(`Drop ${useDateFormat(event.datetime, 'MM/DD/YYYY').value}`, boldFont),
-        )
-        delivery.push(`${event.details.priority}`, font)
-        delivery.push(filterCharSet(event.company_at_location, font))
-        delivery.push(filterCharSet(event.address, font))
-        delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
-        delivery.push(filterCharSet(`Instruction:`, boldFont))
-        delivery.push(`${event.details.note}`, boldFont)
+        delivery.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Drop ${event.details.priority}`, boldFont),
+          font: boldFont,
+        })
+        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY').value, font))
+      }
+
+      delivery.push(filterCharSet(event.company_at_location, font))
+      delivery.push(filterCharSet(event.address, font))
+      delivery.push(filterCharSet(`${event.city} ${event.state} ${event.zip}`, font))
+
+      const note = filterCharSet(`${event.details.note}`, font)
+      if (note) {
+        delivery.push('\n')
+        delivery.push(<CustomStyledText>{
+          type: 'text',
+          text: filterCharSet(`Instruction:`, boldFont),
+          font: boldFont,
+        })
+        delivery.push(note)
       }
     } else if (event.kind === 'agreement') {
       driver_cost += event.cost
     }
   }
-  tableData.push([pickup, delivery])
+
+  // tableData.push([pickup, delivery])
+
+  function* zipIterables(...iterables) {
+    // Get an iterator for each iterable
+    const iterators = iterables.map((iterable) => iterable[Symbol.iterator]())
+
+    while (true) {
+      const results = iterators.map((iterator) => iterator.next())
+      // Stop if any iterator is done
+      if (results.some((result) => result.done)) {
+        break
+      }
+      // Yield the values as an array (JavaScript's equivalent of a tuple)
+      yield results.map((result) => result.value)
+    }
+  }
+
+  for (const pair of zipIterables(pickup, delivery)) {
+    tableData.push(pair)
+  }
 
   const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
 
@@ -253,7 +294,7 @@ export async function generateRC(order: Order, org: Organization) {
     page,
     font,
     12,
-    `${dispatcher?.name}`,
+    `${dispatcher?.name || ''}`,
     font.widthOfTextAtSize('Representative:', 12) + cx - 96,
     645,
   )
@@ -263,7 +304,7 @@ export async function generateRC(order: Order, org: Organization) {
     page,
     font,
     12,
-    `${dispatcher?.phone}`,
+    `${dispatcher?.phone || ''}`,
     font.widthOfTextAtSize('Phone:', 12) + cx - 96,
     630,
   )

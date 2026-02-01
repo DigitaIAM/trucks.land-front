@@ -194,7 +194,11 @@ function close() {
           </div>
           <div class="md:w-1/4 md:mb-0">
             <Label>percent % </Label>
-            <TextInput class="block w-full" v-model="percent_vf" />
+            <TextInput
+              class="block w-full"
+              v-model="percent_vf"
+              :disabled="vehicle?.id === undefined"
+            />
           </div>
         </div>
       </fieldset>
