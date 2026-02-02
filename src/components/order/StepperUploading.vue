@@ -227,12 +227,20 @@ async function closeEmailModal() {
   }
   const pdfDoc = await generateRC(order, org)
 
+  let manager_email = ''
+  if (org.id == 3) {
+    manager_email = 'tom@cnulogistics.com'
+  } else {
+    manager_email = 'tom@cvslogisticsllc.com'
+  }
+
   // Send by email
   const base64String = await pdfDoc.saveAsBase64()
 
   const email = {
-    from: { address: `noreply@${org.domain}` },
-    to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    from: { address: `RC sender@${org.domain}` },
+    to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }],
+    cc: [{ email_address: { address: `${manager_email}`, name: '' } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
     subject: `RC_${org.code2}-${order.number}`,
     htmlbody:
       'Greetings,<br />' +
@@ -243,9 +251,15 @@ async function closeEmailModal() {
       `${order.number}` +
       '&nbsp;is attached.<br />' +
       '<br />' +
-      'For any inquiries regarding calculations, please contact us at tom@cnulogistics.com <br />' +
+      'Please copy your team into this chain. <br />' +
+      'Use this chain for future communication. <br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at  <br />' +
+      `${manager_email} <br />` +
       '<br />' +
       'Best Regards,<br />' +
+      '<br />' +
+      'Please reply all,<br />' +
       '<br />' +
       `${org.name}<br />` +
       `${org.address1}<br />` +
