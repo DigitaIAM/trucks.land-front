@@ -35,7 +35,7 @@ const links = [
     name: 'Quick pay',
     icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
     path: '/journals/quickPay',
-    perm: (access) => access.is_admin || access.is_accountant,
+    perm: (access) => access.is_accountant,
   },
   {
     name: 'Factoring',
@@ -53,25 +53,25 @@ const links = [
     name: 'Reports',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
     path: '/reportsView',
-    perm: (access) => access.is_admin || access.is_accountant,
+    perm: (access) => access.is_accountant,
   },
   {
     name: 'Employee',
     icon: defineAsyncComponent(() => import('~icons/streamline/bill-1')),
     path: '/calculationEmployee',
-    perm: (access) => access.is_admin || access.is_dispatcher,
+    perm: (access) => access.is_dispatcher,
   },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
     path: '/paymentsView',
-    perm: (access) => access.is_admin || access.is_accountant || access.is_hr,
+    perm: (access) => access.is_accountant || access.is_hr,
   },
   {
     name: 'Costs',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
     path: '/expensesView',
-    perm: (access) => access.is_admin || access.is_accountant,
+    perm: (access) => access.is_accountant,
   },
 ]
 
