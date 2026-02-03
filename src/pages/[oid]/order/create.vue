@@ -60,6 +60,8 @@ const next = computedAsync(async () => {
 
 const emit = defineEmits(['closed'])
 
+const errorMsg = ref<string | null>(null)
+
 watch(
   () => props.edit,
   (order) => {
@@ -114,6 +116,7 @@ async function saveAndEdit(stage: Status | null) {
     openOrder(order, org)
     // await router.replace({ path: '/' + org.code3.toLowerCase() + '/order/' + id })
   } catch (e) {
+    errorMsg.value = e
     console.log('error', e)
     console.log('stage', stage.id)
   }
@@ -191,6 +194,7 @@ async function saveAndEdit(stage: Status | null) {
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>
+      <div v-if="errorMsg" class="text-red-500">{{ errorMsg }}</div>
     </ModalBox>
   </Modal>
 </template>
