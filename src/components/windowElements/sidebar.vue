@@ -11,7 +11,7 @@ const links = [
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
     path: '/order/all',
-    perm: (access) => access.is_admin || access.is_tracking || access.is_dispatcher,
+    perm: (access) => access.is_admin || access.is_tracking || access.is_dispatcher || access.is_hr,
   },
   {
     name: 'Tracking',
@@ -24,6 +24,12 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/chat-bubble-square-question')),
     path: '/hrWindow',
     perm: (access) => access.is_hr,
+  },
+  {
+    name: 'Dispatcher performance',
+    icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
+    path: '/dispatcherPerformance',
+    perm: (access) => access.is_hr || access.is_admin,
   },
   {
     name: 'Check out',
