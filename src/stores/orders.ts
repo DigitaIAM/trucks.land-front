@@ -94,7 +94,9 @@ export const useOrdersStore = defineStore('orders', () => {
       const x = f.val
       if (f.key === 'limit') {
         limit = f.val
-      } else if (typeof x === 'object' && !Array.isArray(x) && x !== null) {
+      } else if (x === null || x === undefined) {
+        query = query.is(f.key, null)
+      } else if (typeof x === 'object' && !Array.isArray(x)) {
         // workaround
         if (f.key === 'dispatcher') {
           query = query.eq('created_by', x.id)

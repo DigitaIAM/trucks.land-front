@@ -20,6 +20,12 @@ const links = [
     perm: (access) => access.is_admin || access.is_tracking,
   },
   {
+    name: 'Questions for HR',
+    icon: defineAsyncComponent(() => import('~icons/streamline/chat-bubble-square-question')),
+    path: '/hrWindow',
+    perm: (access) => access.is_hr,
+  },
+  {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
     path: '/journals/checkOut',
@@ -65,7 +71,7 @@ const links = [
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
     path: '/paymentsView',
-    perm: (access) => access.is_accountant || access.is_hr,
+    perm: (access) => access.is_accountant,
   },
   {
     name: 'Costs',
