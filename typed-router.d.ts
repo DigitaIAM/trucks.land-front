@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     '/[...NotFound]': RouteRecordInfo<'/[...NotFound]', '/:NotFound(.*)', { NotFound: ParamValue<true> }, { NotFound: ParamValue<false> }>,
     '/[oid]/': RouteRecordInfo<'/[oid]/', '/:oid', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/calculationEmployee': RouteRecordInfo<'/[oid]/calculationEmployee', '/:oid/calculationEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/dispatcherPerformance': RouteRecordInfo<'/[oid]/dispatcherPerformance', '/:oid/dispatcherPerformance', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/expensesView': RouteRecordInfo<'/[oid]/expensesView', '/:oid/expensesView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/hrWindow': RouteRecordInfo<'/[oid]/hrWindow', '/:oid/hrWindow', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/insurance/[id]': RouteRecordInfo<'/[oid]/insurance/[id]', '/:oid/insurance/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
@@ -86,6 +87,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/calculationEmployee.vue': {
       routes: '/[oid]/calculationEmployee'
+      views: never
+    }
+    'src/pages/[oid]/dispatcherPerformance.vue': {
+      routes: '/[oid]/dispatcherPerformance'
       views: never
     }
     'src/pages/[oid]/expensesView.vue': {

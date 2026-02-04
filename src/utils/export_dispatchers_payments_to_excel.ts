@@ -19,7 +19,7 @@ export async function employeePaymentsExportToExcel(payments: Array<PaymentToEmp
     const employee = await userStore.resolve(record.employee)
 
     sheet.addRow({
-      employee: `${employee?.real_name}`,
+      employee: `${employee?.name}`,
       profit: `${record.gross}`,
       orders: `${record.number_of_orders}`,
       payout: `${record.to_pay}`,
