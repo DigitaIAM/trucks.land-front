@@ -26,6 +26,7 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import moment from 'moment/moment'
+import DispatcherOrdersForMonth from '@/components/modal/DispatcherOrdersForMonth.vue'
 
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
@@ -92,7 +93,7 @@ const cols = [
 </script>
 
 <template>
-  <DispatcherPayment :summary="selectedRecord" />
+  <DispatcherOrdersForMonth :summary="selectedRecord" />
 
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
