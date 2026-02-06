@@ -20,7 +20,7 @@ const list = computedAsync(async () => {
       const { data } = await supabase
         .from('access_matrix')
         .select()
-        .eq(
+        .in(
           'organization',
           orgs.map((org) => org.id),
         )
