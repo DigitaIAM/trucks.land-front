@@ -25,12 +25,12 @@ const links = [
     path: '/hrWindow',
     perm: (access) => access.is_hr,
   },
-  // {
-  //   name: 'Dispatcher performance',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
-  //   path: '/dispatcherPerformance',
-  //   perm: (access) => access.is_hr,
-  // },
+  {
+    name: 'Dispatcher performance',
+    icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
+    path: '/dispatcherPerformance',
+    perm: (access) => access.is_hr,
+  },
   {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
