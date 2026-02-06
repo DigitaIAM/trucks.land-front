@@ -55,8 +55,8 @@ export const useAccessMatrixStore = defineStore('access_matrix', () => {
     orgId: number | null,
     userId: string | null,
   ): Promise<string | null> {
-    console.log('orgId', orgId)
-    console.log('userId', userId)
+    // console.log('orgId', orgId)
+    // console.log('userId', userId)
     if (orgId && userId) {
       const { data, error } = await supabase
         .from('access_matrix')
@@ -65,8 +65,8 @@ export const useAccessMatrixStore = defineStore('access_matrix', () => {
         .eq('user_id', userId)
         .maybeSingle()
 
-      console.log('data', data)
-      console.log('error', error)
+      // console.log('data', data)
+      // console.log('error', error)
 
       if (error) {
         console.log('error', error)

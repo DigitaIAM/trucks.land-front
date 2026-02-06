@@ -55,7 +55,7 @@ export const useOrganizationsStore = defineStore('organization', () => {
     }
 
     return list
-  })
+  }, [])
 
   async function create(organization: OrganizationCreate) {
     const response = await supabase

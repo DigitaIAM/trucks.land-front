@@ -26,9 +26,9 @@ const links = [
     perm: (access) => access.is_admin || access.is_tracking,
   },
   {
-    name: 'Questions for HR',
+    name: 'HR tasks',
     icon: defineAsyncComponent(() => import('~icons/streamline/chat-bubble-square-question')),
-    path: '/hrWindow',
+    path: '/hr/tasks',
     perm: (access) => access.is_hr,
   },
   {
