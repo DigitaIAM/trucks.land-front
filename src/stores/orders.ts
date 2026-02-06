@@ -86,13 +86,24 @@ export const useOrdersStore = defineStore('orders', () => {
     }
     timestamp.value = localTime
 
-    let query = supabase.from('orders_journal').select()
+    let table = 'orders_journal'
+    contextFilters.value.forEach((f) => {
+      if (f.key == 'table') {
+        if (f.val == 'orders_dispatcher') {
+          table = 'orders_dispatcher'
+        }
+      }
+    })
+
+    let query = supabase.from(table).select()
 
     let limit = 20
 
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
-      if (f.key === 'limit') {
+      if (f.key === 'table') {
+        // ignore
+      } else if (f.key === 'limit') {
         limit = f.val
       } else if (x === null || x === undefined) {
         query = query.is(f.key, null)

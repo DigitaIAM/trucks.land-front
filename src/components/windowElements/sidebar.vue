@@ -11,7 +11,13 @@ const links = [
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
     path: '/order/all',
-    perm: (access) => access.is_admin || access.is_tracking || access.is_dispatcher || access.is_hr,
+    perm: (access) => access.is_admin || access.is_tracking || access.is_hr,
+  },
+  {
+    name: 'Orders for Dispatcher',
+    icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
+    path: '/order/dispatcher',
+    perm: (access) => access.is_dispatcher,
   },
   {
     name: 'Tracking',
