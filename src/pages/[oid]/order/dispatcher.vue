@@ -109,12 +109,6 @@ const cols = [
     size: 70,
   },
   {
-    label: 'week',
-    value: (v: Order) => v.week,
-    color: (v: Status) => v.color,
-    size: 50,
-  },
-  {
     label: 'status',
     value: (v: Order) =>
       resolve(

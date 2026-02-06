@@ -14,7 +14,7 @@ const links = [
     perm: (access) => access.is_admin,
   },
   {
-    name: 'Orders for Dispatcher',
+    name: 'For dispatcher',
     icon: defineAsyncComponent(() => import('~icons/streamline/customer-support-1')),
     path: '/order/dispatcher',
     perm: (access) => access.is_dispatcher,
