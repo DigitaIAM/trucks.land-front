@@ -1,27 +1,4 @@
-<script lang="ts">
-import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-
-const organizationsStore = useOrganizationsStore()
-const authStore = useAuthStore()
-
-export const useOrgData = defineBasicLoader(
-  'oid',
-  async (route) => {
-    const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.org = org
-    return org
-  },
-  { key: 'org' },
-)
-</script>
-
 <script setup lang="ts">
-defineOptions({
-  __loaders: [useOrgData],
-})
-
-const cOrg = useOrgData()
-
 const props = defineProps<{
   edit: Order | null
 }>()
@@ -95,7 +72,8 @@ async function saveAndEdit(stage: Status | null) {
   if (stage == null) return
 
   try {
-    const org = cOrg.data.value
+    const org = authStore.org
+    console.log('saveAndEdit', org)
     const order = await ordersStore.create(
       {
         organization: org.id,
@@ -133,7 +111,8 @@ async function saveAndEdit(stage: Status | null) {
           <Text semibold size="2xl">New order</Text>
         </div>
         <div class="mb-4 place-self-end">
-          <QueryAndShow :id="authStore.oid" :store="organizationsStore" />
+          {{ authStore.org?.name }}
+          <!-- <QueryAndShow :id="authStore.oid" :store="organizationsStore" />-->
         </div>
       </div>
       <div class="flex space-x-3 mb-2 mt-4 w-full">
