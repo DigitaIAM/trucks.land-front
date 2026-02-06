@@ -11,7 +11,7 @@ const links = [
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
     path: '/order/all',
-    perm: (access) => access.is_admin || access.is_tracking || access.is_hr,
+    perm: (access) => access.is_admin,
   },
   {
     name: 'Orders for Dispatcher',
@@ -34,7 +34,7 @@ const links = [
   {
     name: 'Dispatcher performance',
     icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
-    path: '/dispatcherPerformance',
+    path: '/hr/dispatcherPerformance',
     perm: (access) => access.is_hr,
   },
   {

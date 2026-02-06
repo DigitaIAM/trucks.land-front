@@ -20,7 +20,7 @@ export const useOrgData = defineBasicLoader(
     await ordersStore.setContext([
       { key: 'organization', val: org.id } as KV,
       { key: 'broker', val: null } as KV,
-      { key: 'stage', val: [2, 4, 5, 6, 7, 12] } as KV,
+      { key: 'stage', val: [2, 4, 5, 6, 7] } as KV,
     ])
     //console.table(org)
     return org
@@ -206,6 +206,11 @@ const cols = [
   },
 ]
 
+function openOrder(id: number) {
+  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+  // console.log('org.code3', orgData.data.value.code3)
+}
+
 function setFilter(key, val) {
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
@@ -277,6 +282,7 @@ function capitalizeFirstLetter(val) {
           :key="'row_' + col.label + '_' + order.number"
           class="py-3 px-2"
           :style="generateStyle(col, order)"
+          @click="openOrder(order.id)"
         >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"

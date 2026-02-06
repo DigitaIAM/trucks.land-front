@@ -98,12 +98,7 @@ const cols = [
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
-    <!--    <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>-->
-    <Button
-      :disabled="reportDispatcherStore.employees.length == 0"
-      class="btn-soft font-light tracking-wider"
-      >Excel</Button
-    >
+    <Button class="btn-soft font-light tracking-wider">Excel</Button>
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
