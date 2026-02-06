@@ -5,8 +5,9 @@ meta:
 </route>
 
 <script setup lang="ts">
-import moment from 'moment'
+import moment from 'moment-timezone'
 import type { KV } from '@/utils/kv.ts'
+import { groupBy } from '@/utils/group-by.ts'
 
 const changes = useChanges()
 const changesOrders = useChangesOrders()
@@ -20,8 +21,10 @@ const driversStore = useDriversStore()
 
 const filters = ref([] as Array<KV>)
 
-const ts = moment().subtract(3, 'days')
-const currentDay = ref(moment())
+const currentDay = ref('')
+useIntervalFn(() => {
+  currentDay.value = moment().tz('America/New_York').format('MMMM Do YYYY, hh:mm a z')
+}, 1000)
 
 interface Col {
   label: string
@@ -202,9 +205,19 @@ function delFilter(key: string) {
 function capitalizeFirstLetter(val: string) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
+
+const numbersByStage = computed(() => {
+  return groupBy(ordersTrackingStore.listing, (v) => v.order.stage)
+})
 </script>
 
 <template>
+  <div class="mr-4 flex justify-end">
+    <span class="text-green-700">Orders: {{ ordersTrackingStore.listing.length }}&nbsp;&nbsp;</span>
+    <span class="text-green-700" v-for="pair in numbersByStage.entries()" :key="pair.key">
+      &nbsp;&nbsp;<QueryAndShow :id="pair[0]" :store="statusesStore" />: {{ pair[1].length }}
+    </span>
+  </div>
   <div class="flex flex-row gap-6 px-4 mb-2">
     <SearchTracking @selected="setFilter" :list="ordersTrackingStore.listing"></SearchTracking>
     <div class="flex items-center">
@@ -233,7 +246,7 @@ function capitalizeFirstLetter(val: string) {
         }"
       ></span>
     </div>
-    <Text class="flex items-center">{{ currentDay.format('MMMM Do YYYY, h:mm a') }}</Text>
+    <Text class="flex items-center text-gray-500">{{ currentDay }}</Text>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
