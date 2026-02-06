@@ -32,7 +32,7 @@ const links = [
     perm: (access) => access.is_hr,
   },
   {
-    name: 'Dispatcher performance',
+    name: 'Dispatch stats',
     icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
     path: '/hr/dispatcherPerformance',
     perm: (access) => access.is_hr,
