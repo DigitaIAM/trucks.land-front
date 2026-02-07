@@ -165,11 +165,6 @@ function capitalizeFirstLetter(val) {
       @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
       >Excel
     </Button>
-    <Button
-      class="btn-soft font-light tracking-wider flex"
-      @click="dispatcherPerformanceToExcel(paymentToEmployeeStore.listing!)"
-      >Dispatcher performance
-    </Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

@@ -16,7 +16,12 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await ordersStore.setContext([
+      { key: 'organization', val: org.id } as KV,
+      // 10 Accepted by factoring company
+      // 13 Send to factoring company
+      { key: 'stage', val: ['10', '13'] } as KV,
+    ])
     // console.table(org)
     return org
   },
@@ -38,8 +43,6 @@ defineOptions({
 })
 
 const orgData = useOrgData()
-
-orders.setContext([{ key: 'stage', val: '15' } as KV])
 
 const filters = ref([])
 
@@ -201,8 +204,8 @@ function capitalizeFirstLetter(val) {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <SearchAll @selected="setFilter"></SearchAll>
-    <Button class="btn-soft font-light tracking-wider" @click="">Send to factoring</Button>
+    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
+    <!--    <Button class="btn-soft font-light tracking-wider" @click="">Send to factoring</Button>-->
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
@@ -240,7 +243,12 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders.listing" :key="order.id" class="hover:bg-base-200" @click="openOrder(order.id)">
+      <tr
+        v-for="order in orders.listing"
+        :key="order.id"
+        class="hover:bg-base-200"
+        @click="openOrder(order.id)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"

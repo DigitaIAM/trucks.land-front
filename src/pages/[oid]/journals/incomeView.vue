@@ -16,7 +16,15 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    await ordersStore.setContext([
+      { key: 'organization', val: org.id } as KV,
+      //11 Wait for broker payment
+      // 12 Approved for payment
+      //14 Approved for payment
+      // 15 Completed
+      // 16 Payment on hold
+      { key: 'stage', val: ['11', '12', '14', '15', '16'] } as KV,
+    ])
     // console.table(org)
     return org
   },
@@ -25,15 +33,13 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { useUsersStore } from '@/stores/users.ts'
-import { useStatusesStore } from '@/stores/stages.ts'
-import { useCommentsStore } from '@/stores/order_comments.ts'
-
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
 const statusesStore = useStatusesStore()
+const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const ownersStore = useOwnersStore()
 const commentsStore = useCommentsStore()
 
 defineOptions({
@@ -41,9 +47,6 @@ defineOptions({
 })
 
 const orgData = useOrgData()
-
-orders.setContext([{ key: 'stage', val: '14' } as KV])
-//14 - Approved for payment
 
 const filters = ref([])
 
@@ -73,58 +76,14 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
+    color: (v: Status) => v.color,
+    size: 70,
+  },
+  {
+    label: 'week',
+    value: (v: Order) => v.week,
+    color: (v: Status) => v.color,
     size: 50,
-  },
-  {
-    label: 'dispatcher',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'dispatcher_' + v.created_by,
-        () => ({ name: '?' }),
-        () => usersStore.resolve(v.created_by),
-        (map) => map.name,
-      ),
-    size: 120,
-  },
-  {
-    label: 'refs',
-    value: (v: Order) => v.refs,
-    size: 90,
-  },
-  {
-    label: 'cost',
-    value: (v: Order) => '$ ' + v.cost,
-    size: 80,
-  },
-  {
-    label: 'd/payment',
-    value: (v) => '$' + v.driver_cost,
-    size: 80,
-  },
-  {
-    label: 'vehicle',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'vehicle_' + v.vehicle,
-        () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
-        (map) => map.name,
-      ),
-    size: 80,
-  },
-  {
-    label: 'broker',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'broker_' + v.broker,
-        () => ({ name: '?' }),
-        () => brokersStore.resolve(v.broker),
-        (map) => map.name,
-      ),
-    size: 150,
   },
   {
     label: 'status',
@@ -136,7 +95,91 @@ const cols = [
         () => statusesStore.resolve(v.stage),
         (map) => map.name,
       ),
+    color: (v: Status) => v.color,
+    size: 100,
+  },
+  {
+    label: 'dispatcher',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'dispatcher_' + v.created_by,
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.created_by),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 100,
+  },
+  {
+    label: 'refs',
+    value: (v: Order) => v.refs,
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
+    label: 'broker',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'broker_' + v.broker,
+        () => ({ name: '?' }),
+        () => brokersStore.resolve(v.broker),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
     size: 200,
+  },
+  {
+    label: 'driver',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'driver_' + v.driver,
+        () => ({ name: '-' }),
+        () => driversStore.resolve(v.driver),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
+    label: 'company',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'driver_' + v.company,
+        () => ({ name: '-' }),
+        () => ownersStore.resolve(v.company),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
+    label: 'vehicle',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'vehicle_' + v.vehicle,
+        () => ({ name: '-' }),
+        () => vehiclesStore.resolve(v.vehicle),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 80,
+  },
+  {
+    label: 'cost',
+    value: (v: Order) => '$' + v.cost,
+    color: (v: Status) => v.color,
+    size: 80,
+  },
+  {
+    label: 'spend',
+    value: (v) => '$' + (v.driver_cost ?? 0),
+    color: (v: Status) => v.color,
+    size: 80,
   },
   {
     label: 'notes',
@@ -146,10 +189,10 @@ const cols = [
         'note',
         () => [],
         () => commentsStore.commentsForOrder(v.id),
-        (map) => map[0]?.note ?? '',
+        (map) => map[0]?.notes ?? '',
       ),
     color: (v: Status) => v.color,
-    size: 300,
+    size: 200,
   },
 ]
 
@@ -184,8 +227,7 @@ function capitalizeFirstLetter(val) {
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
-    <SearchAll @selected="setFilter"></SearchAll>
+    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
@@ -223,7 +265,12 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="order in orders.listing" :key="order.id" class="hover:bg-base-200" @click="openOrder(order.id)">
+      <tr
+        v-for="order in orders.listing"
+        :key="order.id"
+        class="hover:bg-base-200"
+        @click="openOrder(order.id)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"

@@ -18,6 +18,7 @@ export const useOrgData = defineBasicLoader(
     authStore.org = org
     await ordersStore.setContext([
       { key: 'organization', val: org.id } as KV,
+      // 9 Request quick pay
       { key: 'stage', val: '9' } as KV,
     ])
     // console.table(org)
@@ -28,7 +29,6 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { weekExportToExcel } from '@/utils/export_week_orders.ts'
 import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
