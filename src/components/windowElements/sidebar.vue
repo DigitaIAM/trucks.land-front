@@ -68,9 +68,9 @@ const links = [
     perm: (access) => access.is_admin || access.is_hr,
   },
   {
-    name: 'Reports',
+    name: 'Create payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-    path: '/reportsView',
+    path: '/reports/ownerUnpaidOrders',
     perm: (access) => access.is_accountant,
   },
   {
@@ -82,14 +82,35 @@ const links = [
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
-    path: '/paymentsView',
+    path: '/paymentsAndExpenses/ownerPayments',
     perm: (access) => access.is_accountant,
   },
   {
-    name: 'Costs',
+    name: 'Expenses',
     icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
-    path: '/expensesView',
+    path: '/paymentsAndExpenses/owner_expenses',
     perm: (access) => access.is_accountant,
+  },
+  {
+    name: 'Create payments',
+    //SALARY accountant
+    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+    path: '/reports/dispatcherUnpaidOrders',
+    perm: (access) => access.is_payroll_accountant,
+  },
+  {
+    name: 'Payments',
+    //SALARY accountant
+    icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
+    path: '/paymentsAndExpenses/paymentsToDispatchers',
+    perm: (access) => access.is_payroll_accountant,
+  },
+  {
+    name: 'Expenses',
+    //SALARY accountant
+    icon: defineAsyncComponent(() => import('~icons/streamline/receipt-subtract')),
+    path: '/paymentsAndExpenses/settlements_to_employee',
+    perm: (access) => access.is_payroll_accountant,
   },
 ]
 

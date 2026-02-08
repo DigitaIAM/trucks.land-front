@@ -47,6 +47,8 @@ const list = computedAsync(async () => {
               url = `/${code}/journals/incomeView`
             } else if (access.is_hr) {
               url = `/${code}/hr/tasks`
+            } else if (access.is_payroll_accountant) {
+              url = `/${code}/reports/dispatcherUnpaidOrders`
             }
           }
         }

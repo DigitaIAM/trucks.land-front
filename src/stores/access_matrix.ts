@@ -15,6 +15,7 @@ export interface AccessMatrixCreate {
   is_tracking: boolean
   is_accountant: boolean
   is_hr: boolean
+  is_payroll_accountant: boolean
   team: number
 }
 

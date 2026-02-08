@@ -113,8 +113,7 @@ function close() {
         <Text size="lg">Driver payments $ {{ summary?.orders_driver }}</Text>
         <Text size="lg">Profit $ {{ summary?.orders_profit }}</Text>
         <Text size="lg" v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
-          % of profit
-          {{ summary?.paymentTerms.percent_of_profit }}
+          {{ summary?.paymentTerms.percent_of_profit }} % of profit
         </Text>
         <Text size="lg" v-if="(props.summary?.paymentTerms.percent_of_gross || 0) > 0">
           % of gross
