@@ -27,13 +27,11 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 import moment from 'moment/moment'
 import DispatcherOrdersForMonth from '@/components/modal/DispatcherOrdersForMonth.vue'
+import { dispatcherPerformanceExportToExcel } from '@/utils/dispatcherPerformanceToExcel.ts'
 
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
 
-const ts = moment().subtract(3, 'days')
-const currentYear = ref(ts.year())
-const currentMonth = ref(ts.month() + 1)
 const currentDay = ref(moment())
 
 defineOptions({
@@ -98,7 +96,11 @@ const cols = [
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
-    <Button class="btn-soft font-light tracking-wider">Excel</Button>
+    <Button
+      class="btn-soft font-light tracking-wider"
+      @click="dispatcherPerformanceExportToExcel(reportDispatcherStore.employees!)"
+      >Excel</Button
+    >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
