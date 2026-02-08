@@ -175,6 +175,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   let tableData = [
     ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount'],
   ] as CellContent[][]
+
   let lines = 0
   let pos = 0
   let tableDimensions = { endY: cy }
