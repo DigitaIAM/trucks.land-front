@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { groupBy } from '@/utils/group-by.ts'
 import type { User } from '@/stores/users.ts'
+import type { PaymentToOwnerSummaryInDetails } from '@/stores/owner_payments.ts'
 
 export interface EmployeePaymentRecord {
   employee: number
@@ -10,6 +11,7 @@ export interface EmployeePaymentRecord {
 export interface EmployeePaymentSummary {
   employee: number
   orders_number: number
+  vehicle: number
   orders_amount: number
   orders_driver: number
   orders_profit: number
@@ -35,6 +37,11 @@ export interface PaymentTerms {
 interface Record {
   user: User
   summary: EmployeePaymentSummary
+}
+
+export interface EmployeePaymentSummaryInDetails {
+  order: Order
+  agreements: Array<OrderEvent>
 }
 
 export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {

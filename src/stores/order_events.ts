@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { groupBy } from '@/utils/group-by.ts'
 
 export interface OrderEvent extends EventCreate {
   id: number
@@ -245,7 +246,30 @@ export const useEventsStore = defineStore('event', () => {
     }
   }
 
-  return { setOrderId, listing, create, update, fetching, pickUp, delivery, onUpdate }
+  async function fetchAgreements(ids: Array<number>): Promise<Map<number, Array<OrderEvent>>> {
+    const responseEvents = await supabase
+      .from('order_events')
+      .select()
+      .in('document', ids)
+      .in('kind', ['agreement'])
+
+    return groupBy(
+      responseEvents.data!.map((v) => v as OrderEvent),
+      (v) => v.document,
+    )
+  }
+
+  return {
+    setOrderId,
+    listing,
+    create,
+    update,
+    fetching,
+    pickUp,
+    delivery,
+    onUpdate,
+    fetchAgreements,
+  }
 })
 
 if (import.meta.hot) {

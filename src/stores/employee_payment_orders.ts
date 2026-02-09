@@ -11,6 +11,7 @@ export interface PaymentToDispatcherOrderCreate {
   doc_order: number
   order_cost: number
   driver_cost: number
+  profit_kind: string
 }
 
 export const usePaymentToDispatcherOrdersStore = defineStore('employee_payment_orders', () => {

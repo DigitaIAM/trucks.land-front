@@ -28,6 +28,7 @@ export const useOrgData = defineBasicLoader(
 import moment from 'moment/moment'
 import DispatcherOrdersForMonth from '@/components/modal/DispatcherOrdersForMonth.vue'
 import { dispatcherPerformanceExportToExcel } from '@/utils/dispatcherPerformanceToExcel.ts'
+import { dispatchersOrdersMonth } from '@/utils/dispatchers_orders_month.ts'
 
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
@@ -100,6 +101,11 @@ const cols = [
       class="btn-soft font-light tracking-wider"
       @click="dispatcherPerformanceExportToExcel(reportDispatcherStore.employees!)"
       >Excel</Button
+    >
+    <Button
+      class="btn-soft font-light tracking-wider"
+      @click="dispatchersOrdersMonth(reportDispatcherStore.employees!)"
+      >Orders</Button
     >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
