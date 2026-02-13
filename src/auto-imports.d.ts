@@ -403,7 +403,7 @@ declare global {
   export type { SettlementEmployee, SettlementEmployeeCreate, SettlementEmployeeUpdate } from './stores/employee_settlements'
   import('./stores/employee_settlements')
   // @ts-ignore
-  export type { EmployeePaymentRecord, EmployeePaymentSummary, PaymentTerms } from './stores/employee_unpaid_orders'
+  export type { EmployeePaymentRecord, EmployeePaymentSummary, PaymentTerms, EmployeePaymentSummaryInDetails } from './stores/employee_unpaid_orders'
   import('./stores/employee_unpaid_orders')
   // @ts-ignore
   export type { InsuranceDriver, InsuranceDriverCreate, InsuranceDriverUpdate } from './stores/insurance_driver'

@@ -71,7 +71,7 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 50,
+    size: 70,
   },
   {
     label: 'dispatcher',
