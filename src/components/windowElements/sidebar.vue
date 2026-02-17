@@ -11,7 +11,7 @@ const links = [
     name: 'Orders',
     icon: defineAsyncComponent(() => import('~icons/streamline/multiple-file-2')),
     path: '/order/all',
-    perm: (access) => access.is_admin,
+    perm: (access) => access.is_admin || access.is_accountant,
   },
   {
     name: 'For dispatcher',
