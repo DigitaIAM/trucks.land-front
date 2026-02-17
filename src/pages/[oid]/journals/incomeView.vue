@@ -24,6 +24,7 @@ export const useOrgData = defineBasicLoader(
       // 15 Completed
       // 16 Payment on hold
       { key: 'stage', val: ['11', '12', '14', '15', '16'] } as KV,
+      { key: 'limit', val: 1000 } as KV
     ])
     // console.table(org)
     return org
