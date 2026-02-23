@@ -154,7 +154,7 @@ const cols = [
         () => orderStore.resolve(v.doc_order),
         (map) => map.number,
       ),
-    size: 50,
+    size: 70,
   },
 
   {
@@ -198,17 +198,17 @@ function close() {
   <Modal id="details">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
       <div class="grid grid-cols-2">
-        <div class="flex flex-cols-4 gap-10">
-          <Text size="2xl"
+        <div class="flex flex-cols-5 gap-5">
+          <Text size="xl"
             >Payment # {{ document?.id }} for {{ document?.month }}-{{ document?.year }}
           </Text>
-          <Text size="2xl">to</Text>
+          <Text size="xl">to</Text>
           <div>
-            <Text class="flex w-full" size="2xl">
+            <Text class="flex w-full" size="xl">
               <QueryAndShow name="real_name" :id="document?.employee" :store="userStore" />
             </Text>
           </div>
-          <Text size="2xl">$ {{ document?.payout }}</Text>
+          <Text size="xl">$ {{ document?.payout }}</Text>
         </div>
         <div>
           <div class="justify-self-end">
@@ -221,28 +221,28 @@ function close() {
       </div>
       <div class="flex flex-cols-8 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
-        <Text size="lg">Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
-        <Text size="lg">Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
-        <Text size="lg">D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
-        <Text size="lg" v-if="(document?.percent_of_profit || 0) > 0">
+        <Text >Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
+        <Text >Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
+        <Text >D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
+        <Text v-if="(document?.percent_of_profit || 0) > 0">
           % of profit
           {{ document?.percent_of_profit }}
         </Text>
-        <Text size="lg" v-if="(document?.percent_of_gross || 0) > 0">
+        <Text  v-if="(document?.percent_of_gross || 0) > 0">
           % of gross
           {{ document?.percent_of_gross }}
         </Text>
-        <Text size="lg" v-if="(document?.fixed_salary || 0) > 0">
+        <Text  v-if="(document?.fixed_salary || 0) > 0">
           Fixed salary
           {{ document?.fixed_salary }}
         </Text>
-        <Text size="lg">Settlements $ {{ document?.settlements }}</Text>
-        <Text size="lg">Payout $ {{ document?.to_pay }}</Text>
+        <Text >Settlements $ {{ document?.settlements }}</Text>
+        <Text >Payout $ {{ document?.to_pay }}</Text>
       </div>
       <div class="mb-2 mt-12">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
-      <div class="overflow-clip flex flex-col">
+      <div class="overflow-clip flex flex-col max-h-[40vh]">
         <table class="w-full table-fixed text-left">
           <!-- table-auto min-w-max -->
           <thead>
