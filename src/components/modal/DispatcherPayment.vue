@@ -1,3 +1,24 @@
+<script lang="ts">
+import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
+
+const organizationsStore = useOrganizationsStore()
+const authStore = useAuthStore()
+const ordersStore = useOrdersStore()
+
+export const useOrgData = defineBasicLoader(
+  'oid',
+  async (route) => {
+    const org = await organizationsStore.resolve3(route.params.oid)
+    authStore.org = org
+    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
+    // console.table(org)
+    return org
+  },
+  { key: 'org' },
+)
+</script>
+
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
 import { type EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
@@ -8,7 +29,6 @@ const props = defineProps<{
 }>()
 
 const usersStore = useUsersStore()
-const brokersStore = useBrokersStore()
 
 watch(
   () => props.summary,
@@ -67,6 +87,24 @@ const cols = [
     value: (v: Order) => '$' + props.summary?.paymentsByOrder.get(v.id),
     size: 100,
   },
+  {
+    label: 'type of profit',
+    value: (v: Order) => {
+      if (v.vehicle_found_by) {
+        if (props.summary?.employee === v.vehicle_found_by) {
+          if (props.summary?.employee === v.created_by) {
+            return 'as vehicle found & dispatcher'
+          } else {
+            return 'as vehicle found'
+          }
+        } else {
+          return ' as dispatcher'
+        }
+      }
+      return ''
+    },
+    size: 100,
+  },
 ]
 
 const settlementsCols = [
@@ -92,6 +130,17 @@ function close() {
   orders_dispatcher.close()
   emit('close')
 }
+
+defineOptions({
+  __loaders: [useOrgData],
+})
+
+const orgData = useOrgData()
+
+function openOrder(id: number) {
+  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+  //console.log('org.code3', orgData.data.value.code3)
+}
 </script>
 
 <template>
@@ -105,26 +154,36 @@ function close() {
           <QueryAndShow name="real_name" :id="props.summary?.employee" :store="usersStore" />
         </Text>
       </div>
-
-      <div class="flex flex-cols-7 gap-20 mt-10">
+      <div class="flex flex-row gap-20 mt-10">
         <Text bold size="lg">Total</Text>
-        <Text size="lg">Orders {{ summary?.orders_number }}</Text>
-        <Text size="lg">Orders amount $ {{ summary?.orders_amount }}</Text>
-        <Text size="lg">Driver payments $ {{ summary?.orders_driver }}</Text>
-        <Text size="lg">Profit $ {{ summary?.orders_profit }}</Text>
-        <Text size="lg" v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
-          {{ summary?.paymentTerms.percent_of_profit }} % of profit
-        </Text>
-        <Text size="lg" v-if="(props.summary?.paymentTerms.percent_of_gross || 0) > 0">
-          % of gross
-          {{ summary?.paymentTerms.percent_of_gross }}
-        </Text>
-        <Text size="lg" v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
-          Fixed salary $
-          {{ summary?.paymentTerms.fixed_salary }}
-        </Text>
-        <Text size="lg">Settlements $ {{ summary?.settlements_total }}</Text>
-        <Text size="lg">Pay out $ {{ summary?.payout }}</Text>
+        <div class="flex flex-col items-end">
+          <Text>Orders {{ summary?.orders_number }}</Text>
+        </div>
+        <div class="flex flex-col items-end">
+          <Text>Orders amount $ {{ summary?.orders_amount.toFixed(2) }}</Text>
+          <Text>Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
+        </div>
+        <div class="flex flex-col items-end">
+          <Text>Profit $ {{ summary?.orders_profit.toFixed(2)}}</Text>
+          <Text>Direct $ {{ summary?.orders_profit_direct.toFixed(2)}}</Text>
+        </div>
+        <div class="flex flex-col items-end">
+          <Text v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
+            {{ summary?.paymentTerms.percent_of_profit }} % of profit
+          </Text>
+          <Text v-if="(props.summary?.paymentTerms.percent_of_gross || 0) > 0">
+            % of gross
+            {{ summary?.paymentTerms.percent_of_gross }}
+          </Text>
+          <Text v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
+            Fixed salary $
+            {{ summary?.paymentTerms.fixed_salary.toFixed(2) }}
+          </Text>
+          <Text>Settlements $ {{ summary?.settlements_total.toFixed(2) }}</Text>
+        </div>
+        <div class="flex flex-col items-end">
+          <Text>Pay-out $ {{ summary?.payout.toFixed(2) }}</Text>
+        </div>
       </div>
 
       <div class="mb-4 mt-10">
@@ -156,6 +215,7 @@ function close() {
                 v-for="order in props.summary?.orders.values() || []"
                 :key="order.id"
                 class="hover:bg-base-200"
+                @click="openOrder(order.id)"
               >
                 <td
                   v-for="col in cols"

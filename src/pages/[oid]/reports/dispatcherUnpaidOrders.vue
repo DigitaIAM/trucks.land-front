@@ -99,11 +99,11 @@ const cols = [
     value: (v: EmployeePaymentSummary) => '$' + v.orders_profit.toFixed(0),
     size: 100,
   },
-  // {
-  //   label: 'gross %',
-  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_gross,
-  //   size: 100,
-  // },
+  {
+    label: 'direct profit',
+    value: (v: EmployeePaymentSummary) => '$' + v.orders_profit_direct.toFixed(0),
+    size: 100,
+  },
   // {
   //   label: 'profit %',
   //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
@@ -144,7 +144,7 @@ async function createPayment() {
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
-    <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
+    <TextInput v-model="exchangeRate" placeholder="Ex rate" disabled></TextInput>
     <Button
       :disabled="reportDispatcherStore.employees.length == 0"
       class="btn-soft font-light tracking-wider"

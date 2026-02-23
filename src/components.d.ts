@@ -120,6 +120,7 @@ declare module 'vue' {
     OrganinizationModal: typeof import('./components/modal/OrganinizationModal.vue')['default']
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
     OwnerPayment: typeof import('./components/modal/OwnerPayment.vue')['default']
+    OwnerVehicleModal: typeof import('./components/modal/OwnerVehicleModal.vue')['default']
     PaginationButton: typeof import('./components/buttons/PaginationButton.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
     PaymentsForDispatcherOrders: typeof import('./components/modal/PaymentsForDispatcherOrders.vue')['default']

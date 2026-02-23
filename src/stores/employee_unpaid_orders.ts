@@ -15,6 +15,9 @@ export interface EmployeePaymentSummary {
   orders_amount: number
   orders_driver: number
   orders_profit: number
+  orders_amount_direct: number
+  orders_driver_direct: number
+  orders_profit_direct: number
   toPayment: number
   orders: Map<number, Order>
   paymentsByOrder: Map<number, number>
@@ -148,6 +151,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       let orders_amount = 0
       let orders_driver = 0
       let orders_profit = 0
+      let orders_amount_direct = 0
+      let orders_driver_direct = 0
+      let orders_profit_direct = 0
 
       const orders = new Map<number, Order>()
       const paymentsByOrder = new Map<number, number>()
@@ -171,6 +177,13 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           if (p.order.vehicle_found_by) {
             if (p.order.vehicle_found_by == employee) {
               pc = p.order.percent_vf / 100
+
+              orders_amount_direct += p.order.cost * pc
+              orders_driver_direct += p.order.driver_cost * pc
+              orders_profit_direct += profit * pc
+
+              pc = 0
+
             } else {
               pc = (100 - p.order.percent_vf) / 100
             }
@@ -198,17 +211,17 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
       let toPayment = 0
       if (employeeTerms.percent_of_gross) {
-        toPayment += (orders_amount * employeeTerms.percent_of_gross) / 100
+        toPayment += ((orders_amount + orders_amount_direct) * employeeTerms.percent_of_gross) / 100
       }
       if (employeeTerms.percent_of_profit) {
-        toPayment += (orders_profit * employeeTerms.percent_of_profit) / 100
+        toPayment += ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100
       }
       if (employeeTerms.fixed_salary) {
         toPayment += employeeTerms.fixed_salary
       }
       if (employeeTerms.fixed_salary && employeeTerms.percent_of_profit) {
         toPayment +=
-          (orders_profit * employeeTerms.percent_of_profit) / 100 + employeeTerms.fixed_salary
+          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100 + employeeTerms.fixed_salary
       }
 
       list.push(<Record>{
@@ -219,6 +232,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           orders_amount: orders_amount,
           orders_driver: orders_driver,
           orders_profit: orders_profit,
+          orders_amount_direct: orders_amount_direct,
+          orders_driver_direct: orders_driver_direct,
+          orders_profit_direct: orders_profit_direct,
           toPayment: toPayment,
           orders: orders,
           paymentsByOrder: paymentsByOrder,
