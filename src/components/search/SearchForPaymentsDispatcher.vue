@@ -33,7 +33,7 @@ watch(
 )
 
 const years = computedAsync(async () => {
-  const list = [{ id: 2025, name: '2025' }]
+  const list = [{ id: 2025, name: '2025' }, { id: 2026, name: '2026' }]
   const str = queryStr.value
   if (str) {
     return list.filter((v) => v.name.indexOf(str) >= 0)

@@ -1,23 +1,4 @@
-<script lang="ts">
-import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-import type { KV } from '@/utils/kv.ts'
 
-const organizationsStore = useOrganizationsStore()
-const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
-
-export const useOrgData = defineBasicLoader(
-  'oid',
-  async (route) => {
-    const org = await organizationsStore.resolve3(route.params.oid)
-    authStore.org = org
-    await ordersStore.setContext([{ key: 'organization', val: org.id } as KV])
-    // console.table(org)
-    return org
-  },
-  { key: 'org' },
-)
-</script>
 
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
@@ -29,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const usersStore = useUsersStore()
+const organizationsStore = useOrganizationsStore()
 
 watch(
   () => props.summary,
@@ -131,15 +113,19 @@ function close() {
   emit('close')
 }
 
-defineOptions({
-  __loaders: [useOrgData],
+
+const sortedOrders = computed(() => {
+  const list = Array.from(props.summary?.orders.values() || []);
+
+  list.sort((a, b) => a.id - b.id);
+
+  return list
 })
 
-const orgData = useOrgData()
-
-function openOrder(id: number) {
-  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
-  //console.log('org.code3', orgData.data.value.code3)
+async function openOrder(order: Order) {
+  const org = await organizationsStore.resolve(order.organization)
+  window.open('/' +  org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  console.log('org.code3', org)
 }
 </script>
 
@@ -186,7 +172,7 @@ function openOrder(id: number) {
         </div>
       </div>
 
-      <div class="mb-4 mt-10">
+      <div class="">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
       <div class="overflow-clip flex flex-col">
@@ -208,14 +194,14 @@ function openOrder(id: number) {
             </tr>
           </thead>
         </table>
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto max-h-[25vh]">
           <table class="w-full table-fixed">
             <tbody>
               <tr
-                v-for="order in props.summary?.orders.values() || []"
+                v-for="order in sortedOrders"
                 :key="order.id"
                 class="hover:bg-base-200"
-                @click="openOrder(order.id)"
+                @click="openOrder(order)"
               >
                 <td
                   v-for="col in cols"
@@ -234,43 +220,45 @@ function openOrder(id: number) {
             </tbody>
           </table>
         </div>
-        <div class="mt-10 mb-6">
+        <div class="mt-3 mb-3">
           <Text bold size="lg" class="mb-4">Settlements</Text>
-          <table class="w-full text-left table-auto min-w-max">
-            <thead>
-              <tr
-                class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-              >
-                <th
-                  v-for="col in settlementsCols"
-                  :key="col.label"
-                  class="p-4"
-                  :style="{ width: col.size + 'px' }"
+          <div class="flex-1 overflow-y-auto max-h-[15vh]">
+            <table class="w-full text-left table-auto min-w-max">
+              <thead>
+                <tr
+                  class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
                 >
-                  <p class="block antialiasing tracking-wider font-thin leading-none">
-                    {{ col.label }}
-                  </p>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="settlement in props.summary?.settlements || []" :key="settlement.id">
-                <td
-                  v-for="col in settlementsCols"
-                  :key="col.label"
-                  class="py-3 px-4"
-                  :style="{ width: col.size + 'px' }"
-                >
-                  <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  <th
+                    v-for="col in settlementsCols"
+                    :key="col.label"
+                    class="p-4"
                     :style="{ width: col.size + 'px' }"
                   >
-                    {{ col.value(settlement) }}
-                  </p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <p class="block antialiasing tracking-wider font-thin leading-none">
+                      {{ col.label }}
+                    </p>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="settlement in props.summary?.settlements || []" :key="settlement.id">
+                  <td
+                    v-for="col in settlementsCols"
+                    :key="col.label"
+                    class="py-3 px-4"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    <p
+                      class="block antialiasing tracking-wide font-light leading-normal truncate"
+                      :style="{ width: col.size + 'px' }"
+                    >
+                      {{ col.value(settlement) }}
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </ModalBox>

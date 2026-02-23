@@ -8,9 +8,11 @@ export async function employeePaymentsExportToExcel(payments: Array<PaymentToEmp
 
   sheet.columns = [
     { header: 'Dispatcher', key: 'employee', width: 30 },
-    { header: 'Profit', key: 'profit', width: 30 },
-    { header: 'Total loads', key: 'orders', width: 30 },
-    { header: '3%', key: 'payout', width: 30 },
+    { header: 'Total loads', key: 'orders', width: 10 },
+    { header: 'Gross', key: 'gross', width: 20 },
+    {header: 'Dr_payment', key: 'd_payment', width: 20},
+    {header: 'Profit', key: 'profit', width: 20},
+    { header: '9%', key: 'payout', width: 20 },
   ]
 
   let n = 0
@@ -18,10 +20,14 @@ export async function employeePaymentsExportToExcel(payments: Array<PaymentToEmp
   for (const record of payments) {
     const employee = await userStore.resolve(record.employee)
 
+    const profit = record.gross - record.driver_payment
+
     sheet.addRow({
       employee: `${employee?.real_name}`,
-      profit: `${record.gross}`,
       orders: `${record.number_of_orders}`,
+      gross: `${record.gross}`,
+      d_payment: `${record.driver_payment}`,
+      profit: `${profit}`,
       payout: `${record.to_pay}`,
     })
 

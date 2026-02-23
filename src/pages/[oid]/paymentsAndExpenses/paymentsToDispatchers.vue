@@ -98,21 +98,21 @@ const cols = [
       ),
     size: 200,
   },
-  {
-    label: 'order amount',
-    value: (v: PaymentToEmployeeSummary) => '$' + v.gross.toFixed(0),
-    size: 80,
-  },
+  // {
+  //   label: 'order amount',
+  //   value: (v: PaymentToEmployeeSummary) => '$' + v.gross.toFixed(0),
+  //   size: 80,
+  // },
   {
     label: 'to pay',
     value: (v: PaymentToEmployeeSummary) => '$' + v.to_pay.toFixed(0),
     size: 80,
   },
-  {
-    label: 'settlements',
-    value: (v: PaymentToEmployeeSummary) => '$' + v.settlements,
-    size: 80,
-  },
+  // {
+  //   label: 'settlements',
+  //   value: (v: PaymentToEmployeeSummary) => '$' + v.settlements,
+  //   size: 80,
+  // },
   {
     label: 'created by',
     value: (v: PaymentToEmployeeSummary) =>
@@ -157,16 +157,16 @@ function capitalizeFirstLetter(val) {
     @closed="onClose"
     :document="selectedDocument"
   ></PaymentsForDispatcherOrders>
+    <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
-    <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
-    <Button
-      class="btn-soft font-light tracking-wider flex"
-      @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
-      >Excel
-    </Button>
+  <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
+  <Button
+    class="btn-soft font-light tracking-wider flex"
+    @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
+  >Excel
+  </Button>
   </div>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+  <div class="flex flex-row gap-6 px-4 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
       <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
         {{ capitalizeFirstLetter(filter.key) }}:
@@ -184,7 +184,7 @@ function capitalizeFirstLetter(val) {
       </svg>
     </Badge>
   </div>
-  <table class="w-full mt-6 text-left table-auto min-w-max">
+  <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr
         class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
