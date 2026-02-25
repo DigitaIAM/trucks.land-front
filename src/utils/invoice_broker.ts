@@ -263,59 +263,59 @@ export async function generateBI(
 
   await openInNewTab(pdfDoc)
 
-  const base64String = await pdfDoc.saveAsBase64()
-
-  const email = {
-    from: { address: `noreply@${org.domain}` },
-    to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
-    subject: `Invoice ${currentWeek.value}-${org.code2}-${order.id}`,
-    htmlbody:
-      'Greetings,<br />' +
-      '<br />' +
-      'Invoice #&nbsp;' +
-      `${currentWeek.value}` +
-      '&nbsp;of&nbsp;' +
-      `${currentYear.value}` +
-      '&nbsp;is attached.<br />' +
-      '<br />' +
-      'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net <br />' +
-      '<br />' +
-      'Best Regards,<br />' +
-      '<br />' +
-      `${org.name}<br />` +
-      `${org.address1}<br />` +
-      `${org.address2}<br />`,
-    attachments: [
-      {
-        name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
-        content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
-  }
-
-  const myFetch = createFetch({
-    // baseUrl: 'https://api.zeptomail.com/',
-    // baseUrl: 'http://localhost:5173/',
-    options: {
-      async beforeFetch({ options }) {
-        options.headers = {
-          ...options.headers,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: token,
-        }
-        return { options }
-      },
-    },
-    fetchOptions: { mode: 'cors' },
-  })
-
-  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-
-  console.log('isFetching', isFetching)
-  console.log('error', error)
-  console.log('data', data)
+  // const base64String = await pdfDoc.saveAsBase64()
+  //
+  // const email = {
+  //   from: { address: `noreply@${org.domain}` },
+  //   to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+  //   subject: `Invoice ${currentWeek.value}-${org.code2}-${order.id}`,
+  //   htmlbody:
+  //     'Greetings,<br />' +
+  //     '<br />' +
+  //     'Invoice #&nbsp;' +
+  //     `${currentWeek.value}` +
+  //     '&nbsp;of&nbsp;' +
+  //     `${currentYear.value}` +
+  //     '&nbsp;is attached.<br />' +
+  //     '<br />' +
+  //     'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net <br />' +
+  //     '<br />' +
+  //     'Best Regards,<br />' +
+  //     '<br />' +
+  //     `${org.name}<br />` +
+  //     `${org.address1}<br />` +
+  //     `${org.address2}<br />`,
+  //   attachments: [
+  //     {
+  //       name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
+  //       content: base64String,
+  //       mime_type: 'plain/txt',
+  //     },
+  //   ],
+  // }
+  //
+  // const myFetch = createFetch({
+  //   // baseUrl: 'https://api.zeptomail.com/',
+  //   // baseUrl: 'http://localhost:5173/',
+  //   options: {
+  //     async beforeFetch({ options }) {
+  //       options.headers = {
+  //         ...options.headers,
+  //         Accept: 'application/json',
+  //         'Content-Type': 'application/json',
+  //         Authorization: token,
+  //       }
+  //       return { options }
+  //     },
+  //   },
+  //   fetchOptions: { mode: 'cors' },
+  // })
+  //
+  // const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+  //
+  // console.log('isFetching', isFetching)
+  // console.log('error', error)
+  // console.log('data', data)
 
   return new Blob([pdfBytes], { type: 'application/pdf' })
 }
