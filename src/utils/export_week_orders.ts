@@ -53,7 +53,7 @@ export async function weekExportToExcel(
     //   count++
 
     const details = detailsList.get(payment.id)
-    for (const detail of details) {
+    for (const detail of details ?? []) {
       const order = detail.order
 
       const dispatcher = await userStore.resolve(order.created_by)

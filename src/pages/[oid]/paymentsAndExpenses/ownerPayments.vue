@@ -27,6 +27,7 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { weekExportToExcel } from '@/utils/export_week_orders.ts'
+import type {KV} from "@/utils/kv.ts";
 
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
@@ -34,7 +35,7 @@ const usersStore = useUsersStore()
 
 const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
 
-const filters = ref([])
+const filters = ref<Array<KV>>([])
 
 defineOptions({
   __loaders: [useOrgData],
@@ -138,6 +139,18 @@ function setFilter(key, val) {
     filters.value.push({ key: key, val: val })
   } else {
     filters.value[index] = { key: key, val: val }
+  }
+
+  if (key === 'week') {
+    const nkey = 'year'
+    const nval = { id: 2026, name: '2026' }
+
+    const index = filters.value.findIndex((v) => v.key === nkey)
+    if (index < 0) {
+      filters.value.push({ key: nkey, val: nval })
+    } else {
+      filters.value[index] = { key: nkey, val: nval }
+    }
   }
 
   paymentToOwnerStore.setFilters(filters.value)

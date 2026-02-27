@@ -199,7 +199,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
 
     mapping.value = new Map<number, PaymentToOwnerSummary>()
 
-    const map = await fetching(20)
+    const map = await fetching(searchFilters.value.length === 0 ? 20 : 100)
 
     if (timestamp.value == localTime) {
       mapping.value = map
