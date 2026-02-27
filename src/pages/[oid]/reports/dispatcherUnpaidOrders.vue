@@ -135,6 +135,9 @@ async function createPayment() {
     rate,
   )
 }
+
+const account = authStore.account
+const access = account.access
 </script>
 
 <template>
@@ -144,8 +147,9 @@ async function createPayment() {
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
-    <TextInput v-model="exchangeRate" placeholder="Ex rate" disabled></TextInput>
+    <TextInput v-if="access.is_payroll_accountant" v-model="exchangeRate" placeholder="Ex rate" ></TextInput>
     <Button
+      v-if="access.is_payroll_accountant"
       :disabled="reportDispatcherStore.employees.length == 0"
       class="btn-soft font-light tracking-wider"
       @click="createPayment()"
