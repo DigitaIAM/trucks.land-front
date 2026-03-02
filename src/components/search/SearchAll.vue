@@ -57,7 +57,7 @@ watch(
 
 const orders_number = computedAsync(async () => {
   const str = queryStr.value
-  if (str && str.length >= 5 && str.length <= 6) {
+  if (str && str.length >= 1 && str.length <= 6) {
     return await ordersStore.searchByNumber(props.org.id, str)
   }
   return []
