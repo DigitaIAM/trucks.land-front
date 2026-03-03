@@ -35,12 +35,14 @@ export interface OrderUpdate {
   excluded?: boolean
 }
 
-export interface OrderStage {
+export interface OrderStage extends Order {
   id: number
   created_at: string
   created_by: number
   document: number
   stage: number
+  deleted_at?: string
+  deleted_by?: number
 }
 
 export const useOrdersStore = defineStore('orders', () => {
@@ -188,6 +190,43 @@ export const useOrdersStore = defineStore('orders', () => {
       return order
     } else {
       console.log('error', response)
+      throw 'unexpended response status: ' + response.status
+    }
+  }
+
+  async function deleteStage(order: Order) {
+    const results = await supabase
+      .from('order_stages')
+      .select()
+      .eq('document', order.id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(2)
+
+    if (results.data === null || results.data.length == 1) {
+      return
+    }
+
+    const cur = results.data[0]
+    const pre = results.data[1]
+
+    if (cur.stage != order.stage) {
+      throw 'unexpected stage: ' + cur.stage + ', expected ' + order.stage
+    }
+
+    const response = await supabase
+      .from('order_stages')
+      .update({ deleted_by: '1' })
+      .eq('id', cur.id)
+      .select()
+
+    if (response.status == 200) {
+      order.stage = pre.stage
+
+      const map = new Map<number, Order>(mapping.value)
+      map.set(order.id, order)
+      mapping.value = map
+    } else {
       throw 'unexpended response status: ' + response.status
     }
   }
@@ -343,6 +382,7 @@ export const useOrdersStore = defineStore('orders', () => {
     onEventChange,
     onUpdate,
     onInsert,
+    deleteStage,
   }
 })
 

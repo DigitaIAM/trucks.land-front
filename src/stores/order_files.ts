@@ -1,5 +1,4 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import type { Status, StatusUpdate } from '@/stores/stages.ts'
 
 export interface FileRecord extends FileRecordCreate {
   id: number

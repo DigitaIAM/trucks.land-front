@@ -187,6 +187,13 @@ function closeOrder() {
 function handleClick() {
   excluded.value = !excluded.value
 }
+
+async function deleteStage() {
+  const order = _order.value
+  if (order) {
+    await ordersStore.deleteStage(order)
+  }
+}
 </script>
 
 <template>
@@ -201,6 +208,12 @@ function handleClick() {
             v-if="!isReadOnly"
             >Update
           </Button>
+          <Button
+            class="btn-soft font-light tracking-wider"
+            @click="deleteStage()"
+            v-if="!isReadOnly"
+            >Previous status</Button
+          >
         </div>
         <Button
           ghost
@@ -215,7 +228,6 @@ function handleClick() {
       <div class="flex w-full h-full mt-6">
         <div class="flex space-x-3 w-full">
           <Button
-            disabled
             :style="'background-color: ' + (currentStatus?.color ?? '#333333')"
             class="btn-soft font-light tracking-wider text-white"
             >{{ currentStatus?.name }}
