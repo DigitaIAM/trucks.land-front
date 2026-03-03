@@ -196,6 +196,19 @@ const cols = [
     size: 80,
   },
   {
+    label: 'owner',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'owner_' + v.owner,
+        () => ({ name: '-' }),
+        () => ownersStore.resolve(v.owner),
+        (map) => map.name,
+      ),
+    color: (v: Status) => v.color,
+    size: 150,
+  },
+  {
     label: 'cost',
     value: (v: Order) => '$' + v.cost,
     color: (v: Status) => v.color,

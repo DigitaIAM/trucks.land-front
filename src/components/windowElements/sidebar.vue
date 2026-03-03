@@ -103,7 +103,7 @@ const links = [
     //SALARY accountant
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
     path: '/paymentsAndExpenses/paymentsToDispatchers',
-    perm: (access) => access.is_payroll_accountant,
+    perm: (access) => access.is_payroll_accountant || access.is_admin,
   },
   {
     name: 'Expenses',
