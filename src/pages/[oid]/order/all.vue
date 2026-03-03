@@ -157,26 +157,13 @@ const cols = [
     size: 200,
   },
   {
-    label: 'driver',
+    label: 'owner',
     value: (v: Order) =>
       resolve(
         v,
-        'driver_' + v.driver,
+        'owner_' + v.owner,
         () => ({ name: '-' }),
-        () => driversStore.resolve(v.driver),
-        (map) => map.name,
-      ),
-    color: (v: Status) => v.color,
-    size: 150,
-  },
-  {
-    label: 'company',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'driver_' + v.company,
-        () => ({ name: '-' }),
-        () => ownersStore.resolve(v.company),
+        () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
@@ -196,13 +183,13 @@ const cols = [
     size: 80,
   },
   {
-    label: 'owner',
+    label: 'driver',
     value: (v: Order) =>
       resolve(
         v,
-        'owner_' + v.owner,
+        'driver_' + v.driver,
         () => ({ name: '-' }),
-        () => ownersStore.resolve(v.owner),
+        () => driversStore.resolve(v.driver),
         (map) => map.name,
       ),
     color: (v: Status) => v.color,
