@@ -28,7 +28,6 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/hr/tasks': RouteRecordInfo<'/[oid]/hr/tasks', '/:oid/hr/tasks', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/insurance/[id]': RouteRecordInfo<'/[oid]/insurance/[id]', '/:oid/insurance/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/journals/checkOut': RouteRecordInfo<'/[oid]/journals/checkOut', '/:oid/journals/checkOut', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
-    '/[oid]/journals/dispatcherView': RouteRecordInfo<'/[oid]/journals/dispatcherView', '/:oid/journals/dispatcherView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/factoring_journal': RouteRecordInfo<'/[oid]/journals/factoring_journal', '/:oid/journals/factoring_journal', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/incomeView': RouteRecordInfo<'/[oid]/journals/incomeView', '/:oid/journals/incomeView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/quickPay': RouteRecordInfo<'/[oid]/journals/quickPay', '/:oid/journals/quickPay', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -108,10 +107,6 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/journals/checkOut.vue': {
       routes: '/[oid]/journals/checkOut'
-      views: never
-    }
-    'src/pages/[oid]/journals/dispatcherView.vue': {
-      routes: '/[oid]/journals/dispatcherView'
       views: never
     }
     'src/pages/[oid]/journals/factoring_journal.vue': {
