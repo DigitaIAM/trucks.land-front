@@ -35,11 +35,11 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
     if (stage) {
       return Array.from(mapping.value.get(stage)?.values() ?? [])
         .filter((v) => v.kind === kind)
-        .map((v) => v.id)
+        .map((v) => v.next)
     } else {
       return Array.from(mapping.value.get(-1)?.values() ?? [])
         .filter((v) => v.kind === kind)
-        .map((v) => v.id)
+        .map((v) => v.next)
     }
   }
 
