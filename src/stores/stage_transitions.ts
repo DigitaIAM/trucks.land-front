@@ -33,9 +33,13 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
 
   function nextFor(kind: string, stage?: number) {
     if (stage) {
-      return Array.from(mapping.value.get(stage)?.keys() ?? []).filter((v) => v.kind === kind)
+      return Array.from(mapping.value.get(stage)?.values() ?? [])
+        .filter((v) => v.kind === kind)
+        .map((v) => v.id)
     } else {
-      return Array.from(mapping.value.get(-1)?.keys() ?? []).filter((v) => v.kind === kind)
+      return Array.from(mapping.value.get(-1)?.values() ?? [])
+        .filter((v) => v.kind === kind)
+        .map((v) => v.id)
     }
   }
 
