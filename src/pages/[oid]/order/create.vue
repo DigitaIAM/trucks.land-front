@@ -25,7 +25,7 @@ const nextStatusStore = useStatusesNextStore()
 const next = computedAsync(async () => {
   const list = []
 
-  const ids = nextStatusStore.nextFor('order', null)
+  const ids = nextStatusStore.nextFor('order', undefined)
   for (const idx in ids) {
     const id = ids[idx]
     const stage = await statusesStore.resolve(id)

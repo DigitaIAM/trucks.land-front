@@ -224,7 +224,7 @@ async function deleteStage() {
           :class="{ 'exclude-active': excluded }"
           @click="handleClick"
           :disabled="isReadOnly"
-          >excluded from calculations with the dispatcher
+          >excluded from calculations
         </Button>
       </div>
 

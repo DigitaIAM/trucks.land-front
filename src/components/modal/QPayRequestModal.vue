@@ -30,7 +30,7 @@ const ownersStore = useOwnersStore()
 const next = computedAsync(async () => {
   const list = []
 
-  const ids = nextStatusStore.nextFor('qpay', null)
+  const ids = nextStatusStore.nextFor('qpay', undefined)
   for (const idx in ids) {
     const id = ids[idx]
     const stage = await statusesStore.resolve(id)
