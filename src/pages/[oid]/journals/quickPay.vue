@@ -10,18 +10,14 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
+const quickPaysStore = useQuickPaysStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await ordersStore.setContext([
-      { key: 'organization', val: org.id } as KV,
-      // 9 Request quick pay
-      { key: 'stage', val: '9' } as KV,
-    ])
-    // console.table(org)
+    await quickPaysStore.loading(org.id)
     return org
   },
   { key: 'org' },
@@ -30,18 +26,19 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
-const orders = useOrdersStore()
-const brokersStore = useBrokersStore()
+const quickPaysStore = useQuickPaysStore()
 const usersStore = useUsersStore()
-const statusesStore = useStatusesStore()
 const vehiclesStore = useVehiclesStore()
-const commentsStore = useCommentsStore()
+const driversStore = useDriversStore()
+const ownersStore = useOwnersStore()
 
 defineOptions({
   __loaders: [useOrgData],
 })
 
 const orgData = useOrgData()
+
+const selectedQpay = ref<QuickPays | null>(null)
 
 const filters = ref([])
 
@@ -70,63 +67,31 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: Order) => v.number,
+    value: (v: QuickPays) =>
+      resolve(
+        v,
+        'number_' + v.order,
+        () => ({ number: '?' }),
+        () => ordersStore.resolve(v.order),
+        (map) => map.number,
+      ),
     size: 70,
   },
   {
-    label: 'dispatcher',
-    value: (v: Order) =>
+    label: 'owner',
+    value: (v: QuickPays) =>
       resolve(
         v,
-        'dispatcher_' + v.created_by,
-        () => ({ name: '?' }),
-        () => usersStore.resolve(v.created_by),
-        (map) => map.name,
-      ),
-    size: 120,
-  },
-  {
-    label: 'status',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'status_' + v.stage,
-        () => ({ name: '?', color: '' }),
-        () => statusesStore.resolve(v.stage),
-        (map) => map.name,
-      ),
-    size: 150,
-  },
-  {
-    label: 'refs',
-    value: (v: Order) => v.refs,
-    size: 90,
-  },
-  {
-    label: 'cost',
-    value: (v: Order) => '$ ' + v.cost,
-    size: 80,
-  },
-  {
-    label: 'd/payment',
-    value: (v) => '$' + v.driver_cost,
-    size: 80,
-  },
-  {
-    label: 'broker',
-    value: (v: Order) =>
-      resolve(
-        v,
-        'broker_' + v.broker,
-        () => ({ name: '?' }),
-        () => brokersStore.resolve(v.broker),
+        'owner_' + v.owner,
+        () => ({ name: '-' }),
+        () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
     size: 150,
   },
   {
     label: 'vehicle',
-    value: (v: Order) =>
+    value: (v: QuickPays) =>
       resolve(
         v,
         'vehicle_' + v.vehicle,
@@ -137,43 +102,70 @@ const cols = [
     size: 80,
   },
   {
-    label: 'notes',
-    value: (v: Order) =>
+    label: 'driver',
+    value: (v: QuickPays) =>
       resolve(
         v,
-        'note',
-        () => [],
-        () => commentsStore.commentsForOrder(v.id),
-        (map) => map[0]?.note ?? '',
+        'driver_' + v.driver,
+        () => ({ name: '-' }),
+        () => driversStore.resolve(v.driver),
+        (map) => map.name,
       ),
+    size: 150,
+  },
+  {
+    label: 'amount',
+    value: (v: QuickPays) => '$' + v.amount,
+    size: 80,
+  },
+  {
+    label: 'note',
+    value: (v: QuickPays) => v.note,
     color: (v: Status) => v.color,
-    size: 300,
+    size: 200,
+  },
+  {
+    label: 'created at',
+    value: (v: QuickPays) => useDateFormat(v.created_at, 'MMM DD'),
+    size: 80,
+  },
+  {
+    label: 'request created',
+    value: (v: QuickPays) =>
+      resolve(
+        v,
+        'created by_' + v.created_by,
+        () => ({ name: '?' }),
+        () => usersStore.resolve(v.created_by),
+        (map) => map.name,
+      ),
+    size: 100,
   },
 ]
 
-function openOrder(id: number) {
-  window.open('/' + orgData.data.value.code3.toLowerCase() + '/order/' + id, '_blank')
+function openQpay(qpay: QuickPays) {
+  selectedQpay.value = qpay
 }
 
-function setFilter(key, val) {
-  const index = filters.value.findIndex((v) => v.key === key)
-  if (index < 0) {
-    filters.value.push({ key: key, val: val })
-  } else {
-    filters.value[index] = { key: key, val: val }
-  }
-
-  orders.setFilters(filters.value)
-}
-
-function delFilter(key) {
-  const index = filters.value.findIndex((v) => v.key === key)
-  if (index >= 0) {
-    filters.value.splice(index, 1)
-  }
-
-  orders.setFilters(filters.value)
-}
+// function setFilter(key, val) {
+//   const index = filters.value.findIndex((v) => v.key === key)
+//   if (index < 0) {
+//     filters.value.push({ key: key, val: val })
+//   } else {
+//     filters.value[index] = { key: key, val: val }
+//   }
+//
+//   orders.setFilters(filters.value)
+// }
+//
+// function delFilter(key) {
+//   const index = filters.value.findIndex((v) => v.key === key)
+//   if (index >= 0) {
+//     filters.value.splice(index, 1)
+//   }
+//
+//   orders.setFilters(filters.value)
+// }
 
 function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
@@ -181,8 +173,9 @@ function capitalizeFirstLetter(val) {
 </script>
 
 <template>
+  <QPayModal :document="selectedQpay"></QPayModal>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Orders with quick pay</Text>
+    <Text size="2xl">Requests quick pay</Text>
     <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
     <Button
       class="btn-soft font-light tracking-wider ml-6"
@@ -216,7 +209,7 @@ function capitalizeFirstLetter(val) {
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
-          class="p-4"
+          class="p-2"
           :style="{ width: col.size + 'px' }"
         >
           <p class="block antialiasing tracking-wider font-thin leading-none">
@@ -226,23 +219,19 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-for="order in orders.listing"
-        :key="order.id"
-        class="hover:bg-base-200"
-        @click="openOrder(order.id)"
-      >
+      <tr v-for="qpay in quickPaysStore.listing" :key="qpay.id" class="hover:bg-base-200">
         <td
           v-for="col in cols"
-          :key="'row_' + col.label + '_' + order.id"
-          class="py-3 px-4"
+          :key="'row_' + col.label + '_' + qpay.id"
+          class="py-3 px-2"
           :style="{ width: col.size + 'px' }"
+          @click="openQpay(qpay.id)"
         >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >
-            {{ col.value(order) }}
+            {{ col.value(qpay) }}
           </p>
         </td>
       </tr>

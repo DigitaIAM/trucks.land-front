@@ -73,7 +73,7 @@ const nextStatuses = computedAsync(async () => {
 
   const order = _order.value
   if (order) {
-    const ids = nextStatusStore.nextFor(order.stage)
+    const ids = nextStatusStore.nextFor('order', order.stage)
     for (const idx in ids) {
       const id = ids[idx]
       const status = await statusesStore.resolve(id)
@@ -208,6 +208,8 @@ async function deleteStage() {
             v-if="!isReadOnly"
             >Update
           </Button>
+        </div>
+        <div class="flex space-x-3 w-full">
           <Button
             class="btn-soft font-light tracking-wider"
             @click="deleteStage()"
@@ -215,6 +217,7 @@ async function deleteStage() {
             >Previous status</Button
           >
         </div>
+        <QPayRequestModal :document="_order"></QPayRequestModal>
         <Button
           ghost
           class="cursor-pointer btn-soft font-light tracking-wider"

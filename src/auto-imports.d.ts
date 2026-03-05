@@ -279,6 +279,7 @@ declare global {
   const usePreferredReducedMotion: typeof import('@vueuse/core')['usePreferredReducedMotion']
   const usePreferredReducedTransparency: typeof import('@vueuse/core')['usePreferredReducedTransparency']
   const usePrevious: typeof import('@vueuse/core')['usePrevious']
+  const useQuickPaysStore: typeof import('./stores/quick_pays')['useQuickPaysStore']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
   const useReportDispatcher: typeof import('./stores/employee_unpaid_orders')['useReportDispatcher']
@@ -450,6 +451,9 @@ declare global {
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
+  // @ts-ignore
+  export type { QuickPays, QuickPaysCreate, QuickPaysUpdate } from './stores/quick_pays'
+  import('./stores/quick_pays')
   // @ts-ignore
   export type { StatusNext } from './stores/stage_transitions'
   import('./stores/stage_transitions')
@@ -723,6 +727,7 @@ declare module 'vue' {
     readonly usePreferredReducedMotion: UnwrapRef<typeof import('@vueuse/core')['usePreferredReducedMotion']>
     readonly usePreferredReducedTransparency: UnwrapRef<typeof import('@vueuse/core')['usePreferredReducedTransparency']>
     readonly usePrevious: UnwrapRef<typeof import('@vueuse/core')['usePrevious']>
+    readonly useQuickPaysStore: UnwrapRef<typeof import('./stores/quick_pays')['useQuickPaysStore']>
     readonly useRafFn: UnwrapRef<typeof import('@vueuse/core')['useRafFn']>
     readonly useRefHistory: UnwrapRef<typeof import('@vueuse/core')['useRefHistory']>
     readonly useReportDispatcher: UnwrapRef<typeof import('./stores/employee_unpaid_orders')['useReportDispatcher']>

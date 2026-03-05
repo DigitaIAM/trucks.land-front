@@ -128,6 +128,8 @@ declare module 'vue' {
     PickUpModal: typeof import('./components/modal/PickUpModal.vue')['default']
     Progress: typeof import('./components/widgets/Progress.vue')['default']
     Prose: typeof import('./components/widgets/Prose.vue')['default']
+    QPayModal: typeof import('./components/modal/QPayModal.vue')['default']
+    QPayRequestModal: typeof import('./components/modal/QPayRequestModal.vue')['default']
     QueryAnd: typeof import('./components/QueryAnd.vue')['default']
     QueryAndShow: typeof import('./components/QueryAndShow.vue')['default']
     RadialProgress: typeof import('./components/widgets/RadialProgress.vue')['default']

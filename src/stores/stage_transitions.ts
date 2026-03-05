@@ -6,6 +6,7 @@ export interface StatusNext {
   id: number
   create_at: string
   created_by: number
+  kind: string
   stage?: number
   next: number
 }
@@ -30,11 +31,11 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
     mapping.value = map
   })
 
-  function nextFor(stage?: number) {
+  function nextFor(kind: string, stage?: number) {
     if (stage) {
-      return Array.from(mapping.value.get(stage)?.keys() ?? [])
+      return Array.from(mapping.value.get(stage)?.keys() ?? []).filter((v) => v.kind === kind)
     } else {
-      return Array.from(mapping.value.get(-1)?.keys() ?? [])
+      return Array.from(mapping.value.get(-1)?.keys() ?? []).filter((v) => v.kind === kind)
     }
   }
 
