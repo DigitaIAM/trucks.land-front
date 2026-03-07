@@ -43,6 +43,8 @@ const vehiclesStore = useVehiclesStore()
 const usersStore = useUsersStore()
 const ownersStore = useOwnersStore()
 
+const colorMode = useColorMode()
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'agreement') {
@@ -139,6 +141,7 @@ function close() {
             :enable-time-picker="true"
             v-model="datetime"
             :disabled="props.disabled"
+            :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
         </div>
       </div>
@@ -171,10 +174,8 @@ function close() {
       <fieldset :disabled="props.disabled">
         <div class="flex space-x-3 mb-2 mt-4 w-full">
           <div class="md:w-1/4 md:mb-0">
-            <Label class="mb-3">Vehicle owner</Label>
-            <div>
-              <QueryAndShow :id="vehicle?.owner" :store="ownersStore"></QueryAndShow>
-            </div>
+            <Label>Owner</Label>
+            <QueryAndShow asTextField :id="vehicle?.owner" :store="ownersStore"></QueryAndShow>
           </div>
           <div class="md:w-1/4 md:mb-0">
             <Label>Vehicle</Label>

@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { useOrganizationsStore } from '@/stores/organizations.ts'
-
 const ownerStore = useOwnersStore()
-const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const organizationsStore = useOrganizationsStore()
+const ordersStore = useOrdersStore()
+const driversStore = useDriversStore()
+const vehiclesStore = useVehiclesStore()
 
 const props = defineProps<{
   document: QuickPays | null
 }>()
 
-const created_by = ref<User | Reference>()
-const organization = ref<number>()
-const order = ref<number>()
-const owner = ref<Owner | Reference>()
-const driver = ref<Driver | Reference>()
-const vehicle = ref<Vehicle | Reference>()
+const order = ref<Order | null | undefined>()
+const owner = ref<Owner | null | undefined>()
+
 const amount = ref<number>()
 const note = ref<string>()
 
@@ -23,24 +20,23 @@ const emit = defineEmits(['closed'])
 
 watch(
   () => props.document,
-  (id) => {
-    resetAndShow(id)
+  (doc) => {
+    resetAndShow(doc)
   },
   { deep: true },
 )
 
-function resetAndShow(qpay: QuickPays) {
-  const account = authStore.currentAccount()
-  created_by.value = qpay ? { id: qpay.created_by } : account ? { id: account.id } : null
-  organization.value = qpay.organization
-  order.value = qpay.order
-  owner.value = qpay ? { id: qpay.owner } : null
-  driver.value = qpay ? { id: qpay.driver } : null
-  vehicle.value = qpay ? { id: qpay.vehicle } : null
-  amount.value = qpay.amount
-  note.value = qpay.note
-
-  qpay_modal.showModal()
+async function resetAndShow(qpay: QuickPays) {
+  console.log('qpay', qpay)
+  if (qpay) {
+    order.value = await ordersStore.resolve(qpay.order)
+    owner.value = await ownerStore.resolve(qpay.owner)
+    amount.value = qpay.amount
+    note.value = qpay.note
+    qpay_modal.showModal()
+  } else {
+    qpay_modal.close()
+  }
 }
 </script>
 
@@ -51,42 +47,52 @@ function resetAndShow(qpay: QuickPays) {
         <div>
           <Text semibold size="xl">Quick payment request</Text>
           <Label class="px-3">created by</Label>
-          <QueryAndShow :id="created_by" :store="usersStore" />
+          <QueryAndShow :id="document?.created_by" :store="usersStore" />
         </div>
         <div class="mb-2 place-self-end">
-          <QueryAndShow :id="organization" :store="organizationsStore" />
+          <QueryAndShow :id="document?.organization" :store="organizationsStore" />
         </div>
       </div>
-      <div class="flex space-x-3 mt-2 w-full">
-        <div class="md:w-2/3 md:mb-0">
-          <Label class="mt-2">Note</Label>
-          <TextInput class="w-full" v-model="note" />
+
+      <div class="flex space-x-3">
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mt-4 mb-1">Owner</Label>
+          <TextInput disabled :modelValue="owner?.name" class="w-full" />
         </div>
         <div class="md:w-1/3 md:mb-0">
-          <Label class="mt-2">Amount $</Label>
-          <TextInput v-model="amount" class="w-full" />
+          <Label class="mt-4 mb-1">Vehicle</Label>
+          <QueryAndShow asTextField :id="document?.vehicle" :store="vehiclesStore" />
         </div>
       </div>
-      <div class="mb-4">
-        <DriverAndVehicle :orderId="order" />
+
+      <div class="flex space-x-3">
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mt-4 mb-1">Driver</Label>
+          <QueryAndShow asTextField :id="document?.driver" :store="driversStore" />
+        </div>
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mt-4 mb-1">Amount</Label>
+          <TextInput disabled v-model="amount" class="flex w-full" />
+        </div>
       </div>
+
+      <div>
+        <Label class="mt-2">Note</Label>
+        <TextInput class="w-full" v-model="note" />
+      </div>
+
       <div class="flex space-x-3 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">
           <Label class="mt-2">Order number</Label>
-          <TextInput disabled :modelValue="props.document" class="w-full" />
+          <TextInput disabled :modelValue="order?.number" class="w-full" />
         </div>
-        <div class="md:w-2/3 md:mb-0">
-          <Label class="mt-2 mb-1">Vehicle owner</Label>
-          <div>
-            <QueryAndShow :id="owner" :store="ownerStore" class="w-full" />
-          </div>
-        </div>
+      </div>
+      <div class="mb-4">
+        <DriverAndVehicle :orderId="order?.id" />
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider">
-            <span v-if="id > 0">Update</span><span v-else>Send request</span>
-          </Button>
+          <Button class="btn-soft font-light tracking-wider"> Compiled</Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>
       </ModalAction>

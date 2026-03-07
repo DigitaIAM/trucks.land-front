@@ -2,7 +2,7 @@
 import { useEventsStore } from '@/stores/order_events.ts'
 
 const props = defineProps<{
-  orderId: number | null
+  orderId: number | null | undefined
 }>()
 
 const eventsStore = useEventsStore()

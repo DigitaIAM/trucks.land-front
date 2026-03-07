@@ -112,7 +112,28 @@ export const useQuickPaysStore = defineStore('quick_pays', () => {
     }
   }
 
-  return { listing, loading, create, update }
+  async function resolve(id: number | null) {
+    if (id) {
+      const order = mapping.value.get(id)
+      if (order) {
+        return order
+      }
+
+      const response = await supabase.from('quick_pays_journal').select().eq('id', id)
+
+      const map = new Map<number, QuickPays>()
+      response.data?.forEach((json) => {
+        const order = json as QuickPays
+        map.set(order.id, order)
+      })
+
+      return map.get(id)
+    } else {
+      return null
+    }
+  }
+
+  return { listing, loading, create, update, resolve }
 })
 
 if (import.meta.hot) {

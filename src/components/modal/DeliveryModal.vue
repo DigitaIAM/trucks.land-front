@@ -20,6 +20,8 @@ const state = ref('')
 const zip = ref('')
 const datetime = ref<Date | undefined>(new Date() as Date)
 
+const colorMode = useColorMode()
+
 const note = ref('')
 const priority = ref<string>()
 const timeliness = ref<string>()
@@ -202,6 +204,7 @@ function setTimeliness(v: string) {
             :enable-time-picker="true"
             v-model="datetime"
             :disabled="props.disabled"
+            :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
         </div>
       </div>

@@ -4,6 +4,7 @@ const props = defineProps<{
 }>()
 
 const id = ref<number | null>(null)
+const owner = ref<Owner | null | undefined>()
 const amount = ref<number | null>(null)
 const note = ref<string>('')
 const qpay = ref(false)
@@ -25,7 +26,7 @@ const statusesStore = useStatusesStore()
 const nextStatusStore = useStatusesNextStore()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
-const ownersStore = useOwnersStore()
+const ownerStore = useOwnersStore()
 
 const next = computedAsync(async () => {
   const list = []
@@ -40,10 +41,11 @@ const next = computedAsync(async () => {
   return list
 }, [])
 
-function resetAndShow() {
+async function resetAndShow() {
   // console.log('resetAndShow', props.document)
   console.log('qpay', qpay.value)
   amount.value = props.document?.driver_cost
+  owner.value = await ownerStore.resolve(props.document?.owner)
 }
 
 function saveQP(stage: Status | null) {
@@ -108,20 +110,18 @@ function handleClick() {
           <TextInput v-model="amount" class="w-full" />
         </div>
       </div>
-      <div class="mb-4">
-        <DriverAndVehicle :orderId="props.document?.id" />
-      </div>
       <div class="flex space-x-3 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">
           <Label class="mt-2">Order number</Label>
           <TextInput disabled :modelValue="props.document?.number" class="w-full" />
         </div>
         <div class="md:w-2/3 md:mb-0">
-          <Label class="mt-2 mb-1">Vehicle owner</Label>
-          <div>
-            <QueryAndShow :id="props.document?.owner" :store="ownersStore" class="w-full" />
-          </div>
+          <Label class="mt-2">Owner</Label>
+          <TextInput disabled :modelValue="owner?.name" class="w-full" />
         </div>
+      </div>
+      <div class="mb-4">
+        <DriverAndVehicle :orderId="props.document?.id" />
       </div>
       <ModalAction>
         <form method="dialog">

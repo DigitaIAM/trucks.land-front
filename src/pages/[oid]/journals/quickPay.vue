@@ -176,7 +176,7 @@ function capitalizeFirstLetter(val) {
   <QPayModal :document="selectedQpay"></QPayModal>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Requests quick pay</Text>
-    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
+    <!--    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>-->
     <Button
       class="btn-soft font-light tracking-wider ml-6"
       @click="weekExportQuickPay(orders.listing)"
@@ -225,7 +225,7 @@ function capitalizeFirstLetter(val) {
           :key="'row_' + col.label + '_' + qpay.id"
           class="py-3 px-2"
           :style="{ width: col.size + 'px' }"
-          @click="openQpay(qpay.id)"
+          @click="openQpay(qpay)"
         >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"

@@ -42,6 +42,8 @@ watch(
 
 const eventsStore = useEventsStore()
 
+const colorMode = useColorMode()
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'pick-up') {
@@ -202,6 +204,7 @@ function setTimeliness(v: string) {
             :enable-time-picker="true"
             v-model="datetime"
             :disabled="props.disabled"
+            :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
         </div>
       </div>

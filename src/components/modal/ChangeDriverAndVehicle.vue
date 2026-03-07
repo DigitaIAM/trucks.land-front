@@ -39,6 +39,8 @@ const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
+const colorMode = useColorMode()
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'change') {
@@ -126,6 +128,7 @@ function close() {
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
+            :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
         </div>
       </div>
@@ -148,15 +151,15 @@ function close() {
       <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-1/2 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>City / town</Label>
           <TextInput v-model="city" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>State</Label>
           <TextInput v-model="state" />
         </div>
-        <div class="md:w-1/4 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>Zip</Label>
           <TextInput v-model="zip" />
         </div>

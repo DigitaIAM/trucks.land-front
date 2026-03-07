@@ -30,6 +30,8 @@ const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 
+const colorMode = useColorMode()
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'expenses') {
@@ -107,6 +109,7 @@ function close() {
             teleport-center
             :enable-time-picker="true"
             v-model="datetime"
+            :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
         </div>
       </div>
