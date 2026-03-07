@@ -452,7 +452,7 @@ declare global {
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
   import('./stores/owners')
   // @ts-ignore
-  export type { QuickPays, QuickPaysCreate, QuickPaysUpdate } from './stores/quick_pays'
+  export type { OrderAndQuickPay, QuickPay, QuickPayCreate } from './stores/quick_pays'
   import('./stores/quick_pays')
   // @ts-ignore
   export type { StatusNext } from './stores/stage_transitions'

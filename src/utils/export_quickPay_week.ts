@@ -1,7 +1,8 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
+import type { OrderAndQuickPay } from '@/stores/quick_pays.ts'
 
-export async function weekExportQuickPay(quickPayments: Array<Order>) {
+export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>) {
   const workbook = new Workbook()
   const sheet = workbook.addWorksheet('My Sheet')
 
@@ -23,19 +24,20 @@ export async function weekExportQuickPay(quickPayments: Array<Order>) {
     { header: 'owner', key: 'owner', width: 30 },
     { header: 'broker', key: 'broker', width: 30 },
     { header: 'from', key: 'from', width: 30 },
-    { header: 'state', key: 'state_from', width: 10 },
-    { header: 'date', key: 'date_from', width: 20 },
-    { header: 'time', key: 'time_from', width: 20 },
+    { header: 'from_state', key: 'from_state', width: 10 },
+    { header: 'from_date', key: 'from_date', width: 20 },
+    { header: 'from_time', key: 'from_time', width: 20 },
     { header: 'to', key: 'to', width: 30 },
-    { header: 'state', key: 'state_to', width: 10 },
-    { header: 'date', key: 'date_to', width: 20 },
-    { header: 'time', key: 'time_to', width: 20 },
+    { header: 'to_state', key: 'to_state', width: 10 },
+    { header: 'to_date', key: 'to_date', width: 20 },
+    { header: 'to_time', key: 'to_time', width: 20 },
     { header: 'dispatcher', key: 'dispatcher', width: 30 },
     { header: 'miles', key: 'miles', width: 10 },
     { header: 'gross', key: 'gross', width: 20 },
-    { header: 'driver payment', key: 'd_payment', width: 20 },
+    { header: 'driver', key: 'd_payment', width: 20 },
     { header: 'profit', key: 'profit', width: 20 },
     { header: '%', key: 'percent', width: 20 },
+    { header: 'note', key: 'note', width: 30 },
   ]
 
   let n = 0
@@ -92,6 +94,7 @@ export async function weekExportQuickPay(quickPayments: Array<Order>) {
       : ''
     const profit = order.cost - order.driver_cost
     const percent = (profit / order.cost) * 100
+    const note = order.qp_note
 
     sheet.addRow({
       number: ++n,
@@ -103,19 +106,20 @@ export async function weekExportQuickPay(quickPayments: Array<Order>) {
       owner: owner?.name,
       broker: broker?.name,
       from: pickupAddress || pickupCity || '',
-      state_from: pickupState || '',
-      date_from: pickupD,
-      time_from: pickupT,
+      from_state: pickupState || '',
+      from_date: pickupD,
+      from_time: pickupT,
       to: deliveryAddress || deliveryCity || '',
-      state_to: deliveryState || '',
-      date_to: deliveryD,
-      time_to: deliveryT,
+      to_state: deliveryState || '',
+      to_date: deliveryD,
+      to_time: deliveryT,
       dispatcher: dispatcher?.name,
       miles: order?.total_miles,
       gross: order.cost,
       d_payment: order.driver_cost,
       profit: profit,
       percent: percent,
+      note: note,
     })
 
     for (const col of ['S', 'T', 'U', 'V']) {
@@ -139,10 +143,12 @@ export async function weekExportQuickPay(quickPayments: Array<Order>) {
 
   const buffer = await workbook.xlsx.writeBuffer()
 
+  const today = new Date().toISOString().split('T')[0]
+
   saveAs(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    `Week-report.xlsx`,
+    `QuickPay_${today}.xlsx`,
   )
 }

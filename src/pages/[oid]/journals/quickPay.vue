@@ -25,8 +25,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-// import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
 import type { OrderAndQuickPay } from '@/stores/quick_pays.ts'
+import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
 const quickPaysStore = useQuickPaysStore()
 const usersStore = useUsersStore()
 const vehiclesStore = useVehiclesStore()
@@ -36,8 +36,6 @@ const ownersStore = useOwnersStore()
 defineOptions({
   __loaders: [useOrgData],
 })
-
-const orgData = useOrgData()
 
 const selectedQpay = ref<OrderAndQuickPay | null>(null)
 
@@ -140,61 +138,20 @@ const cols = [
 function openQpay(qpay: OrderAndQuickPay) {
   selectedQpay.value = qpay
 }
-
-// function setFilter(key, val) {
-//   const index = filters.value.findIndex((v) => v.key === key)
-//   if (index < 0) {
-//     filters.value.push({ key: key, val: val })
-//   } else {
-//     filters.value[index] = { key: key, val: val }
-//   }
-//
-//   orders.setFilters(filters.value)
-// }
-//
-// function delFilter(key) {
-//   const index = filters.value.findIndex((v) => v.key === key)
-//   if (index >= 0) {
-//     filters.value.splice(index, 1)
-//   }
-//
-//   orders.setFilters(filters.value)
-// }
-
-// function capitalizeFirstLetter(val) {
-//   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-// }
 </script>
 
 <template>
   <QPayModal :document="selectedQpay"></QPayModal>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+  <div class="grid grid-cols-2 px-3 mb-6 mt-4">
     <Text size="2xl">Requested quick pays</Text>
-    <!--    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>-->
-    <!--    <Button-->
-    <!--      class="btn-soft font-light tracking-wider ml-6"-->
-    <!--      @click="weekExportQuickPay(quickPaysStore.listing)"-->
-    <!--      >Excel-->
-    <!--    </Button>-->
+    <div class="place-self-end">
+      <Button
+        class="btn-soft font-light tracking-wider"
+        @click="weekExportQuickPay(quickPaysStore.listing)"
+        >Excel
+      </Button>
+    </div>
   </div>
-  <!--  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">-->
-  <!--    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">-->
-  <!--      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">-->
-  <!--        {{ capitalizeFirstLetter(filter.key) }}:-->
-  <!--      </div>-->
-  <!--      <div>{{ filter.val.name }}</div>-->
-  <!--      <svg-->
-  <!--        xmlns="http://www.w3.org/2000/svg"-->
-  <!--        fill="none"-->
-  <!--        viewBox="0 0 24 24"-->
-  <!--        stroke-width="1.5"-->
-  <!--        stroke="currentColor"-->
-  <!--        class="size-4"-->
-  <!--      >-->
-  <!--        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />-->
-  <!--      </svg>-->
-  <!--    </Badge>-->
-  <!--  </div>-->
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr
