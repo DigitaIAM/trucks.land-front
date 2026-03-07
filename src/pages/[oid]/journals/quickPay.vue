@@ -25,7 +25,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
+// import { weekExportQuickPay } from '@/utils/export_quickPay_week.ts'
+import type { OrderAndQuickPay } from '@/stores/quick_pays.ts'
 const quickPaysStore = useQuickPaysStore()
 const usersStore = useUsersStore()
 const vehiclesStore = useVehiclesStore()
@@ -38,9 +39,9 @@ defineOptions({
 
 const orgData = useOrgData()
 
-const selectedQpay = ref<QuickPays | null>(null)
+const selectedQpay = ref<OrderAndQuickPay | null>(null)
 
-const filters = ref([])
+// const filters = ref([])
 
 const state = reactive({})
 
@@ -67,83 +68,76 @@ function resolve(
 const cols = [
   {
     label: '#',
-    value: (v: QuickPays) =>
-      resolve(
-        v,
-        'number_' + v.order,
-        () => ({ number: '?' }),
-        () => ordersStore.resolve(v.order),
-        (map) => map.number,
-      ),
+    value: (v: OrderAndQuickPay) => v.number,
     size: 70,
   },
   {
     label: 'owner',
-    value: (v: QuickPays) =>
+    value: (v: OrderAndQuickPay) =>
       resolve(
         v,
-        'owner_' + v.owner,
+        'owner_' + v.qp_owner,
         () => ({ name: '-' }),
-        () => ownersStore.resolve(v.owner),
+        () => ownersStore.resolve(v.qp_owner),
         (map) => map.name,
       ),
     size: 150,
   },
   {
     label: 'vehicle',
-    value: (v: QuickPays) =>
+    value: (v: OrderAndQuickPay) =>
       resolve(
         v,
-        'vehicle_' + v.vehicle,
+        'vehicle_' + v.qp_vehicle,
         () => ({ name: '-' }),
-        () => vehiclesStore.resolve(v.vehicle),
+        () => vehiclesStore.resolve(v.qp_vehicle),
         (map) => map.name,
       ),
     size: 80,
   },
   {
     label: 'driver',
-    value: (v: QuickPays) =>
+    value: (v: OrderAndQuickPay) =>
       resolve(
         v,
-        'driver_' + v.driver,
+        'driver_' + v.qp_driver,
         () => ({ name: '-' }),
-        () => driversStore.resolve(v.driver),
+        () => driversStore.resolve(v.qp_driver),
         (map) => map.name,
       ),
     size: 150,
   },
   {
     label: 'amount',
-    value: (v: QuickPays) => '$' + v.amount,
+    value: (v: OrderAndQuickPay) => '$' + v.qp_amount,
     size: 80,
   },
   {
     label: 'note',
-    value: (v: QuickPays) => v.note,
+    value: (v: OrderAndQuickPay) => v.qp_note,
     color: (v: Status) => v.color,
     size: 200,
   },
   {
     label: 'created at',
-    value: (v: QuickPays) => useDateFormat(v.created_at, 'MMM DD'),
+    value: (v: OrderAndQuickPay) => useDateFormat(v.qp_created_at, 'MMM DD'),
     size: 80,
   },
   {
     label: 'request created',
-    value: (v: QuickPays) =>
+    value: (v: OrderAndQuickPay) =>
       resolve(
         v,
-        'created by_' + v.created_by,
+        'created by_' + v.qp_created_by,
         () => ({ name: '?' }),
-        () => usersStore.resolve(v.created_by),
+        () => usersStore.resolve(v.qp_created_by),
         (map) => map.name,
       ),
     size: 100,
   },
 ]
 
-function openQpay(qpay: QuickPays) {
+function openQpay(qpay: OrderAndQuickPay) {
   selectedQpay.value = qpay
 }
 
@@ -167,40 +161,40 @@ function openQpay(qpay: QuickPays) {
 //   orders.setFilters(filters.value)
 // }
 
-function capitalizeFirstLetter(val) {
-  return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-}
+// function capitalizeFirstLetter(val) {
+//   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+// }
 </script>
 
 <template>
   <QPayModal :document="selectedQpay"></QPayModal>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Requests quick pay</Text>
+    <Text size="2xl">Requested quick pays</Text>
     <!--    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>-->
-    <Button
-      class="btn-soft font-light tracking-wider ml-6"
-      @click="weekExportQuickPay(orders.listing)"
-      >Excel
-    </Button>
+    <!--    <Button-->
+    <!--      class="btn-soft font-light tracking-wider ml-6"-->
+    <!--      @click="weekExportQuickPay(quickPaysStore.listing)"-->
+    <!--      >Excel-->
+    <!--    </Button>-->
   </div>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
-      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
-        {{ capitalizeFirstLetter(filter.key) }}:
-      </div>
-      <div>{{ filter.val.name }}</div>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="size-4"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-      </svg>
-    </Badge>
-  </div>
+  <!--  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">-->
+  <!--    <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">-->
+  <!--      <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">-->
+  <!--        {{ capitalizeFirstLetter(filter.key) }}:-->
+  <!--      </div>-->
+  <!--      <div>{{ filter.val.name }}</div>-->
+  <!--      <svg-->
+  <!--        xmlns="http://www.w3.org/2000/svg"-->
+  <!--        fill="none"-->
+  <!--        viewBox="0 0 24 24"-->
+  <!--        stroke-width="1.5"-->
+  <!--        stroke="currentColor"-->
+  <!--        class="size-4"-->
+  <!--      >-->
+  <!--        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />-->
+  <!--      </svg>-->
+  <!--    </Badge>-->
+  <!--  </div>-->
   <table class="w-full text-left table-auto min-w-max">
     <thead>
       <tr

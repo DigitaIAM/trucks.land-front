@@ -199,7 +199,7 @@ async function deleteStage() {
 <template>
   <div class="flex flex-col-3 px-6">
     <div class="flex flex-col w-full h-full">
-      <div class="flex w-full space-x-6">
+      <div class="grid grid-cols-2">
         <div class="flex space-x-3 w-full">
           <Button class="btn-soft font-light tracking-wider" @click="closeOrder">Close</Button>
           <Button
@@ -208,8 +208,6 @@ async function deleteStage() {
             v-if="!isReadOnly"
             >Update
           </Button>
-        </div>
-        <div class="flex space-x-3 w-full">
           <Button
             class="btn-soft font-light tracking-wider"
             @click="deleteStage()"
@@ -217,15 +215,22 @@ async function deleteStage() {
             >Previous status</Button
           >
         </div>
-        <QPayRequestModal :document="_order"></QPayRequestModal>
-        <Button
-          ghost
-          class="cursor-pointer btn-soft font-light tracking-wider"
-          :class="{ 'exclude-active': excluded }"
-          @click="handleClick"
-          :disabled="isReadOnly"
-          >excluded from calculations
-        </Button>
+
+        <div class="grid grid-cols-2 gap-3 place-self-end mr-10">
+          <div class="flex">
+            <QPayRequestModal :document="_order"></QPayRequestModal>
+          </div>
+          <div class="flex">
+            <Button
+              ghost
+              class="cursor-pointer btn-soft font-light tracking-wider"
+              :class="{ 'exclude-active': excluded }"
+              @click="handleClick"
+              :disabled="isReadOnly"
+              >Excluded from the dispatcher
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div class="flex w-full h-full mt-6">

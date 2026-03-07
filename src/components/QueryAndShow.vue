@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const state = ref(null)
+const state = ref<object>({})
+const label = ref<string>('')
 
 const props = defineProps<{
   id: string | number | null | undefined
@@ -20,20 +21,29 @@ watch(
       console.log('error', r)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 resetAndShow(props.id)
 
-function resetAndShow(id: number) {
+async function resetAndShow(id: string | number | null | undefined) {
   // console.log('resetAndShow', id)
-  state.value = { id: id, name: '-' }
-  props.store.resolve(id).then((obj) => {
-    if (obj) state.value = obj
-  })
+  state.value = {}
+  label.value = ''
+
+  if (id) {
+    const obj = await props.store.resolve(id)
+    if (obj) {
+      state.value = obj
+      label.value = obj[props.name ?? 'name']
+    } else {
+      state.value = { id: id, name: '' }
+      label.value = ''
+    }
+  }
 }
 
-const label = computed(() => state.value[props.name ?? 'name'])
+// const label = computed(() => (state.value == null ? '' : state.value[props.name ?? 'name']))
 </script>
 
 <template>

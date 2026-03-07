@@ -1,6 +1,22 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import type { Order } from '@/stores/orders.ts'
 
-export interface QuickPays extends QuickPaysCreate {
+export interface OrderAndQuickPay extends Order {
+  qp_id: number
+  qp_created_at: string
+  qp_created_by: number
+  qp_organization: number
+  qp_stage: number
+
+  qp_document: number
+  qp_driver: number
+  qp_owner: number
+  qp_vehicle: number
+  qp_amount: number
+  qp_note: string
+}
+
+export interface QuickPay extends QuickPayCreate {
   id: number
   created_at: string
   created_by: number
@@ -8,8 +24,8 @@ export interface QuickPays extends QuickPaysCreate {
   stage: number
 }
 
-export interface QuickPaysCreate {
-  order: number
+export interface QuickPayCreate {
+  document: number
   driver: number
   owner: number
   vehicle: number
@@ -17,29 +33,23 @@ export interface QuickPaysCreate {
   note: string
 }
 
-export interface QuickPaysUpdate {
-  amount?: number
-  note?: string
-}
-
 export const useQuickPaysStore = defineStore('quick_pays', () => {
-  const listing = ref<Array<QuickPays>>([])
-
-  const mapping = ref(new Map<number, QuickPays>())
+  const listing = ref<Array<OrderAndQuickPay>>([])
 
   async function loading(orgId: number | null) {
     if (orgId) {
       const response = await supabase
-        .from('quick_pays')
+        .from('quick_pays_journal')
         .select()
         .eq('organization', orgId)
+        .eq('qp_stage', 9)
         .order('created_at', { ascending: false })
 
       if (response.status == 200) {
-        const list: Array<QuickPays> = []
+        const list: Array<OrderAndQuickPay> = []
 
         response.data?.forEach((json) => {
-          const qpay = json as QuickPays
+          const qpay = json as OrderAndQuickPay
           list.push(qpay)
         })
         listing.value = list
@@ -47,93 +57,57 @@ export const useQuickPaysStore = defineStore('quick_pays', () => {
         throw 'unexpended response status: ' + response.status
       }
     } else {
-      listing.value = [] as Array<QuickPays>
+      listing.value = [] as Array<OrderAndQuickPay>
     }
   }
 
-  async function create(qpay: QuickPaysCreate, status: Status) {
+  async function create(qpay: QuickPayCreate, status: Status) {
     const response = await supabase.from('quick_pays').insert(qpay).select()
 
     if (response.status == 201 && response.data?.length == 1) {
-      const qpay = response.data[0] as QuickPays
-      mapping.value.set(qpay.id, qpay)
+      const qpay = response.data[0] as QuickPay
+      // mapping.value.set(qpay.id, qpay)
 
-      return await changeStatus(qpay, status)
+      return await changeStatus(qpay.id, status)
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
     }
   }
 
-  function update(id: number, qpay: QuickPaysUpdate) {
-    supabase
-      .from('quick_pays')
-      .update(qpay)
-      .eq('id', id)
-      .select()
-      .then((response) => {
-        if (response.status == 200) {
-          const list = listing.value
-          response.data?.forEach((json) => {
-            const qpay = json as QuickPays
-            const index = list.findIndex((v) => v.id == qpay.id)
-            if (index < 0) {
-              list.push(qpay)
-            } else {
-              list[index] = qpay
-            }
-          })
-
-          listing.value = list
-        }
-      })
-  }
-
-  async function changeStatus(qpay: QuickPays, stage: Status) {
+  async function changeStatus(qp_id: number, stage: Status) {
     const response = await supabase
       .from('quick_pay_stages')
       .insert({
-        document: qpay.id,
+        document: qp_id,
         stage: stage.id,
       })
       .select()
 
     if (response.status == 201 && response.data?.length == 1) {
-      qpay.stage = stage.id
+      const list: Array<OrderAndQuickPay> = []
 
-      const map = new Map<number, QuickPays>(mapping.value)
-      map.set(qpay.id, qpay)
-      mapping.value = map
+      listing.value.forEach((rec) => {
+        if (rec.qp_id === qp_id) {
+          if (stage.id == 9) {
+            rec.qp_stage = stage.id
+            list.push(rec)
+          } else {
+            // delete
+          }
+        } else {
+          list.push(rec)
+        }
+      })
 
-      return qpay
+      listing.value = list
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
     }
   }
 
-  async function resolve(id: number | null) {
-    if (id) {
-      const order = mapping.value.get(id)
-      if (order) {
-        return order
-      }
-
-      const response = await supabase.from('quick_pays_journal').select().eq('id', id)
-
-      const map = new Map<number, QuickPays>()
-      response.data?.forEach((json) => {
-        const order = json as QuickPays
-        map.set(order.id, order)
-      })
-
-      return map.get(id)
-    } else {
-      return null
-    }
-  }
-
-  return { listing, loading, create, update, resolve }
+  return { listing, loading, create, changeStatus }
 })
 
 if (import.meta.hot) {

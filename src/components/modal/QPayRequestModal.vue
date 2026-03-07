@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { QuickPayCreate } from '@/stores/quick_pays.ts'
+
 const props = defineProps<{
   document: Order | null
 }>()
@@ -7,7 +9,6 @@ const id = ref<number | null>(null)
 const owner = ref<Owner | null | undefined>()
 const amount = ref<number | null>(null)
 const note = ref<string>('')
-const qpay = ref(false)
 
 const emit = defineEmits(['closed'])
 
@@ -43,7 +44,6 @@ const next = computedAsync(async () => {
 
 async function resetAndShow() {
   // console.log('resetAndShow', props.document)
-  console.log('qpay', qpay.value)
   amount.value = props.document?.driver_cost
   owner.value = await ownerStore.resolve(props.document?.owner)
 }
@@ -54,14 +54,13 @@ function saveQP(stage: Status | null) {
       quickPaysStore.create(
         {
           organization: authStore.oid,
-          order: props.document?.id,
+          document: props.document?.id,
           owner: props.document?.owner,
           driver: props.document?.driver,
           vehicle: props.document?.vehicle,
           amount: amount.value,
           note: note.value,
-          qpay: qpay.value,
-        } as QuickPaysCreate,
+        } as QuickPayCreate,
         stage,
       )
     }
@@ -72,22 +71,15 @@ function saveQP(stage: Status | null) {
     console.log('stage', stage)
   }
   emit('closed')
-  console.log('saveQP qpay', qpay.value)
 }
 
 function handleClick() {
   create_qpay.showModal()
-  qpay.value = true
 }
 </script>
 
 <template>
-  <Button
-    class="btn-soft font-light tracking-wider"
-    @click="handleClick"
-    :class="{ 'qpay-active': qpay }"
-    >Quick pay
-  </Button>
+  <Button class="btn-soft font-light tracking-wider" @click="handleClick">Quick pay</Button>
   <Modal id="create_qpay">
     <ModalBox class="max-w-[calc(50vw)]">
       <div class="grid grid-cols-2">

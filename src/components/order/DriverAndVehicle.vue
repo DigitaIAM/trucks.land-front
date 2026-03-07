@@ -32,6 +32,9 @@ interface CostRecord {
 }
 
 async function resetAndShow(id: number) {
+  companyRecords.value = []
+  vehicleRecords.value = [{ cost: 0 } as CostRecord]
+
   const mapVehicle = new Map()
   const mapOwners = new Map()
 
