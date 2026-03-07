@@ -180,6 +180,27 @@ async function saveOrder(next: Status | null | undefined) {
   }
 }
 
+function qpayCreated(qp: QuickPay) {
+  const order = _order.value
+
+  if (order) {
+    order.qp_id = qp.id
+    order.qp_created_at = qp.created_at
+    order.qp_created_by = qp.created_by
+    order.qp_organization = qp.organization
+    order.qp_stage = qp.stage
+
+    order.qp_document = qp.document
+    order.qp_driver = qp.driver
+    order.qp_owner = qp.owner
+    order.qp_vehicle = qp.vehicle
+    order.qp_amount = qp.amount
+    order.qp_note = qp.note
+
+    _order.value = order
+  }
+}
+
 function closeOrder() {
   window.close()
 }
@@ -218,7 +239,7 @@ async function deleteStage() {
 
         <div class="grid grid-cols-2 gap-3 place-self-end mr-10">
           <div class="flex">
-            <QPayRequestModal :document="_order"></QPayRequestModal>
+            <QPayRequestModal :document="_order" @create="qpayCreated"></QPayRequestModal>
           </div>
           <div class="flex">
             <Button

@@ -7,6 +7,11 @@ export interface Order extends OrderCreate {
   created_at: string
   driver_cost: number
   stage: number
+  qp_id?: number
+  qp_owner?: number
+  qp_vehicle?: number
+  qp_driver?: number
+  qp_amount?: number
 }
 
 export interface OrderCreate {

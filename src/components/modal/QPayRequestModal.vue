@@ -6,18 +6,21 @@ const props = defineProps<{
 }>()
 
 const id = ref<number | null>(null)
-const owner = ref<Owner | null | undefined>()
-const amount = ref<number | null>(null)
+const owner = ref<Owner | undefined>()
+const amount = ref<number | undefined>()
 const note = ref<string>('')
 
-const emit = defineEmits(['closed'])
+const isOpen = ref(false)
+const isReadOnly = ref(false)
+
+const emit = defineEmits(['create', 'closed'])
 
 const errorMsg = ref<string | null>(null)
 
 watch(
   () => props.document,
-  (id) => {
-    resetAndShow(id)
+  (doc) => {
+    resetAndShow(doc)
   },
   { deep: true },
 )
@@ -42,16 +45,29 @@ const next = computedAsync(async () => {
   return list
 }, [])
 
-async function resetAndShow() {
+async function resetAndShow(doc: Order | null) {
   // console.log('resetAndShow', props.document)
-  amount.value = props.document?.driver_cost
-  owner.value = await ownerStore.resolve(props.document?.owner)
+  isReadOnly.value = false
+  if (doc) {
+    if (doc.qp_id) {
+      isReadOnly.value = true
+      amount.value = doc.qp_amount
+      owner.value = await ownerStore.resolve(doc.qp_owner)
+    } else {
+      amount.value = props.document?.driver_cost
+      owner.value = await ownerStore.resolve(doc?.owner)
+    }
+  }
 }
 
-function saveQP(stage: Status | null) {
+async function saveQP(stage: Status | null) {
+  if (props.document && props.document.qp_id) {
+    // do nothing if exist
+    return
+  }
   try {
     if (id.value == null) {
-      quickPaysStore.create(
+      const qpay = await quickPaysStore.create(
         {
           organization: authStore.oid,
           document: props.document?.id,
@@ -63,8 +79,10 @@ function saveQP(stage: Status | null) {
         } as QuickPayCreate,
         stage,
       )
+
+      emit('create', qpay)
     }
-    create_qpay.close()
+    handleClose()
   } catch (e) {
     errorMsg.value = e
     console.log('error', e)
@@ -73,13 +91,35 @@ function saveQP(stage: Status | null) {
   emit('closed')
 }
 
+const handleKeyDown = (event) => {
+  if (event.key === 'Escape' && isOpen.value) {
+    event.stopPropagation()
+    event.preventDefault()
+    event.stopImmediatePropagation()
+
+    handleClose()
+  }
+}
+useEventListener(document, 'keydown', handleKeyDown)
+
 function handleClick() {
+  isOpen.value = true
   create_qpay.showModal()
+}
+
+function handleClose() {
+  isOpen.value = false
+  create_qpay.close()
 }
 </script>
 
 <template>
-  <Button class="btn-soft font-light tracking-wider" @click="handleClick">Quick pay</Button>
+  <Button
+    class="btn-soft font-light tracking-wider"
+    :class="{ 'qpay-active': isReadOnly }"
+    @click="handleClick"
+    >Quick pay
+  </Button>
   <Modal id="create_qpay">
     <ModalBox class="max-w-[calc(50vw)]">
       <div class="grid grid-cols-2">
@@ -95,11 +135,11 @@ function handleClick() {
       <div class="flex space-x-3 mt-2 w-full">
         <div class="md:w-2/3 md:mb-0">
           <Label class="mt-2">Note</Label>
-          <TextInput class="w-full" v-model="note" />
+          <TextInput class="w-full" v-model="note" :disabled="isReadOnly" />
         </div>
         <div class="md:w-1/3 md:mb-0">
           <Label class="mt-2">Amount $</Label>
-          <TextInput v-model="amount" class="w-full" />
+          <TextInput v-model="amount" class="w-full" :disabled="isReadOnly" />
         </div>
       </div>
       <div class="flex space-x-3 mt-4 w-full">
@@ -116,17 +156,19 @@ function handleClick() {
         <DriverAndVehicle :orderId="props.document?.id" />
       </div>
       <ModalAction>
-        <form method="dialog">
+        <template v-if="!isReadOnly">
           <Button
             class="btn-soft font-light tracking-wider"
             v-for="stage in next"
             :key="stage?.id ?? -1"
             @click="saveQP(stage)"
           >
-            <span v-if="id > 0">Update</span><span v-else>{{ stage?.name }}</span>
+            {{ stage?.name }}
           </Button>
-          <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
-        </form>
+        </template>
+        <Button class="btn-soft font-light tracking-wider ml-6" @click="handleClose()"
+          >Close
+        </Button>
       </ModalAction>
     </ModalBox>
   </Modal>

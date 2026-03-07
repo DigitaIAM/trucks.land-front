@@ -61,14 +61,18 @@ export const useQuickPaysStore = defineStore('quick_pays', () => {
     }
   }
 
-  async function create(qpay: QuickPayCreate, status: Status) {
+  async function create(qpay: QuickPayCreate, stage: Status) {
     const response = await supabase.from('quick_pays').insert(qpay).select()
 
     if (response.status == 201 && response.data?.length == 1) {
       const qpay = response.data[0] as QuickPay
       // mapping.value.set(qpay.id, qpay)
 
-      return await changeStatus(qpay.id, status)
+      await changeStatus(qpay.id, stage)
+
+      qpay.stage = stage.id
+
+      return qpay
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
