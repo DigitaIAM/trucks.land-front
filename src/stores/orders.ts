@@ -12,6 +12,8 @@ export interface Order extends OrderCreate {
   qp_vehicle?: number
   qp_driver?: number
   qp_amount?: number
+  qp_percent?: number
+  qp_to_pay?: number
 }
 
 export interface OrderCreate {

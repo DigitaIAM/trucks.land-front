@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QuickPayCreate } from '@/stores/quick_pays.ts'
+import moment from 'moment-timezone'
 
 const props = defineProps<{
   document: Order | null
@@ -8,10 +9,15 @@ const props = defineProps<{
 const id = ref<number | null>(null)
 const owner = ref<Owner | undefined>()
 const amount = ref<number | undefined>()
+const percent = ref<number | undefined>()
+const to_pay = ref<number | undefined>()
 const note = ref<string>('')
 
 const isOpen = ref(false)
 const isReadOnly = ref(false)
+
+const maybeWait = ref(false)
+const paymentNextDay = ref(false)
 
 const emit = defineEmits(['create', 'closed'])
 
@@ -46,15 +52,25 @@ const next = computedAsync(async () => {
 }, [])
 
 async function resetAndShow(doc: Order | null) {
-  // console.log('resetAndShow', props.document)
   isReadOnly.value = false
+  maybeWait.value = false
+  paymentNextDay.value = false
   if (doc) {
     if (doc.qp_id) {
       isReadOnly.value = true
       amount.value = doc.qp_amount
+      percent.value = doc.qp_percent
+      to_pay.value = doc.qp_to_pay
       owner.value = await ownerStore.resolve(doc.qp_owner)
     } else {
+      const now = moment().tz('America/New_York')
+      maybeWait.value = now.day() === 3
+      paymentNextDay.value = now.isBefore('14:00:00')
+
       amount.value = props.document?.driver_cost
+      percent.value = 5
+      to_pay.value =
+        props.document?.driver_cost - (props.document?.driver_cost * percent.value) / 100
       owner.value = await ownerStore.resolve(doc?.owner)
     }
   }
@@ -75,6 +91,8 @@ async function saveQP(stage: Status | null) {
           driver: props.document?.driver,
           vehicle: props.document?.vehicle,
           amount: amount.value,
+          percent: percent.value,
+          to_pay: to_pay.value,
           note: note.value,
         } as QuickPayCreate,
         stage,
@@ -132,14 +150,21 @@ function handleClose() {
           {{ authStore.org?.name }}
         </div>
       </div>
+      <Label class="mt-2">Note</Label>
+      <TextInput class="w-full" v-model="note" :disabled="isReadOnly" />
+
       <div class="flex space-x-3 mt-2 w-full">
-        <div class="md:w-2/3 md:mb-0">
-          <Label class="mt-2">Note</Label>
-          <TextInput class="w-full" v-model="note" :disabled="isReadOnly" />
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mt-4 mb-1">Amount $</Label>
+          <TextInput disabled v-model="amount" class="flex w-full" />
         </div>
         <div class="md:w-1/3 md:mb-0">
-          <Label class="mt-2">Amount $</Label>
-          <TextInput v-model="amount" class="w-full" :disabled="isReadOnly" />
+          <Label class="mt-4 mb-1">Percent to QP %</Label>
+          <TextInput disabled v-model="percent" class="flex w-full" />
+        </div>
+        <div class="md:w-1/3 md:mb-0">
+          <Label class="mt-4 mb-1">To pay $</Label>
+          <TextInput disabled :modelValue="to_pay" class="w-full" />
         </div>
       </div>
       <div class="flex space-x-3 mt-4 w-full">
@@ -156,6 +181,12 @@ function handleClose() {
         <DriverAndVehicle :orderId="props.document?.id" />
       </div>
       <ModalAction>
+        <span v-if="maybeWait" class="text-yellow-400 mt-2"
+          >Tomorrow is payments day. Are you sure that qpay is required?</span
+        >
+        <span v-if="paymentNextDay" class="text-yellow-400 mt-2">
+          The driver will receive payment after tomorrow</span
+        ><span v-else class="text-yellow-400 mt-2"> The driver will receive payment tomorrow</span>
         <template v-if="!isReadOnly">
           <Button
             class="btn-soft font-light tracking-wider"

@@ -6,10 +6,10 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import type { KV } from '@/utils/kv.ts'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const ordersStore = useOrdersStore()
 const quickPaysStore = useQuickPaysStore()
 
 export const useOrgData = defineBasicLoader(
@@ -17,7 +17,10 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await quickPaysStore.loading(org.id)
+    await quickPaysStore.setContext([
+      { key: 'organization', val: org.id } as KV,
+      { key: 'qp_stage', val: 12 },
+    ])
     return org
   },
   { key: 'org' },
@@ -65,7 +68,7 @@ function resolve(
 
 const cols = [
   {
-    label: '#',
+    label: 'order #',
     value: (v: OrderAndQuickPay) => v.number,
     size: 70,
   },
@@ -103,12 +106,22 @@ const cols = [
         () => driversStore.resolve(v.qp_driver),
         (map) => map.name,
       ),
-    size: 150,
+    size: 140,
   },
   {
     label: 'amount',
     value: (v: OrderAndQuickPay) => '$' + v.qp_amount,
-    size: 80,
+    size: 70,
+  },
+  {
+    label: '%',
+    value: (v: OrderAndQuickPay) => v.qp_percent,
+    size: 40,
+  },
+  {
+    label: 'to pay',
+    value: (v: OrderAndQuickPay) => '$' + v.qp_to_pay,
+    size: 70,
   },
   {
     label: 'note',
@@ -143,7 +156,7 @@ function openQpay(qpay: OrderAndQuickPay) {
 <template>
   <QPayModal :document="selectedQpay"></QPayModal>
   <div class="grid grid-cols-2 px-3 mb-6 mt-4">
-    <Text size="2xl">Requested quick pays</Text>
+    <Text size="2xl">Approved quick pays</Text>
     <div class="place-self-end">
       <Button
         class="btn-soft font-light tracking-wider"
