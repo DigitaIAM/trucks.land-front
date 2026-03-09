@@ -51,15 +51,9 @@ const links = [
   },
   {
     name: 'Quick pay',
-    icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
-    path: '/journals/qpays/to-approve',
-    perm: (access) => access.is_admin,
-  },
-  {
-    name: 'Quick pay',
     //Accountant
     icon: defineAsyncComponent(() => import('~icons/streamline/credit-card-1')),
-    path: '/journals/qpays/to-pay',
+    path: '/journals/qpays/to-approve',
     perm: (access) => access.is_accountant,
   },
   {

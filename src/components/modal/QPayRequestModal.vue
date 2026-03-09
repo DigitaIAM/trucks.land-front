@@ -16,6 +16,11 @@ const note = ref<string>('')
 const isOpen = ref(false)
 const isReadOnly = ref(false)
 
+const currentDay = ref('')
+useIntervalFn(() => {
+  currentDay.value = moment().tz('America/New_York').format('MMMM Do YYYY, hh:mm a z')
+}, 1000)
+
 const maybeWait = ref(false)
 const paymentNextDay = ref(false)
 
@@ -146,9 +151,7 @@ function handleClose() {
           <Label class="px-3">created by</Label>
           <QueryAndShow :id="authStore.account?.id" :store="usersStore" />
         </div>
-        <div class="mb-2 place-self-end">
-          {{ authStore.org?.name }}
-        </div>
+        <div class="mb-2 place-self-end text-gray-500">{{ currentDay }}</div>
       </div>
       <Label class="mt-2">Note</Label>
       <TextInput class="w-full" v-model="note" :disabled="isReadOnly" />
@@ -181,12 +184,15 @@ function handleClose() {
         <DriverAndVehicle :orderId="props.document?.id" />
       </div>
       <ModalAction>
-        <span v-if="maybeWait" class="text-yellow-400 mt-2"
+        <span v-if="maybeWait" class="text-yellow-400 mt-2 items-center flex"
           >Tomorrow is payments day. Are you sure that qpay is required?</span
         >
-        <span v-if="paymentNextDay" class="text-yellow-400 mt-2">
+        <span v-if="paymentNextDay" class="text-yellow-400 mt-2 items-center flex">
           The driver will receive payment after tomorrow</span
-        ><span v-else class="text-yellow-400 mt-2"> The driver will receive payment tomorrow</span>
+        ><span v-else class="text-yellow-400 mt-2 items-center flex">
+          The driver will receive payment tomorrow</span
+        >
+
         <template v-if="!isReadOnly">
           <Button
             class="btn-soft font-light tracking-wider"

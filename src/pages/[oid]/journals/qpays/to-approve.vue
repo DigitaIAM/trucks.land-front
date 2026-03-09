@@ -157,6 +157,13 @@ function openQpay(qpay: OrderAndQuickPay) {
   <QPayModal :document="selectedQpay"></QPayModal>
   <div class="grid grid-cols-2 px-3 mb-6 mt-4">
     <Text size="2xl">Requested quick pays</Text>
+    <div class="place-self-end">
+      <Button
+        class="btn-soft font-light tracking-wider"
+        @click="weekExportQuickPay(quickPaysStore.listing)"
+        >Excel
+      </Button>
+    </div>
   </div>
   <table class="w-full text-left table-auto min-w-max">
     <thead>
