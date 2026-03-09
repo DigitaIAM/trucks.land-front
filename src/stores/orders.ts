@@ -321,6 +321,10 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  async function onRefresh() {
+    await _setFilters()
+  }
+
   function onUpdate(id: number, newOrder: Order) {
     const order = mapping.value.get(id)
     if (order) {
@@ -387,6 +391,7 @@ export const useOrdersStore = defineStore('orders', () => {
     searchByPL,
     onStateUpdate,
     onEventChange,
+    onRefresh,
     onUpdate,
     onInsert,
     deleteStage,

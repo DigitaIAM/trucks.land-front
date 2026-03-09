@@ -25,8 +25,10 @@ const changes = supabase
 
         useOrdersStore().onStateUpdate(nextState)
         useOrdersTracking().onStateUpdate(nextState)
+      } else {
+        useOrdersStore().onRefresh()
+        useOrdersTracking().onRefresh()
       }
-      // console.log('done')
     },
   )
   .subscribe()
@@ -84,6 +86,9 @@ const changesE = supabase
         useEventsStore().onUpdate(id, event)
         useOrdersStore().onEventChange(event)
         useOrdersTracking().onEventChange(event)
+      } else {
+        useOrdersStore().onRefresh()
+        useOrdersTracking().onRefresh()
       }
       // console.log('done')
     },

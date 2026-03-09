@@ -108,6 +108,10 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     listing.value = list
   }
 
+  async function onRefresh() {
+    await _setFilters()
+  }
+
   function onUpdate(id: number, newOrder: Order) {
     const list = Array.from(listing.value)
     for (const index in list) {
@@ -163,7 +167,16 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     }
   }
 
-  return { initialized, loading, listing, setFilters, onStateUpdate, onUpdate, onEventChange }
+  return {
+    initialized,
+    loading,
+    listing,
+    setFilters,
+    onStateUpdate,
+    onRefresh,
+    onUpdate,
+    onEventChange,
+  }
 })
 
 if (import.meta.hot) {
