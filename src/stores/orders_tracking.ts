@@ -134,9 +134,6 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
       .maybeSingle()
 
     const json = record.data
-
-    console.log('json', record.data)
-
     if (json) {
       const obj = <OrderTracking>{
         event: <OrderEvent>{

@@ -155,7 +155,9 @@ export const useOrdersStore = defineStore('orders', () => {
       const order = response.data[0] as Order
       mapping.value.set(order.id, order)
 
-      return await changeStatus(order, status)
+      await changeStatus(order, status)
+
+      return await resolve(order.id, true)
     } else {
       console.log('error', response)
       throw 'unexpended response status: ' + response.status
@@ -163,19 +165,14 @@ export const useOrdersStore = defineStore('orders', () => {
   }
 
   async function update(id: number, order: OrderUpdate) {
-    await supabase
-      .from('orders')
-      .update(order)
-      .eq('id', id)
-      .select()
-      .then((response) => {
-        if (response.status == 200) {
-          response.data?.forEach((json) => {
-            const order = json as Order
-            mapping.value.set(order.id, order)
-          })
-        }
-      })
+    const response = await supabase.from('orders').update(order).eq('id', id).select()
+
+    if (response.status == 200) {
+      await resolve(id, true)
+    } else {
+      console.log('error', response)
+      throw 'unexpended response status: ' + response.status
+    }
   }
 
   async function changeStatus(order: Order, stage: Status) {
@@ -238,11 +235,13 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
-  async function resolve(id: number | null) {
+  async function resolve(id: number | null, reset?: boolean) {
     if (id) {
-      const order = mapping.value.get(id)
-      if (order) {
-        return order
+      if (reset != true) {
+        const order = mapping.value.get(id)
+        if (order) {
+          return order
+        }
       }
 
       const response = await supabase.from('orders_journal').select().eq('id', id)
@@ -341,8 +340,6 @@ export const useOrdersStore = defineStore('orders', () => {
   function onInsert(newOrder: Order) {
     const order = mapping.value.get(newOrder.id)
     if (order) {
-      console.log('onInsert old', order)
-
       const map = new Map<number, Order>(mapping.value)
 
       const copyOrder = Object.assign(order, newOrder)
@@ -351,7 +348,6 @@ export const useOrdersStore = defineStore('orders', () => {
 
       mapping.value = map
     } else {
-      console.log('onInsert new', newOrder)
       const map = new Map<number, Order>(mapping.value)
 
       map.set(newOrder.id, newOrder)

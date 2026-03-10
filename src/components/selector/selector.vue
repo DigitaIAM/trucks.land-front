@@ -32,7 +32,7 @@ watch(
 async function init(suggestion: Reference | Suggestion | null) {
   // console.log('modelValue', suggestion)
   // if (suggestion instanceof Reference) {
-  if (suggestion) {
+  if (suggestion && suggestion.id) {
     const obj = await props.store.resolve(suggestion.id)
     if (obj) {
       if (obj.name !== suggestion.name) {
@@ -43,14 +43,9 @@ async function init(suggestion: Reference | Suggestion | null) {
       valueAsText.value = obj?.name || ''
     } else {
       // console.log('init reset obj', suggestion)
-      isNotFound.value = false
+      isNotFound.value = true
       valueAsText.value = ''
     }
-    // } else if (suggestion instanceof Suggestion) {
-    //   const obj = suggestion
-    //   isNotFound.value = obj ? false : true
-    //   isSetResult.value = true
-    //   valueAsText.value = obj?.name || ''
   } else {
     isNotFound.value = false
     valueAsText.value = ''
@@ -58,12 +53,15 @@ async function init(suggestion: Reference | Suggestion | null) {
 }
 
 function onFocusLost() {
-  if (valueAsText.value !== props.modelValue?.name) {
-    emit('update:modelValue', null)
+  if (!isOpen.value) {
+    if (valueAsText.value !== props.modelValue?.name) {
+      valueAsText.value = ''
+      emit('update:modelValue', null)
+    }
   }
 }
 
-const suggestions = ref([])
+const suggestions = ref<Array<Suggestion>>([] as Array<Suggestion>)
 
 let timer: ReturnType<typeof setTimeout>
 const delay = 250
@@ -73,7 +71,7 @@ const querying = (query: string) => {
   if (query) {
     const text = query
     timer = setTimeout(() => {
-      props.store.search(query).then((list) => {
+      props.store.search(query).then((list: Suggestion[]) => {
         // console.log('search result', text === valueAsText.value, list)
         if (text === valueAsText.value) {
           suggestions.value = list
@@ -103,6 +101,7 @@ function setResult(suggestion: Suggestion | null) {
         v-on:blur="onFocusLost"
         aria-expanded="false"
         class="block w-full disabled:opacity-50 disabled:pointer-events-none"
+        :class="{ 'bg-orange-300': isNotFound }"
       ></TextInput>
 
       <div class="absolute top-1/2 end-3 -translate-y-1/2" aria-expanded="false">
