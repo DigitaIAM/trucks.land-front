@@ -24,14 +24,17 @@ export async function generateFI(order: Order, org: Organization): Promise<Blob>
   }
 
   for (const path of paths) {
-    const { data: pdfBlob, error } = await supabase.storage.from('orders').download(path)
-
-    const donorPdf = await PDFDocument.load(await pdfBlob.arrayBuffer())
-    const pages = await pdfDoc.copyPages(donorPdf, donorPdf.getPageIndices())
-    for (const page of pages) {
-      pdfDoc.addPage(page)
+    try {
+      const { data: pdfBlob, error } = await supabase.storage.from('orders').download(path)
+      const donorPdf = await PDFDocument.load(await pdfBlob.arrayBuffer())
+      const pages = await pdfDoc.copyPages(donorPdf, donorPdf.getPageIndices())
+      for (const page of pages) {
+        pdfDoc.addPage(page)
+      }
+      console.log('error', error)
+    } catch (e) {
+      throw 'fail to open ' + path + ' because of ' + e
     }
-    console.log('error', error)
   }
   const pdfBytes = await pdfDoc.save()
 

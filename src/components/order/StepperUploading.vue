@@ -36,6 +36,8 @@ const fileType = ref('RC')
 const fileInfo = ref<File | null>(null)
 const signedBy = ref('')
 
+const errorMessage = ref<String | null>(null)
+
 const currentAccount = computedAsync(async () => {
   return await usersStore.resolveUUID(authStore.org?.id, authStore.user?.id)
 }, null)
@@ -67,6 +69,8 @@ async function uploadFile(
     data: { session },
   } = await supabase.auth.getSession()
 
+  const contentType = fileName.endsWith('.pdf') ? 'application/pdf' : null
+
   return new Promise((resolve, reject) => {
     const upload = new tus.Upload(file, {
       // endpoint: `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`,
@@ -81,7 +85,7 @@ async function uploadFile(
       metadata: {
         bucketName: bucketName,
         objectName: fileName,
-        // contentType: contentType,
+        contentType: contentType || file.type || 'application/octet-stream',
         cacheControl: '3600',
         metadata: JSON.stringify({
           // custom metadata passed to the user_metadata column
@@ -348,48 +352,54 @@ async function createAndPdfBI() {
 }
 
 async function createAndPdfFI() {
-  const ts = moment().subtract(3, 'days')
-  const currentWeek = ref(ts.isoWeek())
+  try {
+    errorMessage.value = null
 
-  const order = props.order
+    const ts = moment().subtract(3, 'days')
+    const currentWeek = ref(ts.isoWeek())
 
-  if (order) {
-    const org = await organizationsStore.resolve(order.organization)
+    const order = props.order
 
-    if (org) {
-      const createAt = order.created_at
-      const path =
-        createAt.substring(0, 4) +
-        '/' +
-        createAt.substring(5, 7) +
-        '/' +
-        createAt.substring(8, 10) +
-        '/' +
-        order.id +
-        '/' +
-        'FI_' +
-        org.code2 +
-        '-' +
-        currentWeek.value +
-        '-' +
-        order.number +
-        '.pdf'
+    if (order) {
+      const org = await organizationsStore.resolve(order.organization)
 
-      const record = await filesStore.create({
-        document: order.id,
-        kind: 'FI',
-        signed_by: '',
-        path: path,
-        is_deleted: false,
-      })
+      if (org) {
+        const createAt = order.created_at
+        const path =
+          createAt.substring(0, 4) +
+          '/' +
+          createAt.substring(5, 7) +
+          '/' +
+          createAt.substring(8, 10) +
+          '/' +
+          order.id +
+          '/' +
+          'FI_' +
+          org.code2 +
+          '-' +
+          currentWeek.value +
+          '-' +
+          order.number +
+          '.pdf'
 
-      const blob = await generateFI(order, org)
+        const record = await filesStore.create({
+          document: order.id,
+          kind: 'FI',
+          signed_by: '',
+          path: path,
+          is_deleted: false,
+        })
 
-      await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
-      uploadProgress.value = null
+        const blob = await generateFI(order, org)
 
-      await download(record)
+        await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
+        uploadProgress.value = null
+
+        await download(record)
+      }
     }
+  } catch (e) {
+    errorMessage.value = e
   }
 }
 
@@ -509,6 +519,7 @@ async function createRC() {
             </tr>
           </tbody>
         </table>
+        <div v-if="errorMessage" class="text-red-500">{{ errorMessage }}</div>
       </div>
       <div class="grid grid-cols-1 mb-2 mt-8 w-full">
         <Text size="xl" class="mt-6 mb-4">Invoice for</Text>
