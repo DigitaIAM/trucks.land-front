@@ -1,6 +1,7 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import type { OrderAndQuickPay } from '@/stores/quick_pays.ts'
+import moment from 'moment/moment'
 
 export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>) {
   const workbook = new Workbook()
@@ -38,6 +39,22 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     { header: 'profit', key: 'profit', width: 20 },
     { header: '%', key: 'percent', width: 20 },
     { header: 'note', key: 'note', width: 30 },
+    { header: 'tranld', key: 'tranld', width: 20 },
+    { header: 'tranDate', key: 'tranDate', width: 20 },
+    { header: 'vendorRef', key: 'vendorRef', width: 30 },
+    { header: 'payableAccountRef_ID', key: 'payableAccountRef_ID', width: 30 },
+    {
+      header: 'purchaseExpenseLine_category_ID',
+      key: 'purchaseExpenseLine_category_ID',
+      width: 30,
+    },
+    { header: 'purchaseExpenseLine_amount', key: 'purchaseExpenseLine_amount', width: 20 },
+    { header: 'quick_pay', key: 'quick_pay', width: 20 },
+    { header: 'direct_payment', key: 'direct_payment', width: 20 },
+    { header: 'class', key: 'class', width: 20 },
+    { header: 'week_number', key: 'week_number', width: 20 },
+    { header: 'class_custom', key: 'class_custom', width: 20 },
+    { header: 'Invoice_ExID', key: 'Invoice_ExID', width: 20 },
   ]
 
   let n = 0
@@ -96,9 +113,13 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     const percent = (profit / order.cost) * 100
     const note = order.qp_note
 
+    const today = new Date().toISOString().split('T')[0]
+
+    const currentWeek = moment().week()
+
     sheet.addRow({
       number: ++n,
-      order: `${org?.code2}-${order.number}`,
+      order: `${org?.code2}-${currentWeek}-${order.number}`,
       ref: order?.refs ?? '',
       date: createdAt,
       unit: vehicle?.unit_id,
@@ -120,9 +141,21 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
       profit: profit,
       percent: percent,
       note: note,
+      tranld: `${org?.code2}-${currentWeek}-${order.number}`,
+      tranDate: today,
+      vendorRef: owner?.name,
+      payableAccountRef_ID: 21000,
+      purchaseExpenseLine_category_ID: 62500,
+      purchaseExpenseLine_amount: order.driver_cost,
+      quick_pay: 'yes',
+      direct_payment: 'no',
+      class: 'CNU Logistics',
+      week_number: currentWeek,
+      class_custom: 'CNU Logistics',
+      Invoice_ExID: `${org?.code2}-${currentWeek}-${order.number} INV`,
     })
 
-    for (const col of ['S', 'T', 'U', 'V']) {
+    for (const col of ['V']) {
       const cell = sheet.getCell(`${col}${n + 1}`)
       cell.numFmt = '#,##0.00'
     }

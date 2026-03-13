@@ -38,6 +38,23 @@ export async function weekExportToExcel(
     { header: 'driver payment', key: 'd_payment', width: 20 },
     { header: 'profit', key: 'profit', width: 20 },
     { header: '%', key: 'percent', width: 20 },
+    { header: 'note', key: 'note', width: 30 },
+    { header: 'tranld', key: 'tranld', width: 20 },
+    { header: 'tranDate', key: 'tranDate', width: 20 },
+    { header: 'vendorRef', key: 'vendorRef', width: 30 },
+    { header: 'payableAccountRef_ID', key: 'payableAccountRef_ID', width: 30 },
+    {
+      header: 'purchaseExpenseLine_category_ID',
+      key: 'purchaseExpenseLine_category_ID',
+      width: 30,
+    },
+    { header: 'purchaseExpenseLine_amount', key: 'purchaseExpenseLine_amount', width: 20 },
+    { header: 'quick_pay', key: 'quick_pay', width: 20 },
+    { header: 'direct_payment', key: 'direct_payment', width: 20 },
+    { header: 'class', key: 'class', width: 20 },
+    { header: 'week_number', key: 'week_number', width: 20 },
+    { header: 'class_custom', key: 'class_custom', width: 20 },
+    { header: 'Invoice_ExID', key: 'Invoice_ExID', width: 20 },
   ]
 
   let n = 0
@@ -93,6 +110,10 @@ export async function weekExportToExcel(
       const percent = (profit / order.cost) * 100
       const week = payment.week
 
+      const note = order.notes
+
+      const today = new Date().toISOString().split('T')[0]
+
       sheet.addRow({
         number: ++n,
         order: `${org?.code2}-${week}-${order.number}`,
@@ -116,9 +137,22 @@ export async function weekExportToExcel(
         d_payment: order.driver_cost,
         profit: profit,
         percent: percent,
+        note: note,
+        tranld: `${org?.code2}-${week}-${order.number}`,
+        tranDate: today,
+        vendorRef: owner?.name,
+        payableAccountRef_ID: 21000,
+        purchaseExpenseLine_category_ID: 62500,
+        purchaseExpenseLine_amount: order.driver_cost,
+        quick_pay: 'no',
+        direct_payment: 'no',
+        class: 'CNU Logistics',
+        week_number: week,
+        class_custom: 'CNU Logistics',
+        Invoice_ExID: `${org?.code2}-${week}-${order.number} INV`,
       })
 
-      for (const col of ['S', 'T', 'U', 'V']) {
+      for (const col of ['V']) {
         const cell = sheet.getCell(`${col}${n + 1}`)
         cell.numFmt = '#,##0.00'
       }
