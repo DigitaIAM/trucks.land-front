@@ -150,10 +150,14 @@ export async function weekExportToExcel(
         Invoice_ExID: `${org?.code2}-${week}-${order.number} INV`,
       })
 
-      for (const col of ['V']) {
-        const cell = sheet.getCell(`${col}${n + 1}`)
-        cell.numFmt = '#,##0.00'
-      }
+      const colU = sheet.getColumn('U')
+      colU.numFmt = '#,##0.0'
+      colU.alignment = { horizontal: 'right' }
+
+      // for (const col of ['U']) {
+      //   const cell = sheet.getCell(`${col}${n + 1}`)
+      //   cell.numFmt = '$#,##0.00'
+      // }
 
       const rowToColor = sheet.getRow(1)
 
