@@ -16,8 +16,7 @@ export async function weekExportToExcel(
   const brokersStore = useBrokersStore()
 
   sheet.columns = [
-    { header: '#', key: 'number', width: 10 },
-    { header: '#order', key: 'order', width: 10 },
+    { header: '#', key: 'order', width: 10 },
     { header: 'ref', key: 'ref', width: 20 },
     { header: 'date', key: 'date', width: 20 },
     { header: 'unit', key: 'unit', width: 20 },
@@ -115,7 +114,6 @@ export async function weekExportToExcel(
       const today = new Date().toISOString().split('T')[0]
 
       sheet.addRow({
-        number: ++n,
         order: `${org?.code2}-${week}-${order.number}`,
         ref: order?.refs ?? '',
         date: createdAt,

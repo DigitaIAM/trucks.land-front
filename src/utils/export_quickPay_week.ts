@@ -16,8 +16,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
   const brokersStore = useBrokersStore()
 
   sheet.columns = [
-    { header: '#', key: 'number', width: 10 },
-    { header: '#order', key: 'order', width: 10 },
+    { header: '#', key: 'order', width: 10 },
     { header: 'ref', key: 'ref', width: 20 },
     { header: 'date', key: 'date', width: 20 },
     { header: 'unit', key: 'unit', width: 20 },
@@ -118,7 +117,6 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     const currentWeek = moment().week()
 
     sheet.addRow({
-      number: ++n,
       order: `${org?.code2}-${currentWeek}-${order.number}`,
       ref: order?.refs ?? '',
       date: createdAt,
