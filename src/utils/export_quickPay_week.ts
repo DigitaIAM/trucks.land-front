@@ -114,7 +114,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
 
     const today = new Date().toISOString().split('T')[0]
 
-    const currentWeek = moment().week()
+    const currentWeek = moment().subtract(2, 'days').week()
 
     sheet.addRow({
       order: `${org?.code2}-${currentWeek}-${order.number}`,
