@@ -69,10 +69,10 @@ export async function generateBI(
     throw 'fail broker check'
   }
 
-  const token = await accessTokenStore.getTokenZoho(org.id)
-  if (token == null) {
-    throw 'missing token'
-  }
+  // const token = await accessTokenStore.getTokenZoho(org.id)
+  // if (token == null) {
+  //   throw 'missing token'
+  // }
 
   const pieces = (order?.total_pieces as number) ?? ''
   const weight = (order?.total_weight as number) ?? ''
