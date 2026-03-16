@@ -81,7 +81,10 @@ const cols = [
   },
   {
     label: 'orders',
-    value: (v: EmployeePaymentSummary) => v.orders_number,
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_in_progress.size > 0
+        ? v.orders_number + ' / ' + v.orders_in_progress.size
+        : v.orders_number,
     size: 100,
   },
   {
@@ -147,7 +150,11 @@ const access = account.access
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
-    <TextInput v-if="access.is_payroll_accountant" v-model="exchangeRate" placeholder="Ex rate" ></TextInput>
+    <TextInput
+      v-if="access.is_payroll_accountant"
+      v-model="exchangeRate"
+      placeholder="Ex rate"
+    ></TextInput>
     <Button
       v-if="access.is_payroll_accountant"
       :disabled="reportDispatcherStore.employees.length == 0"

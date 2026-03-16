@@ -1,7 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { groupBy } from '@/utils/group-by.ts'
-import type { User } from '@/stores/users.ts'
-import type { PaymentToOwnerSummaryInDetails } from '@/stores/owner_payments.ts'
 
 export interface EmployeePaymentRecord {
   employee: number
@@ -20,6 +18,7 @@ export interface EmployeePaymentSummary {
   orders_profit_direct: number
   toPayment: number
   orders: Map<number, Order>
+  orders_in_progress: Map<number, Order>
   paymentsByOrder: Map<number, number>
   paymentTerms: PaymentTerms
   settlements_total: number
@@ -49,6 +48,8 @@ export interface EmployeePaymentSummaryInDetails {
 
 export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
   const org = ref<number | null>(null)
+
+  const ordersInProcessing = ref(new Map<number, Array<Order>>())
   const mapping = ref(new Map<number, Array<EmployeePaymentRecord>>())
   const settlements = ref(new Map<number, Array<SettlementEmployee>>())
   const processing = ref<Array<number>>([])
@@ -56,6 +57,22 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
   const searchQuery = ref<string | null>(null)
 
   async function loading(orgId: number | null, userId: number | null) {
+    const response = await supabase
+      .from('orders_journal')
+      .select()
+      .eq('organization', orgId)
+      .is('year', null)
+      .gte('created_at', '2026-02-24')
+
+    if (response.status == 200) {
+      ordersInProcessing.value = groupBy(
+        response.data!.map((json) => json as Order),
+        (v) => v.created_by,
+      )
+    } else {
+      throw 'fail to load orders in progress'
+    }
+
     org.value = orgId
     let requestPayments = supabase
       .from('employee_unpaid_orders')
@@ -183,7 +200,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               orders_profit_direct += profit * pc
 
               pc = 0
-
             } else {
               pc = (100 - p.order.percent_vf) / 100
             }
@@ -214,15 +230,23 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         toPayment += ((orders_amount + orders_amount_direct) * employeeTerms.percent_of_gross) / 100
       }
       if (employeeTerms.percent_of_profit) {
-        toPayment += ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100
+        toPayment +=
+          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100
       }
       if (employeeTerms.fixed_salary) {
         toPayment += employeeTerms.fixed_salary
       }
       if (employeeTerms.fixed_salary && employeeTerms.percent_of_profit) {
         toPayment +=
-          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100 + employeeTerms.fixed_salary
+          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100 +
+          employeeTerms.fixed_salary
       }
+
+      const listOfOrdersInProcessing =
+        ordersInProcessing.value.get(employee) || ([] as Array<Order>)
+
+      const orders_in_progress = new Map<number, Order>()
+      listOfOrdersInProcessing.forEach((order) => orders_in_progress.set(order.id, order))
 
       list.push(<Record>{
         user: await userStore.resolve(employee),
@@ -237,6 +261,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           orders_profit_direct: orders_profit_direct,
           toPayment: toPayment,
           orders: orders,
+          orders_in_progress: orders_in_progress,
           paymentsByOrder: paymentsByOrder,
           paymentTerms: employeeTerms,
           settlements: settlementsRecords,
@@ -245,8 +270,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         } as EmployeePaymentSummary,
       })
     }
-
-    console.log('list', list)
 
     list.sort((a, b) => b.summary.payout - a.summary.payout)
 

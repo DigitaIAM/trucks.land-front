@@ -1,5 +1,3 @@
-
-
 <script setup lang="ts">
 import { useUsersStore } from '@/stores/users.ts'
 import { type EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
@@ -10,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const usersStore = useUsersStore()
+const statusesStore = useStatusesStore()
 const organizationsStore = useOrganizationsStore()
 
 watch(
@@ -66,26 +65,47 @@ const cols = [
   },
   {
     label: 'payments to driver',
-    value: (v: Order) => '$' + props.summary?.paymentsByOrder.get(v.id),
+    value: (v: Order) => '$' + (props.summary?.paymentsByOrder.get(v.id) || v.driver_cost),
     size: 100,
   },
   {
-    label: 'type of profit',
-    value: (v: Order) => {
-      if (v.vehicle_found_by) {
-        if (props.summary?.employee === v.vehicle_found_by) {
-          if (props.summary?.employee === v.created_by) {
-            return 'as vehicle found & dispatcher'
+    label: 'notes',
+    value: (v: Order) =>
+      resolve(
+        v,
+        'notes',
+        () => '',
+        () => {
+          if (props.summary?.paymentsByOrder.get(v.id)) {
+            if (v.vehicle_found_by) {
+              if (props.summary?.employee === v.vehicle_found_by) {
+                if (props.summary?.employee === v.created_by) {
+                  return new Promise((resolve) =>
+                    resolve({ name: 'as vehicle found & dispatcher' }),
+                  )
+                } else {
+                  return new Promise((resolve) => resolve({ name: 'as vehicle found' }))
+                }
+              } else {
+                return new Promise((resolve) =>
+                  resolve({
+                    name: 'as dispatcher',
+                  }),
+                )
+              }
+            }
           } else {
-            return 'as vehicle found'
+            return statusesStore.resolve(v.stage)
           }
-        } else {
-          return ' as dispatcher'
-        }
-      }
-      return ''
-    },
-    size: 100,
+          return new Promise((resolve) =>
+            resolve({
+              name: '',
+            }),
+          )
+        },
+        (map) => map?.name || '',
+      ),
+    size: 200,
   },
 ]
 
@@ -113,18 +133,25 @@ function close() {
   emit('close')
 }
 
-
 const sortedOrders = computed(() => {
-  const list = Array.from(props.summary?.orders.values() || []);
+  const list = Array.from(props.summary?.orders.values() || [])
 
-  list.sort((a, b) => a.id - b.id);
+  list.sort((a, b) => a.id - b.id)
+
+  return list
+})
+
+const sortedOrdersInProgress = computed(() => {
+  const list = Array.from(props.summary?.orders_in_progress.values() || [])
+
+  list.sort((a, b) => a.id - b.id)
 
   return list
 })
 
 async function openOrder(order: Order) {
   const org = await organizationsStore.resolve(order.organization)
-  window.open('/' +  org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  window.open('/' + org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
   console.log('org.code3', org)
 }
 </script>
@@ -143,15 +170,19 @@ async function openOrder(order: Order) {
       <div class="flex flex-row gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <div class="flex flex-col items-end">
-          <Text>Orders {{ summary?.orders_number }}</Text>
+          <Text v-if="summary?.orders_in_progress?.size > 0"
+            >Orders {{ summary?.orders_number }} /
+            {{ summary?.orders_in_progress.size }}
+          </Text>
+          <Text v-else>Orders {{ summary?.orders_number }}</Text>
         </div>
         <div class="flex flex-col items-end">
           <Text>Orders amount $ {{ summary?.orders_amount.toFixed(2) }}</Text>
           <Text>Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text>Profit $ {{ summary?.orders_profit.toFixed(2)}}</Text>
-          <Text>Direct $ {{ summary?.orders_profit_direct.toFixed(2)}}</Text>
+          <Text>Profit $ {{ summary?.orders_profit.toFixed(2) }}</Text>
+          <Text>Direct $ {{ summary?.orders_profit_direct.toFixed(2) }}</Text>
         </div>
         <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
@@ -195,6 +226,30 @@ async function openOrder(order: Order) {
           </thead>
         </table>
         <div class="flex-1 overflow-y-auto max-h-[25vh]">
+          <table class="w-full table-fixed">
+            <tbody>
+              <tr
+                v-for="order in sortedOrdersInProgress"
+                :key="order.id"
+                class="hover:bg-base-200"
+                @click="openOrder(order)"
+              >
+                <td
+                  v-for="col in cols"
+                  :key="order.id + '_' + col.label"
+                  class="py-3 px-4"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    :style="{ width: col.size + 'px' }"
+                  >
+                    {{ col.value(order) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <table class="w-full table-fixed">
             <tbody>
               <tr

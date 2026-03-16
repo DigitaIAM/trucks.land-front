@@ -79,7 +79,10 @@ const cols = [
   },
   {
     label: 'orders',
-    value: (v: EmployeePaymentSummary) => v.orders_number,
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_in_progress.size > 0
+        ? v.orders_number + ' / ' + v.orders_in_progress.size
+        : v.orders_number,
     size: 100,
   },
   {
