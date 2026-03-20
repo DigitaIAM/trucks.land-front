@@ -18,13 +18,14 @@ export const useOrgData = defineBasicLoader(
     authStore.org = org
     await ordersStore.setContext([
       { key: 'organization', val: org.id } as KV,
+      //8 TONU
       //11 Wait for broker payment
       // 12 Approved for payment
       //14 Approved for payment
       // 15 Completed
       // 16 Payment on hold
-      { key: 'stage', val: ['11', '12', '14', '16'] } as KV, // , '15'
-      { key: 'limit', val: 1000 } as KV
+      { key: 'stage', val: ['8', '11', '12', '14', '16'] } as KV, // , '15'
+      { key: 'limit', val: 1000 } as KV,
     ])
     // console.table(org)
     return org
