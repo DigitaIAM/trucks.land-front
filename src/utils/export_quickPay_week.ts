@@ -77,9 +77,13 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
 
     for (const detail of detailsList) {
       if (detail.kind === 'agreement') {
-        vehicle = await vehiclesStore.resolve(detail.vehicle)
-        driver = await driversStore.resolve(detail.driver)
-        owner = await ownerStore.resolve(vehicle?.owner)
+        if (vehicle) {
+          owner = await ownerStore.resolve(vehicle.owner)
+        } else {
+          vehicle = await vehiclesStore.resolve(detail.vehicle)
+          driver = await driversStore.resolve(detail.driver)
+          owner = await ownerStore.resolve(order.qp_owner)
+        }
       } else if (detail.kind === 'delivery') {
         if (detail.datetime) {
           const date = new Date(detail.datetime)
