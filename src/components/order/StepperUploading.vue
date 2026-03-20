@@ -305,7 +305,7 @@ async function closeEmailModal() {
 }
 
 async function createAndPdfBI() {
-  const ts = moment().subtract(3, 'days')
+  const ts = moment().subtract(2, 'days')
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
@@ -355,7 +355,7 @@ async function createAndPdfFI() {
   try {
     errorMessage.value = null
 
-    const ts = moment().subtract(3, 'days')
+    const ts = moment().subtract(2, 'days')
     const currentWeek = ref(ts.isoWeek())
 
     const order = props.order
