@@ -183,20 +183,22 @@ export async function generateRC(order: Order, org: Organization) {
     }
   }
 
-  // tableData.push([pickup, delivery])
+  //tableData.push([pickup, delivery])
 
   function* zipIterables(...iterables) {
+    const fill = ''
+
     // Get an iterator for each iterable
     const iterators = iterables.map((iterable) => iterable[Symbol.iterator]())
 
     while (true) {
       const results = iterators.map((iterator) => iterator.next())
-      // Stop if any iterator is done
-      if (results.some((result) => result.done)) {
+      // Stop only when ALL iterators are done
+      if (results.every((result) => result.done)) {
         break
       }
-      // Yield the values as an array (JavaScript's equivalent of a tuple)
-      yield results.map((result) => result.value)
+      // Use fill value for any exhausted iterators
+      yield results.map((result) => (result.done ? fill : result.value))
     }
   }
 
