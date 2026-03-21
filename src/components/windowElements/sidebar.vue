@@ -41,7 +41,7 @@ const links = [
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
     path: '/journals/checkOut',
-    perm: (access) => access.is_admin || access.is_dispatcher,
+    perm: (access) => access.is_admin || access.is_dispatcher || access.is_accountant,
   },
   {
     name: 'Income',
