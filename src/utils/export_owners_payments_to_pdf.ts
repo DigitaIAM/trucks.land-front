@@ -103,7 +103,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   cy -= bls + text_right(page, font, 12, 'Pay Sheet', rightSide, cy)
   cy -=
     bls +
-    text_right(page, boldFont, 16, `${document.week}-${org.code3}-${document.id}`, rightSide, cy)
+    text_right(page, boldFont, 16, `${document.week}-${org.code3}- ${document.id}`, rightSide, cy)
   cy -= bls + text_right(page, font, 12, 'Pay Period', rightSide, cy)
   cy -=
     bls + text_right(page, boldFont, 16, `WEEK ${document.week} of ${document.year}`, rightSide, cy)
@@ -117,29 +117,23 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const cx = rightSide - margin
 
   const fs = 10
-  // text_right(page, boldFont, fs, 'Total gross:', cx, cy)
-  // cy -= bls + text_left(page, boldFont, fs, `\$${document.orders.toFixed(2)}`, cx + bls, cy)
+  text_right(page, boldFont, fs, 'Trip Related Pay:', cx, cy)
+  const pay = document.amount
+  cy -= bls + text_left(page, font, fs, `\$${pay.toFixed(2)}`, cx + bls, cy)
 
-  // text_right(page, font, fs, 'Total Reimbursable Expenses:', cx, cy)
-  // cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-  //
-  // text_right(page, font, fs, 'Total Deductions:', cx, cy)
-  // cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-  //
-  // text_right(page, font, fs, 'Total Pay:', cx, cy)
-  // cy -=
-  //   bls +
-  //   text_left(
-  //     page,
-  //     font,
-  //     fs,
-  //     `\$${(document?.orders - document?.orders * (0.04 + 0.015) - document.expenses).toFixed(0)}`,
-  //     cx + bls,
-  //     cy,
-  //   )
+  text_right(page, boldFont, fs, 'Total Reimbursable Expenses:', cx, cy)
+  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
+
+  text_right(page, boldFont, fs, 'Total Deductions:', cx, cy)
+  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
+
+  text_right(page, boldFont, fs, 'Total Pay:', cx, cy)
+  cy -=
+    bls +
+    text_left(page, font, fs, `\$${(document.amount - document.expenses).toFixed(0)}`, cx + bls, cy)
 
   text_right(page, boldFont, fs, 'Total Trips:', cx, cy)
-  cy -= bls + text_left(page, boldFont, fs, `${orders.length}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `${orders.length}`, cx + bls, cy)
 
   // Set the table options
   const options = {
@@ -165,7 +159,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
     font: font,
     column: {
       widthMode: 'auto',
-      overrideWidths: [30, 60, 60, 60, 90, 90, 80],
+      overrideWidths: [30, 60, 60, 60, 100, 100, 85],
     } as ColumnOptions,
   } as DrawTableOptions
 
@@ -245,86 +239,86 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   let textY = tableBottomY - textMargin // Y-coordinate for the start of the text
   const textX = 50
 
-  const dispatch_fee = 4
-  const quick_pay = 1.5
-  text_left(page, font, fs, 'Dispatch fee %:', textX + bls, textY)
-  textY -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${dispatch_fee}`,
-      font.widthOfTextAtSize('Dispatch fee %:', fs) + 60,
-      textY,
-    )
+  // const dispatch_fee = 4
+  // const quick_pay = 1.5
+  // text_left(page, font, fs, 'Dispatch fee %:', textX + bls, textY)
+  // textY -=
+  //   bls +
+  //   text_left(
+  //     page,
+  //     font,
+  //     fs,
+  //     `${dispatch_fee}`,
+  //     font.widthOfTextAtSize('Dispatch fee %:', fs) + 60,
+  //     textY,
+  //   )
 
-  text_left(page, font, fs, 'Factoring/Quick pay fee %:', textX + bls, textY)
-  textY -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${quick_pay}`,
-      font.widthOfTextAtSize('Factoring/Quick pay fee %:', fs) + 60,
-      textY,
-    )
+  // text_left(page, font, fs, 'Factoring/Quick pay fee %:', textX + bls, textY)
+  // textY -=
+  //   bls +
+  //   text_left(
+  //     page,
+  //     font,
+  //     fs,
+  //     `${quick_pay}`,
+  //     font.widthOfTextAtSize('Factoring/Quick pay fee %:', fs) + 60,
+  //     textY,
+  //   )
 
-  text_left(page, font, fs, 'Total gross:', textX + bls, textY)
-  textY -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `\$${document?.orders}`,
-      font.widthOfTextAtSize('Total gross:', fs) + 60,
-      textY,
-    )
-
-  text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
-  textY -=
-    bls * 2 +
-    text_left(
-      page,
-      boldFont,
-      fs,
-      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100).toFixed(2)}`,
-      boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
-      textY,
-    )
-
-  textY -= text_right(page, boldFont, fs, 'Expenses:', cx, textY + bls)
-
-  for (const expense of expenses) {
-    text_right(page, font, fs, expense.notes, cx, textY)
-    textY -= bls + text_left(page, font, fs, `\$${expense.amount}`, cx + bls, textY)
-  }
-
-  text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
-  textY -=
-    bls * 2 +
-    text_left(
-      page,
-      boldFont,
-      fs,
-      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(2)}`,
-      boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
-      textY,
-    )
-
-  text_left(page, boldFont, fs, 'Total Pay:', textX + bls, textY)
-  textY -=
-    bls * 2 +
-    text_left(
-      page,
-      boldFont,
-      fs,
-      `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(0)}`,
-      boldFont.widthOfTextAtSize('Total Pay:', fs) + 60,
-      textY,
-    )
+  // text_left(page, font, fs, 'Total gross:', textX + bls, textY)
+  // textY -=
+  //   bls +
+  //   text_left(
+  //     page,
+  //     font,
+  //     fs,
+  //     `\$${document?.orders}`,
+  //     font.widthOfTextAtSize('Total gross:', fs) + 60,
+  //     textY,
+  //   )
+  //
+  // text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
+  // textY -=
+  //   bls * 2 +
+  //   text_left(
+  //     page,
+  //     boldFont,
+  //     fs,
+  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100).toFixed(2)}`,
+  //     boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
+  //     textY,
+  //   )
+  //
+  // textY -= text_right(page, boldFont, fs, 'Expenses:', cx, textY + bls)
+  //
+  // for (const expense of expenses) {
+  //   text_right(page, font, fs, expense.notes, cx, textY)
+  //   textY -= bls + text_left(page, font, fs, `\$${expense.amount}`, cx + bls, textY)
+  // }
+  //
+  // text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
+  // textY -=
+  //   bls * 2 +
+  //   text_left(
+  //     page,
+  //     boldFont,
+  //     fs,
+  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(2)}`,
+  //     boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
+  //     textY,
+  //   )
+  //
+  // text_left(page, boldFont, fs, 'Total Pay:', textX + bls, textY)
+  // textY -=
+  //   bls * 2 +
+  //   text_left(
+  //     page,
+  //     boldFont,
+  //     fs,
+  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(0)}`,
+  //     boldFont.widthOfTextAtSize('Total Pay:', fs) + 60,
+  //     textY,
+  //   )
 
   return pdfDoc
 }
