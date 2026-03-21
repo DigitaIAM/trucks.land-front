@@ -31,7 +31,7 @@ const useOrganizations = useOrganizationsStore()
     <NavbarEnd>
       <div class="flex-col justify-items-center px-2">
         <div v-html="MyRawSvg"></div>
-        <div class="text-xs font-thin antialiased text-gray-500">170326</div>
+        <div class="text-xs font-thin antialiased text-gray-500">180326</div>
       </div>
     </NavbarEnd>
   </Navbar>

@@ -103,7 +103,7 @@ export const useStatusesStore = defineStore('stage', () => {
     return promise
   }
 
-  async function search(text: string) {
+  async function search(text: string): Promise<Array<Status>> {
     const response = await supabase
       .from('stages')
       .select()
@@ -111,7 +111,7 @@ export const useStatusesStore = defineStore('stage', () => {
       .limit(10)
 
     if (response.status == 200) {
-      return response.data?.map((json) => json as Status)
+      return response.data!.map((json) => json as Status)
     }
 
     return []

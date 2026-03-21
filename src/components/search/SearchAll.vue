@@ -13,7 +13,7 @@ const ownersStore = useOwnersStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 const usersStore = useUsersStore()
-const statusesStore = useStatusesStore()
+const stagesStore = useStatusesStore()
 
 const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
@@ -21,14 +21,12 @@ const isSetResult = computed(
     orders_number.value?.length != 0 ||
     orders_references.value?.length != 0 ||
     orders_pl.value?.length != 0 ||
-
     brokers.value?.length != 0 ||
     owners.value?.length != 0 ||
     drivers.value?.length != 0 ||
     vehicles.value?.length != 0 ||
     dispatchers.value?.length != 0 ||
-
-    statuses.value?.length != 0
+    stages.value?.length != 0,
 )
 
 const searchQuery = ref('')
@@ -52,7 +50,7 @@ watch(
     } else {
       queryStr.value = ''
     }
-  }
+  },
 )
 
 const orders_number = computedAsync(async () => {
@@ -67,7 +65,7 @@ const orders_references = computedAsync(async () => {
   const str = queryStr.value
   if (str && str.length >= 2) {
     const list = await ordersStore.searchByReferences(props.org.id, str)
-    return list.map((v) => ({ 'id': v, 'name': v }))
+    return list.map((v) => ({ id: v, name: v }))
   }
   return []
 }, [])
@@ -76,7 +74,7 @@ const orders_pl = computedAsync(async () => {
   const str = queryStr.value
   if (str && str.length >= 2) {
     const list = await ordersStore.searchByPL(props.org.id, str)
-    return list.map((v) => ({ 'id': v, 'name': v }))
+    return list.map((v) => ({ id: v, name: v }))
   }
   return []
 }, [])
@@ -121,10 +119,10 @@ const dispatchers = computedAsync(async () => {
   return []
 }, [])
 
-const statuses = computedAsync(async () => {
+const stages = computedAsync(async () => {
   const str = queryStr.value
   if (str) {
-    return await statusesStore.search(str)
+    return await stagesStore.search(str)
   }
   return []
 }, [])
@@ -178,18 +176,21 @@ function openOrder(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="openOrder" id="order_number" label="orders" :items="orders_number"
-                     :value="(v: Order) => v.number + ' @ ' + v.created_at.substring(0, 10)" />
-        <SearchBlock @click="select" id="refs" label="references"
-                     :items="orders_references"
+        <SearchBlock
+          @click="openOrder"
+          id="order_number"
+          label="orders"
+          :items="orders_number"
+          :value="(v: Order) => v.number + ' @ ' + v.created_at.substring(0, 10)"
         />
+        <SearchBlock @click="select" id="refs" label="references" :items="orders_references" />
         <SearchBlock @click="select" id="posted_loads" label="posted load" :items="orders_pl" />
         <SearchBlock @click="select" id="broker" label="brokers" :items="brokers" />
         <SearchBlock @click="select" id="driver" label="drivers" :items="drivers" />
         <SearchBlock @click="select" id="vehicle" label="vehicles" :items="vehicles" />
         <SearchBlock @click="select" id="owner" label="owners" :items="owners" />
         <SearchBlock @click="select" id="dispatcher" label="dispatchers" :items="dispatchers" />
-        <SearchBlock @click="select" id="status" label="statuses" :items="statuses" />
+        <SearchBlock @click="select" id="stage" label="stages" :items="stages" />
       </div>
     </div>
   </div>
