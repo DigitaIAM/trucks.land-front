@@ -6,6 +6,7 @@ import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
 import { generateRC } from '@/utils/createRC.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
 import { createFetch } from '@vueuse/core'
+import { sendEmail } from '@/utils/email.ts'
 
 const props = defineProps<{
   order: Order | null
@@ -45,14 +46,13 @@ const currentAccount = computedAsync(async () => {
 const isDisabled = computedAsync(async () => {
   const account = currentAccount.value
   if (account && account.access) {
-    for (const record of account.access) {
-      if (record.is_admin || record.is_accountant) {
+    const record = account.access
+    if (record.is_admin || record.is_accountant) {
+      return false
+    } else if (record.is_dispatcher || record.is_tracking) {
+      const id = created_by.value?.id
+      if (id && id === created_by.value?.id) {
         return false
-      } else if (record.is_dispatcher || record.is_tracking) {
-        const id = created_by.value?.id
-        if (id && id === created_by.value?.id) {
-          return false
-        }
       }
     }
   }
@@ -231,20 +231,13 @@ async function closeEmailModal() {
   }
   const pdfDoc = await generateRC(order, org)
 
-  let manager_email = ''
-  if (org.id == 3) {
-    manager_email = 'tom@cnulogistics.com'
-  } else {
-    manager_email = 'tom@cvslogisticsllc.com'
-  }
-
   // Send by email
   const base64String = await pdfDoc.saveAsBase64()
 
   const email = {
-    from: { address: `RC sender@${org.domain}` },
+    from: { address: `${org.manager_email}` },
     to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }],
-    cc: [{ email_address: { address: `${manager_email}`, name: '' } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    // cc: [{ email_address: { address: `${manager_email}`, name: '' } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
     subject: `RC_${org.code2}-${order.number}`,
     htmlbody:
       'Greetings,<br />' +
@@ -259,7 +252,7 @@ async function closeEmailModal() {
       'Use this chain for future communication. <br />' +
       '<br />' +
       'For any inquiries regarding calculations, please contact us at  <br />' +
-      `${manager_email} <br />` +
+      `${org.manager_email} <br />` +
       '<br />' +
       'Best Regards,<br />' +
       '<br />' +
@@ -277,28 +270,7 @@ async function closeEmailModal() {
     ],
   }
 
-  const myFetch = createFetch({
-    // baseUrl: 'https://api.zeptomail.com/',
-    // baseUrl: 'http://localhost:5173/',
-    options: {
-      async beforeFetch({ options }) {
-        options.headers = {
-          ...options.headers,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: token,
-        }
-        return { options }
-      },
-    },
-    fetchOptions: { mode: 'cors' },
-  })
-
-  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-
-  console.log('isFetching', isFetching)
-  console.log('error', error)
-  console.log('data', data)
+  await sendEmail(token, email)
 
   entered_email.close()
   emit('close')

@@ -54,14 +54,13 @@ const currentAccount = computedAsync(async () => {
 const isReadOnly = computedAsync(async () => {
   const account = currentAccount.value
   if (account && account.access) {
-    for (const record of account.access) {
-      if (record.is_admin) {
+    const record = account.access
+    if (record.is_admin) {
+      return false
+    } else if (record.is_dispatcher) {
+      const id = created_by.value?.id
+      if (id && id === created_by.value?.id) {
         return false
-      } else if (record.is_dispatcher) {
-        const id = created_by.value?.id
-        if (id && id === created_by.value?.id) {
-          return false
-        }
       }
     }
   }

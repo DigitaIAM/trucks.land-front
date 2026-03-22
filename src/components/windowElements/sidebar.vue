@@ -124,9 +124,9 @@ const buildLinks = computed(() => {
   const list = []
 
   const access = account.access
-  if (access && access.length > 0) {
+  if (access) {
     for (const link of links) {
-      if (link.perm(access[0])) {
+      if (link.perm(access)) {
         list.push(link)
       }
     }

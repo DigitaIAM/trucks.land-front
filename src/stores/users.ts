@@ -5,7 +5,7 @@ import { sleep } from '@/utils/datetime.ts'
 export interface User extends UserCreate {
   id: number
   created_at: string
-  access: Array<object>
+  access: AccessMatrix
 }
 
 export interface UserCreate {
@@ -123,18 +123,21 @@ export const useUsersStore = defineStore('user', () => {
         return v
       }
 
-      const access = await supabase
+      const responseAccess = await supabase
         .from('access_matrix')
         .select()
         .eq('organization', oid)
         .eq('user_uuid', uuid)
+        .maybeSingle()
 
-      if (access.data) {
-        const response = await supabase.from('users').select().eq('id', access.data[0].user_id)
+      if (responseAccess.data) {
+        const access = responseAccess.data as AccessMatrix
+
+        const response = await supabase.from('users').select().eq('id', access.user_id)
 
         response.data?.forEach((json) => {
           const user = json as User
-          user.access = access.data
+          user.access = access
 
           const map = uuids.value.get(oid) || new Map()
           map.set(uuid, user)
@@ -142,7 +145,7 @@ export const useUsersStore = defineStore('user', () => {
           uuids.value.set(oid, map)
         })
       }
-      return uuids.value.get(oid)?.get(uuid)
+      return uuids.value.get(oid)?.get(uuid) || null
     } else {
       return null
     }
