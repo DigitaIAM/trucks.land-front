@@ -42,6 +42,7 @@ const nextStatusStore = useStatusesNextStore()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const ownerStore = useOwnersStore()
+const organizationsStore = useOrganizationsStore()
 
 const next = computedAsync(async () => {
   const list = []
@@ -72,8 +73,9 @@ async function resetAndShow(doc: Order | null) {
       maybeWait.value = now.day() === 3
       paymentNextDay.value = now.isBefore('14:00:00')
 
+      const org = await organizationsStore.resolve(doc?.organization)
       amount.value = props.document?.driver_cost
-      percent.value = 5
+      percent.value = org?.qp_percent
       to_pay.value =
         props.document?.driver_cost - (props.document?.driver_cost * percent.value) / 100
       owner.value = await ownerStore.resolve(doc?.owner)

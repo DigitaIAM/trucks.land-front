@@ -6,6 +6,8 @@ export interface Organization extends OrganizationCreate {
   id: number
   created_at: string
   created_by: number
+  manager_email: string
+  qp_percent: number
 }
 
 export interface OrganizationCreate {
