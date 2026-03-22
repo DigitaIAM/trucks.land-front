@@ -148,7 +148,7 @@ async function createPayment() {
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
     <template v-if="authStore.account?.access.is_payroll_accountant === true">
-      <TextInput v-model="exchangeRate" placeholder="Ex rate"></TextInput>
+      <TextInput v-model="exchangeRate" placeholder="$ exchange rate"></TextInput>
       <Button
         :disabled="reportDispatcherStore.employees.length == 0"
         class="btn-soft font-light tracking-wider"

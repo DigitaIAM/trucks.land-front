@@ -4,6 +4,7 @@ import moment from 'moment-timezone'
 
 const props = defineProps<{
   document: Order | null
+  noCreate: boolean
 }>()
 
 const id = ref<number | null>(null)
@@ -142,6 +143,7 @@ function handleClose() {
   <Button
     class="btn-soft font-light tracking-wider"
     :class="{ 'qpay-active': isReadOnly }"
+    :disabled="!isReadOnly && noCreate"
     @click="handleClick"
     >Quick pay
   </Button>
@@ -195,7 +197,7 @@ function handleClose() {
           The driver will receive payment tomorrow</span
         >
 
-        <template v-if="!isReadOnly">
+        <template v-if="!isReadOnly && !noCreate">
           <Button
             class="btn-soft font-light tracking-wider"
             v-for="stage in next"

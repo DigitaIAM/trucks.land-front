@@ -238,7 +238,7 @@ async function deleteStage() {
 
         <div class="grid grid-cols-2 gap-3 place-self-end mr-10">
           <div class="flex">
-            <QPayRequestModal :document="_order" @create="qpayCreated"></QPayRequestModal>
+            <QPayRequestModal :document="_order" @create="qpayCreated" :noCreate="isReadOnly" />
           </div>
           <div class="flex">
             <Button
@@ -247,7 +247,7 @@ async function deleteStage() {
               :class="{ 'exclude-active': excluded }"
               @click="handleClick"
               :disabled="isReadOnly"
-              >Excluded from the dispatcher
+              >Excluded from dispatcher's payments
             </Button>
           </div>
         </div>

@@ -241,7 +241,7 @@ async function openOrder(order: Order) {
                   :style="{ width: col.size + 'px' }"
                 >
                   <p
-                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    class="block antialiasing tracking-wide font-light leading-normal truncate text-gray-500"
                     :style="{ width: col.size + 'px' }"
                   >
                     {{ col.value(order) }}
