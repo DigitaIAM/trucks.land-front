@@ -28,6 +28,7 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 import { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
 import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
+import moment from 'moment/moment'
 
 const paymentToEmployeeStore = usePaymentToEmployeeStore()
 const usersStore = useUsersStore()
@@ -135,6 +136,21 @@ function setFilter(key, val) {
     filters.value[index] = { key: key, val: val }
   }
 
+  if (key === 'month') {
+    const now = moment()
+    const year = parseInt(val) > now.month() ? now.year() - 1 : now.year()
+
+    const nkey = 'year'
+    const nval = { id: year, name: `${year}` }
+
+    const index = filters.value.findIndex((v) => v.key === nkey)
+    if (index < 0) {
+      filters.value.push({ key: nkey, val: nval })
+    } else {
+      filters.value[index] = { key: nkey, val: nval }
+    }
+  }
+
   paymentToEmployeeStore.setFilters(filters.value)
 }
 
@@ -157,14 +173,14 @@ function capitalizeFirstLetter(val) {
     @closed="onClose"
     :document="selectedDocument"
   ></PaymentsForDispatcherOrders>
-    <Text class="px-4" size="2xl">Payments</Text>
+  <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-  <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
-  <Button
-    class="btn-soft font-light tracking-wider flex"
-    @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
-  >Excel
-  </Button>
+    <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
+    <Button
+      class="btn-soft font-light tracking-wider flex"
+      @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
+      >Excel
+    </Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

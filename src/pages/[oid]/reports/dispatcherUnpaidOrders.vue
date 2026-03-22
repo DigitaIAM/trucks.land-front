@@ -140,7 +140,7 @@ async function createPayment() {
 }
 
 const account = authStore.account
-const access = account.access
+const access = account?.access
 </script>
 
 <template>
@@ -151,18 +151,21 @@ const access = account.access
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
     <TextInput
-      v-if="access.is_payroll_accountant"
+      v-if="access?.is_payroll_accountant === true"
       v-model="exchangeRate"
       placeholder="Ex rate"
     ></TextInput>
     <Button
-      v-if="access.is_payroll_accountant"
+      v-if="access?.is_payroll_accountant === true"
       :disabled="reportDispatcherStore.employees.length == 0"
       class="btn-soft font-light tracking-wider"
       @click="createPayment()"
       >Close month</Button
     >
   </div>
+
+  <!--  v-if="access?.is_payroll_accountant === true"-->
+
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr
