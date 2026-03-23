@@ -59,7 +59,7 @@ const isReadOnly = computedAsync(async () => {
       return false
     } else if (record.is_dispatcher) {
       const id = created_by.value?.id
-      if (id && id === created_by.value?.id) {
+      if (id && id === account.id) {
         return false
       }
     }
@@ -238,7 +238,7 @@ async function deleteStage() {
 
         <div class="grid grid-cols-2 gap-3 place-self-end mr-10">
           <div class="flex">
-            <QPayRequestModal :document="_order" @create="qpayCreated" :noCreate="isReadOnly" />
+            <QPayRequestModal :document="_order" @create="qpayCreated" />
           </div>
           <div class="flex">
             <Button

@@ -4,7 +4,6 @@ import moment from 'moment-timezone'
 
 const props = defineProps<{
   document: Order | null
-  noCreate: boolean
 }>()
 
 const id = ref<number | null>(null)
@@ -44,6 +43,28 @@ const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const ownerStore = useOwnersStore()
 const organizationsStore = useOrganizationsStore()
+
+const currentAccount = computedAsync(async () => {
+  return await usersStore.resolveUUID(authStore.org?.id, authStore.user?.id)
+}, null)
+
+const canCreateQP = computedAsync(async () => {
+  const account = currentAccount.value
+  if (account && account.access) {
+    const record = account.access
+    if (record.is_admin) {
+      return true
+    } else if (record.is_accountant) {
+      return true
+    } else if (record.is_dispatcher) {
+      const id = props.document?.created_by
+      if (id && id === account.id) {
+        return true
+      }
+    }
+  }
+  return false
+}, true)
 
 const next = computedAsync(async () => {
   const list = []
@@ -143,7 +164,7 @@ function handleClose() {
   <Button
     class="btn-soft font-light tracking-wider"
     :class="{ 'qpay-active': isReadOnly }"
-    :disabled="!isReadOnly && noCreate"
+    :disabled="!(canCreateQP || isReadOnly)"
     @click="handleClick"
     >Quick pay
   </Button>
