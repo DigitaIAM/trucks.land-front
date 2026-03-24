@@ -189,12 +189,12 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
         }
       }
       if (event.kind === 'pick-up') {
-        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MMM DD, HH:mm').value, font))
+        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
         pickup.push(filterCharSet(event.city, font))
         pickup.push(filterCharSet(`${event.state} ${event.zip}`, font))
       }
       if (event.kind === 'delivery') {
-        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MMM DD, HH:mm').value, font))
+        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
         delivery.push(filterCharSet(event.city, font))
         delivery.push(filterCharSet(`${event.state} ${event.zip}`, font))
       }
