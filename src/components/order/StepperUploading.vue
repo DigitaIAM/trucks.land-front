@@ -37,7 +37,10 @@ const fileType = ref('RC')
 const fileInfo = ref<File | null>(null)
 const signedBy = ref('')
 
-const errorMessage = ref<String | null>(null)
+const isSending = ref(false)
+const statusMessage = ref<string>('')
+
+const errorMessage = ref<string | null>(null)
 
 const currentAccount = computedAsync(async () => {
   return await usersStore.resolveUUID(authStore.org?.id, authStore.user?.id)
@@ -215,65 +218,82 @@ function closeEmail() {
 }
 
 async function closeEmailModal() {
-  const order = props.order
-  if (order == null) {
-    throw 'missing order'
+  try {
+    isSending.value = true
+    errorMessage.value = null
+
+    statusMessage.value = 'Loading data...'
+
+    const order = props.order
+    if (order == null) {
+      throw 'missing order'
+    }
+
+    const org = await organizationsStore.resolve(order.organization)
+    if (org == null) {
+      throw 'missing organization'
+    }
+
+    const token = await useAccessTokenStore().getTokenZoho(org.id)
+    if (token == null) {
+      throw 'missing token'
+    }
+
+    statusMessage.value = 'Preparing document...'
+
+    const pdfDoc = await generateRC(order, org)
+
+    statusMessage.value = 'Sending document...'
+
+    // Send by email
+    const base64String = await pdfDoc.saveAsBase64()
+
+    const email = {
+      from: { address: `${org.manager_email}` },
+      to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }],
+      // cc: [{ email_address: { address: `${manager_email}`, name: '' } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+      subject: `RC_${org.code2}-${order.number}`,
+      htmlbody:
+        'Greetings,<br />' +
+        '<br />' +
+        'RC #&nbsp;' +
+        `${org.code2}` +
+        '-' +
+        `${order.number}` +
+        '&nbsp;is attached.<br />' +
+        '<br />' +
+        'Please copy your team into this chain. <br />' +
+        'Use this chain for future communication. <br />' +
+        '<br />' +
+        'For any inquiries regarding calculations, please contact us at  <br />' +
+        `${org.manager_email} <br />` +
+        '<br />' +
+        'Best Regards,<br />' +
+        '<br />' +
+        'Please reply all,<br />' +
+        '<br />' +
+        `${org.name}<br />` +
+        `${org.address1}<br />` +
+        `${org.address2}<br />`,
+      attachments: [
+        {
+          name: `RC_${org.code2}-${order.number}.pdf`,
+          content: base64String,
+          mime_type: 'plain/txt',
+        },
+      ],
+    }
+
+    await sendEmail(token, email)
+
+    entered_email.close()
+    emit('close')
+  } catch (e) {
+    errorMessage.value = '' + e
+    throw e
+  } finally {
+    isSending.value = false
   }
-
-  const org = await organizationsStore.resolve(order.organization)
-  if (org == null) {
-    throw 'missing organization'
-  }
-
-  const token = await useAccessTokenStore().getTokenZoho(org.id)
-  if (token == null) {
-    throw 'missing token'
-  }
-  const pdfDoc = await generateRC(order, org)
-
-  // Send by email
-  const base64String = await pdfDoc.saveAsBase64()
-
-  const email = {
-    from: { address: `${org.manager_email}` },
-    to: [{ email_address: { address: `${enteredEmail.value}`, name: `` } }],
-    // cc: [{ email_address: { address: `${manager_email}`, name: '' } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
-    subject: `RC_${org.code2}-${order.number}`,
-    htmlbody:
-      'Greetings,<br />' +
-      '<br />' +
-      'RC #&nbsp;' +
-      `${org.code2}` +
-      '-' +
-      `${order.number}` +
-      '&nbsp;is attached.<br />' +
-      '<br />' +
-      'Please copy your team into this chain. <br />' +
-      'Use this chain for future communication. <br />' +
-      '<br />' +
-      'For any inquiries regarding calculations, please contact us at  <br />' +
-      `${org.manager_email} <br />` +
-      '<br />' +
-      'Best Regards,<br />' +
-      '<br />' +
-      'Please reply all,<br />' +
-      '<br />' +
-      `${org.name}<br />` +
-      `${org.address1}<br />` +
-      `${org.address2}<br />`,
-    attachments: [
-      {
-        name: `RC_${org.code2}-${order.number}.pdf`,
-        content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
-  }
-
-  await sendEmail(token, email)
-
-  entered_email.close()
-  emit('close')
 }
 
 async function createAndPdfBI() {
@@ -371,7 +391,8 @@ async function createAndPdfFI() {
       }
     }
   } catch (e) {
-    errorMessage.value = e
+    errorMessage.value = '' + e
+    throw e
   }
 }
 
@@ -519,7 +540,7 @@ async function createRC() {
   <Modal id="entered_email">
     <ModalBox class="max-w-[calc(20vw)]">
       <ModalAction class="mt-0">
-        <Button class="flex mb-2" ghost s @click="closeEmail">X</Button>
+        <Button class="flex mb-2" ghost s @click="closeEmail" :disabled="isSending">X</Button>
       </ModalAction>
 
       <TextInput
@@ -529,9 +550,18 @@ async function createRC() {
         placeholder="Email"
       ></TextInput>
       <ModalAction>
-        <Button class="btn-soft font-light tracking-wider ml-3" @click="createRC">View</Button>
-        <Button class="btn-soft font-light tracking-wider ml-3" @click="closeEmailModal"
-          >Send
+        <Button
+          class="btn-soft font-light tracking-wider ml-3"
+          @click="createRC"
+          :disabled="isSending"
+          >View</Button
+        >
+        <Button
+          class="btn-soft font-light tracking-wider ml-3"
+          :disabled="isSending"
+          @click="closeEmailModal"
+          ><span v-if="isSending" class="loading loading-spinner loading-xs mr-2"></span>
+          {{ isSending ? statusMessage : 'Send Email' }}
         </Button>
       </ModalAction>
     </ModalBox>
