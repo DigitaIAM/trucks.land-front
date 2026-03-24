@@ -35,7 +35,7 @@ const state = reactive({})
 
 const selectedOwner = ref<number | null>(null)
 
-const ts = moment().subtract(2, 'days')
+const ts = moment().subtract(1, 'days')
 const currentYear = ref(ts.year())
 const currentWeek = ref(ts.isoWeek())
 

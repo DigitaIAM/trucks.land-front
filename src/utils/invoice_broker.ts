@@ -171,7 +171,7 @@ export async function generateBI(
   // head
   let cy = 800
   cy -= bls + text_right(page, font, 12, 'Invoice number', tableDimensions.endX, cy + 2 * bls)
-  const ts = moment().subtract(2, 'days')
+  const ts = moment().subtract(1, 'days')
   const currentWeek = ref(ts.isoWeek())
   const numberFormated = `${org.code2}-${currentWeek.value}-${order.number}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)

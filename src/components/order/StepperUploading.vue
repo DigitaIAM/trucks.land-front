@@ -297,7 +297,7 @@ async function closeEmailModal() {
 }
 
 async function createAndPdfBI() {
-  const ts = moment().subtract(2, 'days')
+  const ts = moment().subtract(1, 'days')
   const currentWeek = ref(ts.isoWeek())
 
   const order = props.order
@@ -347,7 +347,7 @@ async function createAndPdfFI() {
   try {
     errorMessage.value = null
 
-    const ts = moment().subtract(2, 'days')
+    const ts = moment().subtract(1, 'days')
     const currentWeek = ref(ts.isoWeek())
 
     const order = props.order
@@ -552,17 +552,17 @@ async function createRC() {
       <ModalAction>
         <Button
           class="btn-soft font-light tracking-wider ml-3"
-          @click="createRC"
-          :disabled="isSending"
-          >View</Button
-        >
-        <Button
-          class="btn-soft font-light tracking-wider ml-3"
           :disabled="isSending"
           @click="closeEmailModal"
           ><span v-if="isSending" class="loading loading-spinner loading-xs mr-2"></span>
           {{ isSending ? statusMessage : 'Send Email' }}
         </Button>
+        <Button
+          class="btn-soft font-light tracking-wider ml-3"
+          @click="createRC"
+          :disabled="isSending"
+          >View</Button
+        >
       </ModalAction>
     </ModalBox>
   </Modal>
