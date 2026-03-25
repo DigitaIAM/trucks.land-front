@@ -85,8 +85,12 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       const paymentsByOrder = new Map<number, number>()
 
       paymentsMap.get(owner)?.forEach((v) => {
-        orders_amount += v.order.cost
-        owner_payment += v.driver_payment
+        if (v.order.stage === 3) {
+          // ignore
+        } else {
+          orders_amount += v.order.cost
+          owner_payment += v.driver_payment
+        }
 
         const num = paymentsByOrder.get(v.order.id) ?? 0
         paymentsByOrder.set(v.order.id, num + v.driver_payment)

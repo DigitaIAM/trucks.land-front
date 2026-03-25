@@ -186,11 +186,12 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       }) as PaymentTerms
 
       paymentsMap.get(employee)?.forEach((p) => {
-        if (p.order.excluded) {
+        if (p.order.excluded || p.order.stage === 3) {
           // ignore
         } else {
           const profit = p.order.cost - p.order.driver_cost
           let pc = 1
+
           if (p.order.vehicle_found_by) {
             if (p.order.vehicle_found_by == employee) {
               pc = p.order.percent_vf / 100
@@ -204,6 +205,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               pc = (100 - p.order.percent_vf) / 100
             }
           }
+
           orders_amount += p.order.cost * pc
           orders_driver += p.order.driver_cost * pc
           orders_profit += profit * pc

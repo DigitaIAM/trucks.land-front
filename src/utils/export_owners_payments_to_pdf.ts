@@ -68,7 +68,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   console.log('orders', orders)
 
-  const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
+  //const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
 
   const pdfDoc = await PDFDocument.create()
 

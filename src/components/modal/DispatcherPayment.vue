@@ -94,6 +94,9 @@ const cols = [
                 )
               }
             }
+            if (v.stage === 3) {
+              return new Promise((resolve) => resolve({ name: 'cancel' }))
+            }
           } else {
             return statusesStore.resolve(v.stage)
           }
