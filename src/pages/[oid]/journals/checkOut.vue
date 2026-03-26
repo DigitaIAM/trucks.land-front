@@ -66,11 +66,30 @@ function resolve(
   }
 }
 
+function generateStyle(col, order) {
+  if (col?.label === 'status') {
+    const color = resolve(
+      order,
+      'stage_' + order?.stage,
+      () => ({
+        name: '?',
+        color: '',
+      }),
+      () => statusesStore.resolve(order?.stage),
+      (obj) => obj.color,
+    )
+    if (color) {
+      return { width: col.size + 'px', 'background-color': color }
+    }
+  }
+  return { width: col.size + 'px' }
+}
+
 const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 75,
+    size: 60,
   },
   {
     label: 'dispatcher',
@@ -94,7 +113,8 @@ const cols = [
         () => statusesStore.resolve(v.stage),
         (map) => map.name,
       ),
-    size: 100,
+    color: (v: Status) => v.color,
+    size: 140,
   },
   {
     label: 'refs',
@@ -230,7 +250,7 @@ function capitalizeFirstLetter(val) {
           v-for="col in cols"
           :key="'row_' + col.label + '_' + order.id"
           class="py-3 px-4"
-          :style="{ width: col.size + 'px' }"
+          :style="generateStyle(col, order)"
         >
           <p
             class="block antialiasing tracking-wide font-light leading-normal truncate"

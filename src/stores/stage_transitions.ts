@@ -53,7 +53,7 @@ export const useStatusesNextStore = defineStore('stage_transitions', () => {
       if (map.get(id) == null) {
         const response = await supabase
           .from('stage_transitions')
-          .insert({ stage: stage.id, next: id })
+          .insert({ stage: stage.id, next: id, kind: 'order' })
           .select()
 
         if (response.status == 201) {
