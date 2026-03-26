@@ -8,15 +8,14 @@ const props = defineProps<{
 
 const emit = defineEmits(['selected'])
 
-const ordersStore = useOrdersStore()
-const ordersTracking = useOrdersTracking()
+const ordersTrackingStore = useOrdersTracking()
 const brokersStore = useBrokersStore()
 const ownersStore = useOwnersStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 const usersStore = useUsersStore()
 const stagesStore = useStatusesStore()
-const organizationStore = useOrganizationsStore()
+const organizationsStore = useOrganizationsStore()
 
 const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
@@ -69,6 +68,9 @@ const orders_number = computedAsync(async () => {
     }
     return Array.from(set)
   }
+  // if (str && str.length >= 2 && str.length <= 6) {
+  //   return await ordersTrackingStore.searchByNumber(str)
+  // }
   return []
 }, [])
 
@@ -171,11 +173,14 @@ function select(field: string, value: any) {
   searchQuery.value = ''
 }
 
-// function openOrder(field: string, value: any, org: number) {
-//   if (value && value.id) {
-//     window.open('/' + org.code3.toLowerCase() + '/order/' + value.id, '_blank')
-//   }
-// }
+async function openOrder(field: string, value: any) {
+  if (field === 'order_number') {
+    if (value && value.id) {
+      const org = await organizationsStore.resolve(value.organization)
+      if (org) window.open('/' + org.code3.toLowerCase() + '/order/' + value.id, '_blank')
+    }
+  }
+}
 </script>
 
 <template>
@@ -216,7 +221,7 @@ function select(field: string, value: any) {
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
         <SearchBlock
-          @click="select"
+          @click="openOrder"
           id="order_number"
           label="orders"
           :items="orders_number"
