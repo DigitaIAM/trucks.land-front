@@ -91,7 +91,7 @@ async function saveComments() {
                     </UseTimeAgo>
                   </Label>
                 </div>
-                <Text class="text-gray-700">{{ comment.notes }}</Text>
+                <Text class="text-accent font-medium">{{ comment.notes }}</Text>
               </div>
             </div>
           </div>
