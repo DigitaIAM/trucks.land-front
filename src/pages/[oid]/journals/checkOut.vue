@@ -18,8 +18,8 @@ export const useOrgData = defineBasicLoader(
     authStore.org = org
     await ordersStore.setContext([
       { key: 'organization', val: org.id } as KV,
-      // 7 - Delivered
-      { key: 'stage', val: '7' } as KV,
+      // 7 - Delivered, 18 - Request to cancel
+      { key: 'stage', val: ['7', '18'] } as KV,
     ])
     // console.table(org)
     return org
@@ -70,7 +70,7 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 50,
+    size: 75,
   },
   {
     label: 'dispatcher',
