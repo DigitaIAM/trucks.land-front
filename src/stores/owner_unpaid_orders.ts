@@ -151,14 +151,22 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       const paymentRecords = []
 
       for (const order of summary.orders.values()) {
-        const payment = summary.paymentsByOrder.get(order.id)
-
-        paymentRecords.push({
-          doc_payment: -1,
-          doc_order: order.id,
-          order_cost: order.cost,
-          amount: payment,
-        } as PaymentToOwnerOrderCreate)
+        // const payment = summary.paymentsByOrder.get(order.id)
+        if (order.stage != 3) {
+          paymentRecords.push({
+            doc_payment: -1,
+            doc_order: order.id,
+            order_cost: order.cost,
+            amount: summary.paymentsByOrder.get(order.id),
+          } as PaymentToOwnerOrderCreate)
+        } else {
+          paymentRecords.push({
+            doc_payment: -1,
+            doc_order: order.id,
+            order_cost: order.cost,
+            amount: 0,
+          } as PaymentToOwnerOrderCreate)
+        }
       }
 
       const expensesRecords = []
