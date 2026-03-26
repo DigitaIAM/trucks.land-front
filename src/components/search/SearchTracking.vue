@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
-import type { OrderTracking } from '@/stores/orders_tracking.ts'
+import { type OrderTracking, useOrdersTracking } from '@/stores/orders_tracking.ts'
 
 const props = defineProps<{
   list: Array<OrderTracking>
@@ -9,12 +9,14 @@ const props = defineProps<{
 const emit = defineEmits(['selected'])
 
 const ordersStore = useOrdersStore()
+const ordersTracking = useOrdersTracking()
 const brokersStore = useBrokersStore()
 const ownersStore = useOwnersStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
 const usersStore = useUsersStore()
-const statusesStore = useStatusesStore()
+const stagesStore = useStatusesStore()
+const organizationStore = useOrganizationsStore()
 
 const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
@@ -23,14 +25,12 @@ const isSetResult = computed(
     orders_refs.value?.length != 0 ||
     orders_pl.value?.length != 0 ||
     states.value?.length != 0 ||
-
     brokers.value?.length != 0 ||
     owners.value?.length != 0 ||
     drivers.value?.length != 0 ||
     vehicles.value?.length != 0 ||
     dispatchers.value?.length != 0 ||
-
-    statuses.value?.length != 0
+    stages.value?.length != 0,
 )
 
 const searchQuery = ref('')
@@ -54,7 +54,7 @@ watch(
     } else {
       queryStr.value = ''
     }
-  }
+  },
 )
 
 const orders_number = computedAsync(async () => {
@@ -83,7 +83,7 @@ const orders_refs = computedAsync(async () => {
       }
     }
 
-    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
+    return Array.from(set).map((v) => ({ id: v, name: v }))
   }
   return []
 }, [])
@@ -98,7 +98,7 @@ const orders_pl = computedAsync(async () => {
         set.add(val)
       }
     }
-    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
+    return Array.from(set).map((v) => ({ id: v, name: v }))
   }
   return []
 }, [])
@@ -113,7 +113,7 @@ const states = computedAsync(async () => {
         set.add(val)
       }
     }
-    return Array.from(set).map((v) => ({ 'id': v, 'name': v }))
+    return Array.from(set).map((v) => ({ id: v, name: v }))
   }
   return []
 }, [])
@@ -158,10 +158,10 @@ const dispatchers = computedAsync(async () => {
   return []
 }, [])
 
-const statuses = computedAsync(async () => {
+const stages = computedAsync(async () => {
   const str = queryStr.value
   if (str) {
-    return await statusesStore.search(str)
+    return await stagesStore.search(str)
   }
   return []
 }, [])
@@ -215,8 +215,13 @@ function select(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="select" id="number" label="orders" :items="orders_number"
-                     :value="(v: Order) => v.number + ' @ ' + v.created_at" />
+        <SearchBlock
+          @click="select"
+          id="order_number"
+          label="orders"
+          :items="orders_number"
+          :value="(v: Order) => v.number + ' @ ' + v.created_at.substring(0, 10)"
+        />
         <SearchBlock @click="select" id="refs" label="refs" :items="orders_refs" />
         <SearchBlock @click="select" id="posted_loads" label="posted load" :items="orders_pl" />
         <SearchBlock @click="select" id="event_state" label="states" :items="states" />
@@ -225,7 +230,7 @@ function select(field: string, value: any) {
         <SearchBlock @click="select" id="vehicle" label="vehicles" :items="vehicles" />
         <SearchBlock @click="select" id="owner" label="owners" :items="owners" />
         <SearchBlock @click="select" id="dispatcher" label="dispatchers" :items="dispatchers" />
-        <SearchBlock @click="select" id="status" label="statuses" :items="statuses" />
+        <SearchBlock @click="select" id="stage" label="stages" :items="stages" />
       </div>
     </div>
   </div>

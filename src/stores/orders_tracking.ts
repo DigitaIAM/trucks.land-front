@@ -95,6 +95,21 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     }
   }
 
+  async function searchByNumber(text: string) {
+    const response = await supabase
+      .from('orders_tracking')
+      .select()
+      .eq('number', text)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (response.status == 200) {
+      console.log('response', response)
+      return response.data?.map((json) => json as Order)
+    }
+    return []
+  }
+
   function onStateUpdate(nextState: OrderStage) {
     const list = Array.from(listing.value)
     for (const index in list) {
@@ -171,6 +186,7 @@ export const useOrdersTracking = defineStore('orders_tracking', () => {
     setFilters,
     onStateUpdate,
     onRefresh,
+    searchByNumber,
     onUpdate,
     onEventChange,
   }
