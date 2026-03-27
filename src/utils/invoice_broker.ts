@@ -273,7 +273,7 @@ export async function generateBI(
 
   const email = {
     from: { address: `emily@cnulogistics.com` },
-    to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
     subject: `Open Invoice ${org.code2}-${currentWeek.value}-${order.number} PO# ${order.refs}`,
     htmlbody:
       'Hello team,<br />' +
