@@ -27,7 +27,7 @@ export const useOrgData = defineBasicLoader(
 
 <script setup lang="ts">
 import { weekExportToExcel } from '@/utils/export_week_orders.ts'
-import type {KV} from "@/utils/kv.ts";
+import type { KV } from '@/utils/kv.ts'
 
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
@@ -172,8 +172,8 @@ function capitalizeFirstLetter(val) {
 
 <template>
   <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
+  <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Payments</Text>
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
     <Button
       class="btn-soft font-light tracking-wider ml-6"
@@ -217,7 +217,12 @@ function capitalizeFirstLetter(val) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="line in paymentToOwnerStore.listing" :key="line.id" class="hover:bg-base-200" @click="openPayment(line)">
+      <tr
+        v-for="line in paymentToOwnerStore.listing"
+        :key="line.id"
+        class="hover:bg-base-200"
+        @click="openPayment(line)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + line.id"
