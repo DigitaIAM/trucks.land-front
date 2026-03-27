@@ -6,13 +6,14 @@ const props = defineProps<{
 const ownerStore = useOwnersStore()
 const reportStore = useReportOwner()
 const statusesStore = useStatusesStore()
+const organizationsStore = useOrganizationsStore()
 
 watch(
   () => props.ownerId,
   (ownerId) => {
     resetAndShow(ownerId)
   },
-  { deep: true }
+  { deep: true },
 )
 
 function resetAndShow(ownerId: number) {
@@ -28,7 +29,7 @@ function resolve(
   name: string,
   create: () => object,
   request: () => Promise<object | null>,
-  label: (obj: object) => string
+  label: (obj: object) => string,
 ) {
   const s = state[order.id] ?? {}
   if (s && s[name]) {
@@ -47,18 +48,18 @@ const cols = [
   {
     label: '#',
     value: (v: Order) => v.number,
-    size: 100
+    size: 100,
   },
 
   {
     label: 'cost',
     value: (v: Order) => '$' + v.cost,
-    size: 120
+    size: 120,
   },
   {
     label: 'd/payments',
     value: (v: Order) => '$' + summary.value?.paymentsByOrder.get(v.id),
-    size: 120
+    size: 120,
   },
   {
     label: 'status',
@@ -68,29 +69,29 @@ const cols = [
         'status_' + v.stage,
         () => ({ name: '?', color: '' }),
         () => statusesStore.resolve(v.stage),
-        (map) => map.name
+        (map) => map.name,
       ),
-    size: 200
-  }
+    size: 200,
+  },
 ]
 
 const expensesCols = [
   {
     label: '#',
     value: (v: ExpensesToOwner) => v.id,
-    size: 50
+    size: 50,
   },
 
   {
     label: 'details',
     value: (v: ExpensesToOwner) => v.notes,
-    size: 200
+    size: 200,
   },
   {
     label: 'amount',
     value: (v: ExpensesToOwner) => '$' + v.amount,
-    size: 120
-  }
+    size: 120,
+  },
 ]
 
 const summary = computed(() => {
@@ -121,11 +122,16 @@ const expenses = computed(() => {
   }
 })
 
+async function openOrder(order: Order) {
+  const org = await organizationsStore.resolve(order.organization)
+  window.open('/' + org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
+  // console.log('org.code3', org)
+}
+
 function close() {
   payment_owner.close()
   emit('close')
 }
-
 </script>
 
 <template>
@@ -152,43 +158,11 @@ function close() {
       </div>
       <table class="w-full text-left table-auto min-w-max">
         <thead>
-        <tr
-          class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
-        >
-          <th
-            v-for="col in cols"
-            :key="col.label"
-            class="p-4"
-            :style="{ width: col.size + 'px' }"
-          >
-            <p class="block antialiasing tracking-wider font-thin leading-none">
-              {{ col.label }}
-            </p>
-          </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="order in orders" :key="order.id">
-          <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
-            <p
-              class="block antialiasing tracking-wide font-light leading-normal truncate"
-              :style="{ width: col.size + 'px' }"
-            >
-              {{ col.value(order) }}
-            </p>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-      <div class="mt-10 mb-6">
-        <Text bold size="lg" class="mb-4">Expenses</Text>
-        <table class="w-full text-left table-auto min-w-max">
-          <thead>
           <tr
             class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
           >
             <th
-              v-for="col in expensesCols"
+              v-for="col in cols"
               :key="col.label"
               class="p-4"
               :style="{ width: col.size + 'px' }"
@@ -198,23 +172,61 @@ function close() {
               </p>
             </th>
           </tr>
-          </thead>
-          <tbody>
-          <tr v-for="expense in expenses" :key="expense.id">
+        </thead>
+        <tbody>
+          <tr v-for="order in orders" :key="order.id" @click="openOrder(order)">
             <td
-              v-for="col in expensesCols"
-              :key="col.label"
+              v-for="col in cols"
+              :key="order.id + '_' + col.label"
               class="py-3 px-4"
               :style="{ width: col.size + 'px' }"
             >
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"
                 :style="{ width: col.size + 'px' }"
+                :class="{ 'text-gray-500': order.stage === 3 }"
               >
-                {{ col.value(expense) }}
+                {{ col.value(order) }}
               </p>
             </td>
           </tr>
+        </tbody>
+      </table>
+      <div class="mt-10 mb-6">
+        <Text bold size="lg" class="mb-4">Expenses</Text>
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr
+              class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
+            >
+              <th
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="p-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  {{ col.label }}
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="expense in expenses" :key="expense.id">
+              <td
+                v-for="col in expensesCols"
+                :key="col.label"
+                class="py-3 px-4"
+                :style="{ width: col.size + 'px' }"
+              >
+                <p
+                  class="block antialiasing tracking-wide font-light leading-normal truncate"
+                  :style="{ width: col.size + 'px' }"
+                >
+                  {{ col.value(expense) }}
+                </p>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

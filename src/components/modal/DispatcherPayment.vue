@@ -95,7 +95,7 @@ const cols = [
               }
             }
             if (v.stage === 3) {
-              return new Promise((resolve) => resolve({ name: 'cancel' }))
+              return new Promise((resolve) => resolve({ name: 'Cancel' }))
             }
           } else {
             return statusesStore.resolve(v.stage)
@@ -155,7 +155,7 @@ const sortedOrdersInProgress = computed(() => {
 async function openOrder(order: Order) {
   const org = await organizationsStore.resolve(order.organization)
   window.open('/' + org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
-  console.log('org.code3', org)
+  // console.log('org.code3', org)
 }
 </script>
 
@@ -266,6 +266,7 @@ async function openOrder(order: Order) {
                   :key="order.id + '_' + col.label"
                   class="py-3 px-4"
                   :style="{ width: col.size + 'px' }"
+                  :class="{ 'text-gray-500': order.stage === 3 }"
                 >
                   <p
                     class="block antialiasing tracking-wide font-light leading-normal truncate"
