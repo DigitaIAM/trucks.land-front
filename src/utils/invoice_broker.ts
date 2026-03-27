@@ -3,8 +3,7 @@ import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import moment from 'moment'
 import type { FileRecord } from '@/stores/order_files.ts'
-import { createFetch } from '@vueuse/core'
-import { openInNewTab } from '@/utils/pdf-helper.ts'
+import { sendEmail } from '@/utils/email.ts'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
@@ -69,10 +68,10 @@ export async function generateBI(
     throw 'fail broker check'
   }
 
-  // const token = await accessTokenStore.getTokenZoho(org.id)
-  // if (token == null) {
-  //   throw 'missing token'
-  // }
+  const token = await accessTokenStore.getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
 
   const pieces = (order?.total_pieces as number) ?? ''
   const weight = (order?.total_weight as number) ?? ''
@@ -260,61 +259,39 @@ export async function generateBI(
   // Save the PDF and send email
   const pdfBytes = await pdfDoc.save()
 
-  await openInNewTab(pdfDoc)
+  // await openInNewTab(pdfDoc)
 
-  // const base64String = await pdfDoc.saveAsBase64()
-  //
-  // const email = {
-  //   from: { address: `noreply@${org.domain}` },
-  //   to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
-  //   subject: `Invoice ${currentWeek.value}-${org.code2}-${order.id}`,
-  //   htmlbody:
-  //     'Greetings,<br />' +
-  //     '<br />' +
-  //     'Invoice #&nbsp;' +
-  //     `${currentWeek.value}` +
-  //     '&nbsp;of&nbsp;' +
-  //     `${currentYear.value}` +
-  //     '&nbsp;is attached.<br />' +
-  //     '<br />' +
-  //     'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net <br />' +
-  //     '<br />' +
-  //     'Best Regards,<br />' +
-  //     '<br />' +
-  //     `${org.name}<br />` +
-  //     `${org.address1}<br />` +
-  //     `${org.address2}<br />`,
-  //   attachments: [
-  //     {
-  //       name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
-  //       content: base64String,
-  //       mime_type: 'plain/txt',
-  //     },
-  //   ],
-  // }
-  //
-  // const myFetch = createFetch({
-  //   // baseUrl: 'https://api.zeptomail.com/',
-  //   // baseUrl: 'http://localhost:5173/',
-  //   options: {
-  //     async beforeFetch({ options }) {
-  //       options.headers = {
-  //         ...options.headers,
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //         Authorization: token,
-  //       }
-  //       return { options }
-  //     },
-  //   },
-  //   fetchOptions: { mode: 'cors' },
-  // })
-  //
-  // const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-  //
-  // console.log('isFetching', isFetching)
-  // console.log('error', error)
-  // console.log('data', data)
+  const base64String = await pdfDoc.saveAsBase64()
+
+  //const currentYear = ref(ts.isoWeekYear())
+  const precent_qp = broker.percent_qp
+  let sentence = ''
+
+  if (precent_qp) {
+    sentence = `We want to proceed with ${precent_qp}% quick pay ACH.<br /><br />`
+  }
+
+  const email = {
+    from: { address: `emily@cnulogistics.com` },
+    to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
+    subject: `Open Invoice ${org.code2}-${currentWeek.value}-${order.number} PO# ${order.refs}`,
+    htmlbody:
+      'Hello team,<br />' +
+      '<br />' +
+      'Below attached an invoice with the paperwork. Please let me know once the payment is processed. <br />' +
+      `${sentence} <br />` +
+      'Best Regards,<br />' +
+      `Emily<br />`,
+    attachments: [
+      {
+        name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
+        content: base64String,
+        mime_type: 'application/pdf',
+      },
+    ],
+  }
+
+  await sendEmail(token, email)
 
   return new Blob([pdfBytes], { type: 'application/pdf' })
 }

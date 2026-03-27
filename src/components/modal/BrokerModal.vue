@@ -8,6 +8,7 @@ const props = defineProps<{
 
 const id = ref<number>()
 const name = ref('')
+const percent_qp = ref<number | null>(null)
 const person = ref('')
 const phone = ref('')
 const email = ref('')
@@ -35,6 +36,7 @@ function resetAndShow(broker: Broker | null) {
   id.value = broker?.id
 
   name.value = broker?.name || ''
+  percent_qp.value = broker?.percent_qp
 
   person.value = broker?.contact || ''
   email.value = broker?.email || ''
@@ -56,6 +58,7 @@ function saveBroker() {
   if (id.value == null) {
     brokersStore.create({
       name: name.value,
+      percent_qp: percent_qp.value,
 
       contact: person.value,
       email: email.value,
@@ -74,6 +77,7 @@ function saveBroker() {
   } else {
     brokersStore.update(id.value, {
       name: name.value,
+      percent_qp: percent_qp.value,
 
       contact: person.value,
       email: email.value,
@@ -157,6 +161,12 @@ function saveBroker() {
         <div class="md:w-1/4 md:mb-0">
           <Label>USDOT</Label>
           <TextInput v-model="dot" />
+        </div>
+      </div>
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Percent QP</Label>
+          <TextInput v-model="percent_qp" />
         </div>
       </div>
       <ModalAction>

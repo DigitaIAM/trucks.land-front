@@ -92,14 +92,15 @@ async function resetAndShow(doc: Order | null) {
       owner.value = await ownerStore.resolve(doc.qp_owner)
     } else {
       const now = moment().tz('America/New_York')
-      maybeWait.value = now.day() === 3
-      paymentNextDay.value = now.isBefore('14:00:00')
+      maybeWait.value = now.isoWeekday() === 3
+      paymentNextDay.value = now.hour() >= 14
 
       const org = await organizationsStore.resolve(doc?.organization)
       amount.value = props.document?.driver_cost
       percent.value = org?.qp_percent
       to_pay.value =
-        props.document?.driver_cost - (props.document?.driver_cost * percent.value) / 100
+        (props.document?.driver_cost || 0) -
+        ((props.document?.driver_cost || 0) * (percent?.value || 0)) / 100
       owner.value = await ownerStore.resolve(doc?.owner)
     }
   }
@@ -218,7 +219,7 @@ function handleClose() {
           The driver will receive payment tomorrow</span
         >
 
-        <template v-if="!isReadOnly && !noCreate">
+        <template v-if="!isReadOnly && canCreateQP">
           <Button
             class="btn-soft font-light tracking-wider"
             v-for="stage in next"

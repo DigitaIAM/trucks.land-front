@@ -5,7 +5,6 @@ import moment from 'moment/moment'
 import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
 import { generateRC } from '@/utils/createRC.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
-import { createFetch } from '@vueuse/core'
 import { sendEmail } from '@/utils/email.ts'
 
 const props = defineProps<{
@@ -322,6 +321,8 @@ async function createAndPdfBI() {
         currentWeek.value +
         '-' +
         order.number +
+        '-' +
+        ts.toISOString() +
         '.pdf'
 
       const record = await filesStore.create({

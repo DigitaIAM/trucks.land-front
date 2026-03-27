@@ -11,6 +11,7 @@ export interface Broker extends BrokerCreate {
 export interface BrokerCreate {
   is_active: boolean
   name: string
+  percent_qp: number
   phone: string
   email: string
   city: string
@@ -25,6 +26,7 @@ export interface BrokerCreate {
 export interface BrokerUpdate {
   is_active?: boolean
   name?: string
+  percent_qp?: number
   phone?: string
   email?: string
   city?: string
