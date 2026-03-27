@@ -2,6 +2,7 @@
 import { createFetch } from '@vueuse/core'
 import { generateOwnerPaymentPdf } from '@/utils/export_owners_payments_to_pdf.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
+import { sendEmail } from '@/utils/email.ts'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -12,6 +13,7 @@ const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const orderStore = useOrdersStore()
 const ownerStore = useOwnersStore()
 const organizationsStore = useOrganizationsStore()
+const statusesStore = useStatusesStore()
 
 watch(
   () => props.document,
@@ -40,10 +42,10 @@ async function generatePdf() {
     throw 'missing organization'
   }
 
-  // const token = await useAccessTokenStore().getTokenZoho(org.id)
-  // if (token == null) {
-  //   throw 'missing token'
-  // }
+  const token = await useAccessTokenStore().getTokenZoho(org.id)
+  if (token == null) {
+    throw 'missing token'
+  }
 
   const contra = await ownerStore.resolve(document.owner)
   if (contra == null) {
@@ -87,28 +89,7 @@ async function generatePdf() {
   //   ],
   // }
   //
-  // const myFetch = createFetch({
-  //   // baseUrl: 'https://api.zeptomail.com/',
-  //   // baseUrl: 'http://localhost:5173/',
-  //   options: {
-  //     async beforeFetch({ options }) {
-  //       options.headers = {
-  //         ...options.headers,
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //         Authorization: token,
-  //       }
-  //       return { options }
-  //     },
-  //   },
-  //   fetchOptions: { mode: 'cors' },
-  // })
-  //
-  // const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-  //
-  // console.log('isFetching', isFetching)
-  // console.log('error', error)
-  // console.log('data', data)
+  // await sendEmail(token, email)
 }
 
 const state = reactive({})
@@ -131,6 +112,11 @@ function resolve(
     })
     return label(s[name])
   }
+}
+
+async function resolveStage(id: number) {
+  const order = await orderStore.resolve(id)
+  return await statusesStore.resolve(order!.stage)
 }
 
 const cols = [
@@ -160,6 +146,18 @@ const cols = [
   {
     label: 'payout',
     value: (v: PaymentToOwnerOrder) => '$' + v.amount,
+    size: 120,
+  },
+  {
+    label: 'stage',
+    value: (v: PaymentToOwnerOrder) =>
+      resolve(
+        v,
+        'stage',
+        () => '',
+        () => resolveStage(v.doc_order),
+        (map) => map?.name,
+      ),
     size: 120,
   },
 ]
@@ -235,8 +233,14 @@ const expensesCols = [
           </tr>
         </thead>
         <tbody>
-          <tr v-for="line in paymentToOwnerOrdersStore.listing">
-            <td v-for="col in cols" class="py-3 px-4" :style="{ width: col.size + 'px' }">
+          <tr v-for="line in paymentToOwnerOrdersStore.listing" :key="line.id">
+            <td
+              v-for="col in cols"
+              :key="line.id + '-' + col.label"
+              class="py-3 px-4"
+              :style="{ width: col.size + 'px' }"
+              :class="{ 'text-gray-500': document?.payout === 0 }"
+            >
               <p
                 class="block antialiasing tracking-wide font-light leading-normal truncate"
                 :style="{ width: col.size + 'px' }"
