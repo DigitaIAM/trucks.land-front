@@ -66,7 +66,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   const orders = await usePaymentToOwnerOrdersStore().loading(document.id)
 
-  console.log('orders', orders)
+  //console.log('orders', orders)
 
   //const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
 
@@ -175,58 +175,63 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   let tableDimensions = { endY: cy }
 
   for (const line of orders.values()) {
-    const events = await eventsStore.fetching(line.doc_order)
+    const orderId = line.doc_order
+    const events = await eventsStore.fetching(orderId)
+    const order = await ordersStore.resolve(orderId)
 
-    const vehicle = []
-    const pickup = []
-    const delivery = []
+    // console.log('line', order)
 
-    for (const event of events) {
-      if (event.kind === 'agreement') {
-        const v = await vehiclesStore.resolve(event.vehicle)
-        if (v) {
-          vehicle.push(filterCharSet(v.name, font))
+    if (order?.stage === 3) {
+    } else {
+      const vehicle = []
+      const pickup = []
+      const delivery = []
+
+      for (const event of events) {
+        if (event.kind === 'agreement') {
+          const v = await vehiclesStore.resolve(event.vehicle)
+          if (v) {
+            vehicle.push(filterCharSet(v.name, font))
+          }
+        }
+        if (event.kind === 'pick-up') {
+          pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
+          pickup.push(filterCharSet(event.city, font))
+          pickup.push(filterCharSet(`${event.state} ${event.zip}`, font))
+        }
+        if (event.kind === 'delivery') {
+          delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
+          delivery.push(filterCharSet(event.city, font))
+          delivery.push(filterCharSet(`${event.state} ${event.zip}`, font))
         }
       }
-      if (event.kind === 'pick-up') {
-        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
-        pickup.push(filterCharSet(event.city, font))
-        pickup.push(filterCharSet(`${event.state} ${event.zip}`, font))
+
+      const cLines = Math.max(1, Math.max(pickup.length, delivery.length))
+
+      if (cy - fh12 - fh10 * (lines + cLines) < fh12 + margin) {
+        tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
+
+        page = pdfDoc.addPage()
+        tableData = [
+          ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount'],
+        ] as CellContent[][]
+
+        cy = page.getHeight() - margin
+        lines = 0
       }
-      if (event.kind === 'delivery') {
-        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
-        delivery.push(filterCharSet(event.city, font))
-        delivery.push(filterCharSet(`${event.state} ${event.zip}`, font))
-      }
+
+      lines += cLines
+
+      tableData.push([
+        `${++pos}`,
+        `${org.code2}-${order?.number}`,
+        vehicle,
+        `${order?.total_miles}`,
+        pickup,
+        delivery,
+        `\$${line.amount?.toFixed(2)}`,
+      ])
     }
-
-    const cLines = Math.max(1, Math.max(pickup.length, delivery.length))
-
-    if (cy - fh12 - fh10 * (lines + cLines) < fh12 + margin) {
-      tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
-
-      page = pdfDoc.addPage()
-      tableData = [
-        ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount'],
-      ] as CellContent[][]
-
-      cy = page.getHeight() - margin
-      lines = 0
-    }
-
-    lines += cLines
-
-    const order = await ordersStore.resolve(line.doc_order)
-
-    tableData.push([
-      `${++pos}`,
-      `${org.code2}-${order?.number}`,
-      vehicle,
-      `${order?.total_miles}`,
-      pickup,
-      delivery,
-      `\$${line.amount?.toFixed(2)}`,
-    ])
   }
 
   if (tableData.length > 1) {
