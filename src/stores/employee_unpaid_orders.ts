@@ -322,25 +322,35 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const records = []
 
       for (const order of summary.orders.values()) {
-        if (
-          order.vehicle_found_by == summary.employee &&
-          order.vehicle_found_by != order.created_by
-        ) {
+        if (order.stage === 3) {
           records.push({
             doc_payment: -1,
             doc_order: order.id,
-            order_cost: order.cost,
-            driver_cost: order.driver_cost,
-            profit_kind: 'direct',
-          } as PaymentToDispatcherOrderCreate)
-        } else {
-          records.push({
-            doc_payment: -1,
-            doc_order: order.id,
-            order_cost: order.cost,
-            driver_cost: order.driver_cost,
+            order_cost: 0,
+            driver_cost: 0,
             profit_kind: 'profit',
           } as PaymentToDispatcherOrderCreate)
+        } else {
+          if (
+            order.vehicle_found_by == summary.employee &&
+            order.vehicle_found_by != order.created_by
+          ) {
+            records.push({
+              doc_payment: -1,
+              doc_order: order.id,
+              order_cost: order.cost,
+              driver_cost: order.driver_cost,
+              profit_kind: 'direct',
+            } as PaymentToDispatcherOrderCreate)
+          } else {
+            records.push({
+              doc_payment: -1,
+              doc_order: order.id,
+              order_cost: order.cost,
+              driver_cost: order.driver_cost,
+              profit_kind: 'profit',
+            } as PaymentToDispatcherOrderCreate)
+          }
         }
       }
 
