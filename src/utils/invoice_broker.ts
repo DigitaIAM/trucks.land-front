@@ -268,7 +268,7 @@ export async function generateBI(
   let sentence = ''
 
   if (precent_qp) {
-    sentence = `We want to proceed with ${precent_qp}% quick pay ACH.<br /><br />`
+    sentence = `We want to proceed with ${precent_qp}% quick pay.<br /><br />`
   }
 
   const email = {
@@ -280,7 +280,8 @@ export async function generateBI(
       'Hello team,<br />' +
       '<br />' +
       'Below attached an invoice with the paperwork. Please let me know once the payment is processed. <br />' +
-      `${sentence} <br />` +
+      `${sentence} ACH is preferable. <br />` +
+      '<br />' +
       'Best Regards,<br />' +
       `Emily<br />`,
     attachments: [
