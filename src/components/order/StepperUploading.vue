@@ -296,51 +296,57 @@ async function closeEmailModal() {
 }
 
 async function createAndPdfBI() {
-  const ts = moment().subtract(1, 'days')
-  const currentWeek = ref(ts.isoWeek())
+  try {
+    errorMessage.value = null
 
-  const order = props.order
-  if (order) {
-    const org = await organizationsStore.resolve(order.organization)
-    const broker = await brokersStore.resolve(order.broker)
+    const ts = moment().subtract(1, 'days')
+    const currentWeek = ref(ts.isoWeek())
 
-    if (org && broker) {
-      const createAt = order.created_at
-      const path =
-        createAt.substring(0, 4) +
-        '/' +
-        createAt.substring(5, 7) +
-        '/' +
-        createAt.substring(8, 10) +
-        '/' +
-        order.id +
-        '/' +
-        'BI_' +
-        org.code2 +
-        '-' +
-        currentWeek.value +
-        '-' +
-        order.number +
-        '-' +
-        ts.toISOString() +
-        '.pdf'
+    const order = props.order
+    if (order) {
+      const org = await organizationsStore.resolve(order.organization)
+      const broker = await brokersStore.resolve(order.broker)
 
-      const record = await filesStore.create({
-        document: order.id,
-        kind: 'BI',
-        signed_by: '',
-        path: path,
-        is_deleted: false,
-      })
-      console.log('createAndPdfBI', path)
+      if (org && broker) {
+        const createAt = order.created_at
+        const path =
+          createAt.substring(0, 4) +
+          '/' +
+          createAt.substring(5, 7) +
+          '/' +
+          createAt.substring(8, 10) +
+          '/' +
+          order.id +
+          '/' +
+          'BI_' +
+          org.code2 +
+          '-' +
+          currentWeek.value +
+          '-' +
+          order.number +
+          '-' +
+          ts.toISOString() +
+          '.pdf'
 
-      const blob = await generateBI(order, org, broker, record)
+        const record = await filesStore.create({
+          document: order.id,
+          kind: 'BI',
+          signed_by: '',
+          path: path,
+          is_deleted: false,
+        })
 
-      await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
-      uploadProgress.value = null
+        const blob = await generateBI(order, org, broker, record)
 
-      await download(record)
+        await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
+        uploadProgress.value = null
+
+        await download(record)
+      }
     }
+  } catch (e) {
+    errorMessage.value = '' + e
+    throw e
   }
 }
 
