@@ -109,7 +109,7 @@ const cols = [
 ]
 
 async function createPayment() {
-  await reportOwnerStore.createPayment(authStore.org?.id, currentYear.value, closedWeek)
+  await reportOwnerStore.createPayment(authStore.org?.id, currentYear.value, closedWeek.value)
 }
 </script>
 
