@@ -39,6 +39,8 @@ const ts = moment().subtract(1, 'days')
 const currentYear = ref(ts.year())
 const currentWeek = ref(ts.isoWeek())
 
+const closedWeek = ref(moment().subtract(1, 'week').subtract(25, 'hours').isoWeek())
+
 defineOptions({
   __loaders: [useOrgData],
 })
@@ -107,7 +109,7 @@ const cols = [
 ]
 
 async function createPayment() {
-  await reportOwnerStore.createPayment(authStore.org?.id, currentYear.value, currentWeek.value)
+  await reportOwnerStore.createPayment(authStore.org?.id, currentYear.value, closedWeek)
 }
 </script>
 
@@ -122,7 +124,7 @@ async function createPayment() {
       :disabled="reportOwnerStore.owners.length == 0"
       class="btn-soft font-light tracking-wider"
       @click="createPayment()"
-      >Close week</Button
+      >#{{ closedWeek }} close week</Button
     >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
