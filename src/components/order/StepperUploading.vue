@@ -97,6 +97,7 @@ async function uploadFile(
       chunkSize: 6 * 1024 * 1024, // NOTE: it must be set to 6MB (for now) do not change it
       onError: function (error) {
         console.log('Failed because: ' + error)
+        errorMessage.value = 'Failed because: ' + error
         reject(error)
       },
       onProgress: function (bytesUploaded, bytesTotal) {
