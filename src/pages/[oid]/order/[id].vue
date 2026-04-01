@@ -55,7 +55,7 @@ const isReadOnly = computedAsync(async () => {
   const account = currentAccount.value
   if (account && account.access) {
     const record = account.access
-    if (record.is_admin) {
+    if (record.is_admin || record.is_tracking) {
       return false
     } else if (record.is_dispatcher) {
       const id = created_by.value?.id
