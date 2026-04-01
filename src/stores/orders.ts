@@ -106,7 +106,7 @@ export const useOrdersStore = defineStore('orders', () => {
 
     let query = supabase.from(table).select()
 
-    let limit = 20
+    let limit = 50
 
     contextFilters.value.concat(searchFilters.value).forEach((f) => {
       const x = f.val
