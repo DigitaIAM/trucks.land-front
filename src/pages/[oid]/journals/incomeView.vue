@@ -164,11 +164,11 @@ const cols = [
       resolve(
         v,
         'vehicle_' + v.vehicle,
-        () => ({ name: '-' }),
+        () => ({ name: '?' }),
         () => vehiclesStore.resolve(v.vehicle),
         (map) => map.name,
       ),
-    color: (v: Status) => v.color,
+    color: (v: Status) => (v.color = red),
     size: 80,
   },
   {
