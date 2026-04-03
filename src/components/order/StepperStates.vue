@@ -340,7 +340,9 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p class="text-md">{{ eventDate.company_at_location }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
-          <p v-if="eventDate.details.note" class="text-md">{{ eventDate.details.note }}</p>
+          <p v-if="eventDate.details.note" class="text-md">
+            {{ eventDate.details.note }}
+          </p>
         </div>
 
         <div
@@ -442,7 +444,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p v-if="eventDate.details?.note" class="text-md">
+          <p v-if="eventDate.details?.note" class="text-md" style="color: #f0b90b">
             {{ eventDate.details?.note || '' }}
           </p>
           <p v-if="eventDate.vehicle_found_by" class="text-md max-sm:text-accent">
