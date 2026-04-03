@@ -28,12 +28,19 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 import { weekExportToExcel } from '@/utils/export_week_orders.ts'
 import type { KV } from '@/utils/kv.ts'
+import { generateOwnerPaymentPdf } from '@/utils/export_owners_payments_to_pdf.ts'
+import { sendEmail } from '@/utils/email.ts'
 
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
 
 const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
+
+const isProcessing = ref(false)
+const progressCurrent = ref(0)
+const progressTotal = ref(0)
+const currentStatus = ref('')
 
 const filters = ref<Array<KV>>([])
 
@@ -168,18 +175,116 @@ function delFilter(key) {
 function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
+
+async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
+  if (!documents) return
+
+  console.log('documents', documents)
+
+  isProcessing.value = true
+  progressTotal.value = documents
+  progressCurrent.value = 0
+
+  try {
+    const firstDoc = documents[0]
+    const org = await organizationsStore.resolve(firstDoc.organization)
+    const token = await useAccessTokenStore().getTokenZoho(org?.id)
+
+    if (!org || !token) throw 'Auth failed'
+
+    for (const doc of documents) {
+      const contra = await ownersStore.resolve(doc.owner)
+
+      currentStatus.value = `Sending to: ${contra?.name || 'Unknown'}`
+
+      try {
+        const pdfDoc = await generateOwnerPaymentPdf(doc)
+        const base64String = await pdfDoc.saveAsBase64()
+
+        const email = {
+          from: { address: `noreply@cnulogistics.com` },
+          to: [
+            { email_address: { address: `shabanovanatali@gmail.com`, name: `${contra?.name}` } },
+          ], // `${contra?.email}`
+          subject: `CNU Pay Sheet ${doc.week} Week ${doc.year} `,
+          htmlbody:
+            'Greetings,<br />' +
+            '<br />' +
+            'Payment sheet of week #&nbsp;' +
+            `${doc.week}` +
+            '&nbsp;of&nbsp;' +
+            `${doc.year}` +
+            '&nbsp;is attached.<br />' +
+            '<br />' +
+            'For any inquiries regarding calculations, please contact us at emily@cnulogistics.com' +
+            '<br />' +
+            'Best Regards,<br />' +
+            '<br />' +
+            `${org.name}<br />` +
+            `${org.address1}<br />` +
+            `${org.address2}<br />`,
+          attachments: [
+            {
+              name: `paySheet_${doc.week}-${org.code3}-${doc.orders}.pdf`,
+              content: base64String,
+              mime_type: 'application/pdf',
+            },
+          ],
+        }
+
+        await sendEmail(token, email)
+      } catch (err) {
+        console.error(`Error sending ${doc.id}:`, err)
+      } finally {
+        progressCurrent.value++
+      }
+    }
+
+    currentStatus.value = 'All emails sent successfully!'
+  } catch (error) {
+    currentStatus.value = 'Global error during mailing'
+  } finally {
+    setTimeout(() => {
+      isProcessing.value = false
+      currentStatus.value = ''
+    }, 3000)
+  }
+}
 </script>
 
 <template>
   <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
   <Text class="px-4" size="2xl">Payments</Text>
-  <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
+  <div class="flex flex-row items-center px-4 mb-2 mt-3">
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
     <Button
-      class="btn-soft font-light tracking-wider ml-6"
+      class="btn-soft font-light tracking-wider px-3"
       @click="weekExportToExcel(paymentToOwnerStore.fetching(-1))"
       >Excel
     </Button>
+    <Button
+      disabled
+      class="btn-soft font-light tracking-wider ml-6"
+      @click="sendAllPayments(paymentToOwnerStore.listing)"
+      >Send to everyone
+    </Button>
+  </div>
+  <div v-if="isProcessing" class="p-4 mb-4 border rounded-lg bg-gray-50 dark:bg-slate-800">
+    <div class="flex justify-between mb-1">
+      <span class="text-sm font-medium text-blue-700 dark:text-white">
+        {{ currentStatus }}
+      </span>
+      <span class="text-sm font-medium text-blue-700 dark:text-white">
+        {{ progressCurrent }} / {{ progressTotal }}
+      </span>
+    </div>
+
+    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+      <div
+        class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+        :style="{ width: (progressCurrent / progressTotal) * 100 + '%' }"
+      ></div>
+    </div>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

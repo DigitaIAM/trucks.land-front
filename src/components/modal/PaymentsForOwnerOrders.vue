@@ -31,7 +31,7 @@ function resetAndShow(document: PaymentToOwnerSummary) {
   paymentToOwnerExpenseStore.loading(document.id)
 }
 
-async function generatePdf() {
+async function generatePdfAndSend() {
   const document = props.document
   if (document == null) {
     throw 'missing document'
@@ -57,39 +57,39 @@ async function generatePdf() {
   await openInNewTab(pdfDoc)
 
   // Send by email
-  // const base64String = await pdfDoc.saveAsBase64()
-  //
-  // const email = {
-  //   from: { address: `noreply@${org.domain}` },
-  //   to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
-  //   //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }],
-  //   subject: `Payment sheet ${document.week}-${org.code3}-${document.id}`,
-  //   htmlbody:
-  //     'Greetings,<br />' +
-  //     '<br />' +
-  //     'Payment sheet of week #&nbsp;' +
-  //     `${document.week}` +
-  //     '&nbsp;of&nbsp;' +
-  //     `${document.year}` +
-  //     '&nbsp;is attached.<br />' +
-  //     '<br />' +
-  //     'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
-  //     '<br />' +
-  //     'Best Regards,<br />' +
-  //     '<br />' +
-  //     `${org.name}<br />` +
-  //     `${org.address1}<br />` +
-  //     `${org.address2}<br />`,
-  //   attachments: [
-  //     {
-  //       name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
-  //       content: base64String,
-  //       mime_type: 'plain/txt',
-  //     },
-  //   ],
-  // }
-  //
-  // await sendEmail(token, email)
+  const base64String = await pdfDoc.saveAsBase64()
+
+  const email = {
+    from: { address: `emily@cnulogistics.com` },
+    to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
+    cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
+    subject: `CNU Pay Sheet ${document.week} Week ${document.year} `,
+    htmlbody:
+      'Greetings,<br />' +
+      '<br />' +
+      'Payment sheet of week #&nbsp;' +
+      `${document.week}` +
+      '&nbsp;of&nbsp;' +
+      `${document.year}` +
+      '&nbsp;is attached.<br />' +
+      '<br />' +
+      'For any inquiries regarding calculations, please contact us at emily@cnulogistics.com' +
+      '<br />' +
+      'Best Regards,<br />' +
+      '<br />' +
+      `${org.name}<br />` +
+      `${org.address1}<br />` +
+      `${org.address2}<br />`,
+    attachments: [
+      {
+        name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
+        content: base64String,
+        mime_type: 'application/pdf',
+      },
+    ],
+  }
+
+  await sendEmail(token, email)
 }
 
 const state = reactive({})
@@ -198,7 +198,7 @@ const expensesCols = [
           <Text size="2xl">$ {{ document?.payout }}</Text>
         </div>
         <div class="justify-self-end">
-          <Button class="btn-soft font-light tracking-wider" @click="generatePdf">
+          <Button class="btn-soft font-light tracking-wider" @click="generatePdfAndSend">
             Send to
             <QueryAndShow name="email" :id="props.document?.owner" :store="ownerStore" />
           </Button>
