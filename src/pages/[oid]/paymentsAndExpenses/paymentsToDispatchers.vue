@@ -71,6 +71,8 @@ function resolve(
   }
 }
 
+const cYear = moment().year().toString()
+
 const cols = [
   {
     label: '#',
@@ -79,13 +81,14 @@ const cols = [
   },
   {
     label: 'month',
-    value: (v: PaymentToEmployeeSummary) => v.month,
-    size: 30,
+    value: (v: PaymentToEmployeeSummary) => '' + v.month + '-' + v.year,
+    size: 100,
   },
   {
     label: 'created at',
-    value: (v: PaymentToEmployeeSummary) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 80,
+    value: (v: PaymentToEmployeeSummary) =>
+      useDateFormat(v.created_at, v.created_at.startsWith(cYear) ? 'MMM DD' : 'MMM DD, YYYY'),
+    size: 150,
   },
   {
     label: 'employee',
@@ -107,7 +110,7 @@ const cols = [
   {
     label: 'to pay',
     value: (v: PaymentToEmployeeSummary) => '$' + v.to_pay.toFixed(0),
-    size: 80,
+    size: 100,
   },
   // {
   //   label: 'settlements',
@@ -124,7 +127,7 @@ const cols = [
         () => usersStore.resolve(v.created_by),
         (map) => map.name,
       ),
-    size: 150,
+    size: 200,
   },
 ]
 
@@ -187,7 +190,7 @@ function capitalizeFirstLetter(val) {
       <div class="font-thin tracking-wider text-sm text-gray-700 uppercase dark:text-gray-400">
         {{ capitalizeFirstLetter(filter.key) }}:
       </div>
-      <div>{{ filter.val.name }}</div>
+      <div>{{ filter.key === 'employee' ? filter.val.real_name : filter.val.name }}</div>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

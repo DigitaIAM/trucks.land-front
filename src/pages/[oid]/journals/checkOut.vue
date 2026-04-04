@@ -202,7 +202,7 @@ function capitalizeFirstLetter(val) {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Check out</Text>
-    <SearchAll @selected="setFilter"></SearchAll>
+    <SearchAll @selected="setFilter" :org="orgData.data.value"></SearchAll>
   </div>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

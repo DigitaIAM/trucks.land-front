@@ -151,11 +151,11 @@ export const useUsersStore = defineStore('user', () => {
     }
   }
 
-  async function search(text: string): Promise<Array<User>> {
+  async function search(text: string, key: string | undefined): Promise<Array<User>> {
     const response = await supabase
       .from('users')
       .select()
-      .ilike('name', '%' + text + '%')
+      .ilike(key ?? 'name', '%' + text + '%')
       .limit(10)
 
     if (response.status == 200) {

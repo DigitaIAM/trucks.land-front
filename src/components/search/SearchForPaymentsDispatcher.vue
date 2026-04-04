@@ -5,7 +5,7 @@ const usersStore = useUsersStore()
 
 const isOpen = computed(() => searchQuery.value.toString().length != 0)
 const isSetResult = computed(
-  () => dispatchers.value?.length != 0 || years.value?.length != 0 || months.value?.length != 0,
+  () => employees.value?.length != 0 || years.value?.length != 0 || months.value?.length != 0,
 )
 
 const searchQuery = ref('')
@@ -33,7 +33,10 @@ watch(
 )
 
 const years = computedAsync(async () => {
-  const list = [{ id: 2025, name: '2025' }, { id: 2026, name: '2026' }]
+  const list = [
+    { id: 2025, name: '2025' },
+    { id: 2026, name: '2026' },
+  ]
   const str = queryStr.value
   if (str) {
     return list.filter((v) => v.name.indexOf(str) >= 0)
@@ -56,10 +59,10 @@ const months = computedAsync(async () => {
   return []
 }, [])
 
-const dispatchers = computedAsync(async () => {
+const employees = computedAsync(async () => {
   const str = queryStr.value
   if (str) {
-    return await usersStore.search(str)
+    return await usersStore.search(str, 'real_name')
   }
   return []
 }, [])
@@ -107,7 +110,13 @@ function select(field: string, value: any) {
       style="display: block; margin-bottom: 5px"
     >
       <div class="flex flex-col-5 gap-10 mb-2 mx-2">
-        <SearchBlock @click="select" id="dispatcher" label="dispatchers" :items="dispatchers" />
+        <SearchBlock
+          @click="select"
+          id="employee"
+          label="employee"
+          :items="employees"
+          :value="(a) => a.real_name"
+        />
         <SearchBlock @click="select" id="month" label="month" :items="months"></SearchBlock>
         <SearchBlock @click="select" id="year" label="year" :items="years"></SearchBlock>
       </div>
