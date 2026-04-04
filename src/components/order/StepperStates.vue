@@ -338,8 +338,8 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
             {{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}
           </p>
           <p class="text-md">{{ eventDate.company_at_location }}</p>
-          <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
+          <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.details.note" class="text-md">
             {{ eventDate.details.note }}
           </p>
@@ -368,8 +368,8 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <h3 class="font-bold text-[#68C3A8] leading-tight">Pick up</h3>
           <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
           <p class="text-md">{{ eventDate.company_at_location }}</p>
-          <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
+          <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
           <p v-if="eventDate.details.note" class="text-md">{{ eventDate.details.note }}</p>
         </div>
 
