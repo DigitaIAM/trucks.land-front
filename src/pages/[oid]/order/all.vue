@@ -208,7 +208,7 @@ const cols = [
     size: 80,
   },
   {
-    label: 'comments',
+    label: 'comment',
     value: (v: Order) =>
       resolve(
         v,
