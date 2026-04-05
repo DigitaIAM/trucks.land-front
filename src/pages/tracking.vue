@@ -149,11 +149,6 @@ const cols: Col[] = [
       ),
     size: 80,
   } as Col,
-  // {
-  //   label: 'kind',
-  //   value: (v: OrderTracking) => (v.event.kind ? v.event.kind.substring(0, 1).toUpperCase() : ''),
-  //   size: 12,
-  // } as Col,
   {
     label: 'time',
     value: (v: OrderTracking) => (v.event.datetime ? formatDT(v.event.datetime) : ''),
@@ -169,8 +164,8 @@ const cols: Col[] = [
     size: 200,
   } as Col,
   {
-    label: 'notes',
-    value: (v: OrderTracking) => v.event.details.notes || '',
+    label: 'note',
+    value: (v: OrderTracking) => v.event.details.note || '',
     size: 200,
   } as Col,
 ]
