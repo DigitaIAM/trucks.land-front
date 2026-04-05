@@ -25,15 +25,15 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
 
-const ts = moment().subtract(3, 'days')
+const ts = moment().tz('America/New_York').subtract(3, 'days')
 const currentYear = ref(ts.year())
 const currentMonth = ref(ts.month() + 1)
-const currentDay = ref(moment())
+const currentDay = ref(moment().tz('America/New_York'))
 const exchangeRate = ref<string>('')
 
 defineOptions({

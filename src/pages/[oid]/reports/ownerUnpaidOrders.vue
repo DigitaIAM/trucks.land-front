@@ -25,7 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment'
+import moment from 'moment-timezone'
 
 const reportOwnerStore = useReportOwner()
 const ownersStore = useOwnersStore()
@@ -35,11 +35,13 @@ const state = reactive({})
 
 const selectedOwner = ref<number | null>(null)
 
-const ts = moment().subtract(1, 'days')
+const ts = moment().tz('America/New_York').subtract(1, 'days')
 const currentYear = ref(ts.year())
 const currentWeek = ref(ts.isoWeek())
 
-const closedWeek = ref(moment().subtract(1, 'week').subtract(25, 'hours').isoWeek())
+const closedWeek = ref(
+  moment().tz('America/New_York').subtract(1, 'week').subtract(1, 'days').isoWeek(),
+)
 
 defineOptions({
   __loaders: [useOrgData],
@@ -151,8 +153,8 @@ async function createPayment() {
         class="hover:bg-base-200"
         @click="openPayment(line)"
         :class="{
-          processing: reportOwnerStore.processing[0] == line.owner,
-          done: reportOwnerStore.processing[1] == line.owner,
+          processing: reportOwnerStore.processing[0] === line.owner,
+          done: reportOwnerStore.processing[1] === line.owner,
         }"
       >
         <td

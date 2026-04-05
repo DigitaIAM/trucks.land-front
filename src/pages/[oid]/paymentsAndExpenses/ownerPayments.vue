@@ -123,8 +123,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: PaymentToOwnerSummary) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 75,
+    value: (v: PaymentToOwnerSummary) => useDateMyFormat(v.created_at),
+    size: 200,
   },
   {
     label: 'created by',
@@ -136,7 +136,7 @@ const cols = [
         () => usersStore.resolve(v.created_by),
         (map) => map.name,
       ),
-    size: 150,
+    size: 200,
   },
 ]
 

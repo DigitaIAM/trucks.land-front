@@ -71,8 +71,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: FinesEmployee) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 80,
+    value: (v: FinesEmployee) => useDateMyFormat(v.created_at),
+    size: 200,
   },
   {
     label: 'employee',
@@ -131,7 +131,12 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="fine in finesEmployeeStore.listing" :key="fine.id" class="hover:bg-base-200" @click="openFines(fine)">
+      <tr
+        v-for="fine in finesEmployeeStore.listing"
+        :key="fine.id"
+        class="hover:bg-base-200"
+        @click="openFines(fine)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + fine"

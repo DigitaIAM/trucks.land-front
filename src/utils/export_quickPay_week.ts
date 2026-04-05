@@ -1,7 +1,7 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import type { OrderAndQuickPay } from '@/stores/quick_pays.ts'
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 
 export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>) {
   const workbook = new Workbook()
@@ -87,8 +87,8 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
       } else if (detail.kind === 'delivery') {
         if (detail.datetime) {
           const date = new Date(detail.datetime)
-          deliveryD = useDateFormat(date, 'MMM DD').value
-          deliveryT = useDateFormat(date, 'HH:mm').value
+          deliveryD = moment(date).tz('America/New_York').format('MMM DD')
+          deliveryT = moment(date).tz('America/New_York').format('HH:mm a')
         }
         deliveryAddress = detail.address
         deliveryCity = detail.city
@@ -96,8 +96,8 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
       } else if (detail.kind === 'pick-up') {
         if (detail.datetime) {
           const date = new Date(detail.datetime)
-          pickupD = useDateFormat(date, 'MMM DD').value
-          pickupT = useDateFormat(date, 'HH:mm').value
+          pickupD = moment(date).tz('America/New_York').format('MMM DD')
+          pickupT = moment(date).tz('America/New_York').format('HH:mm a')
         }
         pickupAddress = detail.address
         pickupCity = detail.city
@@ -110,7 +110,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     const broker = await brokersStore.resolve(order?.broker)
 
     const createdAt = order?.created_at
-      ? useDateFormat(order.created_at, 'MMM DD, HH:mm').value
+      ? moment(order.created_at).tz('America/New_York').format('MMM DD, HH:mm a')
       : ''
     const profit = order.cost - order.driver_cost
     const percent = (profit / order.cost) * 100
@@ -118,7 +118,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
 
     const today = new Date().toISOString().split('T')[0]
 
-    const currentWeek = moment().subtract(2, 'days').week()
+    const currentWeek = moment().tz('America/New_York').subtract(1, 'days').week()
 
     sheet.addRow({
       order: `${org?.code2}-${currentWeek}-${order.number}`,

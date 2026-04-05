@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import * as tus from 'tus-js-client'
 import { generateBI } from '@/utils/invoice_broker.ts'
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 import { generateFI } from '@/utils/invoice_factoring_pdf.ts'
 import { generateRC } from '@/utils/createRC.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
@@ -300,8 +300,8 @@ async function createAndPdfBI() {
   try {
     errorMessage.value = null
 
-    const ts = moment().subtract(1, 'days')
-    const currentWeek = ref(ts.isoWeek())
+    const ts = moment().tz('America/New_York').subtract(1, 'days')
+    const currentWeek = ts.isoWeek()
 
     const order = props.order
     if (order) {
@@ -322,7 +322,7 @@ async function createAndPdfBI() {
           'BI_' +
           org.code2 +
           '-' +
-          currentWeek.value +
+          currentWeek +
           '-' +
           order.number +
           '-' +
@@ -355,8 +355,8 @@ async function createAndPdfFI() {
   try {
     errorMessage.value = null
 
-    const ts = moment().subtract(1, 'days')
-    const currentWeek = ref(ts.isoWeek())
+    const ts = moment().tz('America/New_York').subtract(1, 'days')
+    const currentWeek = ts.isoWeek()
 
     const order = props.order
 
@@ -377,7 +377,7 @@ async function createAndPdfFI() {
           'FI_' +
           org.code2 +
           '-' +
-          currentWeek.value +
+          currentWeek +
           '-' +
           order.number +
           '.pdf'
@@ -508,7 +508,7 @@ async function createRC() {
                 <QueryAndShow :id="file.created_by" :store="usersStore" />
               </td>
               <td class="py-2 px-3">{{ file.signed_by }}</td>
-              <td class="py-2 px-3">{{ useDateFormat(file.created_at, 'MMM DD, HH:mm') }}</td>
+              <td class="py-2 px-3">{{ useDateMyFormat(file.created_at) }}</td>
               <td>
                 <Button
                   ghost

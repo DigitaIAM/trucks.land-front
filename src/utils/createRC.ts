@@ -2,7 +2,7 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { filterCharSet } from '@/utils/pdf-helper.ts'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { type CustomStyledText, drawTable } from 'pdf-lib-draw-table-beta'
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
@@ -123,14 +123,21 @@ export async function generateRC(order: Order, org: Organization) {
           text: filterCharSet(`Pick up`, boldFont),
           font: boldFont,
         })
-        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+        pickup.push(
+          filterCharSet(
+            moment(event.datetime).tz('America/New_York').format('MM/DD/YYYY, HH:mm a'),
+            font,
+          ),
+        )
       } else {
         pickup.push(<CustomStyledText>{
           type: 'text',
           text: filterCharSet(`Pick up ${event.details.priority}`, boldFont),
           font: boldFont,
         })
-        pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY').value, font))
+        pickup.push(
+          filterCharSet(moment(event.datetime).tz('America/New_York').format('MM/DD/YYYY'), font),
+        )
       }
 
       pickup.push(filterCharSet(event.company_at_location, font))
@@ -154,14 +161,21 @@ export async function generateRC(order: Order, org: Organization) {
           text: filterCharSet(`Drop`, boldFont),
           font: boldFont,
         })
-        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY, HH:mm').value, font))
+        delivery.push(
+          filterCharSet(
+            moment(event.datetime).tz('America/New_York').format('MM/DD/YYYY, HH:mm a'),
+            font,
+          ),
+        )
       } else {
         delivery.push(<CustomStyledText>{
           type: 'text',
           text: filterCharSet(`Drop ${event.details.priority}`, boldFont),
           font: boldFont,
         })
-        delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD/YYYY').value, font))
+        delivery.push(
+          filterCharSet(moment(event.datetime).tz('America/New_York').format('MM/DD/YYYY'), font),
+        )
       }
 
       delivery.push(filterCharSet(event.company_at_location, font))
@@ -249,7 +263,7 @@ export async function generateRC(order: Order, org: Organization) {
 
   text_left(page, font, 10, `Position: Ops `, 240, 570)
 
-  const dateFormated = moment(order.created_at).format('MM/DD/YYYY')
+  const dateFormated = moment(order.created_at).tz('America/New_York').format('MM/DD/YYYY')
   text_left(page, font, 10, `Date:`, 400, 570)
   text_left(page, font, 10, dateFormated, font.widthOfTextAtSize('Date:', 10) + 400, 570)
   drawLine(page, startX + bls, 560, 500)

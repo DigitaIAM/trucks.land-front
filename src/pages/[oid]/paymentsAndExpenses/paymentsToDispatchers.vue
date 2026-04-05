@@ -28,7 +28,7 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 import { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
 import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 
 const paymentToEmployeeStore = usePaymentToEmployeeStore()
 const usersStore = useUsersStore()
@@ -71,8 +71,6 @@ function resolve(
   }
 }
 
-const cYear = moment().year().toString()
-
 const cols = [
   {
     label: '#',
@@ -86,9 +84,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: PaymentToEmployeeSummary) =>
-      useDateFormat(v.created_at, v.created_at.startsWith(cYear) ? 'MMM DD' : 'MMM DD, YYYY'),
-    size: 150,
+    value: (v: PaymentToEmployeeSummary) => useDateMyFormat(v.created_at),
+    size: 200,
   },
   {
     label: 'employee',
@@ -140,7 +137,7 @@ function setFilter(key, val) {
   }
 
   if (key === 'month') {
-    const now = moment()
+    const now = moment().tz('America/New_York')
     const year = parseInt(val) > now.month() ? now.year() - 1 : now.year()
 
     const nkey = 'year'

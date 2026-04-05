@@ -52,8 +52,8 @@ const cols = [
   },
   {
     label: 'date',
-    value: (v: Order) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 70,
+    value: (v: Order) => useDateMyFormat(v.created_at),
+    size: 200,
   },
   {
     label: 'Unit Id',

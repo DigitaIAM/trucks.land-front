@@ -1,7 +1,7 @@
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import type { FileRecord } from '@/stores/order_files.ts'
 import { sendEmail } from '@/utils/email.ts'
 
@@ -170,13 +170,13 @@ export async function generateBI(
   // head
   let cy = 800
   cy -= bls + text_right(page, font, 12, 'Invoice number', tableDimensions.endX, cy + 2 * bls)
-  const ts = moment().subtract(1, 'days')
+  const ts = moment().tz('America/New_York').subtract(1, 'days')
   const currentWeek = ref(ts.isoWeek())
   const numberFormated = `${org.code2}-${currentWeek.value}-${order.number}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)
 
   cy -= bls + text_right(page, font, 12, 'Invoice date', tableDimensions.endX, cy + bls)
-  const dateFormated = moment(record.created_at).format('MM/DD/YYYY')
+  const dateFormated = moment(record.created_at).tz('America/New_York').format('MM/DD/YYYY')
   cy -= bls + text_right(page, boldFont, 16, dateFormated, tableDimensions.endX, cy)
 
   cy -= bls * 4
@@ -195,7 +195,10 @@ export async function generateBI(
   cy -= bls + text_left(page, font, fs, 'Carrier team (Third Party)', cx + bls, cy)
 
   text_right(page, boldFont, fs, 'DUE DATE:', cx, cy)
-  const due_date = moment(record.created_at).add(30, 'days').format('MM/DD/YYYY')
+  const due_date = moment(record.created_at)
+    .tz('America/New_York')
+    .add(30, 'days')
+    .format('MM/DD/YYYY')
   cy -= bls + text_left(page, font, fs, `${due_date}`, cx + bls, cy)
 
   // text left

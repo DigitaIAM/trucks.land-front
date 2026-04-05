@@ -78,15 +78,15 @@ function formatDT(ts: Date) {
   if (today.getFullYear() === date.getFullYear()) {
     if (today.getMonth() === date.getMonth()) {
       if (today.getDate() === date.getDate()) {
-        return moment(date).format('h:mm a')
+        return moment(date).tz('America/New_York').format('h:mm a')
       } else {
-        return moment(date).format('Do, h:mm a')
+        return moment(date).tz('America/New_York').format('Do, h:mm a')
       }
     } else {
-      return moment(date).format('MMM Do, h:mm a')
+      return moment(date).tz('America/New_York').format('MMM Do, h:mm a')
     }
   } else {
-    return moment(date).format('MMM Do YYYY, h:mm a')
+    return moment(date).tz('America/New_York').format('MMM Do YYYY, h:mm a')
   }
 }
 

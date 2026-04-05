@@ -139,6 +139,7 @@ function close() {
             class="my-custom-datepicker"
             teleport-center
             :enable-time-picker="true"
+            timezone="America/New_York"
             v-model="datetime"
             :disabled="props.disabled"
             :dark="colorMode.preference == 'dark'"

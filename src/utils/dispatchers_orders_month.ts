@@ -1,6 +1,7 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
+import moment from 'moment-timezone'
 
 export async function dispatchersOrdersMonth(list: Array<EmployeePaymentSummary>) {
   const workbook = new Workbook()
@@ -51,7 +52,7 @@ export async function dispatchersOrdersMonth(list: Array<EmployeePaymentSummary>
 
     let createdAt = ''
     if (order.created_at) {
-      createdAt = useDateFormat(order.created_at, 'MMM DD, HH:mm').value
+      createdAt = moment(order.created_at).tz('America/New_York').format('MMM DD, HH:mm a')
     }
 
     const profit = order.cost - order.driver_cost

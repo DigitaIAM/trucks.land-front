@@ -335,7 +335,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           </span>
           <h3 class="font-bold text-[#388E3C] leading-tight">Delivery</h3>
           <p class="text-md">
-            {{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}
+            {{ useDateMyFormat(eventDate.datetime) }}
           </p>
           <p class="text-md">{{ eventDate.company_at_location }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
@@ -366,7 +366,9 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
             </svg>
           </span>
           <h3 class="font-bold text-[#68C3A8] leading-tight">Pick up</h3>
-          <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
+          <p class="text-md">
+            {{ useDateMyFormat(eventDate.datetime) }}
+          </p>
           <p class="text-md">{{ eventDate.company_at_location }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
@@ -398,7 +400,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
             </svg>
           </span>
           <h3 class="font-bold text-[#F08A34] leading-tight">Change of driver and vehicle</h3>
-          <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
+          <p class="text-md">{{ useDateMyFormat(eventDate.datetime) }}</p>
           <p class="text-md">
             <QueryAndShow :id="eventDate.driver" :store="driversStore" />
           </p>
@@ -431,7 +433,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
             </svg>
           </span>
           <h3 class="font-bold text-[#e35e87] leading-tight">Agreement</h3>
-          <p class="text-md">{{ useDateFormat(eventDate.datetime, 'MMM DD, HH:mm') }}</p>
+          <p class="text-md">{{ useDateMyFormat(eventDate.datetime) }}</p>
           <p v-if="eventDate.company" class="text-md">
             <QueryAndShow :id="eventDate.company" :store="ownersStore" />
           </p>

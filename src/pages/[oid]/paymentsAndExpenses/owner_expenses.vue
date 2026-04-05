@@ -72,8 +72,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: ExpensesToOwner) => useDateFormat(v.created_at, 'MMM DD'),
-    size: 80,
+    value: (v: ExpensesToOwner) => useDateMyFormat(v.created_at),
+    size: 200,
   },
   {
     label: 'owner',
@@ -85,7 +85,7 @@ const cols = [
         () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
-    size: 150,
+    size: 200,
   },
   {
     label: 'expenses',
@@ -132,7 +132,12 @@ const cols = [
       </tr>
     </thead>
     <tbody>
-      <tr v-for="expense in expensesStore.listing" :key="expense.id" class="hover:bg-base-200" @click="openExpenses(expense)">
+      <tr
+        v-for="expense in expensesStore.listing"
+        :key="expense.id"
+        class="hover:bg-base-200"
+        @click="openExpenses(expense)"
+      >
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + expense"

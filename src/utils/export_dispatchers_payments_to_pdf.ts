@@ -1,6 +1,6 @@
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import type { PaymentToEmployeeSummary } from '@/stores/employee_payments.ts'
 
@@ -121,8 +121,11 @@ async function _head(
   cy -= bls + text_right(page, boldFont, 16, `${document.month} of ${document.year}`, endX, cy)
   cy -= bls + text_right(page, font, 12, 'Pay Period', endX, cy)
 
-  const date1 = moment(document.created_at).subtract(30, 'days').format('MM/DD/YYYY')
-  const date2 = moment(document.created_at).format('MM/DD/YYYY')
+  const date1 = moment(document.created_at)
+    .tz('America/New_York')
+    .subtract(30, 'days')
+    .format('MM/DD/YYYY')
+  const date2 = moment(document.created_at).tz('America/New_York').format('MM/DD/YYYY')
 
   // const period = ts.month() + 2
   cy -= bls + text_right(page, boldFont, 16, `${date1} - ${date2}`, endX, cy)

@@ -1,5 +1,6 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
+import moment from 'moment-timezone'
 
 export async function weekExportToExcel(
   paymentsPromise: Promise<Map<number, PaymentToOwnerSummary>>,
@@ -87,7 +88,7 @@ export async function weekExportToExcel(
 
         let createdAt = ''
         if (order?.created_at) {
-          createdAt = useDateFormat(order?.created_at, 'MMM DD, HH:mm').value
+          createdAt = moment(order?.created_at).tz('America/New_York').format('MMM DD, HH:mm a')
         }
 
         let pickupD = ''
@@ -97,14 +98,14 @@ export async function weekExportToExcel(
 
         if (pickup?.datetime) {
           const date = new Date(pickup?.datetime)
-          pickupD = useDateFormat(date, 'MMM DD').value
-          pickupT = useDateFormat(date, 'HH:mm').value
+          pickupD = moment(date).tz('America/New_York').format('MMM DD')
+          pickupT = moment(date).tz('America/New_York').format('HH:mm a')
         }
 
         if (delivery?.datetime) {
           const date = new Date(delivery?.datetime)
-          deliveryD = useDateFormat(date, 'MMM DD').value
-          deliveryT = useDateFormat(date, 'HH:mm').value
+          deliveryD = moment(date).tz('America/New_York').format('MMM DD')
+          deliveryT = moment(date).tz('America/New_York').format('HH:mm a')
         }
 
         const profit = order.cost - order.driver_cost

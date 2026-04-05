@@ -2,6 +2,7 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { filterCharSet } from './pdf-helper.ts'
+import moment from 'moment-timezone'
 
 function text_left(
   page: PDFPage,
@@ -195,12 +196,22 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
           }
         }
         if (event.kind === 'pick-up') {
-          pickup.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
+          pickup.push(
+            filterCharSet(
+              moment(event.datetime).tz('America/New_York').format('MM/DD, HH:mm a'),
+              font,
+            ),
+          )
           pickup.push(filterCharSet(event.city, font))
           pickup.push(filterCharSet(`${event.state} ${event.zip}`, font))
         }
         if (event.kind === 'delivery') {
-          delivery.push(filterCharSet(useDateFormat(event.datetime, 'MM/DD, HH:mm').value, font))
+          delivery.push(
+            filterCharSet(
+              moment(event.datetime).tz('America/New_York').format('MM/DD, HH:mm a'),
+              font,
+            ),
+          )
           delivery.push(filterCharSet(event.city, font))
           delivery.push(filterCharSet(`${event.state} ${event.zip}`, font))
         }

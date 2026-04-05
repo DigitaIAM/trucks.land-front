@@ -131,8 +131,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: OrderAndQuickPay) => useDateFormat(v.qp_created_at, 'MMM DD'),
-    size: 80,
+    value: (v: OrderAndQuickPay) => useDateMyFormat(v.qp_created_at),
+    size: 200,
   },
   {
     label: 'request created',

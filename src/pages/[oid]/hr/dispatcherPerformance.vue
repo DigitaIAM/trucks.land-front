@@ -25,7 +25,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment/moment'
+import moment from 'moment-timezone'
 import DispatcherOrdersForMonth from '@/components/modal/DispatcherOrdersForMonth.vue'
 import { dispatcherPerformanceExportToExcel } from '@/utils/dispatcherPerformanceToExcel.ts'
 import { dispatchersOrdersMonth } from '@/utils/dispatchers_orders_month.ts'
@@ -33,7 +33,7 @@ import { dispatchersOrdersMonth } from '@/utils/dispatchers_orders_month.ts'
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
 
-const currentDay = ref(moment())
+const currentDay = ref(moment().tz('America/New_York'))
 
 defineOptions({
   __loaders: [useOrgData],

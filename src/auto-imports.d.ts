@@ -172,6 +172,7 @@ declare global {
   const useDark: typeof import('@vueuse/core')['useDark']
   const useDataStore: (typeof import('feathers-pinia'))['useDataStore']
   const useDateFormat: typeof import('@vueuse/core')['useDateFormat']
+  const useDateMyFormat: typeof import('./composables/use-date-my-format')['useDateMyFormat']
   const useDebounce: typeof import('@vueuse/core')['useDebounce']
   const useDebounceFn: typeof import('@vueuse/core')['useDebounceFn']
   const useDebouncedRefHistory: typeof import('@vueuse/core')['useDebouncedRefHistory']
@@ -634,6 +635,7 @@ declare module 'vue' {
     readonly useCycleList: UnwrapRef<typeof import('@vueuse/core')['useCycleList']>
     readonly useDark: UnwrapRef<typeof import('@vueuse/core')['useDark']>
     readonly useDateFormat: UnwrapRef<typeof import('@vueuse/core')['useDateFormat']>
+    readonly useDateMyFormat: UnwrapRef<typeof import('./composables/use-date-my-format')['useDateMyFormat']>
     readonly useDebounce: UnwrapRef<typeof import('@vueuse/core')['useDebounce']>
     readonly useDebounceFn: UnwrapRef<typeof import('@vueuse/core')['useDebounceFn']>
     readonly useDebouncedRefHistory: UnwrapRef<typeof import('@vueuse/core')['useDebouncedRefHistory']>
