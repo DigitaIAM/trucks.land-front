@@ -163,7 +163,7 @@ const cols = [
         'note',
         () => [],
         () => commentsStore.commentsForOrder(v.id),
-        (map) => map[0]?.note ?? '',
+        (map) => map[0]?.notes ?? '',
       ),
     color: (v: Status) => v.color,
     size: 200,
