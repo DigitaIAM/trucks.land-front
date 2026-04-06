@@ -35,13 +35,11 @@ const state = reactive({})
 
 const selectedOwner = ref<number | null>(null)
 
-const ts = moment().tz('America/New_York').subtract(1, 'days')
+const ts = moment().tz('America/New_York')
 const currentYear = ref(ts.year())
 const currentWeek = ref(ts.isoWeek())
 
-const closedWeek = ref(
-  moment().tz('America/New_York').subtract(1, 'week').subtract(1, 'days').isoWeek(),
-)
+const closedWeek = ref(moment().tz('America/New_York').subtract(1, 'week').isoWeek())
 
 defineOptions({
   __loaders: [useOrgData],
