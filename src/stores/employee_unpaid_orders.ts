@@ -228,20 +228,17 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       })
 
       let toPayment = 0
-      if (employeeTerms.percent_of_gross) {
-        toPayment += ((orders_amount + orders_amount_direct) * employeeTerms.percent_of_gross) / 100
+      const totalGross = (orders_amount || 0) + (orders_amount_direct || 0)
+      const totalProfit = (orders_profit || 0) + (orders_profit_direct || 0)
+
+      if (employeeTerms?.percent_of_gross) {
+        toPayment += (totalGross * employeeTerms.percent_of_gross) / 100
       }
       if (employeeTerms.percent_of_profit) {
-        toPayment +=
-          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100
+        toPayment += (totalProfit * employeeTerms.percent_of_profit) / 100
       }
       if (employeeTerms.fixed_salary) {
         toPayment += employeeTerms.fixed_salary
-      }
-      if (employeeTerms.fixed_salary && employeeTerms.percent_of_profit) {
-        toPayment +=
-          ((orders_profit + orders_profit_direct) * employeeTerms.percent_of_profit) / 100 +
-          employeeTerms.fixed_salary
       }
 
       const listOfOrdersInProcessing =

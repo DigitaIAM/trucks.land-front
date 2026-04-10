@@ -157,6 +157,12 @@ async function openOrder(order: Order) {
   window.open('/' + org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
   // console.log('org.code3', org)
 }
+
+const toPayProfit = computed(() => {
+  const percent = props.summary?.paymentTerms.percent_of_profit || 0
+  const profit = props.summary?.orders_profit || 0
+  return (percent * profit) / 100
+})
 </script>
 
 <template>
@@ -189,17 +195,20 @@ async function openOrder(order: Order) {
         </div>
         <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
-            {{ summary?.paymentTerms.percent_of_profit }} % of profit
+            {{ summary?.paymentTerms.percent_of_profit }} % of profit = $
+            {{ toPayProfit }}
           </Text>
           <Text v-if="(props.summary?.paymentTerms.percent_of_gross || 0) > 0">
             % of gross
             {{ summary?.paymentTerms.percent_of_gross }}
           </Text>
+          <Text>Settlements $ {{ summary?.settlements_total.toFixed(2) }}</Text>
+        </div>
+        <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
             Fixed salary $
             {{ summary?.paymentTerms.fixed_salary.toFixed(2) }}
           </Text>
-          <Text>Settlements $ {{ summary?.settlements_total.toFixed(2) }}</Text>
         </div>
         <div class="flex flex-col items-end">
           <Text>Pay-out $ {{ summary?.payout.toFixed(2) }}</Text>
