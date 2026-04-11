@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AbsenceEmployee: typeof import('./components/modal/AbsenceEmployee.vue')['default']
     Accordion: typeof import('./components/widgets/Accordion.vue')['default']
     Account: typeof import('./components/Account.vue')['default']
     AgreementModal: typeof import('./components/modal/AgreementModal.vue')['default']

@@ -97,7 +97,7 @@ export const useUsersStore = defineStore('user', () => {
     return { id: id, name: 'error loading' } as User
   }
 
-  async function resolve(id: number | null): Promise<User | null> {
+  async function resolve(id: ComputedRef<Promise<any>>): Promise<User | null> {
     if (!id || id < 0) return null
 
     while (loading.value) {

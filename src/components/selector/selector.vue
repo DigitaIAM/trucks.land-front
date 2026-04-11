@@ -4,7 +4,17 @@ const props = defineProps<{
   store: Searchable
   label?: string
   disabled?: boolean
+  name?: string | null
 }>()
+
+function resolveLabel(obj: any) {
+  const key = props.name ?? 'name'
+  if (obj) {
+    return obj[key]
+  } else {
+    return ''
+  }
+}
 
 const emit = defineEmits(['update:modelValue', 'build'])
 
@@ -12,7 +22,7 @@ const isOpen = ref(false)
 const isSetResult = ref(false)
 const isNotFound = ref(false)
 
-const valueAsText = ref(props.modelValue?.name || '')
+const valueAsText = ref(resolveLabel(props.modelValue))
 const label = ref(props.label)
 
 watch(() => props.modelValue, init)
@@ -35,12 +45,12 @@ async function init(suggestion: Reference | Suggestion | null) {
   if (suggestion && suggestion.id) {
     const obj = await props.store.resolve(suggestion.id)
     if (obj) {
-      if (obj.name !== suggestion.name) {
+      if (resolveLabel(obj) !== resolveLabel(suggestion)) {
         emit('update:modelValue', obj)
       }
-      isNotFound.value = obj ? false : true
+      isNotFound.value = !obj
       isSetResult.value = true
-      valueAsText.value = obj?.name || ''
+      valueAsText.value = resolveLabel(obj)
     } else {
       // console.log('init reset obj', suggestion)
       isNotFound.value = true
@@ -54,7 +64,7 @@ async function init(suggestion: Reference | Suggestion | null) {
 
 function onFocusLost() {
   if (!isOpen.value) {
-    if (valueAsText.value !== props.modelValue?.name) {
+    if (valueAsText.value !== resolveLabel(props.modelValue)) {
       valueAsText.value = ''
       emit('update:modelValue', null)
     }
@@ -71,7 +81,7 @@ const querying = (query: string) => {
   if (query) {
     const text = query
     timer = setTimeout(() => {
-      props.store.search(query).then((list: Suggestion[]) => {
+      props.store.search(query, props.name ?? 'name').then((list: Suggestion[]) => {
         // console.log('search result', text === valueAsText.value, list)
         if (text === valueAsText.value) {
           suggestions.value = list
@@ -86,7 +96,7 @@ const querying = (query: string) => {
 function setResult(suggestion: Suggestion | null) {
   isOpen.value = false
   isSetResult.value = true
-  valueAsText.value = suggestion?.name ?? ''
+  valueAsText.value = resolveLabel(suggestion)
   emit('update:modelValue', suggestion)
 }
 </script>
@@ -136,7 +146,7 @@ function setResult(suggestion: Suggestion | null) {
         @click="setResult(suggestion)"
       >
         <div class="flex justify-between items-center w-full">
-          <span>{{ suggestion.name }}</span>
+          <span>{{ resolveLabel(suggestion) }}</span>
         </div>
       </div>
     </div>

@@ -48,7 +48,10 @@ export const useUserConditionsStore = defineStore('user_conditions', () => {
     return mapping.value[{ organization: rOrgId.value, user: rUserId.value } as Key]
   })
 
-  async function getCondition(orgId: number | null, userId: number | null): Promise<Condition | null> {
+  async function getCondition(
+    orgId: number | null,
+    userId: number | null,
+  ): Promise<Condition | null> {
     if (orgId && userId) {
       const { data, error } = await supabase
         .from('user_conditions')
@@ -66,7 +69,22 @@ export const useUserConditionsStore = defineStore('user_conditions', () => {
     return null
   }
 
-  return { setContext, listing, getCondition }
+  async function employeesWithSalary() {
+    const { data, error } = await supabase
+      .from('user_conditions')
+      .select('user_id')
+      .not('fixed_salary', 'is', null)
+      .gt('fixed_salary', 0)
+
+    if (error) {
+      console.error('error', error)
+    } else {
+      const userIds = data.map((item) => item.user_id)
+      return userIds
+    }
+  }
+
+  return { setContext, listing, getCondition, employeesWithSalary }
 })
 
 if (import.meta.hot) {

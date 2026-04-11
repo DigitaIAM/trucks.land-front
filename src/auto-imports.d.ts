@@ -190,6 +190,7 @@ declare global {
   const useElementHover: typeof import('@vueuse/core')['useElementHover']
   const useElementSize: typeof import('@vueuse/core')['useElementSize']
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
+  const useEmployeeAbsencesStore: typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']
   const useEmployeePaymentSettlementsStore: typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
@@ -392,6 +393,9 @@ declare global {
   // @ts-ignore
   export type { Driver, DriverCreate, DriverUpdate } from './stores/drivers'
   import('./stores/drivers')
+  // @ts-ignore
+  export type { EmployeeAbsences, EmployeeAbsenceCreate, EmployeeAbsenceUpdate } from './stores/employee_absences'
+  import('./stores/employee_absences')
   // @ts-ignore
   export type { PaymentToDispatcherOrder, PaymentToDispatcherOrderCreate } from './stores/employee_payment_orders'
   import('./stores/employee_payment_orders')
@@ -653,6 +657,7 @@ declare module 'vue' {
     readonly useElementHover: UnwrapRef<typeof import('@vueuse/core')['useElementHover']>
     readonly useElementSize: UnwrapRef<typeof import('@vueuse/core')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
+    readonly useEmployeeAbsencesStore: UnwrapRef<typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']>
     readonly useEmployeePaymentSettlementsStore: UnwrapRef<typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']>
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>

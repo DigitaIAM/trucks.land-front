@@ -113,6 +113,12 @@ const links = [
     path: '/paymentsAndExpenses/settlements_to_employee',
     perm: (access) => access.is_payroll_accountant,
   },
+  {
+    name: 'Timeline',
+    icon: defineAsyncComponent(() => import('~icons/streamline/blank-calendar')),
+    path: '/paymentsAndExpenses/employee_absence',
+    perm: (access) => access.is_admin,
+  },
 ]
 
 const buildLinks = computed(() => {

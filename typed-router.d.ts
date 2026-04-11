@@ -37,6 +37,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/create': RouteRecordInfo<'/[oid]/order/create', '/:oid/order/create', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/dispatcher': RouteRecordInfo<'/[oid]/order/dispatcher', '/:oid/order/dispatcher', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/paymentsAndExpenses/employee_absence': RouteRecordInfo<'/[oid]/paymentsAndExpenses/employee_absence', '/:oid/paymentsAndExpenses/employee_absence', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/finesOfEmployee': RouteRecordInfo<'/[oid]/paymentsAndExpenses/finesOfEmployee', '/:oid/paymentsAndExpenses/finesOfEmployee', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/owner_expenses': RouteRecordInfo<'/[oid]/paymentsAndExpenses/owner_expenses', '/:oid/paymentsAndExpenses/owner_expenses', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/paymentsAndExpenses/ownerPayments': RouteRecordInfo<'/[oid]/paymentsAndExpenses/ownerPayments', '/:oid/paymentsAndExpenses/ownerPayments', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -144,6 +145,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/order/dispatcher.vue': {
       routes: '/[oid]/order/dispatcher'
+      views: never
+    }
+    'src/pages/[oid]/paymentsAndExpenses/employee_absence.vue': {
+      routes: '/[oid]/paymentsAndExpenses/employee_absence'
       views: never
     }
     'src/pages/[oid]/paymentsAndExpenses/finesOfEmployee.vue': {
