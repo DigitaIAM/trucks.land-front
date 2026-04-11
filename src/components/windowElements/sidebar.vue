@@ -111,7 +111,7 @@ const links = [
     //SALARY accountant
     icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
     path: '/paymentsAndExpenses/settlements_to_employee',
-    perm: (access) => access.is_admin,
+    perm: (access) => access.is_admin || access.is_payroll_accountant,
   },
   {
     name: 'Absences',
