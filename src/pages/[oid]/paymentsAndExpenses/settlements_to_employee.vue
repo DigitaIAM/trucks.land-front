@@ -71,8 +71,8 @@ const cols = [
   },
   {
     label: 'created at',
-    value: (v: SettlementEmployee) => useDateMyFormat(v.created_at, 'MMM DD'),
-    size: 80,
+    value: (v: SettlementEmployee) => useDateMyFormat(v.created_at),
+    size: 120,
   },
   {
     label: 'employee',

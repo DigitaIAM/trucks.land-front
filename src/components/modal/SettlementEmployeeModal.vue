@@ -14,7 +14,6 @@ const notes = ref('')
 const amount = ref<number>()
 const created_by = ref<User>()
 
-
 const emit = defineEmits(['closed'])
 
 watch(
@@ -22,7 +21,7 @@ watch(
   (settlement) => {
     resetAndShow(settlement)
   },
-  { deep: true }
+  { deep: true },
 )
 
 function resetAndShow(settlement: SettlementEmployee | null) {
@@ -33,7 +32,11 @@ function resetAndShow(settlement: SettlementEmployee | null) {
   employee.value = settlement ? { id: settlement.employee } : null
   notes.value = settlement?.notes || ''
   amount.value = settlement?.amount
-  created_by.value = settlement ? { id: settlement.created_by } : account ? { id: account.id } : null
+  created_by.value = settlement
+    ? { id: settlement.created_by }
+    : account
+      ? { id: account.id }
+      : null
 
   settlement_modal.showModal()
 }
@@ -44,13 +47,13 @@ function savePayment() {
       organization: authStore.oid,
       employee: employee.value?.id,
       notes: notes.value,
-      amount: amount.value
+      amount: amount.value,
     } as SettlementEmployeeCreate)
   } else {
     settlementsEmployeeStore.update(id.value, {
       employee: employee.value?.id,
       notes: notes.value,
-      amount: amount.value
+      amount: amount.value,
     } as SettlementEmployeeUpdate)
   }
   settlement_modal.close()
@@ -61,8 +64,8 @@ function savePayment() {
 </script>
 
 <template>
+  <Text size="2xl" class="px-4">Rewards</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <Text size="2xl">Settlements</Text>
     <SearchVue :store="usersStore"></SearchVue>
     <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
@@ -70,8 +73,6 @@ function savePayment() {
     <ModalBox class="w-2/5">
       <div class="flex space-x-2 w-full">
         <Text class="w-full mt-1" size="xl">Payment # {{ id }}</Text>
-        <Label class="mb-1">created by</Label>
-        <selector class="w-full" :modelValue="created_by" :store="usersStore" disabled />
       </div>
       <div>
         <Label class="mt-2 mb-2">Employee</Label>
