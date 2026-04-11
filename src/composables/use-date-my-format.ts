@@ -12,7 +12,6 @@ export function useDateMyFormat(
   // zone: string = 'America/New_York',
   options: Intl.DateTimeFormatOptions = {},
 ) {
-  console.log('date', date)
   // console.log('zone', zone)
   return computed(() => {
     // unref allows us to pass in reactive refs or plain values

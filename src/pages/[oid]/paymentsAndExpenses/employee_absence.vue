@@ -48,9 +48,8 @@ const employeesList = computedAsync(async () => {
   const response = await supabase
     .from('users')
     .select('id, real_name, user_conditions!user_conditions_user_id_fkey!inner(user_id)')
-    .not('user_conditions.fixed_salary', 'is', null)
 
-  return response.data
+  return response.data?.sort((a, b) => a.real_name.localeCompare(b.real_name))
 }, [])
 
 const absencesList = computedAsync(async () => {
@@ -159,7 +158,7 @@ function clickOnCell(employee: object, day: number) {
   background-color: #f8fafc !important; /* Светлый фон для имен */
   font-weight: bold;
   box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
-  padding: 18px;
+  padding: 16px;
 }
 
 .header-cell {
