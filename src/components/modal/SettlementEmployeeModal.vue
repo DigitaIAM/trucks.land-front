@@ -3,13 +3,21 @@ const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const settlementsEmployeeStore = useSettlementsEmployeeStore()
 
+const listOfSettelments = [
+  { color: '#94a3b8', id: 'bonus', label: 'bonus' },
+  { color: '#f59e0b', id: 'premium', label: 'premium' },
+  { color: '#3b82f6', id: 'vacation pay', label: 'vacation pay' },
+]
+
 const props = defineProps<{
   edit: SettlementEmployee | null
+  disabled?: boolean
 }>()
 
 const id = ref<number>()
 const organization = ref<number>()
 const employee = ref<number>()
+const settlement_type = ref<string>('bonus')
 const notes = ref('')
 const amount = ref<number>()
 const created_by = ref<User>()
@@ -30,6 +38,7 @@ function resetAndShow(settlement: SettlementEmployee | null) {
   id.value = settlement?.id
   organization.value = settlement?.organization
   employee.value = settlement ? { id: settlement.employee } : null
+  settlement_type.value = settlement?.settlement_type ?? 'bonus'
   notes.value = settlement?.notes || ''
   amount.value = settlement?.amount
   created_by.value = settlement
@@ -46,12 +55,14 @@ function savePayment() {
     settlementsEmployeeStore.create({
       organization: authStore.oid,
       employee: employee.value?.id,
+      settlement_type: settlement_type.value,
       notes: notes.value,
       amount: amount.value,
     } as SettlementEmployeeCreate)
   } else {
     settlementsEmployeeStore.update(id.value, {
       employee: employee.value?.id,
+      settlement_type: settlement_type.value,
       notes: notes.value,
       amount: amount.value,
     } as SettlementEmployeeUpdate)
@@ -60,6 +71,12 @@ function savePayment() {
   emit('closed')
 
   console.log('savePayment', employee.value?.id)
+}
+
+function setAbsenceType(v: string) {
+  if (!props.disabled) {
+    settlement_type.value = v
+  }
 }
 </script>
 
@@ -71,19 +88,43 @@ function savePayment() {
   </div>
   <Modal id="settlement_modal">
     <ModalBox class="w-2/5">
-      <div class="flex space-x-2 w-full">
-        <Text class="w-full mt-1" size="xl">Payment # {{ id }}</Text>
+      <div class="flex items-start justify-between">
+        <div>
+          <Text class="w-full mt-1" size="xl">Payment # {{ id }}</Text>
+        </div>
+        <div class="flex items-center justify-between">
+          <Button
+            sm
+            class="mr-1 mb-2"
+            v-for="type in listOfSettelments"
+            :key="type.id"
+            :style="{
+              backgroundColor: settlement_type === type.id ? type.color : 'transparent',
+              color: settlement_type === type.id ? 'white' : '#475569',
+            }"
+            @click="setAbsenceType(type.id)"
+          >
+            {{ type.label }}
+          </Button>
+        </div>
       </div>
       <div>
-        <Label class="mt-2 mb-2">Employee</Label>
+        <Label class="mt-2">Employee</Label>
         <selector v-model="employee" :store="usersStore" />
       </div>
-      <Label class="mb-2 mt-4">Description</Label>
+      <Label class="mb-2 mt-4">Note</Label>
       <TextInput class="w-full" v-model="notes" />
-
-      <div class="md:w-1/2 md:mb-0">
-        <Label class="mt-4 mb-2">Amount $</Label>
-        <TextInput v-model="amount" />
+      <div class="flex space-x-3 mb-2 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label class="mt-4 mb-2">Amount</Label>
+          <TextInput v-model="amount" />
+          <p
+            v-if="settlement_type === 'vacation pay'"
+            class="text-amber-600 text-sm mt-1 font-medium"
+          >
+            ⚠️ Please indicate the amount in Uzbek sums (UZS)
+          </p>
+        </div>
       </div>
       <ModalAction>
         <form method="dialog">

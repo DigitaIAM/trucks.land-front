@@ -87,13 +87,13 @@ const cols = [
     size: 200,
   },
   {
-    label: 'payment',
-    value: (v: SettlementEmployee) => v.notes,
+    label: 'payment type',
+    value: (v: SettlementEmployee) => v.settlement_type,
     size: 150,
   },
   {
     label: 'amount',
-    value: (v: SettlementEmployee) => '$' + v.amount,
+    value: (v: SettlementEmployee) => v.amount,
     size: 100,
   },
   {

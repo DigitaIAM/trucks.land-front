@@ -11,12 +11,14 @@ export interface SettlementEmployeeCreate {
   employee: number
   notes: string
   amount: number
+  settlement_type: string
 }
 
 export interface SettlementEmployeeUpdate {
   employee?: number
   notes?: string
   amount?: number
+  settlement_type?: string
 }
 
 export const useSettlementsEmployeeStore = defineStore('employee_settlements', () => {
