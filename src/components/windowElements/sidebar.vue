@@ -66,7 +66,7 @@ const links = [
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
-    perm: (access) => access.is_admin || access.is_hr,
+    perm: (access) => access.is_admin || access.is_hr || access.is_payroll_accountant,
   },
   {
     name: 'Create payments',

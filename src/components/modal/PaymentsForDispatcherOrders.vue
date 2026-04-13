@@ -221,23 +221,23 @@ function close() {
       </div>
       <div class="flex flex-cols-8 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
-        <Text >Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
-        <Text >Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
-        <Text >D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
+        <Text>Orders {{ paymentToDispatcherOrdersStore.listing.length }}</Text>
+        <Text>Orders amount $ {{ document?.gross.toFixed(2) }}</Text>
+        <Text>D/payment $ {{ document?.driver_payment.toFixed(2) }}</Text>
         <Text v-if="(document?.percent_of_profit || 0) > 0">
           % of profit
           {{ document?.percent_of_profit }}
         </Text>
-        <Text  v-if="(document?.percent_of_gross || 0) > 0">
+        <Text v-if="(document?.percent_of_gross || 0) > 0">
           % of gross
           {{ document?.percent_of_gross }}
         </Text>
-        <Text  v-if="(document?.fixed_salary || 0) > 0">
+        <Text v-if="(document?.fixed_salary || 0) > 0">
           Fixed salary
           {{ document?.fixed_salary }}
         </Text>
-        <Text >Settlements $ {{ document?.settlements }}</Text>
-        <Text >Payout $ {{ document?.to_pay }}</Text>
+        <Text>Rewards $ {{ document?.settlements }}</Text>
+        <Text>Payout $ {{ document?.to_pay }}</Text>
       </div>
       <div class="mb-2 mt-12">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>

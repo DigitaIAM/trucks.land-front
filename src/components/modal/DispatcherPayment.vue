@@ -202,7 +202,7 @@ const toPayProfit = computed(() => {
             % of gross
             {{ summary?.paymentTerms.percent_of_gross }}
           </Text>
-          <Text>Settlements $ {{ summary?.settlements_total.toFixed(2) }}</Text>
+          <Text>Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text>
         </div>
         <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
