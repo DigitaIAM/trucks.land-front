@@ -75,6 +75,7 @@ async function saveAndEdit() {
         note: note.value,
       } as EmployeeAbsenceCreate)
     }
+    emit('on-update')
     create_absence.close()
   } catch (e) {
     console.error('Error saving absence:', e)

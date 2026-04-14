@@ -31,6 +31,7 @@ defineOptions({
 
 const selectedEvent = ref<EmployeeAbsences | null>(null)
 
+const absencesList = ref([])
 const currentMonth = ref(dayjs())
 const daysInMonth = computed(() => currentMonth.value.daysInMonth())
 
@@ -52,7 +53,7 @@ const employeesList = computedAsync(async () => {
   return response.data?.sort((a, b) => a.real_name.localeCompare(b.real_name))
 }, [])
 
-const absencesList = computedAsync(async () => {
+async function fetchAbsences() {
   const from = currentMonth.value.startOf('month')
   const till = currentMonth.value.endOf('month')
 
@@ -62,8 +63,18 @@ const absencesList = computedAsync(async () => {
     .lte('start_date', till.format('YYYY-MM-DD'))
     .gte('end_date', from.format('YYYY-MM-DD'))
 
-  return response.data
-}, [])
+  if (response.data) {
+    absencesList.value = response.data
+  }
+}
+
+onMounted(() => {
+  fetchAbsences()
+})
+
+watch(currentMonth, () => {
+  fetchAbsences()
+})
 
 function getEvent(employeeId: number, day: number) {
   const event = resolveEvent(employeeId, day)
@@ -109,7 +120,7 @@ function clickOnCell(employee: object, day: number) {
       <div class="w-4 h-4 rounded bg-[#3b82f6]"></div>
       <span class="text-sm font-medium">Vacation</span>
     </div>
-    <AbsenceEmployee :event="selectedEvent"></AbsenceEmployee>
+    <AbsenceEmployee :event="selectedEvent" @on-update="fetchAbsences"></AbsenceEmployee>
   </div>
   <div class="timeline-container">
     <div class="grid-table" :style="{ gridTemplateColumns: `200px repeat(${daysInMonth}, 1fr)` }">
