@@ -82,39 +82,45 @@ const cols = [
   {
     label: 'orders',
     value: (v: EmployeePaymentSummary) =>
-      v.orders_in_progress.size > 0
+      v.orders_in_progress.size > 0 || v.orders_number > 0
         ? v.orders_number + ' / ' + v.orders_in_progress.size
-        : v.orders_number,
+        : '',
     size: 100,
   },
   {
     label: 'cost of orders',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_amount.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders.size == 0 ? '' : '$' + v.orders_amount.toFixed(0),
     size: 100,
   },
   {
     label: 'd/payments',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_driver.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_driver == 0 ? '' : '$' + v.orders_driver.toFixed(0),
     size: 100,
   },
   {
     label: 'profit',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_profit.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_profit == 0 ? '' : '$' + v.orders_profit.toFixed(0),
     size: 100,
   },
   {
     label: 'direct profit',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_profit_direct.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_profit_direct == 0 ? '' : '$' + v.orders_profit_direct.toFixed(0),
     size: 100,
   },
-  // {
-  //   label: 'profit %',
-  //   value: (v: EmployeePaymentSummary) => v.paymentTerms.percent_of_profit,
-  //   size: 100,
-  // },
   {
-    label: 'settlements',
-    value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,
+    label: 'fixed salary',
+    value: (v: EmployeePaymentSummary) =>
+      v.paymentTerms.fixed_salary == null ? '' : '$' + v.paymentTerms.fixed_salary || '',
+    size: 100,
+  },
+  {
+    label: 'rewards',
+    value: (v: EmployeePaymentSummary) =>
+      v.settlements_total == 0 ? '' : '$' + v.settlements_total,
     size: 80,
   },
   {

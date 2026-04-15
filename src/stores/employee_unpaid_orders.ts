@@ -1,5 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { groupBy } from '@/utils/group-by.ts'
+import dayjs, { Dayjs } from 'dayjs'
 
 export interface EmployeePaymentRecord {
   employee: number
@@ -41,22 +42,43 @@ interface Record {
   summary: EmployeePaymentSummary
 }
 
+interface Absence {
+  id?: number
+  employee: string | number
+  start_date: string
+  end_date: string
+}
+
 export interface EmployeePaymentSummaryInDetails {
   order: Order
   agreements: Array<OrderEvent>
 }
 
 export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
-  const org = ref<number | null>(null)
-
   const ordersInProcessing = ref(new Map<number, Array<Order>>())
   const mapping = ref(new Map<number, Array<EmployeePaymentRecord>>())
   const settlements = ref(new Map<number, Array<SettlementEmployee>>())
   const processing = ref<Array<number>>([])
 
+  const report = ref<Array<Record>>([])
+
   const searchQuery = ref<string | null>(null)
+  const absencesList = ref<Absence[]>([])
 
   async function loading(orgId: number | null, userId: number | null) {
+    ordersInProcessing.value = await load_orders_in_progress(orgId)
+    console.log('load_orders_in_progress', ordersInProcessing.value.size)
+
+    mapping.value = await load_unpaid_orders(orgId, userId)
+    console.log('load_unpaid_orders', mapping.value.size)
+
+    settlements.value = await load_unpaid_settlements(orgId, userId)
+    console.log('load_unpaid_settlements', settlements.value.size)
+
+    report.value = await calculate_report(orgId)
+  }
+
+  async function load_orders_in_progress(orgId: number | null) {
     const response = await supabase
       .from('orders_journal')
       .select()
@@ -65,15 +87,16 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       .gte('created_at', '2026-02-24')
 
     if (response.status == 200) {
-      ordersInProcessing.value = groupBy(
+      return groupBy(
         response.data!.map((json) => json as Order),
         (v) => v.created_by,
       )
     } else {
       throw 'fail to load orders in progress'
     }
+  }
 
-    org.value = orgId
+  async function load_unpaid_orders(orgId: number | null, userId: number | null) {
     let requestPayments = supabase
       .from('employee_unpaid_orders')
       .select('*')
@@ -113,8 +136,10 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         map.set(key, list)
       }
     })
-    mapping.value = map
+    return map
+  }
 
+  async function load_unpaid_settlements(orgId: number | null, userId: number | null) {
     let requestSettlements = supabase
       .from('employee_unpaid_settlements')
       .select()
@@ -135,36 +160,78 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       list.push(record)
       settlementsMap.set(key, list)
     })
-    settlements.value = settlementsMap
+    return settlementsMap
   }
 
-  const report = computedAsync(async () => {
-    const orgId = org.value
+  function getWorkingDaysInRange(startDate: Dayjs, endDate: Dayjs) {
+    let start = startDate
+    const end = endDate
+    let workingDays = 0
+
+    while (!start.isAfter(end, 'day')) {
+      const dayOfWeek = start.day()
+      if (dayOfWeek !== 0) {
+        // 0 - это воскресенье, пропускаем его
+        workingDays++
+      }
+      start = start.add(1, 'day')
+    }
+    return workingDays
+  }
+
+  async function calculate_report(orgId: number | null) {
     if (!orgId) {
       return []
     }
 
+    const { data: lastPayment } = await supabase
+      .from('employee_payments')
+      .select('created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    console.log('lastPayment', lastPayment?.created_at)
+
+    const from = dayjs(lastPayment?.created_at)
+    const till = dayjs().subtract(1, 'day')
+
+    console.log('from', from)
+    console.log('till', till)
+
+    const response = await supabase
+      .from('employee_absences')
+      .select('*')
+      .lte('start_date', till.format('YYYY-MM-DD'))
+      .gte('end_date', from.format('YYYY-MM-DD'))
+
+    absencesList.value = response.data || []
+    console.log('absencesList', response.data)
+
     const userStore = useUsersStore()
 
-    const paymentsMap = mapping.value
-    const settlementsMap = settlements.value
+    const activeUserIds = new Set([...mapping.value.keys(), ...settlements.value.keys()])
 
-    const keys = new Set([...paymentsMap.keys(), ...settlementsMap.keys()])
+    console.log('orgId', orgId)
 
-    const responseTerms = await supabase
-      .from('user_conditions')
-      .select()
-      .eq('organization', orgId)
-      .in('user_id', Array.from(keys.values()))
+    const responseTerms = await supabase.from('user_conditions').select().eq('organization', orgId)
+
+    const allTermsData = responseTerms.data || []
+    console.log('allTermsData', allTermsData.length)
 
     const terms = groupBy(
       responseTerms.data!.map((v) => v as PaymentTerms),
       (v) => v.user_id,
     )
 
+    const finalKeys = new Set([
+      ...Array.from(activeUserIds).map(Number),
+      ...allTermsData.map((t) => Number(t.user_id)),
+    ])
+
     const list = [] as Record[]
 
-    for (const employee of keys) {
+    for (const employee of finalKeys) {
       let orders_amount = 0
       let orders_driver = 0
       let orders_profit = 0
@@ -185,7 +252,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         income_tax: 0,
       }) as PaymentTerms
 
-      paymentsMap.get(employee)?.forEach((p) => {
+      mapping.value.get(employee)?.forEach((p) => {
         if (p.order.excluded || p.order.stage === 3) {
           // ignore
         } else {
@@ -220,7 +287,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const settlementsRecords = [] as Array<SettlementEmployee>
       let settlementsTotal = 0
 
-      settlementsMap.get(employee)?.forEach((v) => {
+      settlements.value.get(employee)?.forEach((v) => {
         if (v.employee == employee) {
           settlementsRecords.push(v)
           settlementsTotal += v.amount
@@ -238,7 +305,29 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         toPayment += (totalProfit * employeeTerms.percent_of_profit) / 100
       }
       if (employeeTerms.fixed_salary) {
-        toPayment += employeeTerms.fixed_salary
+        const totalWorkingDaysInPeriod = getWorkingDaysInRange(from, till)
+        const employeeAbsences = absencesList.value?.filter((a) => a.employee === employee) || []
+
+        let missedWorkingDays = 0
+        employeeAbsences.forEach((absence) => {
+          let absenceStart = dayjs(absence.start_date).isAfter(from)
+            ? dayjs(absence.start_date)
+            : from
+
+          const absenceEnd = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
+
+          while (!absenceStart.isAfter(absenceEnd, 'day')) {
+            if (absenceStart.day() !== 0) {
+              missedWorkingDays++
+            }
+            absenceStart = absenceStart.add(1, 'day')
+          }
+        })
+        const totalDaysInPeriod = getWorkingDaysInRange(from, till)
+        const salaryPerDay = employeeTerms.fixed_salary / totalDaysInPeriod
+
+        const actualDaysWorked = Math.max(0, totalWorkingDaysInPeriod - missedWorkingDays)
+        toPayment += actualDaysWorked * salaryPerDay
       }
 
       const listOfOrdersInProcessing =
@@ -273,7 +362,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
     list.sort((a, b) => b.summary.payout - a.summary.payout)
 
     return list
-  }, [])
+  }
 
   const employees = computed(() => {
     try {

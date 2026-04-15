@@ -31,7 +31,7 @@ export const useSettlementsEmployeeStore = defineStore('employee_settlements', (
         .select()
         .eq('organization', orgId)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(20)
 
       if (response.status == 200) {
         const list: Array<SettlementEmployee> = []
