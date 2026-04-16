@@ -44,6 +44,14 @@ function onClose() {
   selectedUser.value = null
 }
 
+function fired(user: User) {
+  if (user.fired) {
+    return 'fired'
+  } else {
+    return ''
+  }
+}
+
 const cols = [
   {
     label: 'Real name',
@@ -63,6 +71,11 @@ const cols = [
   {
     label: 'Email',
     value: (v: User) => v.email,
+    size: 300,
+  },
+  {
+    label: 'details',
+    value: (v: User) => fired(v),
     size: 300,
   },
 ]
@@ -99,12 +112,7 @@ watch(
       <tr
         class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
       >
-        <th
-          v-for="col in cols"
-          class="p-4"
-          :key="col.label"
-          :style="{ width: col.size + 'px' }"
-        >
+        <th v-for="col in cols" class="p-4" :key="col.label" :style="{ width: col.size + 'px' }">
           <p class="block antialiasing tracking-wider font-thin leading-none">
             {{ col.label }}
           </p>
@@ -112,7 +120,12 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="user in usersStore.listing" :key="user.id" class="hover:bg-base-200" @click="editUser(user)">
+      <tr
+        v-for="user in usersStore.listing"
+        :key="user.id"
+        class="hover:bg-base-200"
+        @click="editUser(user)"
+      >
         <td
           v-for="col in cols"
           class="py-3 px-4"

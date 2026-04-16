@@ -14,6 +14,7 @@ export interface UserCreate {
   phone: string
   email: string
   team: string
+  fired: boolean
 }
 
 export interface UserUpdate {
@@ -22,6 +23,7 @@ export interface UserUpdate {
   phone?: string
   email?: string
   team?: string
+  fired?: boolean
 }
 
 export const useUsersStore = defineStore('user', () => {

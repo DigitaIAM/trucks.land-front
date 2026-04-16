@@ -49,6 +49,7 @@ const employeesList = computedAsync(async () => {
   const response = await supabase
     .from('users')
     .select('id, real_name, user_conditions!user_conditions_user_id_fkey!inner(user_id)')
+    .eq('fired', false)
 
   return response.data?.sort((a, b) => a.real_name.localeCompare(b.real_name))
 }, [])

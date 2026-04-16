@@ -19,6 +19,7 @@ const percent_of_gross = ref<number | null>(null)
 const percent_of_profit = ref<number | null>(null)
 const fixed_salary = ref<number | null>(null)
 const income_tax = ref<number | null>(null)
+const fired = ref(false)
 
 const emit = defineEmits(['closed'])
 
@@ -45,6 +46,7 @@ async function resetAndShow(user: User | null) {
   percent_of_profit.value = condition?.percent_of_profit
   fixed_salary.value = condition?.fixed_salary
   income_tax.value = condition?.income_tax
+  fired.value = user?.fired || false
 
   const access = await accessMatrixStore.getAccessMatrix(props.org.id, user?.id)
 
@@ -83,6 +85,7 @@ function saveUser() {
         // percent_of_gross: percent_of_gross.value,
         // percent_of_profit: percent_of_profit.value
         // fixed_salary.value
+        fired: fired.value,
       } as UserCreate)
     } else {
       usersStore.update(id.value, {
@@ -94,6 +97,7 @@ function saveUser() {
         // percent_of_gross: percent_of_gross.value,
         // percent_of_profit: percent_of_profit.value
         // fixed_salary.value
+        fired: fired.value,
       } as UserUpdate)
     }
     edit_user.close()
@@ -101,6 +105,10 @@ function saveUser() {
   } catch (e) {
     console.log('error', e)
   }
+}
+
+function handleClick() {
+  fired.value = !fired.value
 }
 </script>
 
@@ -112,9 +120,12 @@ function saveUser() {
 
   <Modal id="edit_user">
     <ModalBox class="w-4/5">
-      <div class="flex space-x-5 w-full">
-        <div class="md:w-2/3 md:mb-0">
+      <div class="flex items-start justify-between">
+        <div>
           <Text size="2xl">{{ title }}</Text>
+        </div>
+        <div class="flex items-center justify-between">
+          <Button :class="{ 'bg-accent': fired }" @click="handleClick">fired </Button>
         </div>
       </div>
 
