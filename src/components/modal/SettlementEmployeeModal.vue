@@ -18,8 +18,8 @@ const id = ref<number>()
 const organization = ref<number>()
 const employee = ref<number>()
 const settlement_type = ref<string>('bonus')
-const notes = ref('')
 const amount = ref<number>()
+const notes = ref('')
 const created_by = ref<User>()
 
 const emit = defineEmits(['closed'])
@@ -39,8 +39,8 @@ function resetAndShow(settlement: SettlementEmployee | null) {
   organization.value = settlement?.organization
   employee.value = settlement ? { id: settlement.employee } : null
   settlement_type.value = settlement?.settlement_type ?? 'bonus'
-  notes.value = settlement?.notes || ''
   amount.value = settlement?.amount
+  notes.value = settlement?.notes || ''
   created_by.value = settlement
     ? { id: settlement.created_by }
     : account
@@ -51,21 +51,23 @@ function resetAndShow(settlement: SettlementEmployee | null) {
 }
 
 function savePayment() {
+  if (!employee.value?.id || !amount.value) {
+    alert('Please select an employee and enter an amount')
+    return
+  }
+
+  const paymentData = {
+    organization: authStore.oid,
+    employee: employee.value.id,
+    settlement_type: settlement_type.value, // 'bonus', 'premium' или 'vacation pay'
+    amount: amount.value,
+    notes: notes.value,
+  }
+
   if (id.value == null) {
-    settlementsEmployeeStore.create({
-      organization: authStore.oid,
-      employee: employee.value?.id,
-      settlement_type: settlement_type.value,
-      notes: notes.value,
-      amount: amount.value,
-    } as SettlementEmployeeCreate)
+    settlementsEmployeeStore.create(paymentData as SettlementEmployeeCreate)
   } else {
-    settlementsEmployeeStore.update(id.value, {
-      employee: employee.value?.id,
-      settlement_type: settlement_type.value,
-      notes: notes.value,
-      amount: amount.value,
-    } as SettlementEmployeeUpdate)
+    settlementsEmployeeStore.update(id.value, paymentData as SettlementEmployeeUpdate)
   }
   settlement_modal.close()
   emit('closed')
@@ -116,7 +118,12 @@ function setAbsenceType(v: string) {
       <TextInput class="w-full" v-model="notes" />
       <div class="flex space-x-3 mb-2 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <Label class="mt-4 mb-2">Amount</Label>
+          <Label class="mt-4 mb-2"
+            >Amount
+            <span class="text-xs font-normal opacity-70">
+              ({{ settlement_type === 'vacation pay' ? 'UZS' : 'USD' }})
+            </span>
+          </Label>
           <TextInput v-model="amount" />
           <p
             v-if="settlement_type === 'vacation pay'"

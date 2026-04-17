@@ -11,6 +11,7 @@ export interface EmployeePaymentSettlementsCreate {
   doc_payment: number
   doc_settlements: number
   amount: number
+  settlement_type: string
 }
 
 export const useEmployeePaymentSettlementsStore = defineStore(

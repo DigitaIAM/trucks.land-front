@@ -128,6 +128,14 @@ const cols = [
     value: (v: EmployeePaymentSummary) => '$' + v.payout.toFixed(0),
     size: 100,
   },
+  {
+    label: 'vacation uzs',
+    value: (v: EmployeePaymentSummary) => {
+      const formatted = new Intl.NumberFormat('ru-RU').format(v.vacation_amount)
+      return v.vacation_amount == 0 ? '' : formatted
+    },
+    size: 100,
+  },
 ]
 
 async function createPayment() {

@@ -5,9 +5,12 @@ export interface SettlementEmployee extends SettlementEmployeeCreate {
   created_at: string
   created_by: number
   organization: number
+  amount: number
+  settlement_type: string
 }
 
 export interface SettlementEmployeeCreate {
+  organization: number
   employee: number
   notes: string
   amount: number

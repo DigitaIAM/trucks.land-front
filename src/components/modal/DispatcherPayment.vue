@@ -121,7 +121,7 @@ const settlementsCols = [
 
   {
     label: 'details',
-    value: (v: SettlementEmployee) => v.notes,
+    value: (v: SettlementEmployee) => v.settlement_type,
     size: 200,
   },
   {
@@ -179,19 +179,30 @@ const toPayProfit = computed(() => {
       <div class="flex flex-row gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <div class="flex flex-col items-end">
-          <Text v-if="summary?.orders_in_progress?.size > 0"
+          <Text
+            v-if="summary?.orders_in_progress?.size > 0 && summary?.orders_in_progress?.size > 0"
             >Orders {{ summary?.orders_number }} /
             {{ summary?.orders_in_progress.size }}
           </Text>
-          <Text v-else>Orders {{ summary?.orders_number }}</Text>
+          <Text v-else-if="summary?.orders_number > 0">Orders {{ summary?.orders_number }}</Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text>Orders amount $ {{ summary?.orders_amount.toFixed(2) }}</Text>
-          <Text>Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text>
+          <Text v-if="summary?.orders_amount > 0"
+            >Orders amount $ {{ summary?.orders_amount.toFixed(2) }}</Text
+          >
+          <Text v-if="summary?.orders_driver > 0"
+            >Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text
+          >
+          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text>Profit $ {{ summary?.orders_profit.toFixed(2) }}</Text>
-          <Text>Direct $ {{ summary?.orders_profit_direct.toFixed(2) }}</Text>
+          <Text v-if="summary?.orders_profit > 0"
+            >Profit $ {{ summary?.orders_profit.toFixed(2) }}</Text
+          >
+          <Text v-if="summary?.orders_profit_direct > 0"
+            >Direct $ {{ summary?.orders_profit_direct.toFixed(2) }}</Text
+          >
+          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
@@ -202,7 +213,10 @@ const toPayProfit = computed(() => {
             % of gross
             {{ summary?.paymentTerms.percent_of_gross }}
           </Text>
-          <Text>Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text>
+          <Text v-if="summary?.settlements_total > 0"
+            >Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text
+          >
+          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
           <Text v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
@@ -213,13 +227,25 @@ const toPayProfit = computed(() => {
         <div class="flex flex-col items-end">
           <Text>Pay-out $ {{ summary?.payout.toFixed(2) }}</Text>
         </div>
+        <div class="flex flex-col items-end">
+          <Text v-if="summary?.vacation_amount > 0"
+            >Vacation UZS
+            {{ summary?.vacation_amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') }}</Text
+          >
+          <Text v-else></Text>
+        </div>
+        <div class="flex flex-col items-end">
+          <Text v-if="summary?.missed_days > 0">Missed days {{ summary?.missed_days }}</Text>
+          <Text v-else></Text>
+        </div>
       </div>
 
       <div class="">
-        <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
+        <Text v-if="summary?.orders_number > 0" bold size="lg" class="mb-4 mt-4">Orders</Text>
+        <Text v-else></Text>
       </div>
       <div class="overflow-clip flex flex-col">
-        <table class="w-full table-fixed text-left">
+        <table v-if="summary?.orders_number > 0" class="w-full table-fixed text-left">
           <thead>
             <tr
               class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
@@ -289,9 +315,13 @@ const toPayProfit = computed(() => {
           </table>
         </div>
         <div class="mt-3 mb-3">
-          <Text bold size="lg" class="mb-4">Settlements</Text>
+          <Text v-if="summary?.settlements_total > 0" bold size="lg" class="mb-4">Settlements</Text>
+          <Text v-else></Text>
           <div class="flex-1 overflow-y-auto max-h-[15vh]">
-            <table class="w-full text-left table-auto min-w-max">
+            <table
+              v-if="summary?.settlements_total > 0"
+              class="w-full text-left table-auto min-w-max"
+            >
               <thead>
                 <tr
                   class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
