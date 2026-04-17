@@ -58,67 +58,67 @@ async function generatePdf() {
   await openInNewTab(pdfDoc)
 
   // Send by email
-  const base64String = await pdfDoc.saveAsBase64()
-
-  const email = {
-    from: { address: `noreply@${org.domain}` },
-    to: [
-      {
-        email_address: {
-          address: 'shabanovanatali@gmail.com',
-          name: `${employee?.real_name}`,
-        },
-      },
-    ],
-    //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
-    subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
-    htmlbody:
-      'Greetings,<br />' +
-      '<br />' +
-      'Payment sheet of month #&nbsp;' +
-      `${document.month}` +
-      '&nbsp;of&nbsp;' +
-      `${document.year}` +
-      '&nbsp;is attached.<br />' +
-      '<br />' +
-      'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
-      '<br />' +
-      'Best Regards,<br />' +
-      '<br />' +
-      `${org.name}<br />` +
-      `${org.address1}<br />` +
-      `${org.address2}<br />`,
-    attachments: [
-      {
-        name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
-        content: base64String,
-        mime_type: 'plain/txt',
-      },
-    ],
-  }
-
-  const myFetch = createFetch({
-    // baseUrl: 'https://api.zeptomail.com/',
-    // baseUrl: 'http://localhost:5173/',
-    options: {
-      async beforeFetch({ options }) {
-        options.headers = {
-          ...options.headers,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: token,
-        }
-        return { options }
-      },
-    },
-    fetchOptions: { mode: 'cors' },
-  })
-
-  const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
-
-  console.log('isFetching', isFetching)
-  console.log('error', error)
-  console.log('data', data)
+  //   const base64String = await pdfDoc.saveAsBase64()
+  //
+  //   const email = {
+  //     from: { address: `noreply@${org.domain}` },
+  //     to: [
+  //       {
+  //         email_address: {
+  //           address: 'shabanovanatali@gmail.com',
+  //           name: `${employee?.real_name}`,
+  //         },
+  //       },
+  //     ],
+  //     //cc: [{ email_address: { address: 'sitora@cnulogistics.com', name: 'Sitora Subkhankulova' } }], // 'shabanovanatali@gmail.com', name: '' address: `${dispatcher?.email}`,name: `${dispatcher?.real_name}`
+  //     subject: `Payment sheet ${document.month}-${org.code3}-${document.id}`,
+  //     htmlbody:
+  //       'Greetings,<br />' +
+  //       '<br />' +
+  //       'Payment sheet of month #&nbsp;' +
+  //       `${document.month}` +
+  //       '&nbsp;of&nbsp;' +
+  //       `${document.year}` +
+  //       '&nbsp;is attached.<br />' +
+  //       '<br />' +
+  //       'For any inquiries regarding calculations, please contact us at emma.clark@caravanfreight.net' +
+  //       '<br />' +
+  //       'Best Regards,<br />' +
+  //       '<br />' +
+  //       `${org.name}<br />` +
+  //       `${org.address1}<br />` +
+  //       `${org.address2}<br />`,
+  //     attachments: [
+  //       {
+  //         name: `paySheet_${document.month}-${org.code3}-${document.id}.pdf`,
+  //         content: base64String,
+  //         mime_type: 'plain/txt',
+  //       },
+  //     ],
+  //   }
+  //
+  //   const myFetch = createFetch({
+  //     // baseUrl: 'https://api.zeptomail.com/',
+  //     // baseUrl: 'http://localhost:5173/',
+  //     options: {
+  //       async beforeFetch({ options }) {
+  //         options.headers = {
+  //           ...options.headers,
+  //           Accept: 'application/json',
+  //           'Content-Type': 'application/json',
+  //           Authorization: token,
+  //         }
+  //         return { options }
+  //       },
+  //     },
+  //     fetchOptions: { mode: 'cors' },
+  //   })
+  //
+  //   const { isFetching, error, data } = await myFetch('/zeptomail/v1.1/email').post(email)
+  //
+  //   console.log('isFetching', isFetching)
+  //   console.log('error', error)
+  //   console.log('data', data)
 }
 
 const state = reactive({})
