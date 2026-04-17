@@ -52,7 +52,7 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
     font: font,
     column: {
       widthMode: 'auto',
-      overrideWidths: [30, 150, 150],
+      overrideWidths: [30, 150, 150, 150],
     } as ColumnOptions,
   } as DrawTableOptions
 
@@ -60,18 +60,23 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
   const fh10 = font.heightAtSize(options.textSize) * 1.8
 
   // Define the table data
-  let tableData = [['#', 'order', 'gross']] as CellContent[][]
+  let tableData = [['#', 'order', 'order amount $', 'd/payments $']] as CellContent[][]
 
   const lines = await usePaymentToEmployeeStore().fetchingOrder(document.id)
   let pos = 0
   for (const line of lines) {
-    tableData.push([`${++pos}`, `${org.code2}-${line.order.number}`, `\$${line.order.cost}`])
+    tableData.push([
+      `${++pos}`,
+      `${org.code2}-${line.order.number}`,
+      `${line.order.cost}`,
+      `${line.order.driver_cost}`,
+    ])
 
     if (currentY - fh12 - fh10 * (tableData.length - 1) < fh12) {
       await drawTable(pdfDoc, page, tableData, margin, currentY, options)
 
       page = pdfDoc.addPage()
-      tableData = [['#', 'order', 'gross']] as CellContent[][]
+      tableData = [['#', 'order', 'order amount $', 'd/payments $']] as CellContent[][]
 
       currentY = page.getHeight() - margin
     }
@@ -144,18 +149,28 @@ async function _head(
 
   const fs = 10
   text_right(page, font, fs, 'Total gross:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.gross}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.gross.toFixed(2)}`, cx + bls, cy)
 
-  text_right(page, font, fs, 'Dispatch fee:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${document.percent_of_gross}\%`, cx + bls, cy)
+  text_right(page, font, fs, 'D/payment:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.driver_payment.toFixed(2)}`, cx + bls, cy)
+
+  const gross = Number(document.gross ?? 0)
+  const driverPayment = Number(document.driver_payment ?? 0)
+  const actualProfit = gross - driverPayment
+  text_right(page, font, fs, 'Profit:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `\$${actualProfit.toFixed(2)}`, cx + bls, cy)
+
+  text_right(page, font, fs, '% of profit:', cx, cy)
+  cy -= bls + text_left(page, font, fs, `${document.percent_of_profit}`, cx + bls, cy)
 
   text_right(page, font, fs, 'Calculation:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.to_pay}`, cx + bls, cy)
+  cy -= bls + text_left(page, font, fs, `\$${document.to_pay.toFixed(2)}`, cx + bls, cy)
 
   text_right(page, font, fs, 'Settlements:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.settlements}`, cx + bls, cy)
+  const settlementsAmount = document.settlements || 0
+  cy -= bls + text_left(page, font, fs, `\$${Number(settlementsAmount).toFixed(2)}`, cx + bls, cy)
 
-  const toPay = (document.to_pay + document.settlements).valueOf()
+  const toPay = ((document.to_pay ?? 0) + (document.settlements ?? 0)).toFixed(2)
   text_right(page, boldFont, fs, 'Total pay:', cx, cy)
   cy -= bls + text_left(page, boldFont, fs, `\$${toPay}`, cx + bls, cy)
 
@@ -175,13 +190,13 @@ async function _head(
       page,
       font,
       fs,
-      `${document.ex_rate} sum`,
+      `${document.ex_rate.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
       font.widthOfTextAtSize('Ex rate:', fs) + 60,
       cy,
     )
 
   text_left(page, font, fs, 'Date:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, `${date1}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
+  cy -= bls + text_left(page, font, fs, `${date2}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
 
   const toPaySum = toPay * document.ex_rate
   text_left(page, font, fs, 'Calculation:', textX + bls, cy)
@@ -191,46 +206,21 @@ async function _head(
       page,
       font,
       fs,
-      `${toPaySum.toFixed(2)} sum`,
+      `${toPaySum.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
       font.widthOfTextAtSize('Calculation:', fs) + 60,
       cy,
     )
 
-  text_left(page, font, fs, 'Taxes:', textX + bls, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${document.income_tax} %`,
-      font.widthOfTextAtSize('Taxes:', fs) + 60,
-      cy,
-    )
-
   const perIn_tax = (toPaySum * (document.income_tax - 0.1)) / 100
-  text_left(page, font, fs, 'Personal Income Tax:', textX + bls, cy)
+  text_left(page, font, fs, 'Tax 7.5%:', textX + bls, cy)
   cy -=
     bls +
     text_left(
       page,
       font,
       fs,
-      `${perIn_tax.toFixed(2)} sum`,
-      font.widthOfTextAtSize('Personal Income Tax:', fs) + 60,
-      cy,
-    )
-
-  const inps_tax = (toPaySum * 0.1) / 100
-  text_left(page, font, fs, 'INPS:', textX + bls, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${inps_tax.toFixed(2)} sum`,
-      font.widthOfTextAtSize('INPS:', fs) + 60,
+      `${perIn_tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
+      font.widthOfTextAtSize('Tax 7.5%:', fs) + 60,
       cy,
     )
 
@@ -242,7 +232,7 @@ async function _head(
       page,
       boldFont,
       fs,
-      `${totalInSum.toFixed(2)} sum`,
+      `${totalInSum.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
       font.widthOfTextAtSize('Total pay:', fs) + 65,
       cy,
     )

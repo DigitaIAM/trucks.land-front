@@ -208,7 +208,7 @@ function close() {
               <QueryAndShow name="real_name" :id="document?.employee" :store="userStore" />
             </Text>
           </div>
-          <Text size="xl">$ {{ document?.payout }}</Text>
+          <Text size="xl">$ {{ document?.payout.toFixed(2) }}</Text>
         </div>
         <div>
           <div class="justify-self-end">
@@ -237,7 +237,7 @@ function close() {
           {{ document?.fixed_salary }}
         </Text>
         <Text>Rewards $ {{ document?.settlements }}</Text>
-        <Text>Payout $ {{ document?.to_pay }}</Text>
+        <Text>Payout $ {{ document?.to_pay.toFixed(2) }}</Text>
       </div>
       <div class="mb-2 mt-12">
         <Text bold size="lg" class="mb-4 mt-4">Orders</Text>
