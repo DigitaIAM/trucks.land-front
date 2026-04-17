@@ -26,7 +26,7 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import { employeePaymentsExportToExcel } from '@/utils/export_dispatchers_payments_to_excel.ts'
+import { employeePaymentsExportToExcel } from '@/utils/export_employee_payments_to_excel.ts'
 import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
 import moment from 'moment-timezone'
 
@@ -128,6 +128,30 @@ const cols = [
   },
 ]
 
+const orgId = computed(() => authStore.org?.id)
+
+const currentYear = computed(() => {
+  const f = filters.value.find((v) => v.key === 'year')
+  return f ? f.val.id : moment().year() // по умолчанию текущий
+})
+
+const currentMonth = computed(() => {
+  const f = filters.value.find((v) => v.key === 'month')
+  if (!f) return moment().month() + 1
+  const val = typeof f.val === 'object' ? f.val.id : f.val
+
+  return parseInt(val)
+})
+
+async function handleExport() {
+  if (!orgId.value) {
+    alert('Organization not defined')
+    return
+  }
+
+  await employeePaymentsExportToExcel(orgId.value, currentYear.value, currentMonth.value)
+}
+
 function setFilter(key, val) {
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
@@ -176,11 +200,7 @@ function capitalizeFirstLetter(val) {
   <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
-    <Button
-      class="btn-soft font-light tracking-wider flex"
-      @click="employeePaymentsExportToExcel(paymentToEmployeeStore.listing!)"
-      >Excel
-    </Button>
+    <Button class="btn-soft font-light tracking-wider flex" @click="handleExport">Excel </Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">

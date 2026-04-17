@@ -187,7 +187,25 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
     }
   }
 
-  return { setContext, setFilters, fetchingOrder, listing, create }
+  async function fetchJournalData(orgId: number, year: number, month: number) {
+    const monthId = typeof month === 'object' ? month.id : month
+    const yearId = typeof year === 'object' ? year.id : year
+
+    const { data, error } = await supabase
+      .from('employee_payments_journal')
+      .select('*')
+      .eq('organization', orgId)
+      .eq('year', yearId)
+      .eq('month', monthId)
+
+    if (error) {
+      console.error('Error', error)
+      return []
+    }
+    return data
+  }
+
+  return { setContext, setFilters, fetchingOrder, listing, create, fetchJournalData }
 })
 
 if (import.meta.hot) {
