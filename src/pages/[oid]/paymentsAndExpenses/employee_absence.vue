@@ -123,23 +123,35 @@ function clickOnCell(employee: object, day: number) {
     </div>
     <AbsenceEmployee :event="selectedEvent" @on-update="fetchAbsences"></AbsenceEmployee>
   </div>
-  <div class="timeline-container">
-    <div class="grid-table" :style="{ gridTemplateColumns: `200px repeat(${daysInMonth}, 1fr)` }">
-      <div class="header-cell sticky-col">Employees</div>
+  <div class="timeline-container h-[calc(100vh-200px)] overflow-auto">
+    <div
+      class="grid"
+      :style="{
+        gridTemplateColumns: `200px repeat(${daysInMonth}, 1fr)`,
+        display: 'grid',
+      }"
+    >
+      <div class="header-cell sticky top-0 z-20 bg-white sticky-col left-0 font-medium">
+        Employees
+      </div>
       <div
         v-for="day in calendarDays"
         :key="day"
-        class="header-cell"
+        class="header-cell sticky top-0 z-10 bg-white border-b"
         :class="{ 'weekend-bg': isWeekend(day) }"
       >
         {{ day }}
       </div>
+
       <template v-for="employee in employeesList" :key="employee.id">
-        <div class="employee-cell sticky-col">{{ employee.real_name }}</div>
+        <div class="employee-cell sticky left-0 z-10 bg-gray-50 border-r font-semibold">
+          {{ employee.real_name }}
+        </div>
+
         <div
           v-for="day in calendarDays"
           :key="day"
-          class="day-cell"
+          class="day-cell border-b border-r"
           :class="[getEvent(employee.id, day), { 'weekend-bg': isWeekend(day) }]"
           @click="clickOnCell(employee, day)"
         ></div>
@@ -173,16 +185,18 @@ function clickOnCell(employee: object, day: number) {
   padding: 16px;
 }
 
-.header-cell {
-  position: sticky;
-  justify-content: center;
-  align-items: center;
-  z-index: 20;
-  background: #f1f5f9;
-  padding: 16px;
-  font-weight: bold;
-  border-bottom: 2px solid #cbd5e1;
-  border-right: 1px solid #e2e8f0;
+.header-cell,
+.employee-cell,
+.day-cell {
+  min-height: 50px; /* Увеличиваем высоту строки */
+  display: flex;
+  align-items: center; /* Центрируем текст по вертикали */
+  justify-content: center; /* Центрируем текст по горизонтали */
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 4px;
+  font-size: 14px;
+  color: #374151; /* Темно-серый цвет текста */
 }
 
 /* Пересечение шапки и левой колонки */
