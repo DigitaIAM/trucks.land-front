@@ -80,7 +80,7 @@ const cols = [
       resolve(
         v,
         'owner_' + v.owner,
-        () => ({ name: '-' }),
+        () => ({ name: '?' }),
         () => ownersStore.resolve(v.owner),
         (map) => map.name,
       ),
