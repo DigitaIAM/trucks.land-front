@@ -157,7 +157,7 @@ async function createPayment() {
 <template>
   <DispatcherPayment :summary="selectedRecord" />
 
-  <Text class="px-4" size="2xl">Unpaid orders</Text>
+  <Text class="px-4" size="2xl">Unpaid commissions and salaries</Text>
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
