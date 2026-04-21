@@ -200,7 +200,12 @@ function capitalizeFirstLetter(val) {
   <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
-    <Button class="btn-soft font-light tracking-wider flex" @click="handleExport">Excel </Button>
+    <Button
+      v-if="authStore.account?.access.is_payroll_accountant === true"
+      class="btn-soft font-light tracking-wider flex"
+      @click="handleExport"
+      >Excel
+    </Button>
   </div>
   <div class="flex flex-row gap-6 px-4 mt-3">
     <Badge lg ghost v-for="filter in filters" :key="filter.key" @click="delFilter(filter.key)">
