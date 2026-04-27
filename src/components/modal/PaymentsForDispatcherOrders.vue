@@ -42,7 +42,7 @@ watch(
 
 // resetAndShow(props.id)
 
-async function resetAndShow() {
+async function resetAndShow(document: PaymentToEmployeeSummary) {
   if (!props.document?.id) return
 
   await paymentToDispatcherOrdersStore.loading(document.id)
