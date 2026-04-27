@@ -99,7 +99,6 @@ const selectedDaysCount = computed(() => {
   const start = dayjs(datetime.value[0])
   const end = dayjs(datetime.value[1])
 
-  // Проверка на валидность дат
   if (!start.isValid() || !end.isValid()) return 0
 
   return end.diff(start, 'day') + 1

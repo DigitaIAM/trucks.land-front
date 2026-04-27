@@ -20,7 +20,7 @@ export const useOrgData = defineBasicLoader(
     await ordersStore.setContext([
       { key: 'organization', val: org.id } as KV,
       { key: 'broker', val: null } as KV,
-      { key: 'stage', val: [2, 4, 5, 6, 7] } as KV,
+      { key: 'stage', val: [2, 4, 5, 6, 7, 18] } as KV,
     ])
     //console.table(org)
     return org
