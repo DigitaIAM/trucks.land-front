@@ -106,17 +106,23 @@ const links = [
     path: '/paymentsAndExpenses/paymentsToDispatchers',
     perm: (access) => access.is_payroll_accountant || access.is_admin || access.is_dispatcher,
   },
-  {
-    name: 'Rewards',
-    //SALARY accountant
-    icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
-    path: '/paymentsAndExpenses/settlements_to_employee',
-    perm: (access) => access.is_admin || access.is_payroll_accountant,
-  },
+  // {
+  //   name: 'Rewards',
+  //   //SALARY accountant
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
+  //   path: '/paymentsAndExpenses/settlements_to_employee',
+  //   perm: (access) => access.is_admin || access.is_payroll_accountant,
+  // },
   {
     name: 'Absences',
     icon: defineAsyncComponent(() => import('~icons/streamline/calendar-edit')),
     path: '/paymentsAndExpenses/employee_absence',
+    perm: (access) => access.is_admin,
+  },
+  {
+    name: 'Hiring',
+    icon: defineAsyncComponent(() => import('~icons/streamline/user-sync-online-in-person')),
+    path: '/paymentsAndExpenses/employee_hiring',
     perm: (access) => access.is_admin,
   },
 ]
