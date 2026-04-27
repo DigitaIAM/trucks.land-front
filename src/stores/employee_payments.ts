@@ -16,12 +16,17 @@ export interface PaymentToEmployeeSummary {
   percent_of_profit: number
   fixed_salary: number
   payment: number
+  settlement_bonus: number
+  settlement_premium: string
+  settlement_vacation: string
+  settlement_note: string
   settlements: number
   to_pay: number
   ex_rate: number
   income_tax: number
   year: number
   month: number
+  payout: number
 }
 
 export interface PaymentToEmployee extends PaymentToEmployeeCreate {
@@ -41,6 +46,9 @@ export interface PaymentToEmployeeCreate {
   to_pay: number
   ex_rate: number
   income_tax: number
+  settlement_amount: number
+  settlement_type: string
+  settlement_note: string
 }
 
 export interface PaymentToEmployeeSummaryDetails {

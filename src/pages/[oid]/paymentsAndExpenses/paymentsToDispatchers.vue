@@ -43,12 +43,15 @@ const state = reactive({})
 
 const selectedDocument = ref<EmployeePaymentSummary | null>(null)
 
+const emit = defineEmits(['closed'])
+
 function openPayment(record: EmployeePaymentSummary) {
   selectedDocument.value = record
 }
 
 function onClose() {
   selectedDocument.value = null
+  emit('closed')
 }
 
 function resolve(
@@ -105,8 +108,8 @@ const cols = [
   //   size: 80,
   // },
   {
-    label: 'to pay',
-    value: (v: PaymentToEmployeeSummary) => '$' + v.to_pay.toFixed(0),
+    label: 'pay out',
+    value: (v: PaymentToEmployeeSummary) => '$' + v.payout.toFixed(0),
     size: 100,
   },
   // {
