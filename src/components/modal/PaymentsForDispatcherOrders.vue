@@ -305,30 +305,38 @@ async function savePayment() {
           % of gross
           {{ document?.percent_of_gross }}
         </Text>
-        <Text>To pay $ {{ document?.to_pay.toFixed(2) }}</Text>
+        <Text
+          >To pay $
+          {{
+            (
+              ((document?.gross - document?.driver_payment) * document?.percent_of_profit) /
+              100
+            ).toFixed(2)
+          }}</Text
+        >
         <Text v-if="(document?.fixed_salary || 0) > 0">
-          Fixed salary
+          Fixed salary $
           {{ document?.fixed_salary }}
         </Text>
         <div v-if="document?.settlement_bonus > 0" class="flex gap-2">
           <Text :class="document.settlement_bonus > 0">
-            bonus: $ {{ document.settlement_bonus.toFixed(2) }}
+            bonus: $ {{ document?.settlement_bonus.toFixed(2) }}
           </Text>
         </div>
         <div v-if="document?.settlement_premium > 0" class="flex gap-2">
           <Text :class="document.settlement_premium > 0">
-            premium: $ {{ document.settlement_premium.toFixed(2) }}
+            premium: $ {{ document?.settlement_premium.toFixed(2) }}
           </Text>
         </div>
         <div v-if="document?.settlement_vacation > 0" class="flex gap-2">
           <Text :class="document.settlement_vacation > 0">
-            vacation: UZS {{ document.settlement_vacation.toFixed(2) }}
+            vacation: UZS {{ document?.settlement_vacation.toFixed(2) }}
           </Text>
         </div>
         <Text>Payout $ {{ (document?.payout || 0).toFixed(2) }}</Text>
         <div v-if="document?.settlement_vacation > 0" class="flex gap-2">
           <Text :class="document.settlement_vacation > 0">
-            vacation: UZS {{ document.settlement_vacation.toFixed(2) }}
+            vacation: UZS {{ document?.settlement_vacation.toFixed(2) }}
           </Text>
         </div>
       </div>
