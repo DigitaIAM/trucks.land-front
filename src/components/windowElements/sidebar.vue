@@ -92,13 +92,13 @@ const links = [
     path: '/paymentsAndExpenses/owner_expenses',
     perm: (access) => access.is_accountant,
   },
-  {
-    name: 'Create payments',
-    //SALARY accountant
-    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-    path: '/reports/dispatcherUnpaidOrders',
-    perm: (access) => access.is_payroll_accountant || access.is_admin,
-  },
+  // {
+  //   name: 'Create payments',
+  //   //SALARY accountant
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+  //   path: '/reports/dispatcherUnpaidOrders',
+  //   perm: (access) => access.is_payroll_accountant || access.is_admin,
+  // },
   {
     name: 'Payments',
     //SALARY accountant
@@ -119,12 +119,12 @@ const links = [
     path: '/paymentsAndExpenses/employee_absence',
     perm: (access) => access.is_admin,
   },
-  {
-    name: 'Hiring',
-    icon: defineAsyncComponent(() => import('~icons/streamline/user-sync-online-in-person')),
-    path: '/paymentsAndExpenses/employee_hiring',
-    perm: (access) => access.is_admin,
-  },
+  // {
+  //   name: 'Hiring',
+  //   icon: defineAsyncComponent(() => import('~icons/streamline/user-sync-online-in-person')),
+  //   path: '/paymentsAndExpenses/employee_hiring',
+  //   perm: (access) => access.is_admin,
+  // },
 ]
 
 const buildLinks = computed(() => {
