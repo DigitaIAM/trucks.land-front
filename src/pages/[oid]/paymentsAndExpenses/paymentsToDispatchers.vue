@@ -172,6 +172,12 @@ async function handleExport() {
   await employeePaymentsExportToExcel(orgId.value, currentYear.value, currentMonth.value)
 }
 
+const areAllPaymentsClosed = computed(() => {
+  const listing = paymentToEmployeeStore.listing
+  if (!listing || listing.length === 0) return false
+  return listing.every((item) => item.closed === true)
+})
+
 function setFilter(key, val) {
   const index = filters.value.findIndex((v) => v.key === key)
   if (index < 0) {
@@ -222,12 +228,12 @@ function capitalizeFirstLetter(val) {
     <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
     <Button
       v-if="authStore.account?.access.is_payroll_accountant === true"
-      class="btn-error btn-soft font-light tracking-wider flex"
+      class="btn-soft font-light tracking-wider flex"
       @click="handleCloseMonth"
       >Close month
     </Button>
     <Button
-      v-if="authStore.account?.access.is_payroll_accountant === true"
+      v-if="authStore.account?.access.is_payroll_accountant === true && areAllPaymentsClosed"
       class="btn-soft font-light tracking-wider flex"
       @click="handleExport"
       >Excel
@@ -282,7 +288,7 @@ function capitalizeFirstLetter(val) {
           :style="{ width: col.size + 'px' }"
         >
           <div v-if="col.label === 'closed'">
-            <span v-if="line.closed" class="text-success font-medium">yes</span>
+            <span v-if="line.closed" class="text-success">yes</span>
             <span v-else class="text-gray-400">no</span>
           </div>
           <p

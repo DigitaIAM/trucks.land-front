@@ -199,9 +199,6 @@ function setAbsenceType(v: string) {
 }
 
 async function openSettlementModal() {
-  console.log('Пытаюсь открыть...')
-
-  // Сброс данных
   id.value = null
   employee.value = props.document?.employee || null
   settlement_note.value = ''
@@ -293,7 +290,12 @@ async function savePayment() {
         </div>
 
         <div class="flex items-center gap-3">
-          <Button class="btn-soft font-light tracking-wider" @click.stop="openSettlementModal">
+          <Button
+            v-if="document?.closed == true"
+            disabled
+            class="btn-soft font-light tracking-wider"
+            @click.stop="openSettlementModal"
+          >
             Add settlement
           </Button>
 

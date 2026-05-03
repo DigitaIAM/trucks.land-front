@@ -174,7 +174,7 @@ async function createPayment() {
         :disabled="reportDispatcherStore.employees.length == 0"
         class="btn-soft font-light tracking-wider"
         @click="createPayment()"
-        >Close month</Button
+        >Calculate</Button
       >
     </template>
   </div>
