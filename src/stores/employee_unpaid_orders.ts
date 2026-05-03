@@ -24,6 +24,7 @@ export interface EmployeePaymentSummary {
   paymentTerms: PaymentTerms
   settlements_total: number
   vacation_amount: number
+  settlement_fine: number
   missed_days: number
   settlements: Array<SettlementEmployee>
   payout: number
@@ -101,40 +102,45 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       .select('*')
       .eq('organization', orgId)
 
-    if (userId) {
-      requestPayments = requestPayments.or(
-        'created_by.eq.' + userId + ',vehicle_found_by.eq.' + userId,
-      )
-    }
-
     const responsePayments = await requestPayments
 
+    console.log('Сырые данные (заказы из базы):', responsePayments.data)
+
     const map = new Map<number, Array<EmployeePaymentRecord>>()
-    responsePayments.data?.forEach((json) => {
-      const record = {
-        employee: json['created_by'],
-        employee_payment: 0,
-        order: json as Order,
-      } as EmployeePaymentRecord
 
-      const key = record.employee
-      const list = map.get(key) ?? []
-      list.push(record)
-      map.set(key, list)
+    if (responsePayments.data && responsePayments.data.length > 0) {
+      responsePayments.data.forEach((json) => {
+        // 1. Обработка created_by (создатель заказа)
+        const createdBy = Number(json['created_by'] || json['employee'])
+        if (createdBy) {
+          const record = {
+            employee: createdBy,
+            employee_payment: 0,
+            order: json as Order,
+          } as EmployeePaymentRecord
 
-      if (json['vehicle_found_by']) {
-        const record = {
-          employee: json['vehicle_found_by'],
-          employee_payment: 0,
-          order: json as Order,
-        } as EmployeePaymentRecord
+          const list = map.get(createdBy) ?? []
+          list.push(record)
+          map.set(createdBy, list)
+        }
 
-        const key = record.employee
-        const list = map.get(key) ?? []
-        list.push(record)
-        map.set(key, list)
-      }
-    })
+        // 2. Обработка vehicle_found_by (нашедший транспорт)
+        const vehicleFoundBy = Number(json['vehicle_found_by'])
+        if (vehicleFoundBy) {
+          const record = {
+            employee: vehicleFoundBy,
+            employee_payment: 0,
+            order: json as Order,
+          } as EmployeePaymentRecord
+
+          const list = map.get(vehicleFoundBy) ?? []
+          list.push(record)
+          map.set(vehicleFoundBy, list)
+        }
+      })
+    }
+
+    console.log('Заполненный mapping:', map)
     return map
   }
 
@@ -203,7 +209,11 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
     const userStore = useUsersStore()
 
-    const activeUserIds = new Set([...mapping.value.keys(), ...settlements.value.keys()])
+    const activeUserIds = new Set(
+      [...mapping.value.keys(), ...settlements.value.keys()]
+        .filter((id) => id !== undefined && id !== null && !Number.isNaN(Number(id)))
+        .map(Number),
+    )
 
     const responseTerms = await supabase
       .from('user_conditions')
@@ -235,7 +245,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
     const list = [] as Record[]
 
-    for (const employee of finalKeys) {
+    for (const employeeKey of finalKeys) {
+      const employee = Number(employeeKey)
+
       let orders_amount = 0
       let orders_driver = 0
       let orders_profit = 0
@@ -258,34 +270,57 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         income_tax: 0,
       }) as PaymentTerms
 
-      mapping.value.get(employee)?.forEach((p) => {
+      // Считываем записи для сотрудника (приводим ключ к строке, либо сравниваем безопасно)
+      const employeeRecords =
+        mapping.value.get(String(employee)) || mapping.value.get(employee) || []
+
+      employeeRecords.forEach((p) => {
+        const order =
+          p.order && typeof p.order === 'object' ? JSON.parse(JSON.stringify(p.order)) : p.order
+
+        if (!p.order || !p.order.id) return
+
         if (p.order.excluded || p.order.stage === 3) {
           // ignore
         } else {
-          const profit = p.order.cost - p.order.driver_cost
+          const costVal = Number(p.order.cost) || 0
+          const driverCostVal = Number(p.order.driver_cost || p.order.driver_payment) || 0
+          const profit = costVal - driverCostVal
+
+          const createdBy = Number(p.order.created_by)
+          const vehicleFoundBy = Number(p.order.vehicle_found_by)
+
+          // 1. Прямая прибыль (Direct Profit) для нашедшего транспорт
+          if (vehicleFoundBy && vehicleFoundBy === employee) {
+            const percent = Number(p.order.percent_vf) || 100
+            const currentPc = percent / 100
+
+            orders_amount_direct += costVal * currentPc
+            orders_driver_direct += driverCostVal * currentPc
+            orders_profit_direct += profit * currentPc
+          }
+
+          // 2. Обычный Gross / Profit
           let pc = 1
-
-          if (p.order.vehicle_found_by) {
-            if (p.order.vehicle_found_by == employee) {
-              pc = p.order.percent_vf / 100
-
-              orders_amount_direct += p.order.cost * pc
-              orders_driver_direct += p.order.driver_cost * pc
-              orders_profit_direct += profit * pc
-
+          if (vehicleFoundBy) {
+            if (vehicleFoundBy === createdBy && vehicleFoundBy === employee) {
               pc = 0
+            } else if (vehicleFoundBy !== employee) {
+              const percent = Number(p.order.percent_vf) || 100
+              pc = (100 - percent) / 100
             } else {
-              pc = (100 - p.order.percent_vf) / 100
+              pc = 0
             }
           }
 
-          orders_amount += p.order.cost * pc
-          orders_driver += p.order.driver_cost * pc
+          orders_amount += costVal * pc
+          orders_driver += driverCostVal * pc
           orders_profit += profit * pc
         }
 
-        const num = paymentsByOrder.get(p.order.id) ?? 0
-        paymentsByOrder.set(p.order.id, num + p.order.driver_cost)
+        const num = Number(paymentsByOrder.get(p.order.id)) || 0
+        const driverCost = Number(p.order.driver_cost || p.order.driver_payment || 0)
+        paymentsByOrder.set(p.order.id, num + driverCost)
 
         orders.set(p.order.id, p.order)
       })
@@ -293,6 +328,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const settlementsRecords = [] as Array<SettlementEmployee>
       let settlementsTotal = 0
       let vacationTotal = 0
+      let fine = 0
 
       settlements.value.get(employee)?.forEach((v) => {
         if (v.employee == employee) {
@@ -300,6 +336,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
           if (v.settlement_type === 'vacation pay') {
             vacationTotal += Number(v.amount)
+          } else if (v.settlement_type === 'fine') {
+            fine += Number(v.amount)
           } else {
             settlementsTotal += Number(v.amount)
           }
@@ -372,13 +410,19 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           settlements: settlementsRecords,
           settlements_total: settlementsTotal,
           vacation_amount: vacationTotal,
+          settlement_fine: fine,
           missed_days: missedWorkingDays,
-          payout: finalToPayment + finalSettlements,
+          payout:
+            Number(finalToPayment || 0) +
+            Number(finalSettlements || 0) -
+            Math.abs(Number(fine || 0)),
         } as EmployeePaymentSummary,
       })
     }
 
     list.sort((a, b) => b.summary.payout - a.summary.payout)
+
+    console.log('list', list)
 
     return list
   }
@@ -457,15 +501,15 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         }
       }
 
-      const settlementsRecords = []
-      for (const settlement of summary.settlements.values()) {
-        settlementsRecords.push({
-          doc_payment: -1,
-          doc_settlements: settlement.id,
-          amount: settlement.amount,
-          settlement_type: settlement.settlement_type,
-        } as EmployeePaymentSettlementsCreate)
-      }
+      // const settlementsRecords = []
+      // for (const settlement of summary.settlements.values()) {
+      //   settlementsRecords.push({
+      //     doc_payment: -1,
+      //     doc_settlements: settlement.id,
+      //     amount: settlement.amount,
+      //     settlement_type: settlement.settlement_type,
+      //   } as EmployeePaymentSettlementsCreate)
+      // }
 
       await paymentToEmployeeStore.create(
         {
@@ -481,7 +525,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           income_tax: summary.paymentTerms.income_tax,
         } as PaymentToEmployeeCreate,
         records,
-        settlementsRecords,
+        // settlementsRecords,
       )
 
       mapping.value.delete(currentEmployeeId)

@@ -2,7 +2,6 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { PaymentToDispatcherOrderCreate } from '@/stores/employee_payment_orders.ts'
 import type { KV } from '@/utils/kv.ts'
 import type { Order } from '@/stores/orders.ts'
-import type { EmployeePaymentSettlementsCreate } from '@/stores/employee_payment_settlements.ts'
 
 export interface PaymentToEmployeeSummary {
   id: number
@@ -19,6 +18,7 @@ export interface PaymentToEmployeeSummary {
   settlement_bonus: number
   settlement_premium: string
   settlement_vacation: string
+  settlement_fine: string
   settlement_note: string
   settlements: number
   to_pay: number
@@ -27,6 +27,7 @@ export interface PaymentToEmployeeSummary {
   year: number
   month: number
   payout: number
+  closed: boolean
 }
 
 export interface PaymentToEmployee extends PaymentToEmployeeCreate {
@@ -46,9 +47,6 @@ export interface PaymentToEmployeeCreate {
   to_pay: number
   ex_rate: number
   income_tax: number
-  settlement_amount: number
-  settlement_type: string
-  settlement_note: string
 }
 
 export interface PaymentToEmployeeSummaryDetails {
@@ -150,7 +148,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
   async function create(
     payment: PaymentToEmployeeCreate,
     records: Array<PaymentToDispatcherOrderCreate>,
-    settlementsRecords: Array<EmployeePaymentSettlementsCreate>,
+    // settlementsRecords: Array<EmployeePaymentSettlementsCreate>,
   ) {
     const response = await supabase
       .from('employee_payments')
@@ -172,9 +170,9 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
 
       // console.log('records', records)
 
-      for (const recordSettlement of settlementsRecords) {
-        recordSettlement.doc_payment = payment.id
-      }
+      // for (const recordSettlement of settlementsRecords) {
+      //   recordSettlement.doc_payment = payment.id
+      // }
 
       const responseRecords = await supabase
         .from('employee_payment_orders')
@@ -182,12 +180,12 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
         .select()
         .throwOnError()
 
-      await supabase
-        .from('employee_payment_settlements')
-        .insert(settlementsRecords)
-        .select()
-        .select()
-        .throwOnError()
+      // await supabase
+      //   .from('employee_payment_settlements')
+      //   .insert(settlementsRecords)
+      //   .select()
+      //   .select()
+      //   .throwOnError()
 
       console.log('responseRecords', responseRecords)
     } else {

@@ -50,7 +50,7 @@ function resetAndShow(settlement: SettlementEmployee | null) {
   settlement_modal.showModal()
 }
 
-function savePayment() {
+function updatSettlement() {
   if (!employee.value?.id || !amount.value) {
     alert('Please select an employee and enter an amount')
     return
@@ -64,11 +64,8 @@ function savePayment() {
     notes: notes.value,
   }
 
-  if (id.value == null) {
-    settlementsEmployeeStore.create(paymentData as SettlementEmployeeCreate)
-  } else {
-    settlementsEmployeeStore.update(id.value, paymentData as SettlementEmployeeUpdate)
-  }
+  settlementsEmployeeStore.update(id.value, paymentData as SettlementEmployeeUpdate)
+
   settlement_modal.close()
   emit('closed')
 
@@ -86,9 +83,9 @@ function setAbsenceType(v: string) {
   <Text size="2xl" class="px-4">Rewards</Text>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="usersStore"></SearchVue>
-    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
+    <!--    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>-->
   </div>
-  <Modal id="settlement_modal">
+  <Modal id="settlement_modal" ref="settlement_modal_ref">
     <ModalBox class="w-2/5">
       <div class="flex items-start justify-between">
         <div>
@@ -112,7 +109,7 @@ function setAbsenceType(v: string) {
       </div>
       <div>
         <Label class="mt-2">Employee</Label>
-        <selector v-model="employee" :store="usersStore" />
+        <selector disabled v-model="employee" :store="usersStore" />
       </div>
       <Label class="mb-2 mt-4">Note</Label>
       <TextInput class="w-full" v-model="notes" />
@@ -135,7 +132,7 @@ function setAbsenceType(v: string) {
       </div>
       <ModalAction>
         <form method="dialog">
-          <Button class="btn-soft font-light tracking-wider" @click="savePayment()">
+          <Button class="btn-soft font-light tracking-wider" @click="updatSettlement()">
             <span v-if="id > 0">Update</span><span v-else>Create</span>
           </Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>

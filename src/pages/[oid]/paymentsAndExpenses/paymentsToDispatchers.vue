@@ -102,21 +102,11 @@ const cols = [
       ),
     size: 200,
   },
-  // {
-  //   label: 'order amount',
-  //   value: (v: PaymentToEmployeeSummary) => '$' + v.gross.toFixed(0),
-  //   size: 80,
-  // },
   {
     label: 'pay out',
     value: (v: PaymentToEmployeeSummary) => '$' + v.payout.toFixed(0),
     size: 100,
   },
-  // {
-  //   label: 'settlements',
-  //   value: (v: PaymentToEmployeeSummary) => '$' + v.settlements,
-  //   size: 80,
-  // },
   {
     label: 'created by',
     value: (v: PaymentToEmployeeSummary) =>
@@ -128,6 +118,11 @@ const cols = [
         (map) => map.name,
       ),
     size: 200,
+  },
+  {
+    label: 'closed',
+    value: (v: PaymentToEmployeeSummary) => v.closed,
+    size: 100,
   },
 ]
 
@@ -145,6 +140,28 @@ const currentMonth = computed(() => {
 
   return parseInt(val)
 })
+
+async function handleCloseMonth() {
+  try {
+    const now = new Date().toISOString()
+
+    const { error } = await supabase
+      .from('employee_payments')
+      .update({ closed: true, closed_at: now })
+      .eq('organization', orgId.value)
+      .eq('month', currentMonth.value)
+      .eq('year', currentYear.value)
+
+    if (error) throw error
+
+    alert('Платежи за месяц успешно закрыты!')
+
+    await paymentToEmployeeStore.setFilters(filters.value)
+  } catch (err: any) {
+    console.error('Ошибка при закрытии месяца:', err.message)
+    alert('Не удалось закрыть месяц: ' + err.message)
+  }
+}
 
 async function handleExport() {
   if (!orgId.value) {
@@ -205,6 +222,12 @@ function capitalizeFirstLetter(val) {
     <SearchForPaymentsDispatcher @selected="setFilter"></SearchForPaymentsDispatcher>
     <Button
       v-if="authStore.account?.access.is_payroll_accountant === true"
+      class="btn-error btn-soft font-light tracking-wider flex"
+      @click="handleCloseMonth"
+      >Close month
+    </Button>
+    <Button
+      v-if="authStore.account?.access.is_payroll_accountant === true"
       class="btn-soft font-light tracking-wider flex"
       @click="handleExport"
       >Excel
@@ -258,7 +281,12 @@ function capitalizeFirstLetter(val) {
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
+          <div v-if="col.label === 'closed'">
+            <span v-if="line.closed" class="text-success font-medium">yes</span>
+            <span v-else class="text-gray-400">no</span>
+          </div>
           <p
+            v-else
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >

@@ -49,21 +49,22 @@ function openPayment(record: EmployeePaymentRecord) {
 }
 
 function resolve(
-  order: EmployeePaymentSummary,
+  order: Order,
+  name: string,
   create: () => object,
   request: () => Promise<object | null>,
   label: (obj: object) => string,
 ) {
-  let s = state[order.employee]
-  if (s) {
-    return label(s)
+  const s = state[order.id] ?? {}
+  if (s && s[name]) {
+    return label(s[name])
   } else {
-    s = create()
-    state[order.employee] = s
+    s[name] = create()
+    state[order.id] = s
     request().then((obj) => {
-      state[order.employee] = obj
+      if (obj) state[order.id][name] = obj
     })
-    return label(s)
+    return label(s[name])
   }
 }
 
@@ -73,7 +74,8 @@ const cols = [
     value: (v: EmployeePaymentSummary) =>
       resolve(
         v,
-        () => ({ name: '?' }),
+        'employee_' + v.employee,
+        () => ({ name: '_' }),
         () => usersStore.resolve(v.employee),
         (map) => map.real_name,
       ),
@@ -90,25 +92,25 @@ const cols = [
   {
     label: 'cost of orders',
     value: (v: EmployeePaymentSummary) =>
-      v.orders.size == 0 ? '' : '$' + v.orders_amount.toFixed(0),
+      v.orders.size == 0 ? '' : '$' + (Number(v.orders_amount) || 0).toFixed(0),
     size: 100,
   },
   {
     label: 'd/payments',
     value: (v: EmployeePaymentSummary) =>
-      v.orders_driver == 0 ? '' : '$' + v.orders_driver.toFixed(0),
+      v.orders_driver == 0 ? '' : '$' + (Number(v.orders_driver) || 0).toFixed(0),
     size: 100,
   },
   {
     label: 'profit',
     value: (v: EmployeePaymentSummary) =>
-      v.orders_profit == 0 ? '' : '$' + v.orders_profit.toFixed(0),
+      v.orders_profit == 0 ? '' : '$' + (Number(v.orders_profit) || 0).toFixed(0),
     size: 100,
   },
   {
     label: 'direct profit',
     value: (v: EmployeePaymentSummary) =>
-      v.orders_profit_direct == 0 ? '' : '$' + v.orders_profit_direct.toFixed(0),
+      v.orders_profit_direct == 0 ? '' : '$' + (Number(v.orders_profit_direct) || 0).toFixed(0),
     size: 100,
   },
   {
@@ -118,9 +120,14 @@ const cols = [
     size: 100,
   },
   {
-    label: 'rewards',
+    label: 'reward',
     value: (v: EmployeePaymentSummary) =>
       v.settlements_total == 0 ? '' : '$' + v.settlements_total,
+    size: 80,
+  },
+  {
+    label: 'fine',
+    value: (v: EmployeePaymentSummary) => (v.settlement_fine == 0 ? '' : '$' + v.settlement_fine),
     size: 80,
   },
   {
@@ -193,14 +200,14 @@ async function createPayment() {
     </thead>
     <tbody>
       <tr
-        v-for="summary in reportDispatcherStore.employees"
-        :key="summary.employee"
+        v-for="(summary, index) in reportDispatcherStore.employees"
+        :key="summary.employee || index"
         class="hover:bg-base-200"
         @click="openPayment(summary)"
       >
         <td
-          v-for="col in cols"
-          :key="'row_' + col.label + '_' + summary.employee"
+          v-for="(col, colIndex) in cols"
+          :key="'row_' + col.label + '_' + (summary.employee || colIndex)"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >

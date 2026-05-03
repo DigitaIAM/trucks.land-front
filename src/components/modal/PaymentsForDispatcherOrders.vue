@@ -8,6 +8,7 @@ const props = defineProps<{
 
 const id = ref<number>()
 const employee = ref<number | null>(null)
+const organization = ref<number | null>(null)
 const settlement_type = ref<string>('bonus')
 const settlement_amount = ref<number>()
 const settlement_note = ref('')
@@ -16,6 +17,7 @@ const listOfSettelments = [
   { color: '#94a3b8', id: 'bonus', label: 'bonus' },
   { color: '#f59e0b', id: 'premium', label: 'premium' },
   { color: '#3b82f6', id: 'vacation pay', label: 'vacation pay' },
+  { color: '#D50000', id: 'fine', label: 'fine' },
 ]
 
 const paymentToDispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
@@ -227,41 +229,50 @@ async function openSettlementModal() {
 
 async function savePayment() {
   try {
-    const account = await authStore.currentAccount()
-    if (!account) return
-
-    const currentAmount = Number(settlement_amount.value)
-    if (isNaN(currentAmount) || currentAmount === 0) {
-      alert('Please enter a valid amount')
+    const document = props.document
+    if (!document) {
+      alert('Документ не выбран!')
       return
     }
 
-    const { error } = await supabase
-      .from('employee_payments')
-      .update({
-        settlement_amount: currentAmount,
-        settlement_type: settlement_type.value,
-        settlement_note: settlement_note.value,
-      })
-      .eq('id', props.document?.id)
-
-    if (error) throw error
-
-    if (props.document) {
-      Object.assign(props.document, {
-        settlement_amount: currentAmount,
-        settlement_type: settlement_type.value,
-        settlement_note: settlement_note.value,
-      })
+    const settlementPayload = {
+      employee: document.employee,
+      organization: document.organization,
+      amount: settlement_amount.value,
+      settlement_type: settlement_type.value,
+      notes: settlement_note.value,
     }
 
-    const modal = document.getElementById('settlement_modal') as HTMLDialogElement | null
-    modal?.close()
+    const { data: newSettlement, error: settlementError } = await supabase
+      .from('employee_settlements')
+      .insert([settlementPayload])
+      .select()
 
-    alert('Document updated successfully!')
-  } catch (e) {
-    console.error('Error updating payment:', e)
-    alert('Failed to update document')
+    if (settlementError) throw settlementError
+
+    const createdSettlementId = newSettlement[0]?.id
+
+    if (!createdSettlementId) {
+      throw new Error('Не удалось получить ID созданного начисления')
+    }
+
+    const paymentSettlementPayload = {
+      doc_payment: document.id,
+      doc_settlements: createdSettlementId,
+      amount: Number(settlement_amount.value || 0),
+      settlement_type: settlement_type.value,
+    }
+
+    const { error: linkError } = await supabase
+      .from('employee_payment_settlements')
+      .insert([paymentSettlementPayload])
+
+    if (linkError) throw linkError
+
+    settlement_modal.close()
+  } catch (err: any) {
+    console.error('Ошибка при сохранении:', err.message)
+    alert('Не удалось сохранить: ' + err.message)
   }
 }
 </script>
@@ -309,7 +320,8 @@ async function savePayment() {
           >To pay $
           {{
             (
-              ((document?.gross - document?.driver_payment) * document?.percent_of_profit) /
+              ((Number(document?.gross) - Number(document?.driver_payment)) *
+                Number(document?.percent_of_profit)) /
               100
             ).toFixed(2)
           }}</Text
@@ -318,24 +330,29 @@ async function savePayment() {
           Fixed salary $
           {{ document?.fixed_salary }}
         </Text>
-        <div v-if="document?.settlement_bonus > 0" class="flex gap-2">
+        <div v-if="document?.settlement_bonus" class="flex gap-2">
           <Text :class="document.settlement_bonus > 0">
             bonus: $ {{ document?.settlement_bonus.toFixed(2) }}
           </Text>
         </div>
-        <div v-if="document?.settlement_premium > 0" class="flex gap-2">
-          <Text :class="document.settlement_premium > 0">
+        <div v-if="document?.settlement_premium" class="flex gap-2">
+          <Text :class="document.settlement_premium">
             premium: $ {{ document?.settlement_premium.toFixed(2) }}
           </Text>
         </div>
-        <div v-if="document?.settlement_vacation > 0" class="flex gap-2">
-          <Text :class="document.settlement_vacation > 0">
+        <div v-if="document?.settlement_vacation" class="flex gap-2">
+          <Text :class="document.settlement_vacation">
             vacation: UZS {{ document?.settlement_vacation.toFixed(2) }}
           </Text>
         </div>
+        <div v-if="document?.settlement_fine" class="flex gap-2">
+          <Text :class="document.settlement_fine">
+            fine $ {{ document?.settlement_fine.toFixed(2) }}
+          </Text>
+        </div>
         <Text>Payout $ {{ (document?.payout || 0).toFixed(2) }}</Text>
-        <div v-if="document?.settlement_vacation > 0" class="flex gap-2">
-          <Text :class="document.settlement_vacation > 0">
+        <div v-if="document?.settlement_vacation" class="flex gap-2">
+          <Text :class="document.settlement_vacation">
             vacation: UZS {{ document?.settlement_vacation.toFixed(2) }}
           </Text>
         </div>

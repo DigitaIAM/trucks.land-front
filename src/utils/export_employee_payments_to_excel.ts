@@ -14,6 +14,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     { header: 'Комиссионные в USD', key: 'to_payment', width: 20 },
     { header: 'Бонусы в USD', key: 'bonus', width: 15 },
     { header: 'Премия в USD', key: 'premium', width: 15 },
+    { header: 'Штраф в USD', key: 'fine', width: 15 },
     { header: 'Итого в USD', key: 'total_usd', width: 15 },
     { header: 'Курс в UZS', key: 'ex_rate', width: 15 },
     { header: 'Отпускные UZS', key: 'vacation', width: 15 },
@@ -52,16 +53,19 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     a.fullName.localeCompare(b.fullName, 'en', { sensitivity: 'base' }),
   )
 
+  console.log('Все записи:', paymentsWithNames)
+
   let n = 1
   for (const record of paymentsWithNames) {
     const profit = Number(record.gross - record.driver_payment)
     const to_payment = Number((profit * record.percent_of_profit) / 100)
 
-    const bonus = Number(record.bonus_amount) || 0
-    const premium = Number(record.premium_amount) || 0
+    const bonus = Number(record.settlement_bonus) || 0
+    const premium = Number(record.settlement_premium) || 0
     const vacation = Number(record.vacation_amount) || 0
+    const fine = Number(record.settlement_fine) || 0
 
-    const total_USD = Number(record.to_pay) + bonus + premium
+    const total_USD = Number(record.to_pay) + bonus + premium - fine
     const payout_UZS = total_USD * Number(record.ex_rate) + vacation
     const income_tax = (payout_UZS * (Number(record.income_tax) || 0)) / 100
     const payout_total = payout_UZS - income_tax + vacation
@@ -76,6 +80,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       total_usd: total_USD,
       ex_rate: record.ex_rate,
       vacation: vacation,
+      fine: fine,
       payout_uzs: payout_UZS,
       income_tax: income_tax,
       payout_total: payout_total,

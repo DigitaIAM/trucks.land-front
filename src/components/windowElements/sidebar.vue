@@ -68,18 +68,18 @@ const links = [
     path: '/referenceBooks',
     perm: (access) => access.is_admin || access.is_hr || access.is_payroll_accountant,
   },
-  // {
-  //   name: 'Create payments',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
-  //   path: '/reports/ownerUnpaidOrders',
-  //   perm: (access) => access.is_accountant,
-  // },
-  // {
-  //   name: 'Employee',
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/bill-1')),
-  //   path: '/calculationEmployee',
-  //   perm: (access) => access.is_dispatcher,
-  // },
+  {
+    name: 'Create payments',
+    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+    path: '/reports/ownerUnpaidOrders',
+    perm: (access) => access.is_accountant,
+  },
+  {
+    name: 'Employee',
+    icon: defineAsyncComponent(() => import('~icons/streamline/bill-1')),
+    path: '/calculationEmployee',
+    perm: (access) => access.is_dispatcher,
+  },
   {
     name: 'Payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/briefcase-dollar')),
@@ -106,13 +106,13 @@ const links = [
     path: '/paymentsAndExpenses/paymentsToDispatchers',
     perm: (access) => access.is_payroll_accountant || access.is_admin || access.is_dispatcher,
   },
-  // {
-  //   name: 'Rewards',
-  //   //SALARY accountant
-  //   icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
-  //   path: '/paymentsAndExpenses/settlements_to_employee',
-  //   perm: (access) => access.is_admin || access.is_payroll_accountant,
-  // },
+  {
+    name: 'Rewards',
+    //SALARY accountant
+    icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
+    path: '/paymentsAndExpenses/settlements_to_employee',
+    perm: (access) => access.is_admin || access.is_payroll_accountant,
+  },
   {
     name: 'Absences',
     icon: defineAsyncComponent(() => import('~icons/streamline/calendar-edit')),

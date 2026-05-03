@@ -89,11 +89,11 @@ const cols = [
   {
     label: 'payment type',
     value: (v: SettlementEmployee) => v.settlement_type,
-    size: 150,
+    size: 100,
   },
   {
     label: 'amount',
-    value: (v: SettlementEmployee) => v.amount,
+    value: (v: SettlementEmployee) => '$' + v.amount,
     size: 100,
   },
   {
@@ -104,9 +104,9 @@ const cols = [
         'created_by_' + v.created_by,
         () => ({ name: '-' }),
         () => usersStore.resolve(v.created_by),
-        (map) => map.name,
+        (map) => map.real_name,
       ),
-    size: 100,
+    size: 200,
   },
 ]
 </script>

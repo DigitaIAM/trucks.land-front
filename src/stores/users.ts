@@ -15,6 +15,8 @@ export interface UserCreate {
   email: string
   team: string
   fired: boolean
+  fired_at: Date
+  performed_by: number
 }
 
 export interface UserUpdate {
@@ -24,6 +26,8 @@ export interface UserUpdate {
   email?: string
   team?: string
   fired?: boolean
+  fired_at?: Date
+  performed_by?: number
 }
 
 export const useUsersStore = defineStore('user', () => {
@@ -58,36 +62,55 @@ export const useUsersStore = defineStore('user', () => {
     }
   })
 
-  function create(user: UserCreate) {
-    supabase
-      .from('users')
-      .insert(user)
-      .select()
-      .then((response) => {
-        console.log('response', response)
-        if (response.status == 201) {
-          response.data?.forEach((json) => {
-            const user = json as User
-            mapping.value.set(user.id, user)
-          })
-        }
-      })
+  async function create(userData: UserCreate) {
+    try {
+      const { data, error } = await supabase.from('users').insert(userData).select().single()
+
+      if (error) throw error
+
+      if (data) {
+        const newUser = data as User
+        mapping.value.set(newUser.id, newUser)
+        return newUser
+      }
+    } catch (error) {
+      console.error('Ошибка при создании пользователя:', error)
+      throw error
+    }
   }
 
-  function update(id: number, user: UserUpdate) {
-    supabase
-      .from('users')
-      .update(user)
-      .eq('id', id)
-      .select()
-      .then((response) => {
-        if (response.status == 200) {
-          response.data?.forEach((json) => {
-            const user = json as User
-            mapping.value.set(user.id, user)
-          })
-        }
-      })
+  async function update(
+    id: number | undefined,
+    userData: {
+      fired: boolean
+      fired_at: string | null
+    },
+  ) {
+    if (!id) {
+      throw new Error('ID пользователя не определен')
+    }
+
+    try {
+      const { data, error, status } = await supabase
+        .from('users')
+        .update(userData)
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      if (status === 200 && data) {
+        data.forEach((json) => {
+          const updatedUser = json as User
+          mapping.value.set(updatedUser.id, updatedUser)
+        })
+      }
+
+      return data
+    } catch (error) {
+      console.error('Ошибка при обновлении пользователя в БД:', error)
+      throw error
+    }
   }
 
   async function _fetching(id: number): Promise<User> {

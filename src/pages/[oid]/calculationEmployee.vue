@@ -33,6 +33,37 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
+const authStore = useAuthStore()
+
+const currentUserId = ref<number | null>(null)
+
+async function initUser() {
+  try {
+    let account = await authStore.currentAccount()
+
+    if (account) {
+      currentUserId.value = Number(account.id)
+    } else {
+      console.warn('Не удалось получить текущий аккаунт, account = null')
+    }
+  } catch (error) {
+    console.error('Ошибка при получении аккаунта:', error)
+  }
+}
+
+// Запускаем при монтировании компонента
+initUser()
+
+// Фильтруем список, чтобы видеть только расчеты текущего пользователя
+const filteredEmployees = computed(() => {
+  if (!currentUserId.value) {
+    return [] // Возвращаем пустой массив, пока ID пользователя не определен
+  }
+
+  return reportDispatcherStore.employees.filter(
+    (item) => Number(item.employee) === currentUserId.value,
+  )
+})
 
 defineOptions({
   __loaders: [useOrgData],
@@ -87,22 +118,56 @@ const cols = [
   },
   {
     label: 'cost of orders',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_amount.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders.size == 0 ? '' : '$' + (Number(v.orders_amount) || 0).toFixed(0),
     size: 100,
   },
   {
     label: 'd/payments',
-    value: (v: EmployeePaymentSummary) => '$' + v.orders_driver.toFixed(0),
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_driver == 0 ? '' : '$' + (Number(v.orders_driver) || 0).toFixed(0),
     size: 100,
   },
   {
-    label: 'settlements',
-    value: (v: EmployeePaymentSummary) => '$' + v.settlements_total,
+    label: 'profit',
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_profit == 0 ? '' : '$' + (Number(v.orders_profit) || 0).toFixed(0),
+    size: 100,
+  },
+  {
+    label: 'direct profit',
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_profit_direct == 0 ? '' : '$' + (Number(v.orders_profit_direct) || 0).toFixed(0),
+    size: 100,
+  },
+  {
+    label: 'fixed salary',
+    value: (v: EmployeePaymentSummary) =>
+      v.paymentTerms.fixed_salary == null ? '' : '$' + v.paymentTerms.fixed_salary || '',
+    size: 100,
+  },
+  {
+    label: 'reward',
+    value: (v: EmployeePaymentSummary) =>
+      v.settlements_total == 0 ? '' : '$' + v.settlements_total,
+    size: 80,
+  },
+  {
+    label: 'fine',
+    value: (v: EmployeePaymentSummary) => (v.settlement_fine == 0 ? '' : '$' + v.settlement_fine),
     size: 80,
   },
   {
     label: 'to pay',
     value: (v: EmployeePaymentSummary) => '$' + v.payout.toFixed(0),
+    size: 100,
+  },
+  {
+    label: 'vacation uzs',
+    value: (v: EmployeePaymentSummary) => {
+      const formatted = new Intl.NumberFormat('ru-RU').format(v.vacation_amount)
+      return v.vacation_amount == 0 ? '' : formatted
+    },
     size: 100,
   },
 ]
@@ -130,13 +195,13 @@ const cols = [
     </thead>
     <tbody>
       <tr
-        v-for="summary in reportDispatcherStore.employees"
-        :key="summary.employee"
+        v-for="(summary, index) in filteredEmployees"
+        :key="summary.employee || index"
         @click="openPayment(summary)"
       >
         <td
-          v-for="col in cols"
-          :key="'row_' + col.label + '_' + summary.employee"
+          v-for="(col, colIndex) in cols"
+          :key="'row_' + col.label + '_' + (summary.employee || colIndex)"
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >

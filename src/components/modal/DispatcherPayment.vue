@@ -60,12 +60,16 @@ const cols = [
   },
   {
     label: 'cost',
-    value: (v: Order) => '$' + v.cost,
+    value: (v: Order) => '$' + +(Number(v.cost) || 0).toFixed(0),
     size: 100,
   },
   {
     label: 'payments to driver',
-    value: (v: Order) => '$' + (props.summary?.paymentsByOrder.get(v.id) || v.driver_cost),
+    value: (v: Order) => {
+      const payment =
+        props.summary?.paymentsByOrder.get(v.id) || v.driver_cost || v.driver_payment || 0
+      return '$' + Number(payment).toFixed(0)
+    },
     size: 100,
   },
   {
@@ -179,47 +183,48 @@ const toPayProfit = computed(() => {
       <div class="flex flex-row gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <div class="flex flex-col items-end">
-          <Text
-            v-if="summary?.orders_in_progress?.size > 0 && summary?.orders_in_progress?.size > 0"
-            >Orders {{ summary?.orders_number }} /
-            {{ summary?.orders_in_progress.size }}
+          <Text v-if="summary?.orders_in_progress?.size > 0 || summary?.orders_number > 0"
+            >Orders {{ summary?.orders_number || 0 }} /
+            {{ summary?.orders_in_progress?.size || 0 }}
           </Text>
-          <Text v-else-if="summary?.orders_number > 0">Orders {{ summary?.orders_number }}</Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text v-if="summary?.orders_amount > 0"
-            >Orders amount $ {{ summary?.orders_amount.toFixed(2) }}</Text
+          <Text v-if="(summary?.orders_amount || 0) > 0"
+            >Orders amount $ {{ (summary?.orders_amount || 0).toFixed(2) }}</Text
           >
-          <Text v-if="summary?.orders_driver > 0"
-            >Driver payments $ {{ summary?.orders_driver.toFixed(2) }}</Text
+          <Text v-if="(summary?.orders_driver || 0) > 0"
+            >Driver payments $ {{ (summary?.orders_driver || 0).toFixed(2) }}</Text
           >
-          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text v-if="summary?.orders_profit > 0"
-            >Profit $ {{ summary?.orders_profit.toFixed(2) }}</Text
+          <Text v-if="(summary?.orders_profit || 0) > 0"
+            >Profit $ {{ (summary?.orders_profit || 0).toFixed(2) }}</Text
           >
-          <Text v-if="summary?.orders_profit_direct > 0"
-            >Direct $ {{ summary?.orders_profit_direct.toFixed(2) }}</Text
+          <Text v-if="(summary?.orders_profit_direct || 0) > 0"
+            >Direct $ {{ (summary?.orders_profit_direct || 0).toFixed(2) }}</Text
           >
-          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text v-if="(props.summary?.paymentTerms.percent_of_profit || 0) > 0">
+          <Text v-if="toPayProfit > 0">
             {{ summary?.paymentTerms.percent_of_profit }} % of profit = $
-            {{ toPayProfit }}
+            {{ toPayProfit.toFixed(2) }}
           </Text>
-          <Text v-if="(props.summary?.paymentTerms.percent_of_gross || 0) > 0">
-            % of gross
-            {{ summary?.paymentTerms.percent_of_gross }}
+          <Text v-if="(summary?.orders_profit_direct || 0) > 0">
+            % of direct profit = $
+            {{
+              (
+                (Number(summary?.orders_profit_direct || 0) *
+                  Number(summary?.paymentTerms?.percent_of_profit || 0)) /
+                100
+              ).toFixed(2)
+            }}
           </Text>
           <Text v-if="summary?.settlements_total > 0"
             >Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text
           >
-          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text v-if="(props.summary?.paymentTerms.fixed_salary || 0) > 0">
+          <Text v-if="(summary?.paymentTerms.fixed_salary || 0) > 0">
             Fixed salary $
             {{ summary?.paymentTerms.fixed_salary.toFixed(2) }}
           </Text>
@@ -232,17 +237,16 @@ const toPayProfit = computed(() => {
             >Vacation UZS
             {{ summary?.vacation_amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') }}</Text
           >
-          <Text v-else></Text>
         </div>
         <div class="flex flex-col items-end">
-          <Text v-if="summary?.missed_days > 0">Missed days {{ summary?.missed_days }}</Text>
-          <Text v-else></Text>
+          <div class="flex flex-col items-end">
+            <Text v-if="summary?.missed_days > 0">Missed days {{ summary?.missed_days }}</Text>
+          </div>
         </div>
       </div>
 
       <div class="">
         <Text v-if="summary?.orders_number > 0" bold size="lg" class="mb-4 mt-4">Orders</Text>
-        <Text v-else></Text>
       </div>
       <div class="overflow-clip flex flex-col">
         <table v-if="summary?.orders_number > 0" class="w-full table-fixed text-left">
