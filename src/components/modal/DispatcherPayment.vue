@@ -219,6 +219,8 @@ const toPayProfit = computed(() => {
               ).toFixed(2)
             }}
           </Text>
+        </div>
+        <div class="flex flex-col items-end">
           <Text v-if="summary?.settlements_total > 0"
             >Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text
           >

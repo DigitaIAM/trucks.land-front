@@ -291,8 +291,7 @@ async function savePayment() {
 
         <div class="flex items-center gap-3">
           <Button
-            v-if="document?.closed == true"
-            disabled
+            :disabled="document?.closed === true"
             class="btn-soft font-light tracking-wider"
             @click.stop="openSettlementModal"
           >
