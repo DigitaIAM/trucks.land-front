@@ -20,7 +20,8 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     { header: 'Отпускные UZS', key: 'vacation', width: 15 },
     { header: 'Итого в UZS', key: 'payout_uzs', width: 20 },
     { header: 'НДФЛ 7.5%', key: 'income_tax', width: 20 },
-    { header: 'К выплате', key: 'payout_total', width: 20 },
+    { header: 'Аванс UZS', key: 'advance', width: 15 },
+    { header: 'К выплате UZS', key: 'payout_total', width: 20 },
   ]
 
   const headerRow = sheet.getRow(1)
@@ -62,13 +63,14 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
 
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0
-    const vacation = Number(record.vacation_amount) || 0
     const fine = Number(record.settlement_fine) || 0
 
-    const total_USD = Number(record.to_pay) + bonus + premium - fine
+    const total_USD = Number(record.payout_usd)
+    const vacation = Number(record.settlement_vacation) || 0
     const payout_UZS = total_USD * Number(record.ex_rate) + vacation
     const income_tax = (payout_UZS * (Number(record.income_tax) || 0)) / 100
-    const payout_total = payout_UZS - income_tax + vacation
+    const advance = Number(record.settlement_advance) || 0
+    const payout_total = payout_UZS - income_tax - advance
 
     const row = sheet.addRow({
       index: n,
@@ -83,6 +85,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       fine: fine,
       payout_uzs: payout_UZS,
       income_tax: income_tax,
+      advance: advance,
       payout_total: payout_total,
     })
 

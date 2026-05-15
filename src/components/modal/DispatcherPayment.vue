@@ -172,86 +172,169 @@ const toPayProfit = computed(() => {
 <template>
   <Modal id="orders_dispatcher">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
-      <div class="flex place-self-end">
-        <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+      <div class="flex justify-between items-center w-full mb-4 mt-2">
+        <div class="flex-col">
+          <Text size="2xl">
+            <QueryAndShow name="real_name" :id="props.summary?.employee" :store="usersStore" />
+          </Text>
+        </div>
+        <div class="flex place-self-end">
+          <Button class="btn-soft font-light tracking-wider" @click="close">Close</Button>
+        </div>
       </div>
-      <div class="flex-col">
-        <Text size="2xl">
-          <QueryAndShow name="real_name" :id="props.summary?.employee" :store="usersStore" />
-        </Text>
-      </div>
-      <div class="flex flex-row gap-20 mt-10">
-        <Text bold size="lg">Total</Text>
-        <div class="flex flex-col items-end">
-          <Text v-if="summary?.orders_in_progress?.size > 0 || summary?.orders_number > 0"
-            >Orders {{ summary?.orders_number || 0 }} /
-            {{ summary?.orders_in_progress?.size || 0 }}
-          </Text>
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="(summary?.orders_amount || 0) > 0"
-            >Orders amount $ {{ (summary?.orders_amount || 0).toFixed(2) }}</Text
-          >
-          <Text v-if="(summary?.orders_driver || 0) > 0"
-            >Driver payments $ {{ (summary?.orders_driver || 0).toFixed(2) }}</Text
-          >
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="(summary?.orders_profit || 0) > 0"
-            >Profit $ {{ (summary?.orders_profit || 0).toFixed(2) }}</Text
-          >
-          <Text v-if="(summary?.orders_profit_direct || 0) > 0"
-            >Direct $ {{ (summary?.orders_profit_direct || 0).toFixed(2) }}</Text
-          >
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="toPayProfit > 0">
-            {{ summary?.paymentTerms.percent_of_profit }} % of profit = $
-            {{ toPayProfit.toFixed(2) }}
-          </Text>
-          <Text v-if="(summary?.orders_profit_direct || 0) > 0">
-            % of direct profit = $
-            {{
-              (
-                (Number(summary?.orders_profit_direct || 0) *
-                  Number(summary?.paymentTerms?.percent_of_profit || 0)) /
-                100
-              ).toFixed(2)
-            }}
-          </Text>
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="summary?.settlements_total > 0"
-            >Rewards $ {{ summary?.settlements_total.toFixed(2) }}</Text
-          >
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="(summary?.paymentTerms.fixed_salary || 0) > 0">
-            Fixed salary $
-            {{ summary?.paymentTerms.fixed_salary.toFixed(2) }}
-          </Text>
-        </div>
-        <div class="flex flex-col items-end">
-          <Text>Pay-out $ {{ summary?.payout.toFixed(2) }}</Text>
-        </div>
-        <div class="flex flex-col items-end">
-          <Text v-if="summary?.vacation_amount > 0"
-            >Vacation UZS
-            {{ summary?.vacation_amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') }}</Text
-          >
-        </div>
-        <div class="flex flex-col items-end">
-          <div class="flex flex-col items-end">
-            <Text v-if="summary?.missed_days > 0">Missed days {{ summary?.missed_days }}</Text>
-          </div>
-        </div>
+
+      <div
+        class="mt-10 mb-6 overflow-hidden rounded-xl border border-[#526471] shadow-md bg-[#3e4d59] text-[#e2e9ef]"
+      >
+        <table class="w-full text-left text-sm border-collapse">
+          <tbody class="divide-y divide-[#526471]">
+            <!-- Orders Section -->
+            <tr>
+              <td
+                rowspan="3"
+                class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] w-[200px] text-xs uppercase tracking-wider"
+              >
+                Orders
+              </td>
+              <td class="px-6 py-3 text-[#cbd5e0]">quantity (total / in progress)</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                {{ summary?.orders_number || 0 }} / {{ summary?.orders_in_progress?.size || 0 }}
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">orders amount</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                $ {{ (summary?.orders_amount || 0).toFixed(2) }}
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">driver payments</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                $ {{ (summary?.orders_driver || 0).toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Profit Section -->
+            <tr>
+              <td
+                rowspan="2"
+                class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
+              >
+                Profit
+              </td>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">total profit</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ (summary?.orders_profit || 0).toFixed(2) }}
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">direct profit</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ (summary?.orders_profit_direct || 0).toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Commission Section -->
+            <tr>
+              <td
+                rowspan="2"
+                class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
+              >
+                Commission
+              </td>
+              <td class="px-6 py-3 border-t border-[#526471] text-[#cbd5e0]">
+                {{ summary?.paymentTerms.percent_of_profit }} % of profit
+              </td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ toPayProfit.toFixed(2) }}
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 border-t border-[#526471] text-[#cbd5e0]">% of direct profit</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $
+                {{
+                  (
+                    (Number(summary?.orders_profit_direct || 0) *
+                      Number(summary?.paymentTerms?.percent_of_profit || 0)) /
+                    100
+                  ).toFixed(2)
+                }}
+              </td>
+            </tr>
+
+            <!-- Salary/Other Section (ИСПРАВЛЕННЫЙ ROWSPAN) -->
+            <tr>
+              <td
+                :rowspan="
+                  1 +
+                  (summary?.settlements_total > 0 ? 1 : 0) +
+                  (summary?.vacation_amount > 0 ? 1 : 0) +
+                  (summary?.missed_days > 0 ? 1 : 0) +
+                  (summary?.settlement_fine > 0 ? 1 : 0) +
+                  (summary?.advance_amount > 0 ? 1 : 0)
+                "
+                class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
+              >
+                Other
+              </td>
+              <td class="px-6 py-3 text-[#cbd5e0]">fixed salary</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                $ {{ (summary?.paymentTerms.fixed_salary || 0).toFixed(2) }}
+              </td>
+            </tr>
+
+            <tr v-if="summary?.settlements_total > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">settlements</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ summary?.settlements_total.toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Новая строка: Fine -->
+            <tr v-if="summary?.settlement_fine > 0">
+              <td class="px-6 py-3 text-[#f87171] border-t border-[#526471]">fine</td>
+              <td class="px-6 py-3 text-right text-[#f87171] font-medium">
+                - $ {{ summary?.settlement_fine.toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Новая строка: Advance -->
+            <tr v-if="summary?.advance_amount > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">advance</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                - UZS {{ summary?.advance_amount.toLocaleString() }}
+              </td>
+            </tr>
+
+            <tr v-if="summary?.vacation_amount > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">vacation</td>
+              <td class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs">
+                UZS {{ summary?.vacation_amount.toLocaleString() }}
+              </td>
+            </tr>
+
+            <tr v-if="summary?.missed_days > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">missed days</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                {{ summary?.missed_days }}
+              </td>
+            </tr>
+
+            <!-- Total Payout (ТЕПЕРЬ ТОЧНО ВО ВСЮ ШИРИНУ) -->
+            <tr class="bg-[#2a363f] text-white">
+              <td colspan="2" class="px-6 py-6 font-bold uppercase tracking-widest">Payout</td>
+              <td class="px-6 py-5 text-right font-bold">$ {{ summary?.payout_usd.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div class="">
         <Text v-if="summary?.orders_number > 0" bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
-      <div class="overflow-clip flex flex-col">
-        <table v-if="summary?.orders_number > 0" class="w-full table-fixed text-left">
+      <div v-if="summary?.orders_number > 0" class="overflow-clip flex flex-col">
+        <table class="w-full table-fixed text-left">
           <thead>
             <tr
               class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"

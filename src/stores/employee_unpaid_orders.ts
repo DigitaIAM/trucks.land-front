@@ -24,10 +24,11 @@ export interface EmployeePaymentSummary {
   paymentTerms: PaymentTerms
   settlements_total: number
   vacation_amount: number
+  advance_amount: number
   settlement_fine: number
   missed_days: number
   settlements: Array<SettlementEmployee>
-  payout: number
+  payout_usd: number
 }
 
 export interface PaymentTerms {
@@ -71,7 +72,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
   async function loading(orgId: number | null, userId: number | null) {
     ordersInProcessing.value = await load_orders_in_progress(orgId)
 
-    mapping.value = await load_unpaid_orders(orgId, userId)
+    mapping.value = await load_unpaid_orders(orgId)
 
     settlements.value = await load_unpaid_settlements(orgId, userId)
 
@@ -96,15 +97,13 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
     }
   }
 
-  async function load_unpaid_orders(orgId: number | null, userId: number | null) {
-    let requestPayments = supabase
+  async function load_unpaid_orders(orgId: number | null) {
+    const requestPayments = supabase
       .from('employee_unpaid_orders')
       .select('*')
       .eq('organization', orgId)
 
     const responsePayments = await requestPayments
-
-    console.log('Сырые данные (заказы из базы):', responsePayments.data)
 
     const map = new Map<number, Array<EmployeePaymentRecord>>()
 
@@ -140,7 +139,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       })
     }
 
-    console.log('Заполненный mapping:', map)
     return map
   }
 
@@ -328,6 +326,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       const settlementsRecords = [] as Array<SettlementEmployee>
       let settlementsTotal = 0
       let vacationTotal = 0
+      let advanceTotal = 0
       let fine = 0
 
       settlements.value.get(employee)?.forEach((v) => {
@@ -336,6 +335,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
           if (v.settlement_type === 'vacation pay') {
             vacationTotal += Number(v.amount)
+          } else if (v.settlement_type === 'advance') {
+            advanceTotal += Number(v.amount)
           } else if (v.settlement_type === 'fine') {
             fine += Number(v.amount)
           } else {
@@ -410,9 +411,10 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           settlements: settlementsRecords,
           settlements_total: settlementsTotal,
           vacation_amount: vacationTotal,
+          advance_amount: advanceTotal,
           settlement_fine: fine,
           missed_days: missedWorkingDays,
-          payout:
+          payout_usd:
             Number(finalToPayment || 0) +
             Number(finalSettlements || 0) -
             Math.abs(Number(fine || 0)),
@@ -420,7 +422,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       })
     }
 
-    list.sort((a, b) => b.summary.payout - a.summary.payout)
+    list.sort((a, b) => b.summary.payout_usd - a.summary.payout_usd)
 
     console.log('list', list)
 
@@ -470,6 +472,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
       for (const order of summary.orders.values()) {
         if (order.stage === 3) {
+          console.log('order.driver_cost', order.driver_cost, order.stage)
           records.push({
             doc_payment: -1,
             doc_order: order.id,
@@ -490,6 +493,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               profit_kind: 'direct',
             } as PaymentToDispatcherOrderCreate)
           } else {
+            console.log('order.driver_cost', order.driver_cost)
             records.push({
               doc_payment: -1,
               doc_order: order.id,
@@ -501,15 +505,15 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         }
       }
 
-      // const settlementsRecords = []
-      // for (const settlement of summary.settlements.values()) {
-      //   settlementsRecords.push({
-      //     doc_payment: -1,
-      //     doc_settlements: settlement.id,
-      //     amount: settlement.amount,
-      //     settlement_type: settlement.settlement_type,
-      //   } as EmployeePaymentSettlementsCreate)
-      // }
+      const settlementsRecords = []
+      for (const settlement of summary.settlements.values()) {
+        settlementsRecords.push({
+          doc_payment: -1,
+          doc_settlements: settlement.id,
+          amount: settlement.amount,
+          settlement_type: settlement.settlement_type,
+        } as EmployeePaymentSettlementsCreate)
+      }
 
       await paymentToEmployeeStore.create(
         {
@@ -525,7 +529,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           income_tax: summary.paymentTerms.income_tax,
         } as PaymentToEmployeeCreate,
         records,
-        // settlementsRecords,
+        settlementsRecords,
       )
 
       mapping.value.delete(currentEmployeeId)

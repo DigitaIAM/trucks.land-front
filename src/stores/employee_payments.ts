@@ -7,26 +7,28 @@ export interface PaymentToEmployeeSummary {
   id: number
   created_at: string
   created_by: number
+  organization: number
   employee: number
   number_of_orders: number
   gross: number
   driver_payment: number
   percent_of_gross: number
   percent_of_profit: number
+  to_pay: number
   fixed_salary: number
-  payment: number
   settlement_bonus: number
   settlement_premium: string
   settlement_vacation: string
+  settlement_advance: string
   settlement_fine: string
   settlement_note: string
   settlements: number
-  to_pay: number
+  payout_usd: number
   ex_rate: number
   income_tax: number
   year: number
   month: number
-  payout: number
+  payout_uzs: number
   closed: boolean
 }
 
@@ -148,7 +150,7 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
   async function create(
     payment: PaymentToEmployeeCreate,
     records: Array<PaymentToDispatcherOrderCreate>,
-    // settlementsRecords: Array<EmployeePaymentSettlementsCreate>,
+    settlementsRecords: Array<EmployeePaymentSettlementsCreate>,
   ) {
     const response = await supabase
       .from('employee_payments')
@@ -170,9 +172,11 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
 
       // console.log('records', records)
 
-      // for (const recordSettlement of settlementsRecords) {
-      //   recordSettlement.doc_payment = payment.id
-      // }
+      for (const recordSettlement of settlementsRecords) {
+        recordSettlement.doc_payment = payment.id
+      }
+
+      console.log('records', records)
 
       const responseRecords = await supabase
         .from('employee_payment_orders')
@@ -180,12 +184,12 @@ export const usePaymentToEmployeeStore = defineStore('employee_payments', () => 
         .select()
         .throwOnError()
 
-      // await supabase
-      //   .from('employee_payment_settlements')
-      //   .insert(settlementsRecords)
-      //   .select()
-      //   .select()
-      //   .throwOnError()
+      await supabase
+        .from('employee_payment_settlements')
+        .insert(settlementsRecords)
+        .select()
+        .select()
+        .throwOnError()
 
       console.log('responseRecords', responseRecords)
     } else {

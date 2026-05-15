@@ -132,7 +132,7 @@ const cols = [
   },
   {
     label: 'to pay',
-    value: (v: EmployeePaymentSummary) => '$' + v.payout.toFixed(0),
+    value: (v: EmployeePaymentSummary) => '$' + v.payout_usd.toFixed(0),
     size: 100,
   },
   {

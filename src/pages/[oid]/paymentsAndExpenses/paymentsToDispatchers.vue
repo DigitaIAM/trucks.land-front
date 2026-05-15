@@ -104,7 +104,7 @@ const cols = [
   },
   {
     label: 'pay out',
-    value: (v: PaymentToEmployeeSummary) => '$' + v.payout.toFixed(0),
+    value: (v: PaymentToEmployeeSummary) => '$' + v.payout_usd.toFixed(0),
     size: 100,
   },
   {

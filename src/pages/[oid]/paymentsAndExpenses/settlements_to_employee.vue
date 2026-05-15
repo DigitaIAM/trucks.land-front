@@ -27,20 +27,15 @@ export const useOrgData = defineBasicLoader(
 <script setup lang="ts">
 const usersStore = useUsersStore()
 const settlementsEmployeeStore = useSettlementsEmployeeStore()
+const employeeSettlementsTypeStore = useEmployeeSettlementsTypeStore()
 
 const selectedDocument = ref<SettlementEmployee | null>(null)
+const selectedTypes = ref<Array<EmployeeSettlementsType> | null>(null)
+const allowEmployeeSelection = ref<boolean>(false)
 
 defineOptions({
   __loaders: [useOrgData],
 })
-
-function openSettlement(settlement: SettlementEmployee) {
-  selectedDocument.value = settlement
-}
-
-function onClose() {
-  selectedDocument.value = null
-}
 
 const state = reactive({})
 function resolve(
@@ -88,12 +83,19 @@ const cols = [
   },
   {
     label: 'payment type',
-    value: (v: SettlementEmployee) => v.settlement_type,
+    value: (v: SettlementEmployee) =>
+      resolve(
+        v,
+        'settlement_type_' + v.settlement_type,
+        () => ({ name: '-' }),
+        () => employeeSettlementsTypeStore.resolve(v.settlement_type),
+        (map) => map.settlement_type,
+      ),
     size: 100,
   },
   {
     label: 'amount',
-    value: (v: SettlementEmployee) => '$' + v.amount,
+    value: (v: SettlementEmployee) => v.amount + ' ' + v.currency,
     size: 100,
   },
   {
@@ -109,10 +111,51 @@ const cols = [
     size: 200,
   },
 ]
+
+function openSettlement(settlement: SettlementEmployee) {
+  allowEmployeeSelection.value = false
+  selectedTypes.value = employeeSettlementsTypeStore.listing
+  selectedDocument.value = settlement
+}
+
+function onClose() {
+  allowEmployeeSelection.value = false
+  selectedTypes.value = null
+  selectedDocument.value = null
+}
+
+function createSettlement() {
+  allowEmployeeSelection.value = true
+  selectedTypes.value = employeeSettlementsTypeStore.listing
+
+  const advanceTypeObject = employeeSettlementsTypeStore.listing.find(
+    (t) => t.settlement_type === 'advance',
+  )
+
+  selectedDocument.value = {
+    organization: authStore.org?.id || 0,
+    settlement_type: advanceTypeObject || null,
+    currency: 'UZS',
+    amount: null,
+    employee: null,
+    notes: '',
+  } as unknown as SettlementEmployee
+}
 </script>
 
 <template>
-  <SettlementEmployeeModal :edit="selectedDocument" @closed="onClose"></SettlementEmployeeModal>
+  <SettlementEmployeeModal
+    :edit="selectedDocument"
+    @closed="onClose"
+    :types="selectedTypes"
+    :allowEmployeeSelection="allowEmployeeSelection"
+  ></SettlementEmployeeModal>
+  <div class="flex justify-between items-center w-full mb-4 mt-4">
+    <Text size="2xl" class="px-4">Settlements</Text>
+    <Button class="btn-soft font-light tracking-wider mr-4" @click="createSettlement"
+      >Create</Button
+    >
+  </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
     <thead>
       <tr

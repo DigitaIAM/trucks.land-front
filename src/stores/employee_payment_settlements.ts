@@ -7,11 +7,10 @@ export interface EmployeePaymentSettlements extends EmployeePaymentSettlementsCr
 }
 
 export interface EmployeePaymentSettlementsCreate {
-  created_by: number
   doc_payment: number
   doc_settlements: number
   amount: number
-  settlement_type: string
+  settlement_type: number
 }
 
 export const useEmployeePaymentSettlementsStore = defineStore(

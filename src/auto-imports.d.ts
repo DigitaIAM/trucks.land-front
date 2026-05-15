@@ -192,6 +192,7 @@ declare global {
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
   const useEmployeeAbsencesStore: typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']
   const useEmployeePaymentSettlementsStore: typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']
+  const useEmployeeSettlementsTypeStore: typeof import('./stores/employee_settlements_type')['useEmployeeSettlementsTypeStore']
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
   const useEventSource: typeof import('@vueuse/core')['useEventSource']
@@ -408,6 +409,9 @@ declare global {
   // @ts-ignore
   export type { SettlementEmployee, SettlementEmployeeCreate, SettlementEmployeeUpdate } from './stores/employee_settlements'
   import('./stores/employee_settlements')
+  // @ts-ignore
+  export type { EmployeeSettlementsType, EmployeeSettlementsTypeCreate, EmployeeSettlementsTypeUpdate } from './stores/employee_settlements_type'
+  import('./stores/employee_settlements_type')
   // @ts-ignore
   export type { EmployeePaymentRecord, EmployeePaymentSummary, PaymentTerms, EmployeePaymentSummaryInDetails } from './stores/employee_unpaid_orders'
   import('./stores/employee_unpaid_orders')
@@ -659,6 +663,7 @@ declare module 'vue' {
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
     readonly useEmployeeAbsencesStore: UnwrapRef<typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']>
     readonly useEmployeePaymentSettlementsStore: UnwrapRef<typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']>
+    readonly useEmployeeSettlementsTypeStore: UnwrapRef<typeof import('./stores/employee_settlements_type')['useEmployeeSettlementsTypeStore']>
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
     readonly useEventSource: UnwrapRef<typeof import('@vueuse/core')['useEventSource']>

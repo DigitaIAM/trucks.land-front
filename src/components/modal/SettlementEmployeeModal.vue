@@ -1,28 +1,35 @@
 <script setup lang="ts">
+import type { SettlementEmployeeCreate } from '@/stores/employee_settlements.ts'
+import { useEmployeeSettlementsTypeStore } from '@/stores/employee_settlements_type.ts'
+
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const settlementsEmployeeStore = useSettlementsEmployeeStore()
+const settlementTypesStore = useEmployeeSettlementsTypeStore()
 
-const listOfSettelments = [
-  { color: '#94a3b8', id: 'bonus', label: 'bonus' },
-  { color: '#f59e0b', id: 'premium', label: 'premium' },
-  { color: '#3b82f6', id: 'vacation pay', label: 'vacation pay' },
-]
-
-const props = defineProps<{
+interface Props {
   edit: SettlementEmployee | null
-  disabled?: boolean
-}>()
+  disabled?: boolean | null
+  types: string[] | null
+  allowEmployeeSelection?: boolean
+  paymentId?: number | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  edit: null,
+  disabled: false,
+  types: null,
+  allowEmployeeSelection: false,
+})
 
 const id = ref<number>()
 const organization = ref<number>()
-const employee = ref<number | undefined>()
-const settlement_type = ref<string>('bonus')
+const employee = ref<User | null>()
+const settlement_type = ref<number>()
+const currency = ref<string>('USD')
 const amount = ref<number>()
 const notes = ref('')
-const created_by = ref<User>()
-
-const unpaidSettlements = ref<any[]>([])
+const created_by = ref<User | null>(null)
 
 const isDocumentUnpaid = ref(true)
 
@@ -41,18 +48,23 @@ watch(
 )
 
 async function resetAndShow(settlement: SettlementEmployee | null) {
+  if (!settlement) {
+    return
+  }
+
   const account = authStore.currentAccount()
 
   id.value = settlement?.id
   organization.value = settlement?.organization
-  employee.value = settlement ? settlement.employee : undefined
+  employee.value = settlement ? ({ id: settlement.employee } as User) : null
   settlement_type.value = settlement?.settlement_type ?? 'bonus'
+  currency.value = settlement?.currency
   amount.value = settlement?.amount
   notes.value = settlement?.notes || ''
   created_by.value = settlement
-    ? { id: settlement.created_by }
+    ? ({ id: settlement.created_by } as User)
     : account
-      ? { id: account.id }
+      ? ({ id: account.id } as User)
       : null
 
   try {
@@ -61,9 +73,9 @@ async function resetAndShow(settlement: SettlementEmployee | null) {
       .select('id')
       .eq('organization', authStore.oid)
 
-    unpaidSettlements.value = data || []
+    const unpaidSettlements = data || []
     if (settlement?.id) {
-      isDocumentUnpaid.value = unpaidSettlements.value.some((item) => item.id === settlement.id)
+      isDocumentUnpaid.value = unpaidSettlements.some((item) => item.id === settlement.id)
     } else {
       isDocumentUnpaid.value = true // Если мы создаем новую запись (нет id), форма активна
     }
@@ -74,100 +86,147 @@ async function resetAndShow(settlement: SettlementEmployee | null) {
   settlement_modal.showModal()
 }
 
-function updateSettlement() {
+async function updateSettlement() {
+  console.log('Current settlement_type value:', settlement_type.value)
   if (isFormDisabled.value) return
 
-  const currentId = id.value
-  if (currentId === undefined) {
+  if (!employee.value || !amount.value || !settlement_type.value) {
+    alert('Please select an employee, type, and enter an amount')
     return
   }
 
-  if (!employee.value || !amount.value) {
-    alert('Please select an employee and enter an amount')
-    return
-  }
+  const typeId = settlement_type.value.id
+  const typeText = settlement_type.value.settlement_type
 
   const paymentData = {
     organization: authStore.oid,
-    employee: employee.value,
-    settlement_type: settlement_type.value, // 'bonus', 'premium' или 'vacation pay'
+    employee: employee.value.id,
+    settlement_type: typeId,
     amount: amount.value,
+    currency: currency.value,
     notes: notes.value,
   }
 
-  settlementsEmployeeStore.update(currentId, paymentData as SettlementEmployeeUpdate)
+  console.log('Payload sent to store:', paymentData)
 
-  settlement_modal.close()
-  emit('closed')
+  const currentId = id.value
+  let savedSettlement: any = null
 
-  console.log('savePayment', employee.value)
+  try {
+    if (currentId && currentId > 0) {
+      savedSettlement = await settlementsEmployeeStore.update(
+        currentId,
+        paymentData as SettlementEmployeeUpdate,
+      )
+    } else {
+      savedSettlement = await settlementsEmployeeStore.create(
+        paymentData as SettlementEmployeeCreate,
+      )
+    }
+
+    console.log('What we got from store:', savedSettlement)
+
+    if (props.paymentId && props.paymentId > 0) {
+      const finalSettlementId = savedSettlement?.id || currentId
+
+      const relationData = {
+        doc_payment: props.paymentId,
+        doc_settlements: finalSettlementId,
+        amount: amount.value,
+        settlement_type: typeText, // Передаем текст ('fine', 'advance' и т.д.)
+        doc_payment_closed: false,
+      }
+
+      console.log('Sending relation to employee_payment_settlements:', relationData)
+
+      const { error: relError } = await supabase
+        .from('employee_payment_settlements')
+        .insert(relationData)
+
+      if (relError) {
+        console.error('Error creating link to payment:', relError)
+        alert('Settlement created, but failed to link with payment: ' + relError.message)
+      }
+    }
+
+    // Закрываем модалку только при успешном выполнении
+    settlement_modal.close()
+    emit('closed')
+  } catch (error: any) {
+    console.error('Failed to update/create settlement:', error)
+
+    if (error.code === '23502') {
+      alert('Ошибка сохранения: Обязательное поле "Тип начисления" не заполнено.')
+    } else {
+      alert('Произошла ошибка при сохранении: ' + (error.message || 'Неизвестная ошибка'))
+    }
+  }
 }
 
-function setAbsenceType(v: string) {
+onMounted(() => {
+  settlementTypesStore.fetchListing()
+})
+
+const getButtonStyle = (type: any) => {
+  const isActive = settlement_type.value?.id === type.id
+  const baseColor = type.color
+  return {
+    backgroundColor: isActive ? baseColor : 'transparent',
+    color: isActive ? 'white' : baseColor,
+  }
+}
+
+function setAbsenceType(type) {
   if (!isFormDisabled.value) {
-    settlement_type.value = v
+    settlement_type.value = type
+    currency.value = type.currency
   }
 }
 </script>
 
 <template>
-  <Text size="2xl" class="px-4">Rewards</Text>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
-    <SearchVue :store="usersStore"></SearchVue>
-    <!--    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>-->
-  </div>
   <Modal id="settlement_modal" ref="settlement_modal_ref">
     <ModalBox class="w-2/5">
-      <div class="flex items-start justify-between">
-        <div>
-          <Text class="w-full mt-1" size="xl">Payment # {{ id }}</Text>
-        </div>
-        <div class="flex items-center justify-between">
-          <Button
-            sm
-            class="mr-1 mb-2"
-            v-for="type in listOfSettelments"
-            :key="type.id"
-            :style="{
-              backgroundColor: settlement_type === type.id ? type.color : 'transparent',
-              color: settlement_type === type.id ? 'white' : '#475569',
-            }"
-            @click="setAbsenceType(type.id)"
-          >
-            {{ type.label }}
-          </Button>
-        </div>
+      <div class="mt-1 mb-4">
+        <Text class="w-full" size="xl">Payment # {{ id }}</Text>
       </div>
-
-      <div
-        v-if="!isDocumentUnpaid && id"
-        class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded mb-4 text-sm"
-      >
-        ⚠️ Этот документ уже оплачен. Редактирование недоступно.
+      <div class="flex">
+        <Button
+          sm
+          class="mr-2 mb-2"
+          v-for="type in settlementTypesStore.listing"
+          :key="type.id"
+          :style="getButtonStyle(type)"
+          @click="setAbsenceType(type)"
+        >
+          {{ type.settlement_type }}
+        </Button>
       </div>
 
       <div>
         <Label class="mt-2">Employee</Label>
-        <QueryAndShow asTextField :id="employee" :store="usersStore" name="real_name" />
+        <selector
+          v-if="allowEmployeeSelection"
+          class="w-full"
+          v-model="employee"
+          :store="usersStore"
+          name="real_name"
+        />
+        <QueryAndShow v-else asTextField :id="employee?.id" :store="usersStore" name="real_name" />
       </div>
       <Label class="mb-2 mt-4">Note</Label>
       <TextInput class="w-full" :disabled="isFormDisabled" v-model="notes" />
-      <div class="flex space-x-3 mb-2 w-full">
+      <div class="flex space-x-3 mb-4 w-full">
         <div class="md:w-1/2 md:mb-0">
-          <Label class="mt-4 mb-2"
-            >Amount
-            <span class="text-xs font-normal opacity-70">
-              ({{ settlement_type === 'vacation pay' ? 'UZS' : 'USD' }})
-            </span>
-          </Label>
+          <Label class="mt-4 mb-2">Amount in {{ currency }}</Label>
           <TextInput :disabled="isFormDisabled" v-model="amount" />
-          <p
-            v-if="settlement_type === 'vacation pay'"
-            class="text-amber-600 text-sm mt-1 font-medium"
-          >
-            ⚠️ Please indicate the amount in Uzbek sums (UZS)
-          </p>
         </div>
+      </div>
+      <div
+        v-if="!isDocumentUnpaid && id"
+        class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded mb-6 text-sm"
+      >
+        ⚠️ This document has already been paid for. Editing is not available.
       </div>
       <ModalAction>
         <form method="dialog">
