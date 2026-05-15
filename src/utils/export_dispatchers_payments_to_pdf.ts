@@ -1,8 +1,7 @@
 import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
-import { drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment-timezone'
-import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import type { PaymentToEmployeeSummary } from '@/stores/employee_payments.ts'
+import { useEmployeePaymentSettlementsStore } from '@/stores/employee_payment_settlements.ts'
 
 const margin = 50
 
@@ -27,68 +26,207 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-  let currentY = await _head(pdfDoc, page, font, boldFont, document, org, page.getWidth() - margin)
+  // Вызываем оригинальную шапку
+  let cy = await _head(pdfDoc, page, font, boldFont, document, org, page.getWidth() - margin)
 
-  // Set the table options
-  const options = {
-    textSize: 10,
-    title: {
-      text: 'Shipments Details',
-      textSize: 12,
-      font: font,
-      alignment: 'center',
-    },
-    header: {
-      hasHeaderRow: true,
-      font: font,
-      textSize: 10,
-      backgroundColor: rgb(0.9, 0.9, 0.9),
-      contentAlignment: 'center',
-    },
-    border: {
-      color: rgb(0.9, 0.9, 0.9),
-      width: 0.4,
-    },
-    font: font,
-    column: {
-      widthMode: 'auto',
-      overrideWidths: [30, 150, 150, 150],
-    } as ColumnOptions,
-  } as DrawTableOptions
+  const cx = page.getWidth() - margin
+  const fs = 10
+  const bls = font.heightAtSize(12) / 2
 
-  const fh12 = font.heightAtSize(options.title.textSize) * 1.8
-  const fh10 = font.heightAtSize(options.textSize) * 1.8
+  // Опускаем блок контента ниже, чтобы он не налезал на шапку
+  cy -= 50
 
-  // Define the table data
-  let tableData = [['#', 'order', 'order amount $', 'd/payments $']] as CellContent[][]
+  // Переменная для настройки комфортного вертикального отступа между строками данных
+  const rowSpacing = bls + 15
 
-  const lines = await usePaymentToEmployeeStore().fetchingOrder(document.id)
-  let pos = 0
-  for (const line of lines) {
-    tableData.push([
-      `${++pos}`,
-      `${org.code2}-${line.order.number}`,
-      `${line.order.cost}`,
-      `${line.order.driver_cost}`,
-    ])
+  // --- СЕКЦИЯ 1: ЗАКАЗЫ И РАСЧЕТЫ ПО НИМ (USD) ---
+  cy = drawSectionHeader(page, boldFont, 'ORDERS (USD)', cy, page.getWidth() - margin)
 
-    if (currentY - fh12 - fh10 * (tableData.length - 1) < fh12) {
-      await drawTable(pdfDoc, page, tableData, margin, currentY, options)
+  const gross = Number(document.gross ?? 0)
+  const driverPayment = Number(document.driver_payment ?? 0)
+  const actualProfit = gross - driverPayment
 
-      page = pdfDoc.addPage()
-      tableData = [['#', 'order', 'order amount $', 'd/payments $']] as CellContent[][]
+  text_right(page, font, fs, 'total gross:', cx - 120, cy)
+  text_left(page, font, fs, `\$${gross.toFixed(2)}`, cx - 100, cy)
+  cy -= rowSpacing
 
-      currentY = page.getHeight() - margin
+  text_right(page, font, fs, 'driver payments:', cx - 120, cy)
+  text_left(page, font, fs, `\$${driverPayment.toFixed(2)}`, cx - 100, cy)
+  cy -= rowSpacing
+
+  text_right(page, font, fs, 'profit:', cx - 120, cy)
+  text_left(page, boldFont, fs, `\$${actualProfit.toFixed(2)}`, cx - 100, cy)
+  cy -= rowSpacing
+
+  text_right(page, font, fs, 'dispatcher %:', cx - 120, cy)
+  text_left(page, font, fs, `${document.percent_of_profit}`, cx - 100, cy)
+  cy -= rowSpacing
+
+  text_right(page, font, fs, 'calculation:', cx - 120, cy)
+  text_left(page, boldFont, fs, `\$${document.to_pay.toFixed(2)}`, cx - 100, cy)
+
+  // Большой отступ перед следующей секцией
+  cy -= bls * 4
+
+  // --- СЕКЦИЯ 2: SETTLEMENTS ПО ТИПАМ (USD) ---
+  cy = drawSectionHeader(page, boldFont, 'SETTLEMENTS', cy, page.getWidth() - margin)
+
+  const epsStore = useEmployeePaymentSettlementsStore()
+  const typeStore = useEmployeeSettlementsTypeStore()
+
+  await epsStore.loading(document.id)
+
+  const linkedSettlements = epsStore.listing || []
+
+  let totalSettlementsUsd = 0
+  let vacationUzs = 0
+  let advanceUzs = 0
+
+  const usdSettlementsToRender = []
+
+  // Распределяем начисления по валютам и типам
+  for (const setl of linkedSettlements) {
+    let typeLabel = 'Adjustment'
+    let rawType = ''
+
+    if (setl.settlement_type) {
+      const typeObject = await typeStore.resolve(Number(setl.settlement_type))
+      if (typeObject && typeObject.settlement_type) {
+        rawType = typeObject.settlement_type.toLowerCase().trim()
+        typeLabel = typeObject.settlement_type
+      }
+    }
+
+    const amt = Number(setl.amount ?? 0)
+
+    if (rawType === 'vacation') {
+      vacationUzs += amt
+    } else if (rawType === 'advance') {
+      advanceUzs += amt
+    } else {
+      // Сюда попадает 'fine' и любые другие USD-корректировки
+      totalSettlementsUsd += amt
+      usdSettlementsToRender.push({ label: typeLabel, amount: amt })
     }
   }
 
-  if (tableData.length > 1) {
-    await drawTable(pdfDoc, page, tableData, margin, currentY, options)
+  // Рендерим USD-начисления (включая Fine) во 2-й секции
+  if (usdSettlementsToRender.length === 0) {
+    text_left(page, font, fs, 'No USD settlements or adjustments for this period.', margin, cy)
+    cy -= rowSpacing
+  } else {
+    for (const item of usdSettlementsToRender) {
+      let formattedLabel = item.label
+      formattedLabel = formattedLabel.replace(/[^\x00-\x7F]/g, '').trim() || 'Adjustment'
+
+      const prefix = item.amount >= 0 ? '+' : ''
+
+      text_left(page, font, fs, `${formattedLabel}:`, margin + 10, cy)
+      text_left(page, font, fs, `${prefix}\$${item.amount.toFixed(2)}`, margin + 140, cy)
+      cy -= rowSpacing
+    }
   }
+
+  cy -= 6
+  text_left(page, boldFont, fs, 'Total USD Settlements:', margin + 10, cy)
+  text_left(page, boldFont, fs, `\$${totalSettlementsUsd.toFixed(2)}`, margin + 140, cy)
+
+  cy -= 20
+  // --- СЕКЦИЯ 3: ИТОГОВЫЙ РАСЧЕТ И НАЛОГИ (UZS) ---
+
+  cy -= 20
+
+  cy = drawSectionHeader(page, boldFont, 'PAYOUT (UZS)', cy, page.getWidth() - margin)
+
+  const totalPayUsd = (document.to_pay ?? 0) + totalSettlementsUsd
+  text_right(page, font, fs, 'total:', cx - 120, cy)
+  text_left(page, boldFont, fs, `\$${totalPayUsd.toFixed(2)}`, cx - 100, cy)
+  cy -= rowSpacing + 4
+
+  text_right(page, font, fs, 'exchange rate (UZS):', cx - 120, cy)
+  text_left(
+    page,
+    font,
+    fs,
+    `${document.ex_rate.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`,
+    cx - 100,
+    cy,
+  )
+  cy -= rowSpacing
+
+  if (vacationUzs !== 0) {
+    const vPrefix = vacationUzs >= 0 ? '+' : ''
+    text_right(page, font, fs, 'vacation (UZS):', cx - 120, cy)
+    text_left(page, font, fs, `${vPrefix}${formatSum(vacationUzs)} UZS`, cx - 100, cy)
+    cy -= rowSpacing
+  }
+
+  const toPaySumUzs = totalPayUsd * document.ex_rate
+  text_right(page, font, fs, 'amount (UZS):', cx - 120, cy)
+  text_left(page, font, fs, `${formatSum(toPaySumUzs)}`, cx - 100, cy)
+  cy -= rowSpacing
+
+  const incomeTaxPercent = document.income_tax || 7.5
+  const taxAmountUzs = (toPaySumUzs * incomeTaxPercent) / 100
+  text_right(page, font, fs, `${incomeTaxPercent} % income tax (UZS):`, cx - 120, cy)
+  text_left(page, font, fs, `-${formatSum(taxAmountUzs)}`, cx - 100, cy)
+  cy -= rowSpacing + 4
+
+  if (advanceUzs !== 0) {
+    const aPrefix = advanceUzs > 0 ? '-' : ''
+    text_right(page, font, fs, 'advance (UZS):', cx - 120, cy)
+    text_left(page, font, fs, `${aPrefix}${formatSum(Math.abs(advanceUzs))} UZS`, cx - 100, cy)
+    cy -= rowSpacing + 4
+  }
+
+  const finalPayoutUzs = toPaySumUzs - taxAmountUzs
+  text_right(page, boldFont, 11, 'FINAL PAYOUT (UZS):', cx - 120, cy)
+  text_left(
+    page,
+    boldFont,
+    11,
+    `${Math.round(finalPayoutUzs)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}`,
+    cx - 100,
+    cy,
+  )
 
   return pdfDoc
 }
 
+// Помощник разделения секций линией с увеличенным нижним падингом
+function drawSectionHeader(
+  page: PDFPage,
+  font: PDFFont,
+  title: string,
+  y: number,
+  width: number,
+): number {
+  page.drawText(title, {
+    x: margin,
+    y: y,
+    size: 11,
+    font: font,
+    color: rgb(0.2, 0.2, 0.2),
+  })
+
+  page.drawLine({
+    start: { x: margin, y: y - 8 },
+    end: { x: width, y: y - 8 },
+    thickness: 0.5,
+    color: rgb(0.8, 0.8, 0.8),
+  })
+
+  // Увеличили отступ от линии до первой строчки данных
+  return y - 28
+}
+
+function formatSum(num: number): string {
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
+
+// ОРИГИНАЛЬНАЯ ШАПКА БЕЗ ИЗМЕНЕНИЙ В РАЗМЕТКЕ
 async function _head(
   pdfDoc: PDFDocument,
   page: PDFPage,
@@ -99,8 +237,6 @@ async function _head(
   endX: number,
 ): Promise<number> {
   const bls = font.heightAtSize(12) / 2
-
-  // Set the starting X and Y coordinates for the table
   const startX = 50
 
   if (org.url_logo) {
@@ -112,7 +248,7 @@ async function _head(
     // logo
     page.drawImage(jpgImage, {
       x: startX,
-      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+      y: 710,
       width: 100,
       height: (100 * jpgDims.height) / jpgDims.width,
     })
@@ -132,7 +268,6 @@ async function _head(
     .format('MM/DD/YYYY')
   const date2 = moment(document.created_at).tz('America/New_York').format('MM/DD/YYYY')
 
-  // const period = ts.month() + 2
   cy -= bls + text_right(page, boldFont, 16, `${date1} - ${date2}`, endX, cy)
 
   cy -= bls * 3
@@ -142,100 +277,6 @@ async function _head(
     throw 'missing employee'
   }
   cy -= bls + text_right(page, boldFont, 16, employee.real_name.toUpperCase(), endX, cy)
-
-  cy -= bls * 3
-
-  const cx = endX - 50
-
-  const fs = 10
-  text_right(page, font, fs, 'Total gross:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.gross.toFixed(2)}`, cx + bls, cy)
-
-  text_right(page, font, fs, 'D/payment:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.driver_payment.toFixed(2)}`, cx + bls, cy)
-
-  const gross = Number(document.gross ?? 0)
-  const driverPayment = Number(document.driver_payment ?? 0)
-  const actualProfit = gross - driverPayment
-  text_right(page, font, fs, 'Profit:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${actualProfit.toFixed(2)}`, cx + bls, cy)
-
-  text_right(page, font, fs, '% of profit:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${document.percent_of_profit}`, cx + bls, cy)
-
-  text_right(page, font, fs, 'Calculation:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `\$${document.to_pay.toFixed(2)}`, cx + bls, cy)
-
-  text_right(page, font, fs, 'Settlements:', cx, cy)
-  const settlementsAmount = document.settlements || 0
-  cy -= bls + text_left(page, font, fs, `\$${Number(settlementsAmount).toFixed(2)}`, cx + bls, cy)
-
-  const toPay = ((document.to_pay ?? 0) + (document.settlements ?? 0)).toFixed(2)
-  text_right(page, boldFont, fs, 'Total pay:', cx, cy)
-  cy -= bls + text_left(page, boldFont, fs, `\$${toPay}`, cx + bls, cy)
-
-  //text left
-  // const textMargin = 40 // Desired margin below the table
-  // cy = cy - textMargin
-  const textX = 50
-
-  //
-  // text_left(page, font, fs, 'Vacation pay:', textX + bls, cy)
-  // cy -= bls + text_left(page, font, fs, '+$', font.widthOfTextAtSize('Vacation pay:', fs) + 60, cy)
-
-  text_left(page, font, fs, 'Ex rate:', textX + bls, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${document.ex_rate.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
-      font.widthOfTextAtSize('Ex rate:', fs) + 60,
-      cy,
-    )
-
-  text_left(page, font, fs, 'Date:', textX + bls, cy)
-  cy -= bls + text_left(page, font, fs, `${date2}`, font.widthOfTextAtSize('Date:', fs) + 60, cy)
-
-  const toPaySum = toPay * document.ex_rate
-  text_left(page, font, fs, 'Calculation:', textX + bls, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${toPaySum.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
-      font.widthOfTextAtSize('Calculation:', fs) + 60,
-      cy,
-    )
-
-  const perIn_tax = (toPaySum * (document.income_tax - 0.1)) / 100
-  text_left(page, font, fs, 'Tax 7.5%:', textX + bls, cy)
-  cy -=
-    bls +
-    text_left(
-      page,
-      font,
-      fs,
-      `${perIn_tax.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
-      font.widthOfTextAtSize('Tax 7.5%:', fs) + 60,
-      cy,
-    )
-
-  const totalInSum = toPaySum - perIn_tax
-  text_left(page, boldFont, fs, 'Total pay:', textX + bls, cy)
-  cy -=
-    bls * 2 +
-    text_left(
-      page,
-      boldFont,
-      fs,
-      `${totalInSum.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} sum`,
-      font.widthOfTextAtSize('Total pay:', fs) + 65,
-      cy,
-    )
 
   return cy
 }
@@ -248,15 +289,12 @@ function text_left(
   x: number,
   y: number,
 ): number {
-  // const textWidth = font.widthOfTextAtSize(text, fontSize)
-
   page.drawText(text, {
     x: x,
     y: y,
     size: fontSize,
     font: font,
   })
-
   return font.heightAtSize(fontSize)
 }
 
@@ -269,13 +307,11 @@ function text_right(
   y: number,
 ): number {
   const textWidth = font.widthOfTextAtSize(text, fontSize)
-
   page.drawText(text, {
     x: x - textWidth,
     y: y,
     size: fontSize,
     font: font,
   })
-
   return font.heightAtSize(fontSize)
 }
