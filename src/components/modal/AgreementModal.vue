@@ -188,19 +188,11 @@ function close() {
           </div>
           <div class="md:w-1/4 md:mb-0">
             <Label>found by</Label>
-            <selector
-              v-model="vehicle_found_by"
-              :store="usersStore"
-              :disabled="vehicle?.id === undefined || company?.id != undefined"
-            />
+            <selector v-model="vehicle_found_by" :store="usersStore" />
           </div>
           <div class="md:w-1/4 md:mb-0">
             <Label>percent % </Label>
-            <TextInput
-              class="block w-full"
-              v-model="percent_vf"
-              :disabled="vehicle?.id === undefined"
-            />
+            <TextInput class="block w-full" v-model="percent_vf" />
           </div>
         </div>
       </fieldset>
