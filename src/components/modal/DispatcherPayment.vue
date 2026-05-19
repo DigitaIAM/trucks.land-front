@@ -80,35 +80,22 @@ const cols = [
         'notes',
         () => '',
         () => {
-          if (props.summary?.paymentsByOrder.get(v.id)) {
-            if (v.vehicle_found_by) {
-              if (props.summary?.employee === v.vehicle_found_by) {
-                if (props.summary?.employee === v.created_by) {
-                  return new Promise((resolve) =>
-                    resolve({ name: 'as vehicle found & dispatcher' }),
-                  )
-                } else {
-                  return new Promise((resolve) => resolve({ name: 'as vehicle found' }))
-                }
-              } else {
-                return new Promise((resolve) =>
-                  resolve({
-                    name: 'as dispatcher',
-                  }),
-                )
-              }
-            }
-            if (v.stage === 3) {
-              return new Promise((resolve) => resolve({ name: 'Cancel' }))
-            }
-          } else {
+          const summary = props.summary
+          const payments = summary?.paymentsByOrder?.get(v.id)
+
+          if (!payments || v.stage === 3) {
             return statusesStore.resolve(v.stage)
           }
-          return new Promise((resolve) =>
-            resolve({
-              name: '',
-            }),
-          )
+
+          if (v.vehicle_found_by) {
+            return Promise.resolve({ name: 'vehicle was found' })
+          }
+
+          if (v.employee) {
+            return Promise.resolve({ name: '' })
+          }
+
+          return Promise.resolve({ name: '' })
         },
         (map) => map?.name || '',
       ),

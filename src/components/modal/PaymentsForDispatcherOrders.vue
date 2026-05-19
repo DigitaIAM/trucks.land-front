@@ -33,6 +33,7 @@ async function resetAndShow(document: PaymentToEmployeeSummary | null) {
   await paymentToDispatcherOrdersStore.loading(document.id)
   await employeePaymentSettlementsStore.loading(document.id)
   details.showModal()
+  console.log('resetAndShow', document)
 }
 
 async function generatePdf() {
@@ -256,7 +257,7 @@ function onClose() {
             <!-- rowspan="2", так как здесь всегда есть комиссия и опционально Salary -->
             <tr>
               <td
-                :rowspan="document?.fixed_salary > 0 ? 2 : 1"
+                :rowspan="2 + (document?.fixed_salary > 0 ? 1 : 0)"
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] tracking-wider"
               >
                 Commission
@@ -281,29 +282,42 @@ function onClose() {
                 }}
               </td>
             </tr>
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">% of direct</td>
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
+                $
+                {{
+                  (
+                    ((Number(document?.gross) - Number(document?.driver_payment)) *
+                      Number(document?.percent_of_profit)) /
+                      100 -
+                    Number(document?.payout_usd || 0)
+                  ).toFixed(2)
+                }}
+              </td>
+            </tr>
             <tr v-if="document?.fixed_salary > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">Fixed salary</td>
-              <td class="px-6 py-3 text-right font-medium text-white">
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $ {{ document?.fixed_salary.toFixed(2) }}
               </td>
             </tr>
 
-            <!-- Секция: Adjustments -->
-            <!-- Считаем количество строк динамически для rowspan -->
+            <!-- Секция: Other -->
             <tr>
               <td
                 :rowspan="
                   1 +
-                  (document?.settlement_fine ? 1 : 0) +
-                  (document?.settlement_vacation ? 1 : 0) +
-                  (document?.settlement_advance ? 1 : 0)
+                  (document?.settlement_fine > 0 ? 1 : 0) +
+                  (document?.settlement_vacation > 0 ? 1 : 0) +
+                  (document?.settlement_advance > 0 ? 1 : 0)
                 "
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] tracking-wider"
               >
-                other
+                Other
               </td>
-              <td class="px-6 py-3 text-[#cbd5e0]">bonuses & premiums</td>
-              <td class="px-6 py-3 text-right font-medium text-white">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">bonuses & premiums</td>
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $
                 {{
                   (
@@ -315,26 +329,32 @@ function onClose() {
             </tr>
             <tr v-if="document?.settlement_fine > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fine</td>
-              <td class="px-6 py-3 text-right font-medium text-white">
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 - $ {{ document?.settlement_fine.toFixed(2) }}
               </td>
             </tr>
             <tr v-if="document?.settlement_vacation > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">vacation</td>
-              <td class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs">
+              <td
+                class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs border-t border-[#526471]"
+              >
                 UZS {{ document?.settlement_vacation.toLocaleString() }}
               </td>
             </tr>
             <tr v-if="document?.settlement_advance > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">advance</td>
-              <td class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs">
+              <td
+                class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs border-t border-[#526471]"
+              >
                 - UZS {{ document?.settlement_advance.toLocaleString() }}
               </td>
             </tr>
 
-            <!-- Итог -->
+            <!-- Итог (Payout) -->
             <tr class="bg-[#2a363f] text-white">
-              <td colspan="2" class="px-6 py-6 font-bold uppercase tracking-widest">Payout</td>
+              <td colspan="2" class="px-6 py-6 font-bold uppercase tracking-widest text-left">
+                Payout
+              </td>
               <td class="px-6 py-5 text-right font-bold">
                 $ {{ (document?.payout_usd || 0).toFixed(2) }}
               </td>
