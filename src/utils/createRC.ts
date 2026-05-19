@@ -3,6 +3,7 @@ import { filterCharSet } from '@/utils/pdf-helper.ts'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { type CustomStyledText, drawTable } from 'pdf-lib-draw-table-beta'
 import moment from 'moment-timezone'
+import type { CompatibleDrawTableOptions } from 'pdf-lib-draw-table-beta/types'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
@@ -77,6 +78,7 @@ export async function generateRC(order: Order, org: Organization) {
   const pdfDoc = await PDFDocument.create()
 
   let page = pdfDoc.addPage()
+  const firstPage = page
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
@@ -87,13 +89,18 @@ export async function generateRC(order: Order, org: Organization) {
   const startY = 470
 
   // Set the table options
-  const options = {
+  const options: CompatibleDrawTableOptions = {
     textSize: 10,
+    textColor: rgb(0, 0, 0),
+    contentAlignment: 'left',
+    linkColor: rgb(0, 0, 1),
+    lineHeight: 1.2,
     title: {
       text: 'Transportation details',
       textSize: 12,
       font: boldFont,
       alignment: 'center',
+      textColor: rgb(0, 0, 0),
     },
     header: {
       hasHeaderRow: true,
@@ -101,13 +108,14 @@ export async function generateRC(order: Order, org: Organization) {
       textSize: 10,
       backgroundColor: rgb(0.9, 0.9, 0.9),
       contentAlignment: 'center',
+      textColor: rgb(0, 0, 0),
     },
     border: {
       color: rgb(0.9, 0.9, 0.9),
       width: 0.4,
     },
     font: font,
-  } as DrawTableOptions
+  }
 
   const tableData = [['Shipper', 'Receiver']] as CellContent[][]
 
@@ -220,7 +228,11 @@ export async function generateRC(order: Order, org: Organization) {
     tableData.push(pair)
   }
 
-  const tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
+  // head
+  const textX = 50
+  let cy = 800
+  text_left(page, boldFont, 24, 'Rate', 280, 800) // cy - bls
+  text_left(page, boldFont, 24, 'Confirmation', 230, 775) //cy - 6 * bls
 
   // logo
   if (org.url_logo) {
@@ -231,24 +243,23 @@ export async function generateRC(order: Order, org: Organization) {
 
     page.drawImage(jpgImage, {
       x: startX,
-      y: 710, //page.getHeight() / 2 - jpgDims.height / 2 + 250,
+      y: 730, //page.getHeight() / 2 - jpgDims.height / 2 + 250, // Было 710, подняли выше
       width: 100,
       height: (100 * jpgDims.height) / jpgDims.width,
     })
   }
-  text_left(page, font, 10, `${org.address1}`, startX + bls, 700)
-  text_left(page, font, 10, `${org.address2}`, startX + bls, 685)
+  text_left(page, font, 10, `${org.address1}`, startX + bls, 720) // Было 700
+  text_left(page, font, 10, `${org.address2}`, startX + bls, 705) // Было 685
+  text_left(page, font, 12, 'Carrier', startX + bls, 680)
+  text_left(page, font, 12, `Representative:`, startX + bls, 665)
+  drawLine(page, font.widthOfTextAtSize(`Representative:`, 12) + 60, 665, 100)
+  text_left(page, font, 12, 'Phone:', startX + bls, 650)
+  drawLine(page, font.widthOfTextAtSize('Phone:', 12) + 60, 650, 145)
+  text_left(page, font, 12, 'Email:', startX + bls, 635)
+  drawLine(page, font.widthOfTextAtSize('Email:', 12) + 60, 635, 150)
 
-  text_left(page, font, 12, 'Carrier', startX + bls, 660)
-  text_left(page, font, 12, `Representative:`, startX + bls, 645)
-  drawLine(page, font.widthOfTextAtSize(`Representative:`, 12) + 60, 645, 100)
-  text_left(page, font, 12, 'Phone:', startX + bls, 630)
-  drawLine(page, font.widthOfTextAtSize('Phone:', 12) + 60, 630, 145)
-  text_left(page, font, 12, 'Email:', startX + bls, 615)
-  drawLine(page, font.widthOfTextAtSize('Email:', 12) + 60, 615, 150)
-
-  text_left(page, font, 10, `Broker`, startX + bls, 585)
-  text_left(page, font, 10, `Signature:`, startX + bls, 570)
+  text_left(page, font, 10, `Broker`, startX + bls, 605)
+  text_left(page, font, 10, `Signature:`, startX + bls, 590)
 
   const signatureImg = await pdfDoc.embedPng(signatureImageBytes)
 
@@ -256,73 +267,81 @@ export async function generateRC(order: Order, org: Organization) {
 
   page.drawImage(signatureImg, {
     x: startX + 60,
-    y: 550,
+    y: 570,
     width: signatureImgDims.width,
     height: signatureImgDims.height,
   })
 
-  text_left(page, font, 10, `Position: Ops `, 240, 570)
+  text_left(page, font, 10, `Position: Ops `, 240, 590)
 
   const dateFormated = moment(order.created_at).tz('America/New_York').format('MM/DD/YYYY')
-  text_left(page, font, 10, `Date:`, 400, 570)
-  text_left(page, font, 10, dateFormated, font.widthOfTextAtSize('Date:', 10) + 400, 570)
-  drawLine(page, startX + bls, 560, 500)
+  text_left(page, font, 10, `Date:`, 400, 590)
+  text_left(page, font, 10, dateFormated, font.widthOfTextAtSize('Date:', 10) + 400, 590) //570
+  drawLine(page, startX + bls, 580, 500) //570
 
-  text_left(page, font, 10, `Carrier`, startX + bls, 540)
-  text_left(page, font, 10, `Signature:`, startX + bls, 525)
-  drawLine(page, font.widthOfTextAtSize(`Signature:`, 10) + 60, 525, 100)
+  text_left(page, font, 10, `Carrier`, startX + bls, 560) //540
+  text_left(page, font, 10, `Signature:`, startX + bls, 545)
+  drawLine(page, font.widthOfTextAtSize(`Signature:`, 10) + 60, 545, 100)
 
-  text_left(page, font, 10, `Position:`, 240, 525)
-  drawLine(page, font.widthOfTextAtSize(`Position:`, 10) + 400, 525, 100)
+  text_left(page, font, 10, `Position:`, 240, 545)
+  drawLine(page, font.widthOfTextAtSize(`Position:`, 10) + 400, 545, 100)
 
-  text_left(page, font, 10, `Date:`, 400, 525)
-  drawLine(page, font.widthOfTextAtSize(`Position:`, 10) + 244, 525, 100)
-  drawLine(page, startX + bls, 515, 500)
+  text_left(page, font, 10, `Date:`, 400, 545)
+  drawLine(page, font.widthOfTextAtSize(`Position:`, 10) + 244, 545, 100)
+  drawLine(page, startX + bls, 535, 500)
 
-  text_left(page, font, 12, `Driver name`, startX + bls, 490)
-  drawLine(page, font.widthOfTextAtSize(`Driver name`, 12) + 60, 490, 150)
+  text_left(page, font, 12, `Driver name`, startX + bls, 510)
+  drawLine(page, font.widthOfTextAtSize(`Driver name`, 12) + 60, 510, 150)
 
-  text_left(page, font, 12, `Driver cell`, 340, 490)
-  drawLine(page, font.widthOfTextAtSize(`Driver cell`, 12) + 344, 490, 150)
-  // head
-  const textX = 50
-  let cy = 800
-  text_left(page, boldFont, 24, 'Rate', 280, cy - bls)
-  text_left(page, boldFont, 24, 'Confirmation', 230, cy - 6 * bls)
+  text_left(page, font, 12, `Driver cell`, 340, 510)
+  drawLine(page, font.widthOfTextAtSize(`Driver cell`, 12) + 344, 510, 150)
+  // end logo
 
-  cy -= bls + text_right(page, font, 12, 'Reference#', tableDimensions.endX, cy)
-  const numberFormated = `${org.code2}-${order.number}`
-  cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy)
-
-  cy -= bls + text_right(page, font, 12, 'Date', tableDimensions.endX, cy)
-  cy -= bls + text_right(page, boldFont, 16, dateFormated, tableDimensions.endX, cy)
-
-  cy -= bls * 4
+  let tableDimensions
+  try {
+    tableDimensions = await drawTable(pdfDoc, page, tableData, startX, startY, options)
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('Table height exceeds')) {
+      page = pdfDoc.addPage()
+      tableDimensions = await drawTable(pdfDoc, page, tableData, startX, 790, options)
+    } else {
+      throw e
+    }
+  }
 
   const cx = tableDimensions.endX - 124
 
   const fs = 10
 
-  text_left(page, font, 12, `${org.name}`, cx - 100, 660)
+  cy -= bls + text_right(firstPage, font, 12, 'Reference#', tableDimensions.endX, cy)
+  const numberFormated = `${org.code2}-${order.number}`
+  cy -= bls + text_right(firstPage, boldFont, 16, numberFormated, tableDimensions.endX, cy)
 
-  text_left(page, font, 12, 'Representative:', cx - 100, 645)
+  cy -= bls + text_right(firstPage, font, 12, 'Date', tableDimensions.endX, cy)
+  cy -= bls + text_right(firstPage, boldFont, 16, dateFormated, tableDimensions.endX, cy)
+
+  cy -= bls * 4
+
+  text_left(firstPage, font, 12, `${org.name}`, cx - 100, 680)
+
+  text_left(firstPage, font, 12, 'Representative:', cx - 100, 665)
   text_left(
-    page,
+    firstPage,
     font,
     12,
     `${dispatcher?.name || ''}`,
     font.widthOfTextAtSize('Representative:', 12) + cx - 96,
-    645,
+    665,
   )
 
-  text_left(page, font, 12, 'Phone:', cx - 100, 630)
+  text_left(firstPage, font, 12, 'Phone:', cx - 100, 650)
   text_left(
-    page,
+    firstPage,
     font,
     12,
     `${dispatcher?.phone || ''}`,
     font.widthOfTextAtSize('Phone:', 12) + cx - 96,
-    630,
+    650,
   )
 
   let manager_email = ''
@@ -334,8 +353,15 @@ export async function generateRC(order: Order, org: Organization) {
     manager_email = 'gus.haddad@caravanfreight.net'
   }
 
-  text_left(page, font, 12, 'Email:', cx - 100, 615)
-  text_left(page, font, 12, `${manager_email}`, font.widthOfTextAtSize('Email:', 12) + cx - 96, 615)
+  text_left(firstPage, font, 12, 'Email:', cx - 100, 635)
+  text_left(
+    firstPage,
+    font,
+    12,
+    `${manager_email}`,
+    font.widthOfTextAtSize('Email:', 12) + cx - 96,
+    635,
+  )
 
   //tableBottom
   const tableBottomY = tableDimensions.endY // Calculate the bottom edge of the table
@@ -367,15 +393,18 @@ export async function generateRC(order: Order, org: Organization) {
   )
 
   const size = 10
-  page.moveTo(textX, textY - 100)
+  const textPosY = textY - 100
 
   page.drawText(`All Invoices should be sent to ${org.billing_email}`, {
+    x: textX,
+    y: textPosY,
     size: size, // Font size
     font: font, // Embedded font
     color: rgb(0, 0, 0),
   })
 
-  page.moveDown(25)
+  page = pdfDoc.addPage()
+  let posY = 780
 
   const lines = [
     'Invoices will not be paid without a P.O.D. Include reference # with a copy of the P.O.D on your invoices.',
@@ -388,24 +417,24 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size, // Font size
       font: font, // Embedded font
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page = pdfDoc.addPage()
-
-  page.moveTo(textX, 800)
-
-  page.moveDown(10)
+  posY -= 15
   page.drawText('Accessorials, Delays and OS&D:', {
+    x: textX,
+    y: posY,
     size: 10, // Font size
     font: boldFont, // Embedded font
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines2 = [
     'Carrier must provide immediate notification of any issues and OS&D situations to SEL via phone',
@@ -414,34 +443,37 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines2) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size, // Font size
       font: font, // Embedded font
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  // page = pdfDoc.addPage()
-  //
-  // page.moveTo(textX, 800)
-
+  posY -= 10
   page.drawText(
     'Carriers must request detention or other charges at time of services rendered or else request may be denied.',
     {
+      x: textX,
+      y: posY,
       size: 10, // Font size
       font: font, // Embedded font
       color: rgb(0, 0, 0),
     },
   )
-  page.moveDown(15)
+  posY -= 25
 
   page.moveDown(10)
   page.drawText('Exclusive use:', {
+    x: textX,
+    y: posY,
     size: size,
     font: boldFont,
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines3 = [
     'Services are being procured for exclusive use of the trailer for the shipment attached to this confirmation.',
@@ -451,20 +483,24 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines3) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page.moveDown(10)
+  posY -= 10
   page.drawText('Priority load requirements:', {
+    x: textX,
+    y: posY,
     size: size,
     font: boldFont,
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines4 = [
     'Driver must arrive to shipper with a seal. All seals must be applied and removed by the shipper and consignee',
@@ -479,20 +515,24 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines4) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page.moveDown(10)
+  posY -= 10
   page.drawText('Any late pick ups and/or deliveries', {
+    x: textX,
+    y: posY,
     size: size,
     font: boldFont,
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines5 = [
     'The following penalties will be applied for late pickup/delivery:',
@@ -504,20 +544,24 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines5) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page.moveDown(10)
+  posY -= 10
   page.drawText('MC Validation:', {
+    x: textX,
+    y: posY,
     size: size,
     font: boldFont,
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines6 = [
     `The truck that arrives for pickup must have the same MC number as was booked with ${org.code3}. The carrier must`,
@@ -527,23 +571,27 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines6) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page.moveDown(10)
+  posY -= 10
   page.drawText(
     'Carriers to be paid no more than $25/hour on detention with a max layover of $150 per day.',
     {
+      x: textX,
+      y: posY,
       size: size,
       font: boldFont,
       color: rgb(0, 0, 0),
     },
   )
-  page.moveDown(15)
+  posY -= 25
 
   const lines7 = [
     'Detention will not be paid if waiting time incurred as a result of carrier arriving late to appointment. Cargo/',
@@ -552,20 +600,24 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines7) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
-  page.moveDown(10)
+  posY -= 10
   page.drawText('Team Loads:', {
+    x: textX,
+    y: posY,
     size: size,
     font: boldFont,
     color: rgb(0, 0, 0),
   })
-  page.moveDown(15)
+  posY -= 20
 
   const lines8 = [
     'If team drivers are procured for a load, both drivers MUST be physically present at the time of pickup and',
@@ -576,11 +628,13 @@ export async function generateRC(order: Order, org: Organization) {
 
   for (const line of lines8) {
     page.drawText(line, {
+      x: textX,
+      y: posY,
       size: size,
       font: font,
       color: rgb(0, 0, 0),
     })
-    page.moveDown(15)
+    posY -= 15
   }
 
   return pdfDoc
