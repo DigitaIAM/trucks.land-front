@@ -1,7 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useInitializeStore } from '@/composables/use-initialize-store.ts'
 import { sleep } from '@/utils/datetime.ts'
-import type { Status } from '@/stores/stages.ts'
 
 export interface EmployeeSettlementsType extends EmployeeSettlementsTypeCreate {
   id: number

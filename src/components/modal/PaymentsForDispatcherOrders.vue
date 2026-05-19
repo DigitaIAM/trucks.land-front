@@ -33,7 +33,6 @@ async function resetAndShow(document: PaymentToEmployeeSummary | null) {
   await paymentToDispatcherOrdersStore.loading(document.id)
   await employeePaymentSettlementsStore.loading(document.id)
   details.showModal()
-  console.log('resetAndShow', document)
 }
 
 async function generatePdf() {
@@ -254,10 +253,9 @@ function onClose() {
             </tr>
 
             <!-- Секция: Commission -->
-            <!-- rowspan="2", так как здесь всегда есть комиссия и опционально Salary -->
             <tr>
               <td
-                :rowspan="2 + (document?.fixed_salary > 0 ? 1 : 0)"
+                :rowspan="1 + (document?.fixed_salary > 0 ? 1 : 0)"
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] tracking-wider"
               >
                 Commission
@@ -282,22 +280,8 @@ function onClose() {
                 }}
               </td>
             </tr>
-            <tr>
-              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">% of direct</td>
-              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
-                $
-                {{
-                  (
-                    ((Number(document?.gross) - Number(document?.driver_payment)) *
-                      Number(document?.percent_of_profit)) /
-                      100 -
-                    Number(document?.payout_usd || 0)
-                  ).toFixed(2)
-                }}
-              </td>
-            </tr>
             <tr v-if="document?.fixed_salary > 0">
-              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">Fixed salary</td>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fixed salary</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $ {{ document?.fixed_salary.toFixed(2) }}
               </td>
@@ -352,10 +336,12 @@ function onClose() {
 
             <!-- Итог (Payout) -->
             <tr class="bg-[#2a363f] text-white">
+              <!-- colspan="2" объединяет первые две колонки (заголовок и описание) -->
               <td colspan="2" class="px-6 py-6 font-bold uppercase tracking-widest text-left">
                 Payout
               </td>
-              <td class="px-6 py-5 text-right font-bold">
+              <!-- Третья колонка для суммы -->
+              <td class="px-6 py-5 text-right font-bold text-xl">
                 $ {{ (document?.payout_usd || 0).toFixed(2) }}
               </td>
             </tr>

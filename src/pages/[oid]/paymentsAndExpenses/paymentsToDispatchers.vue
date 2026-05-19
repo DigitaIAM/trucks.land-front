@@ -233,7 +233,7 @@ function capitalizeFirstLetter(val) {
       >Close month
     </Button>
     <Button
-      v-if="authStore.account?.access.is_payroll_accountant === true && areAllPaymentsClosed"
+      v-if="authStore.account?.access.is_payroll_accountant === true"
       class="btn-soft font-light tracking-wider flex"
       @click="handleExport"
       >Excel
