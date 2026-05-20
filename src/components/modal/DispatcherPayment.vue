@@ -122,6 +122,73 @@ const settlementsCols = [
   },
 ]
 
+const sharedRoles = computed(() => {
+  const allOrders = [
+    ...Array.from(props.summary?.orders.values() || []),
+    ...Array.from(props.summary?.orders_in_progress.values() || []),
+  ]
+
+  const currentEmployeeId = Number(props.summary?.employee)
+
+  return {
+    // Я ответственный (employee), но машину нашел КТО-ТО ДРУГОЙ (vehicle_found_by !== мой ID)
+    createdButFoundByOther: allOrders.filter((o) => {
+      const orderEmployeeId = Number(o.employee)
+      const finderId = o.vehicle_found_by ? Number(o.vehicle_found_by) : null
+
+      return (
+        orderEmployeeId === currentEmployeeId && finderId !== null && finderId !== currentEmployeeId
+      )
+    }).length,
+
+    // Я НАШЕЛ машину (vehicle_found_by === мой ID), но ответственный КТО-ТО ДРУГОЙ (employee !== мой ID)
+    foundByMeButCreatedByOther: allOrders.filter((o) => {
+      const finderId = o.vehicle_found_by ? Number(o.vehicle_found_by) : null
+      const orderEmployeeId = Number(o.employee)
+
+      return finderId === currentEmployeeId && orderEmployeeId !== currentEmployeeId
+    }).length,
+  }
+})
+
+const directCalculations = computed(() => {
+  const allOrders = [
+    ...Array.from(props.summary?.orders.values() || []),
+    ...Array.from(props.summary?.orders_in_progress.values() || []),
+  ]
+
+  const currentId = Number((props.summary as any)?.employee || 0)
+
+  return allOrders.reduce(
+    (acc, o) => {
+      const finderId = o.vehicle_found_by ? Number(o.vehicle_found_by) : null
+      const creatorId = Number(o.employee)
+
+      // Если это не shared заказ, пропускаем
+      if (!finderId || finderId === creatorId) return acc
+
+      const cost = Number(o.cost || 0)
+      const driverCost = Number(o.driver_cost || o.driver_payment || 0)
+      const orderProfit = cost - driverCost
+
+      // Берем процент из заказа (percent_vf). Если его нет, ставим 0 или дефолт (например 50)
+      const vfPercent = Number(o.percent_vf || 0)
+
+      if (finderId === currentId) {
+        // Я нашел машину -> моя доля = прибыль * percent_vf / 100
+        acc.finderProfit += (orderProfit * vfPercent) / 100
+      } else if (creatorId === currentId) {
+        // Я создал лоад -> моя доля = прибыль * (100 - percent_vf) / 100
+        acc.creatorProfit += (orderProfit * (100 - vfPercent)) / 100
+      }
+
+      acc.totalDirectProfit += orderProfit
+      return acc
+    },
+    { finderProfit: 0, creatorProfit: 0, totalDirectProfit: 0 },
+  )
+})
+
 function close() {
   orders_dispatcher.close()
   emit('close')
@@ -148,12 +215,6 @@ async function openOrder(order: Order) {
   window.open('/' + org?.code3.toLowerCase() + '/order/' + order.id, '_blank')
   // console.log('org.code3', org)
 }
-
-const toPayProfit = computed(() => {
-  const percent = props.summary?.paymentTerms.percent_of_profit || 0
-  const profit = props.summary?.orders_profit || 0
-  return (percent * profit) / 100
-})
 </script>
 
 <template>
@@ -178,7 +239,7 @@ const toPayProfit = computed(() => {
             <!-- Orders Section -->
             <tr>
               <td
-                rowspan="3"
+                rowspan="5"
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] w-[200px] text-xs uppercase tracking-wider"
               >
                 Orders
@@ -188,6 +249,26 @@ const toPayProfit = computed(() => {
                 {{ summary?.orders_number || 0 }} / {{ summary?.orders_in_progress?.size || 0 }}
               </td>
             </tr>
+
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">
+                shared: I created load
+              </td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                {{ sharedRoles.createdButFoundByOther }}
+              </td>
+            </tr>
+
+            <!-- Заказы, где КТО-ТО ДРУГОЙ создал лоад, а ЭТОТ диспетчер нашел машину -->
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">
+                shared: I found vehicle
+              </td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                {{ sharedRoles.foundByMeButCreatedByOther }}
+              </td>
+            </tr>
+
             <tr>
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">orders amount</td>
               <td class="px-6 py-3 text-right font-medium text-white">
@@ -204,7 +285,7 @@ const toPayProfit = computed(() => {
             <!-- Profit Section -->
             <tr>
               <td
-                rowspan="2"
+                rowspan="3"
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
               >
                 Profit
@@ -214,39 +295,39 @@ const toPayProfit = computed(() => {
                 $ {{ (summary?.orders_profit || 0).toFixed(2) }}
               </td>
             </tr>
+            <!-- Прибыль по лоадам, которые создали вы (но машину нашел коллега) -->
             <tr>
-              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">direct profit</td>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">
+                direct profit: I created load
+              </td>
               <td class="px-6 py-3 text-right text-white font-medium">
-                $ {{ (summary?.orders_profit_direct || 0).toFixed(2) }}
+                $ {{ directCalculations.creatorProfit.toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Прибыль по машинам, которые нашли вы (но лоад создал коллега) -->
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">
+                direct profit: I found vehicle
+              </td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ directCalculations.finderProfit.toFixed(2) }}
               </td>
             </tr>
 
             <!-- Commission Section -->
             <tr>
               <td
-                rowspan="2"
+                rowspan="1"
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
               >
                 Commission
               </td>
               <td class="px-6 py-3 border-t border-[#526471] text-[#cbd5e0]">
-                {{ summary?.paymentTerms.percent_of_profit }} % of profit
+                {{ summary?.paymentTerms.percent_of_profit }} %
               </td>
               <td class="px-6 py-3 text-right text-white font-medium">
-                $ {{ toPayProfit.toFixed(2) }}
-              </td>
-            </tr>
-            <tr>
-              <td class="px-6 py-3 border-t border-[#526471] text-[#cbd5e0]">% of direct profit</td>
-              <td class="px-6 py-3 text-right text-white font-medium">
-                $
-                {{
-                  (
-                    (Number(summary?.orders_profit_direct || 0) *
-                      Number(summary?.paymentTerms?.percent_of_profit || 0)) /
-                    100
-                  ).toFixed(2)
-                }}
+                $ {{ summary?.toPayment.toFixed(2) }}
               </td>
             </tr>
 

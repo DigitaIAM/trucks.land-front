@@ -168,7 +168,95 @@ const cols = [
     value: (v: PaymentToDispatcherOrder) => '$' + v.driver_cost,
     size: 120,
   },
+  {
+    label: 'profit',
+    value: (v: PaymentToDispatcherOrder) =>
+      '$' + ((v.order_cost - v.driver_cost) * v.profit_pc) / 100,
+    size: 120,
+  },
+  {
+    label: 'note',
+    value: (v: PaymentToDispatcherOrder) => v.profit_kind,
+    size: 120,
+  },
 ]
+
+const directDispatcherOrders = computed(() => {
+  const orders = paymentToDispatcherOrdersStore.listing || []
+  return orders.reduce(
+    (acc, order) => {
+      if (order.profit_kind === 'direct-dispatcher') {
+        // Фильтр для обычного direct
+        const orderCost = Number(order.order_cost || 0)
+        const driverCost = Number(order.driver_cost || 0)
+        const profitPc = Number(order.profit_pc || 0)
+
+        const directProfit = ((orderCost - driverCost) * profitPc) / 100
+
+        acc.count++
+        acc.totalOrderCost += orderCost
+        acc.totalDriverCost += driverCost
+        acc.totalDirectProfit += directProfit
+      }
+      return acc
+    },
+    { count: 0, totalOrderCost: 0, totalDriverCost: 0, totalDirectProfit: 0 },
+  )
+})
+
+const directVehicleOrders = computed(() => {
+  const orders = paymentToDispatcherOrdersStore.listing || []
+
+  const stats = orders.reduce(
+    (acc, order) => {
+      if (order.profit_kind === 'direct-vehicle') {
+        const orderCost = Number(order.order_cost || 0)
+        const driverCost = Number(order.driver_cost || 0)
+        const profitPc = Number(order.profit_pc || 0)
+
+        const orderProfit = orderCost - driverCost
+        const directProfit = (orderProfit * profitPc) / 100
+
+        acc.count++
+        acc.totalOrderCost += orderCost
+        acc.totalDriverCost += driverCost
+        acc.totalDirectProfit += directProfit
+      }
+      return acc
+    },
+    { count: 0, totalOrderCost: 0, totalDriverCost: 0, totalDirectProfit: 0 },
+  )
+
+  return {
+    ...stats,
+    // Чистая разница (Gross Profit)
+    grossDirectProfit: stats.totalOrderCost - stats.totalDriverCost,
+  }
+})
+
+const ordersRowspan = computed(() => {
+  let count = 4 // Базовые: Quantity, Amount, Driver Payment, profit
+  if (directDispatcherOrders.value.count > 0) count++
+  if (directVehicleOrders.value.count > 0) count++
+  return count
+})
+
+const commissionToPay = computed(() => {
+  const gross = props.document?.gross || 0
+  const driverPayment = props.document?.driver_payment || 0
+  const percent = props.document?.percent_of_profit || 0
+
+  // Суммируем все "прямые" прибыли, которые нужно исключить из базы расчета основного процента
+  const totalDirectToExclude =
+    Number(directDispatcherOrders.value?.totalDirectProfit || 0) +
+    Number(directVehicleOrders.value?.totalDirectProfit || 0)
+
+  // Считаем базу: (Валовая прибыль - Прямые выплаты)
+  const baseProfit = gross - driverPayment - totalDirectToExclude
+
+  // Применяем процент
+  return (baseProfit * percent) / 100
+})
 
 function close() {
   details.close()
@@ -229,7 +317,7 @@ function onClose() {
             <!-- Секция: Orders -->
             <tr>
               <td
-                rowspan="3"
+                :rowspan="ordersRowspan"
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] w-1/3 tracking-wider"
               >
                 Orders
@@ -239,16 +327,50 @@ function onClose() {
                 {{ paymentToDispatcherOrdersStore.listing.length }}
               </td>
             </tr>
+
             <tr>
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">orders amount</td>
-              <td class="px-6 py-3 text-right font-medium text-white">
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $ {{ document?.gross.toFixed(2) }}
               </td>
             </tr>
+
             <tr>
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">driver payment</td>
-              <td class="px-6 py-3 text-right font-medium text-white">
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $ {{ document?.driver_payment.toFixed(2) }}
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">total profit</td>
+              <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
+                $
+                {{
+                  (Number(document?.gross || 0) - Number(document?.driver_payment || 0)).toFixed(2)
+                }}
+              </td>
+            </tr>
+
+            <!-- Подсекция: Direct Dispatcher (условная) -->
+            <tr v-if="directDispatcherOrders.count > 0">
+              <td class="px-6 py-2 text-[#cbd5e0] border-t border-[#526471]">
+                direct profit
+                <span class="ml-1 opacity-70">({{ directDispatcherOrders.count }} orders)</span>
+              </td>
+              <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
+                $ {{ directDispatcherOrders.totalDirectProfit.toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Подсекция: Direct Vehicle (условная) -->
+            <tr v-if="directVehicleOrders.count > 0">
+              <td class="px-6 py-2 text-[#cbd5e0] border-t border-[#526471]">
+                direct profit
+                <span class="ml-1 opacity-70">({{ directVehicleOrders.count }} orders)</span>
+              </td>
+              <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
+                $ {{ directVehicleOrders.totalDirectProfit.toFixed(2) }}
               </td>
             </tr>
 
@@ -262,7 +384,7 @@ function onClose() {
               </td>
               <td class="px-6 py-3 text-[#cbd5e0]">
                 <span v-if="document?.percent_of_profit > 0"
-                  >{{ document?.percent_of_profit }}% of profit</span
+                  >{{ document?.percent_of_profit }}%</span
                 >
                 <span v-else-if="document?.percent_of_gross > 0"
                   >{{ document?.percent_of_gross }}% of gross</span
@@ -271,13 +393,7 @@ function onClose() {
               </td>
               <td class="px-6 py-3 text-right font-medium text-white">
                 $
-                {{
-                  (
-                    ((Number(document?.gross) - Number(document?.driver_payment)) *
-                      Number(document?.percent_of_profit)) /
-                    100
-                  ).toFixed(2)
-                }}
+                {{ commissionToPay.toFixed(2) }}
               </td>
             </tr>
             <tr v-if="document?.fixed_salary > 0">

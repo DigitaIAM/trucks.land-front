@@ -472,34 +472,49 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
       for (const order of summary.orders.values()) {
         if (order.stage === 3) {
-          console.log('order.driver_cost', order.driver_cost, order.stage)
           records.push({
             doc_payment: -1,
             doc_order: order.id,
             order_cost: 0,
             driver_cost: 0,
             profit_kind: 'profit',
+            profit_pc: 100,
           } as PaymentToDispatcherOrderCreate)
         } else {
-          if (
-            order.vehicle_found_by == summary.employee &&
-            order.vehicle_found_by != order.created_by
-          ) {
-            records.push({
-              doc_payment: -1,
-              doc_order: order.id,
-              order_cost: order.cost,
-              driver_cost: order.driver_cost,
-              profit_kind: 'direct',
-            } as PaymentToDispatcherOrderCreate)
+          if (order.vehicle_found_by && order.vehicle_found_by != order.created_by) {
+            if (order.vehicle_found_by == summary.employee) {
+              const percent = Number(order.percent_vf) || 100
+
+              records.push({
+                doc_payment: -1,
+                doc_order: order.id,
+                order_cost: order.cost,
+                driver_cost: order.driver_cost,
+                profit_kind: 'direct-vehicle',
+                profit_pc: percent,
+              } as PaymentToDispatcherOrderCreate)
+            } else {
+              const percent = Number(order.percent_vf) || 100
+              const currentPc = (100 - percent) / 100
+
+              console.log('order.driver_cost', order.driver_cost)
+              records.push({
+                doc_payment: -1,
+                doc_order: order.id,
+                order_cost: order.cost,
+                driver_cost: order.driver_cost,
+                profit_kind: 'direct-dispatcher',
+                profit_pc: currentPc,
+              } as PaymentToDispatcherOrderCreate)
+            }
           } else {
-            console.log('order.driver_cost', order.driver_cost)
             records.push({
               doc_payment: -1,
               doc_order: order.id,
               order_cost: order.cost,
               driver_cost: order.driver_cost,
               profit_kind: 'profit',
+              profit_pc: 100,
             } as PaymentToDispatcherOrderCreate)
           }
         }

@@ -58,8 +58,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
 
   let n = 1
   for (const record of paymentsWithNames) {
-    const profit = Number(record.gross - record.driver_payment)
-    const to_payment = Number((profit * record.percent_of_profit) / 100)
+    const to_payment = Number(record.to_pay) || 0
 
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0
