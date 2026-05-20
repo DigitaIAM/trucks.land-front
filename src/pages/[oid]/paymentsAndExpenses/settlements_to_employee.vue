@@ -151,7 +151,7 @@ function createSettlement() {
     :allowEmployeeSelection="allowEmployeeSelection"
   ></SettlementEmployeeModal>
   <div class="flex justify-between items-center w-full mb-4 mt-4">
-    <Text size="2xl" class="px-4">Settlements</Text>
+    <Text size="2xl" class="px-4">Adjustments</Text>
     <Button class="btn-soft font-light tracking-wider mr-4" @click="createSettlement"
       >Create</Button
     >

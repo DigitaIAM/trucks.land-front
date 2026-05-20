@@ -107,7 +107,7 @@ const links = [
     perm: (access) => access.is_payroll_accountant || access.is_admin || access.is_dispatcher,
   },
   {
-    name: 'Rewards',
+    name: 'Adjustments',
     //SALARY accountant
     icon: defineAsyncComponent(() => import('~icons/streamline/dollar-coin-1')),
     path: '/paymentsAndExpenses/settlements_to_employee',
