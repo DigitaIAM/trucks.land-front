@@ -122,6 +122,14 @@ const settlementsCols = [
   },
 ]
 
+const calculatedCommission = computed(() => {
+  const profit = Number(props.summary?.orders_profit || 0)
+  const directProfit = Number(props.summary?.orders_profit_direct || 0)
+  const percent = Number(props.summary?.paymentTerms?.percent_of_profit || 0)
+  const totalProfit = profit + directProfit
+  return (totalProfit * percent) / 100
+})
+
 const sharedRoles = computed(() => {
   const allOrders = [
     ...Array.from(props.summary?.orders.values() || []),
@@ -327,7 +335,8 @@ async function openOrder(order: Order) {
                 {{ summary?.paymentTerms.percent_of_profit }} %
               </td>
               <td class="px-6 py-3 text-right text-white font-medium">
-                $ {{ summary?.toPayment.toFixed(2) }}
+                $
+                {{ calculatedCommission.toFixed(2) }}
               </td>
             </tr>
 
