@@ -39,6 +39,11 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } }
 
   const payments = await paymentToEmployeeStore.fetchJournalData(orgId, year, month)
+  const dispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
+
+  const allOrders = (
+    await Promise.all((payments || []).map((payment) => dispatcherOrdersStore.request(payment.id)))
+  ).flat()
 
   const paymentsWithNames = await Promise.all(
     (payments || []).map(async (record) => {
@@ -54,11 +59,46 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     a.fullName.localeCompare(b.fullName, 'en', { sensitivity: 'base' }),
   )
 
-  console.log('Все записи:', paymentsWithNames)
-
   let n = 1
   for (const record of paymentsWithNames) {
-    const to_payment = Number(record.to_pay) || 0
+    const employeeOrders = allOrders.filter((o) => o.doc_payment === record.id)
+
+    // Суммы direct заказов
+    const directStats = employeeOrders.reduce(
+      (acc, order) => {
+        if (order.profit_kind === 'direct-vehicle' || order.profit_kind === 'direct-dispatcher') {
+          acc.orderCost += Number(order.order_cost || 0)
+          acc.driverCost += Number(order.driver_cost || 0)
+        }
+        return acc
+      },
+      { orderCost: 0, driverCost: 0 },
+    )
+
+    // Обычные заказы — вычитаем direct из общих сумм
+    const regularGross = Number(record.gross) - directStats.orderCost
+    const regularDriverPayment = Number(record.driver_payment) - directStats.driverCost
+    const regularToPayment =
+      ((regularGross - regularDriverPayment) * record.percent_of_profit) / 100
+
+    // Direct заказы
+    const directProfit = employeeOrders.reduce((acc, order) => {
+      if (order.profit_kind === 'direct-vehicle' || order.profit_kind === 'direct-dispatcher') {
+        const orderProfit = Number(order.order_cost || 0) - Number(order.driver_cost || 0)
+        const profitPc = Number(order.profit_pc || 0)
+
+        if (order.profit_kind === 'direct-vehicle') {
+          acc += (orderProfit * profitPc) / 100
+        } else {
+          // direct-dispatcher получает оставшийся процент
+          acc += (orderProfit * (100 - profitPc)) / 100
+        }
+      }
+      return acc
+    }, 0)
+
+    const directToPayment = (directProfit * record.percent_of_profit) / 100
+    const to_payment = regularToPayment + directToPayment
 
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0

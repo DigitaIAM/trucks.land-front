@@ -345,11 +345,11 @@ async function openOrder(order: Order) {
               <td
                 :rowspan="
                   1 +
-                  (summary?.settlements_total > 0 ? 1 : 0) +
-                  (summary?.vacation_amount > 0 ? 1 : 0) +
-                  (summary?.missed_days > 0 ? 1 : 0) +
-                  (summary?.settlement_fine > 0 ? 1 : 0) +
-                  (summary?.advance_amount > 0 ? 1 : 0)
+                  (Number(summary?.settlements_total) > 0 ? 1 : 0) +
+                  (Number(summary?.vacation_amount) > 0 ? 1 : 0) +
+                  (Number(summary?.missed_days) > 0 ? 1 : 0) +
+                  (Number(summary?.settlement_fine) > 0 ? 1 : 0) +
+                  (Number(summary?.advance_amount) > 0 ? 1 : 0)
                 "
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
               >

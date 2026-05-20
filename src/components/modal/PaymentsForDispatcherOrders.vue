@@ -408,9 +408,9 @@ function onClose() {
               <td
                 :rowspan="
                   1 +
-                  (document?.settlement_fine > 0 ? 1 : 0) +
-                  (document?.settlement_vacation > 0 ? 1 : 0) +
-                  (document?.settlement_advance > 0 ? 1 : 0)
+                  (Number(document?.settlement_fine) > 0 ? 1 : 0) +
+                  (Number(document?.settlement_vacation) > 0 ? 1 : 0) +
+                  (Number(document?.settlement_advance) > 0 ? 1 : 0)
                 "
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] tracking-wider"
               >
@@ -430,7 +430,7 @@ function onClose() {
             <tr v-if="document?.settlement_fine > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fine</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
-                - $ {{ document?.settlement_fine.toFixed(2) }}
+                - $ {{ document?.settlement_fine }}
               </td>
             </tr>
             <tr v-if="document?.settlement_vacation > 0">
@@ -438,7 +438,7 @@ function onClose() {
               <td
                 class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs border-t border-[#526471]"
               >
-                UZS {{ document?.settlement_vacation.toLocaleString() }}
+                UZS {{ document?.settlement_vacation }}
               </td>
             </tr>
             <tr v-if="document?.settlement_advance > 0">
@@ -446,7 +446,7 @@ function onClose() {
               <td
                 class="px-6 py-3 text-right text-[#cbd5e0] italic text-xs border-t border-[#526471]"
               >
-                - UZS {{ document?.settlement_advance.toLocaleString() }}
+                - UZS {{ document?.settlement_advance }}
               </td>
             </tr>
 
@@ -457,7 +457,7 @@ function onClose() {
                 Payout
               </td>
               <!-- Третья колонка для суммы -->
-              <td class="px-6 py-5 text-right font-bold text-xl">
+              <td class="px-6 py-5 text-right font-bold">
                 $ {{ (document?.payout_usd || 0).toFixed(2) }}
               </td>
             </tr>
