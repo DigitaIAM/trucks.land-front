@@ -62,6 +62,10 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
   text_left(page, font, fs, `${document.percent_of_profit}`, cx - 100, cy)
   cy -= rowSpacing
 
+  text_right(page, font, fs, 'fixed salary:', cx - 120, cy)
+  text_left(page, font, fs, `\$${document.fixed_salary}`, cx - 100, cy)
+  cy -= rowSpacing
+
   text_right(page, font, fs, 'calculation:', cx - 120, cy)
   text_left(page, boldFont, fs, `\$${document.to_pay.toFixed(2)}`, cx - 100, cy)
 
