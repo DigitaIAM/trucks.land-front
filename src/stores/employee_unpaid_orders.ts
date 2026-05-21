@@ -495,7 +495,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               } as PaymentToDispatcherOrderCreate)
             } else {
               const percent = Number(order.percent_vf) || 100
-              const currentPc = (100 - percent) / 100
+              const currentPc = 100 - percent
 
               console.log('order.driver_cost', order.driver_cost)
               records.push({
