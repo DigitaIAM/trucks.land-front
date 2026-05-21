@@ -389,7 +389,7 @@ function onClose() {
                 <span v-else-if="document?.percent_of_gross > 0"
                   >{{ document?.percent_of_gross }}% of gross</span
                 >
-                <span v-else>To Pay</span>
+                <span v-else>to pay</span>
               </td>
               <td class="px-6 py-3 text-right font-medium text-white">
                 $
