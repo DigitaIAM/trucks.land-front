@@ -52,12 +52,17 @@ async function resetAndShow(settlement: SettlementEmployee | null) {
     return
   }
 
+  if (!settlementTypesStore.listing?.length) {
+    await settlementTypesStore.fetchListing()
+  }
+
   const account = authStore.currentAccount()
 
   id.value = settlement?.id
   organization.value = settlement?.organization
   employee.value = settlement ? ({ id: settlement.employee } as User) : null
-  settlement_type.value = settlement?.settlement_type ?? 'bonus'
+  settlement_type.value =
+    (settlementTypesStore.listing ?? []).find((t) => t.id === settlement?.settlement_type) ?? null
   currency.value = settlement?.currency
   amount.value = settlement?.amount
   notes.value = settlement?.notes || ''

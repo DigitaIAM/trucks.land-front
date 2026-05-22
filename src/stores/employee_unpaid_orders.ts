@@ -203,6 +203,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       .lte('start_date', till.format('YYYY-MM-DD'))
       .gte('end_date', from.format('YYYY-MM-DD'))
 
+
     absencesList.value = response.data || []
 
     const userStore = useUsersStore()
@@ -355,15 +356,16 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         toPayment += (totalProfit * employeeTerms.percent_of_profit) / 100
       }
       if (employeeTerms.fixed_salary) {
-        const fixedSalary = Number(employeeTerms?.fixed_salary) || 0
-        const totalWorkingDaysInPeriod = getWorkingDaysInRange(from, till)
-        const employeeAbsences = absencesList.value?.filter((a) => a.employee === employee) || []
+        const fixedSalary = Number(employeeTerms.fixed_salary) || 0
+        const totalWorkingDays = getWorkingDaysInRange(from, till) || 0
+
+        const employeeAbsences =
+          absencesList.value?.filter((a) => Number(a.employee) === employee) || []
 
         employeeAbsences.forEach((absence) => {
           let absenceStart = dayjs(absence.start_date).isAfter(from)
             ? dayjs(absence.start_date)
             : from
-
           const absenceEnd = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
 
           while (!absenceStart.isAfter(absenceEnd, 'day')) {
@@ -374,12 +376,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           }
         })
 
-        const totalDaysInPeriod = getWorkingDaysInRange(from, till) || 0
-        const salaryPerDay = totalDaysInPeriod > 0 ? fixedSalary / totalDaysInPeriod : 0
-
-        const missed = Number(missedWorkingDays) || 0
-
-        const actualDaysWorked = Math.max(0, totalWorkingDaysInPeriod - missed)
+        const salaryPerDay = totalWorkingDays > 0 ? fixedSalary / totalWorkingDays : 0
+        const actualDaysWorked = Math.max(0, totalWorkingDays - missedWorkingDays)
         toPayment += actualDaysWorked * salaryPerDay
       }
 
