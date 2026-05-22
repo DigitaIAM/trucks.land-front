@@ -33,6 +33,7 @@ import UsersIcon from '~/assets/icons/users.svg?url'
 import StatusIcon from '~/assets/icons/status.svg?url'
 import OrganizationsIcon from '~/assets/icons/organizations.svg?url'
 import InsuranceIcon from '~/assets/icons/insurance.svg?url'
+import SchemaIcon from '~/assets/icons/schema.svg?url'
 
 defineOptions({
   __loaders: [useOrgData],
@@ -82,6 +83,11 @@ const buttons = [
     label: 'Organizations',
     icon: OrganizationsIcon,
     link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/organizations',
+  },
+  {
+    label: 'Сommissions',
+    icon: SchemaIcon,
+    link: '/' + orgData.data.value.code3.toLowerCase() + '/refs/commission_schemas',
   },
 ]
 </script>
