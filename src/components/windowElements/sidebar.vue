@@ -117,7 +117,7 @@ const links = [
     name: 'Absences',
     icon: defineAsyncComponent(() => import('~icons/streamline/calendar-edit')),
     path: '/paymentsAndExpenses/employee_absence',
-    perm: (access) => access.is_admin,
+    perm: (access) => access.is_admin || access.is_payroll_accountant,
   },
   // {
   //   name: 'Hiring',

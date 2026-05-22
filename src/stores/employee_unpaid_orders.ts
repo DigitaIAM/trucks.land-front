@@ -203,7 +203,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
       .lte('start_date', till.format('YYYY-MM-DD'))
       .gte('end_date', from.format('YYYY-MM-DD'))
 
-
     absencesList.value = response.data || []
 
     const userStore = useUsersStore()
