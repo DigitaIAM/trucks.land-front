@@ -57,6 +57,7 @@ Regenerate on demand by running the dev server or type-check.
 - **VueDatePicker** from `@vuepic/vue-datepicker` — registered globally as `<VueDatePicker>` in `src/main.ts`
 - **SVGs** in `<template>` importable as Vue components via `vite-svg-loader`
 - **Icons** via `unplugin-icons` (Iconify) — `<Icon name="mdi:home" />`
+- `supabase` client injected as `app.provide('supabase', supabase)` in `main.ts`; also importable from `@/composables/use-supabase`
 
 ## Path aliases
 
@@ -65,6 +66,8 @@ Regenerate on demand by running the dev server or type-check.
 ## Lint / format
 
 **Order: lint → format** (ESLint with `@vue/eslint-config-prettier/skip-formatting` means ESLint does not format — Prettier handles that separately).
+
+VSCode does this automatically on save (`editor.codeActionsOnSave.source.fixAll` + `editor.formatOnSave` with Prettier as default formatter).
 
 - `npm run lint` — ESLint flat config (`eslint.config.ts`), targets `**/*.{ts,mts,tsx,vue}`, ignores `dist/`, `dist-ssr/`, `coverage/`
 - `npm run format` — Prettier with no semicolons, single quotes, 100 print width, only `src/`
@@ -88,5 +91,6 @@ Regenerate on demand by running the dev server or type-check.
 - `src/views/` exists but is **empty** — not used; pages live in `src/pages/`
 - The README is a generic Vite starter template — ignore it for project-specific guidance
 - All stores, composables, and models are auto-imported; do not manually import them unless you need a type only
+- `src/utils/` is **not** auto-imported — import from it explicitly
 - Pinia stores use `acceptHMRUpdate` for hot reload support
 - `typed-router.d.ts` should be included in tsconfig for typed route names
