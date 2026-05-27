@@ -191,6 +191,7 @@ declare global {
   const useElementSize: typeof import('@vueuse/core')['useElementSize']
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
   const useEmployeeAbsencesStore: typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']
+  const useEmployeeHiringStore: typeof import('./stores/employee_hiring_history')['useEmployeeHiringStore']
   const useEmployeePaymentSettlementsStore: typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']
   const useEmployeeSettlementsTypeStore: typeof import('./stores/employee_settlements_type')['useEmployeeSettlementsTypeStore']
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
@@ -343,6 +344,7 @@ declare global {
   const useUsersStore: typeof import('./stores/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
+  const useVehicleTypeStore: typeof import('./stores/vehicle_type')['useVehicleTypeStore']
   const useVehiclesStore: typeof import('./stores/vehicles')['useVehiclesStore']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
   const useVirtualList: typeof import('@vueuse/core')['useVirtualList']
@@ -397,6 +399,9 @@ declare global {
   // @ts-ignore
   export type { EmployeeAbsences, EmployeeAbsenceCreate, EmployeeAbsenceUpdate } from './stores/employee_absences'
   import('./stores/employee_absences')
+  // @ts-ignore
+  export type { EmployeeHiring, EmployeeHiringCreate, EmployeeHiringUpdate } from './stores/employee_hiring_history'
+  import('./stores/employee_hiring_history')
   // @ts-ignore
   export type { PaymentToDispatcherOrder, PaymentToDispatcherOrderCreate } from './stores/employee_payment_orders'
   import('./stores/employee_payment_orders')
@@ -475,6 +480,9 @@ declare global {
   // @ts-ignore
   export type { User, UserCreate, UserUpdate } from './stores/users'
   import('./stores/users')
+  // @ts-ignore
+  export type { VehicleType, VehicleTypeCreate } from './stores/vehicle_type'
+  import('./stores/vehicle_type')
   // @ts-ignore
   export type { Vehicle, VehicleCreate, VehicleUpdate } from './stores/vehicles'
   import('./stores/vehicles')
@@ -662,6 +670,7 @@ declare module 'vue' {
     readonly useElementSize: UnwrapRef<typeof import('@vueuse/core')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
     readonly useEmployeeAbsencesStore: UnwrapRef<typeof import('./stores/employee_absences')['useEmployeeAbsencesStore']>
+    readonly useEmployeeHiringStore: UnwrapRef<typeof import('./stores/employee_hiring_history')['useEmployeeHiringStore']>
     readonly useEmployeePaymentSettlementsStore: UnwrapRef<typeof import('./stores/employee_payment_settlements')['useEmployeePaymentSettlementsStore']>
     readonly useEmployeeSettlementsTypeStore: UnwrapRef<typeof import('./stores/employee_settlements_type')['useEmployeeSettlementsTypeStore']>
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
@@ -794,6 +803,7 @@ declare module 'vue' {
     readonly useUsersStore: UnwrapRef<typeof import('./stores/users')['useUsersStore']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
+    readonly useVehicleTypeStore: UnwrapRef<typeof import('./stores/vehicle_type')['useVehicleTypeStore']>
     readonly useVehiclesStore: UnwrapRef<typeof import('./stores/vehicles')['useVehiclesStore']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
     readonly useVirtualList: UnwrapRef<typeof import('@vueuse/core')['useVirtualList']>

@@ -63,6 +63,7 @@ declare module 'vue' {
     DropDownButton: typeof import('./components/buttons/DropDownButton.vue')['default']
     DropdownContent: typeof import('./components/widgets/DropdownContent.vue')['default']
     DropdownTarget: typeof import('./components/widgets/DropdownTarget.vue')['default']
+    EmployeeHiringModal: typeof import('./components/modal/EmployeeHiringModal.vue')['default']
     ExpensesModal: typeof import('./components/modal/ExpensesModal.vue')['default']
     ExpensesOwner: typeof import('./components/modal/ExpensesOwner.vue')['default']
     FileInput: typeof import('./components/widgets/FileInput.vue')['default']
@@ -182,6 +183,7 @@ declare module 'vue' {
     Tooltip: typeof import('./components/widgets/Tooltip.vue')['default']
     TopBar: typeof import('./components/windowElements/TopBar.vue')['default']
     UserModal: typeof import('./components/modal/UserModal.vue')['default']
+    VacationAndAdvanceModal: typeof import('./components/modal/VacationAndAdvanceModal.vue')['default']
     VehicleModal: typeof import('./components/modal/VehicleModal.vue')['default']
   }
 }
