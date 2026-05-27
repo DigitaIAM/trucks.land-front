@@ -14,7 +14,9 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -80,6 +82,7 @@
     "vite-plugin-vue-devtools": "^7.7.2",
     "vite-plugin-vue-layouts-next": "^0.1.1",
     "vite-svg-loader": "^5.1.0",
+    "vitest": "^4.1.7",
     "vue-tsc": "^2.2.2"
   }
 }
