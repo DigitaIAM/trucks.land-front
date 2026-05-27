@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{
-  store: Searchable
+  store: {
+    searchAndListing(query: string | null): void | Promise<void>
+  }
 }>()
 
 const searchQuery = ref('')

@@ -1,10 +1,16 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { groupBy } from '@/utils/group-by.ts'
-import dayjs, { Dayjs } from 'dayjs'
+import {
+  loadOrdersInProgress,
+  loadUnpaidOrders,
+  loadUnpaidSettlements,
+  calculateEmployeeReport,
+} from '@/composables/use-employee-report-calculator.ts'
+import type { EmployeeReportRecord } from '@/composables/use-employee-report-calculator.ts'
+import type { OrderEnriched } from '@/stores/orders.ts'
 
 export interface EmployeePaymentRecord {
   employee: number
-  order: Order
+  order: OrderEnriched
 }
 
 export interface EmployeePaymentSummary {
@@ -41,389 +47,22 @@ export interface PaymentTerms {
   income_tax: number
 }
 
-interface Record {
-  user: User
-  summary: EmployeePaymentSummary
-}
-
-interface Absence {
-  id?: number
-  employee: string | number
-  start_date: string
-  end_date: string
-}
-
 export interface EmployeePaymentSummaryInDetails {
   order: Order
   agreements: Array<OrderEvent>
 }
 
 export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
-  const ordersInProcessing = ref(new Map<number, Array<Order>>())
-  const mapping = ref(new Map<number, Array<EmployeePaymentRecord>>())
-  const settlements = ref(new Map<number, Array<SettlementEmployee>>())
+  const report = ref<Array<EmployeeReportRecord>>([])
   const processing = ref<Array<number>>([])
-
-  const report = ref<Array<Record>>([])
-
   const searchQuery = ref<string | null>(null)
-  const absencesList = ref<Absence[]>([])
 
   async function loading(orgId: number | null, userId: number | null) {
-    ordersInProcessing.value = await load_orders_in_progress(orgId)
-
-    mapping.value = await load_unpaid_orders(orgId)
-
-    settlements.value = await load_unpaid_settlements(orgId, userId)
-
-    report.value = await calculate_report(orgId)
-  }
-
-  async function load_orders_in_progress(orgId: number | null) {
-    const response = await supabase
-      .from('orders_journal')
-      .select()
-      .eq('organization', orgId)
-      .is('year', null)
-      .gte('created_at', '2026-02-24')
-
-    if (response.status == 200) {
-      return groupBy(
-        response.data!.map((json) => json as Order),
-        (v) => v.created_by,
-      )
-    } else {
-      throw 'fail to load orders in progress'
-    }
-  }
-
-  async function load_unpaid_orders(orgId: number | null) {
-    const requestPayments = supabase
-      .from('employee_unpaid_orders')
-      .select('*')
-      .eq('organization', orgId)
-
-    const responsePayments = await requestPayments
-
-    const map = new Map<number, Array<EmployeePaymentRecord>>()
-
-    if (responsePayments.data && responsePayments.data.length > 0) {
-      responsePayments.data.forEach((json) => {
-        // 1. Обработка created_by (создатель заказа)
-        const createdBy = Number(json['created_by'] || json['employee'])
-        if (createdBy) {
-          const record = {
-            employee: createdBy,
-            employee_payment: 0,
-            order: json as Order,
-          } as EmployeePaymentRecord
-
-          const list = map.get(createdBy) ?? []
-          list.push(record)
-          map.set(createdBy, list)
-        }
-
-        // 2. Обработка vehicle_found_by (нашедший транспорт)
-        const vehicleFoundBy = Number(json['vehicle_found_by'])
-        if (vehicleFoundBy) {
-          const record = {
-            employee: vehicleFoundBy,
-            employee_payment: 0,
-            order: json as Order,
-          } as EmployeePaymentRecord
-
-          const list = map.get(vehicleFoundBy) ?? []
-          list.push(record)
-          map.set(vehicleFoundBy, list)
-        }
-      })
-    }
-
-    return map
-  }
-
-  async function load_unpaid_settlements(orgId: number | null, userId: number | null) {
-    let requestSettlements = supabase
-      .from('employee_unpaid_settlements')
-      .select()
-      .eq('organization', orgId)
-
-    if (userId) {
-      requestSettlements = requestSettlements.eq('employee', userId)
-    }
-
-    const responseSettlements = await requestSettlements
-
-    const settlementsMap = new Map<number, Array<SettlementEmployee>>()
-    responseSettlements.data?.forEach((json) => {
-      const record = json as SettlementEmployee
-
-      const key = record.employee
-      const list = settlementsMap.get(key) ?? []
-      list.push(record)
-      settlementsMap.set(key, list)
-    })
-    return settlementsMap
-  }
-
-  function getWorkingDaysInRange(startDate: Dayjs, endDate: Dayjs) {
-    let start = startDate
-    const end = endDate
-    let workingDays = 0
-
-    while (!start.isAfter(end, 'day')) {
-      const dayOfWeek = start.day()
-      if (dayOfWeek !== 0) {
-        // 0 - это воскресенье, пропускаем его
-        workingDays++
-      }
-      start = start.add(1, 'day')
-    }
-    return workingDays
-  }
-
-  async function calculate_report(orgId: number | null) {
-    if (!orgId) {
-      return []
-    }
-
-    const { data: lastPayment } = await supabase
-      .from('employee_payments')
-      .select('created_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    const from = dayjs(lastPayment?.created_at)
-    const till = dayjs().subtract(1, 'day')
-
-    const response = await supabase
-      .from('employee_absences')
-      .select('*')
-      .lte('start_date', till.format('YYYY-MM-DD'))
-      .gte('end_date', from.format('YYYY-MM-DD'))
-
-    absencesList.value = response.data || []
-
-    const userStore = useUsersStore()
-
-    const activeUserIds = new Set(
-      [...mapping.value.keys(), ...settlements.value.keys()]
-        .filter((id) => id !== undefined && id !== null && !Number.isNaN(Number(id)))
-        .map(Number),
-    )
-
-    const responseTerms = await supabase
-      .from('user_conditions')
-      .select(
-        `
-    *,
-    users!user_conditions_user_id_fkey!inner(fired)
-  `,
-      )
-      .eq('organization', orgId)
-      .eq('users.fired', false)
-
-    if (responseTerms.error) {
-      console.error('Error Supabase:', responseTerms.error.message)
-      return []
-    }
-
-    const allTermsData = responseTerms.data || []
-
-    const terms = groupBy(
-      allTermsData.map((v) => v as PaymentTerms),
-      (v) => v.user_id,
-    )
-
-    const finalKeys = new Set([
-      ...Array.from(activeUserIds).map(Number),
-      ...allTermsData.map((t) => Number(t.user_id)),
-    ])
-
-    const list = [] as Record[]
-
-    for (const employeeKey of finalKeys) {
-      const employee = Number(employeeKey)
-
-      let orders_amount = 0
-      let orders_driver = 0
-      let orders_profit = 0
-      let orders_amount_direct = 0
-      let orders_driver_direct = 0
-      let orders_profit_direct = 0
-      let missedWorkingDays = 0
-      let toPayment = 0
-
-      const orders = new Map<number, Order>()
-      const paymentsByOrder = new Map<number, number>()
-
-      const employeeTerms = (terms.get(employee)?.at(0) || {
-        created_by: 1,
-        organization: orgId,
-        user_id: employee,
-        percent_of_gross: 0,
-        percent_of_profit: 0,
-        fixed_salary: 0,
-        income_tax: 0,
-      }) as PaymentTerms
-
-      // Считываем записи для сотрудника (приводим ключ к строке, либо сравниваем безопасно)
-      const employeeRecords =
-        mapping.value.get(String(employee)) || mapping.value.get(employee) || []
-
-      employeeRecords.forEach((p) => {
-        const order =
-          p.order && typeof p.order === 'object' ? JSON.parse(JSON.stringify(p.order)) : p.order
-
-        if (!p.order || !p.order.id) return
-
-        if (p.order.excluded || p.order.stage === 3) {
-          // ignore
-        } else {
-          const costVal = Number(p.order.cost) || 0
-          const driverCostVal = Number(p.order.driver_cost || p.order.driver_payment) || 0
-          const profit = costVal - driverCostVal
-
-          const createdBy = Number(p.order.created_by)
-          const vehicleFoundBy = Number(p.order.vehicle_found_by)
-
-          // 1. Прямая прибыль (Direct Profit) для нашедшего транспорт
-          if (vehicleFoundBy && vehicleFoundBy === employee) {
-            const percent = Number(p.order.percent_vf) || 100
-            const currentPc = percent / 100
-
-            orders_amount_direct += costVal * currentPc
-            orders_driver_direct += driverCostVal * currentPc
-            orders_profit_direct += profit * currentPc
-          }
-
-          // 2. Обычный Gross / Profit
-          let pc = 1
-          if (vehicleFoundBy) {
-            if (vehicleFoundBy === createdBy && vehicleFoundBy === employee) {
-              pc = 0
-            } else if (vehicleFoundBy !== employee) {
-              const percent = Number(p.order.percent_vf) || 100
-              pc = (100 - percent) / 100
-            } else {
-              pc = 0
-            }
-          }
-
-          orders_amount += costVal * pc
-          orders_driver += driverCostVal * pc
-          orders_profit += profit * pc
-        }
-
-        const num = Number(paymentsByOrder.get(p.order.id)) || 0
-        const driverCost = Number(p.order.driver_cost || p.order.driver_payment || 0)
-        paymentsByOrder.set(p.order.id, num + driverCost)
-
-        orders.set(p.order.id, p.order)
-      })
-
-      const settlementsRecords = [] as Array<SettlementEmployee>
-      let settlementsTotal = 0
-      let vacationTotal = 0
-      let advanceTotal = 0
-      let fine = 0
-
-      settlements.value.get(employee)?.forEach((v) => {
-        if (v.employee == employee) {
-          settlementsRecords.push(v)
-
-          if (v.settlement_type === 'vacation pay') {
-            vacationTotal += Number(v.amount)
-          } else if (v.settlement_type === 'advance') {
-            advanceTotal += Number(v.amount)
-          } else if (v.settlement_type === 'fine') {
-            fine += Number(v.amount)
-          } else {
-            settlementsTotal += Number(v.amount)
-          }
-        }
-      })
-
-      const totalGross = (orders_amount || 0) + (orders_amount_direct || 0)
-      const totalProfit = (orders_profit || 0) + (orders_profit_direct || 0)
-
-      if (employeeTerms?.percent_of_gross) {
-        toPayment += (totalGross * employeeTerms.percent_of_gross) / 100
-      }
-      if (employeeTerms.percent_of_profit) {
-        toPayment += (totalProfit * employeeTerms.percent_of_profit) / 100
-      }
-      if (employeeTerms.fixed_salary) {
-        const fixedSalary = Number(employeeTerms.fixed_salary) || 0
-        const totalWorkingDays = getWorkingDaysInRange(from, till) || 0
-
-        const employeeAbsences =
-          absencesList.value?.filter((a) => Number(a.employee) === employee) || []
-
-        employeeAbsences.forEach((absence) => {
-          let absenceStart = dayjs(absence.start_date).isAfter(from)
-            ? dayjs(absence.start_date)
-            : from
-          const absenceEnd = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
-
-          while (!absenceStart.isAfter(absenceEnd, 'day')) {
-            if (absenceStart.day() !== 0) {
-              missedWorkingDays++
-            }
-            absenceStart = absenceStart.add(1, 'day')
-          }
-        })
-
-        const salaryPerDay = totalWorkingDays > 0 ? fixedSalary / totalWorkingDays : 0
-        const actualDaysWorked = Math.max(0, totalWorkingDays - missedWorkingDays)
-        toPayment += actualDaysWorked * salaryPerDay
-      }
-
-      const listOfOrdersInProcessing =
-        ordersInProcessing.value.get(employee) || ([] as Array<Order>)
-
-      const orders_in_progress = new Map<number, Order>()
-      listOfOrdersInProcessing.forEach((order) => orders_in_progress.set(order.id, order))
-
-      const finalToPayment = Number(toPayment) || 0
-      const finalSettlements = Number(settlementsTotal) || 0
-
-      list.push(<Record>{
-        user: await userStore.resolve(employee),
-        summary: {
-          employee: employee,
-          orders_number: orders.size,
-          orders_amount: orders_amount,
-          orders_driver: orders_driver,
-          orders_profit: orders_profit,
-          orders_amount_direct: orders_amount_direct,
-          orders_driver_direct: orders_driver_direct,
-          orders_profit_direct: orders_profit_direct,
-          toPayment: toPayment,
-          orders: orders,
-          orders_in_progress: orders_in_progress,
-          paymentsByOrder: paymentsByOrder,
-          paymentTerms: employeeTerms,
-          settlements: settlementsRecords,
-          settlements_total: settlementsTotal,
-          vacation_amount: vacationTotal,
-          advance_amount: advanceTotal,
-          settlement_fine: fine,
-          missed_days: missedWorkingDays,
-          payout_usd:
-            Number(finalToPayment || 0) +
-            Number(finalSettlements || 0) -
-            Math.abs(Number(fine || 0)),
-        } as EmployeePaymentSummary,
-      })
-    }
-
-    list.sort((a, b) => b.summary.payout_usd - a.summary.payout_usd)
-
-    console.log('list', list)
-
-    return list
+    const ordersInProcessing = await loadOrdersInProgress(orgId)
+    const mapping = await loadUnpaidOrders(orgId)
+    const settlements = await loadUnpaidSettlements(orgId, userId)
+
+    report.value = await calculateEmployeeReport(orgId, ordersInProcessing, mapping, settlements)
   }
 
   const employees = computed(() => {
@@ -432,15 +71,12 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
 
       const str = searchQuery.value
       if (str) {
-        console.log('str', str)
-
         const result = []
         for (const item of list) {
           if (item.user && item.user.real_name && item.user.real_name.toLowerCase().includes(str)) {
             result.push(item.summary)
           }
         }
-
         return result
       } else {
         const result = []
@@ -494,7 +130,6 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               const percent = Number(order.percent_vf) || 100
               const currentPc = 100 - percent
 
-              console.log('order.driver_cost', order.driver_cost)
               records.push({
                 doc_payment: -1,
                 doc_order: order.id,
@@ -544,9 +179,9 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
         settlementsRecords,
       )
 
-      mapping.value.delete(currentEmployeeId)
+      // mapping.value.delete(currentEmployeeId)
 
-      settlements.value.delete(currentEmployeeId)
+      // settlements.value.delete(currentEmployeeId)
 
       const index = report.value.findIndex((r) => r.summary.employee === currentEmployeeId)
       if (index !== -1) {

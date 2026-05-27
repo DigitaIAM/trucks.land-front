@@ -1,6 +1,12 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import type { KV } from '@/utils/kv.ts'
 
+export interface OrderEnriched extends Order {
+  driver_payment?: number
+  vehicle_found_by?: number
+  percent_vf: number
+}
+
 export interface Order extends OrderCreate {
   id: number
   number: number

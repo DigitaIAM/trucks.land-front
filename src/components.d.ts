@@ -43,7 +43,6 @@ declare module 'vue' {
     CollapseContent: typeof import('./components/widgets/CollapseContent.vue')['default']
     CollapseTitle: typeof import('./components/widgets/CollapseTitle.vue')['default']
     Comments: typeof import('./components/order/Comments.vue')['default']
-    ConditionModal: typeof import('./components/modal/ConditionModal.vue')['default']
     Countdown: typeof import('./components/widgets/Countdown.vue')['default']
     CountdownTimers: typeof import('./components/widgets/CountdownTimers.vue')['default']
     Counter: typeof import('./components/widgets/Counter.vue')['default']
@@ -82,8 +81,6 @@ declare module 'vue' {
     Indicator: typeof import('./components/widgets/Indicator.vue')['default']
     IndicatorItem: typeof import('./components/widgets/IndicatorItem.vue')['default']
     InsuranceCreate: typeof import('./components/modal/InsuranceCreate.vue')['default']
-    InsuranceModal: typeof import('./components/modal/InsuranceModal.vue')['default']
-    InsuranceVehicleModal: typeof import('./components/modal/InsuranceVehicleModal.vue')['default']
     Join: typeof import('./components/widgets/Join.vue')['default']
     Kbd: typeof import('./components/widgets/Kbd.vue')['default']
     Label: typeof import('./components/widgets/Label.vue')['default']
@@ -122,8 +119,6 @@ declare module 'vue' {
     OrganinizationModal: typeof import('./components/modal/OrganinizationModal.vue')['default']
     OwnerModal: typeof import('./components/modal/OwnerModal.vue')['default']
     OwnerPayment: typeof import('./components/modal/OwnerPayment.vue')['default']
-    OwnerVehicleModal: typeof import('./components/modal/OwnerVehicleModal.vue')['default']
-    PaginationButton: typeof import('./components/buttons/PaginationButton.vue')['default']
     PasswordComponent: typeof import('./components/PasswordComponent.vue')['default']
     PaymentsForDispatcherOrders: typeof import('./components/modal/PaymentsForDispatcherOrders.vue')['default']
     PaymentsForOwnerOrders: typeof import('./components/modal/PaymentsForOwnerOrders.vue')['default']
@@ -183,7 +178,6 @@ declare module 'vue' {
     Tooltip: typeof import('./components/widgets/Tooltip.vue')['default']
     TopBar: typeof import('./components/windowElements/TopBar.vue')['default']
     UserModal: typeof import('./components/modal/UserModal.vue')['default']
-    VacationAndAdvanceModal: typeof import('./components/modal/VacationAndAdvanceModal.vue')['default']
     VehicleModal: typeof import('./components/modal/VehicleModal.vue')['default']
   }
 }

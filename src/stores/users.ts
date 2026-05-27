@@ -122,7 +122,7 @@ export const useUsersStore = defineStore('user', () => {
     return { id: id, name: 'error loading' } as User
   }
 
-  async function resolve(id: ComputedRef<Promise<any>>): Promise<User | null> {
+  async function resolve(id: number | null): Promise<User | null> {
     if (!id || id < 0) return null
 
     while (loading.value) {
@@ -176,7 +176,7 @@ export const useUsersStore = defineStore('user', () => {
     }
   }
 
-  async function search(text: string, key: string | undefined): Promise<Array<User>> {
+  async function search(text: string, key?: string): Promise<Array<User>> {
     const response = await supabase
       .from('users')
       .select()

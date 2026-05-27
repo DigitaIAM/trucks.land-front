@@ -16,6 +16,8 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const calculateEmployeeReport: typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']
+  const calculateOwnerReport: typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -47,6 +49,7 @@ declare global {
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getWorkingDaysInRange: typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -56,6 +59,11 @@ declare global {
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
+  const loadOrdersInProgress: typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']
+  const loadOwnerExpenses: typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']
+  const loadOwnerPayments: typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']
+  const loadUnpaidOrders: typeof import('./composables/use-employee-report-calculator')['loadUnpaidOrders']
+  const loadUnpaidSettlements: typeof import('./composables/use-employee-report-calculator')['loadUnpaidSettlements']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const markRaw: typeof import('vue')['markRaw']
   const nextTick: typeof import('vue')['nextTick']
@@ -379,6 +387,9 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { EmployeeReportRecord } from './composables/use-employee-report-calculator'
+  import('./composables/use-employee-report-calculator')
+  // @ts-ignore
   export type { Reference } from './models/reference'
   import('./models/reference')
   // @ts-ignore
@@ -439,7 +450,7 @@ declare global {
   export type { FileRecord, FileRecordCreate, FileRecordUpdate } from './stores/order_files'
   import('./stores/order_files')
   // @ts-ignore
-  export type { Order, OrderCreate, OrderUpdate, OrderStage } from './stores/orders'
+  export type { OrderEnriched, Order, OrderCreate, OrderUpdate, OrderStage } from './stores/orders'
   import('./stores/orders')
   // @ts-ignore
   export type { OrderTracking } from './stores/orders_tracking'
@@ -503,6 +514,8 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly calculateEmployeeReport: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']>
+    readonly calculateOwnerReport: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -530,6 +543,7 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getWorkingDaysInRange: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -539,6 +553,11 @@ declare module 'vue' {
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
+    readonly loadOrdersInProgress: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']>
+    readonly loadOwnerExpenses: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']>
+    readonly loadOwnerPayments: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']>
+    readonly loadUnpaidOrders: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadUnpaidOrders']>
+    readonly loadUnpaidSettlements: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadUnpaidSettlements']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
