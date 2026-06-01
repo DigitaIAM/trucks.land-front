@@ -25,7 +25,7 @@ export const useUserConditionsStore = defineStore('user_conditions', () => {
   const rUserId = ref<number | null>(null)
   const mapping = ref(new Map<Key, Condition>())
 
-  async function setContext(args: Object): Promise<Condition | null> {
+  async function setContext(args: object): Promise<Condition | null> {
     if (args.orgId) {
       rOrgId.value = args.orgId
     }

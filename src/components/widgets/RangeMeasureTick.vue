@@ -32,7 +32,7 @@ watch(
   },
 )
 
-// eslint-disable-next-line eqeqeq
+ 
 const isCurrent = computed(() => props.modelValue == props.tick)
 
 const classes = computed(() => {

@@ -21,7 +21,7 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
   }
 
   const pdfDoc = await PDFDocument.create()
-  let page = pdfDoc.addPage()
+  const page = pdfDoc.addPage()
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)

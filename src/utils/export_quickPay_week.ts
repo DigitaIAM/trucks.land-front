@@ -56,7 +56,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     { header: 'Invoice_ExID', key: 'Invoice_ExID', width: 20 },
   ]
 
-  let n = 0
+  const n = 0
 
   for (const order of quickPayments) {
     const detailsList = await eventStore.fetching(order.id)

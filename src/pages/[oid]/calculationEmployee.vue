@@ -39,7 +39,7 @@ const currentUserId = ref<number | null>(null)
 
 async function initUser() {
   try {
-    let account = await authStore.currentAccount()
+    const account = await authStore.currentAccount()
 
     if (account) {
       currentUserId.value = Number(account.id)

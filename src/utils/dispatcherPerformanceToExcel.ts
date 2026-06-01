@@ -13,8 +13,6 @@ export async function dispatcherPerformanceExportToExcel(payments: Array<Employe
     { header: 'Profit', key: 'profit', width: 30 },
   ]
 
-  let n = 0
-
   for (const record of payments) {
     const employee = await userStore.resolve(record.employee)
 

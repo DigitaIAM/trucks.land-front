@@ -29,7 +29,7 @@ export const useAccessMatrixStore = defineStore('access_matrix', () => {
   const rUserId = ref<number | null>(null)
   const mapping = ref(new Map<Key, AccessMatrix>())
 
-  async function setContext(args: Object): Promise<AccessMatrix | null> {
+  async function setContext(args: object): Promise<AccessMatrix | null> {
     if (args.orgId) {
       rOrgId.value = args.orgId
     }

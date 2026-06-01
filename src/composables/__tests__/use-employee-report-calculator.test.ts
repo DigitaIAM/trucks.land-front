@@ -8,6 +8,7 @@ function mockQuery(data: unknown, status = 200) {
     select: vi.fn(() => q),
     eq: vi.fn(() => q),
     is: vi.fn(() => q),
+    in: vi.fn(() => q),
     gte: vi.fn(() => q),
     lte: vi.fn(() => q),
     order: vi.fn(() => q),
@@ -42,6 +43,7 @@ import {
   loadUnpaidOrders,
   loadUnpaidSettlements,
   calculateEmployeeReport,
+  calculateWeeklyLeasingCommission,
 } from '../use-employee-report-calculator'
 
 describe('getWorkingDaysInRange', () => {
@@ -57,33 +59,33 @@ describe('getWorkingDaysInRange', () => {
 
   it('counts working days in a Mon-Fri range (no Sundays)', () => {
     const start = dayjs('2026-06-01') // Monday
-    const end = dayjs('2026-06-05')   // Friday
+    const end = dayjs('2026-06-05') // Friday
     expect(getWorkingDaysInRange(start, end)).toBe(5)
   })
 
   it('skips Sunday in the middle of the range', () => {
     const start = dayjs('2026-05-28') // Thursday
-    const end = dayjs('2026-06-01')   // Monday
+    const end = dayjs('2026-06-01') // Monday
     // Thu(1) Fri(1) Sat(1) Sun(0) Mon(1) = 4
     expect(getWorkingDaysInRange(start, end)).toBe(4)
   })
 
   it('skips multiple Sundays over two weeks', () => {
     const start = dayjs('2026-06-01') // Monday
-    const end = dayjs('2026-06-14')   // Sunday (two Sundays: 7th, 14th)
+    const end = dayjs('2026-06-14') // Sunday (two Sundays: 7th, 14th)
     // 14 days - 2 Sundays = 12
     expect(getWorkingDaysInRange(start, end)).toBe(12)
   })
 
   it('handles start on Sunday', () => {
     const start = dayjs('2026-05-31') // Sunday
-    const end = dayjs('2026-06-02')   // Tuesday
+    const end = dayjs('2026-06-02') // Tuesday
     expect(getWorkingDaysInRange(start, end)).toBe(2) // Mon, Tue
   })
 
   it('handles end on Sunday', () => {
     const start = dayjs('2026-05-25') // Monday
-    const end = dayjs('2026-05-31')   // Sunday
+    const end = dayjs('2026-05-31') // Sunday
     // Mon-Sat = 6 (Sun excluded, but loop still runs on Sun and skips it)
     expect(getWorkingDaysInRange(start, end)).toBe(6)
   })
@@ -220,7 +222,14 @@ describe('calculateEmployeeReport', () => {
     mockFromFor('employee_absences')
     mockFromFor('user_conditions')
 
-    const order: any = { id: 1, cost: 1000, driver_cost: 600, created_by: 10, stage: 2, organization: 1 }
+    const order: any = {
+      id: 1,
+      cost: 1000,
+      driver_cost: 600,
+      created_by: 10,
+      stage: 2,
+      organization: 1,
+    }
     const mapping = new Map()
     mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
 
@@ -239,10 +248,25 @@ describe('calculateEmployeeReport', () => {
     mockFromFor('user_conditions')
 
     mockTableData['user_conditions'] = [
-      { user_id: 10, organization: 1, percent_of_gross: 10, percent_of_profit: 0, fixed_salary: 0, income_tax: 0, created_by: 1 },
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 10,
+        percent_of_profit: 0,
+        fixed_salary: 0,
+        income_tax: 0,
+        created_by: 1,
+      },
     ]
 
-    const order: any = { id: 1, cost: 1000, driver_cost: 600, created_by: 10, stage: 2, organization: 1 }
+    const order: any = {
+      id: 1,
+      cost: 1000,
+      driver_cost: 600,
+      created_by: 10,
+      stage: 2,
+      organization: 1,
+    }
     const mapping = new Map()
     mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
 
@@ -259,8 +283,14 @@ describe('calculateEmployeeReport', () => {
     mockFromFor('user_conditions')
 
     const order: any = {
-      id: 1, cost: 1000, driver_cost: 600, created_by: 10, vehicle_found_by: 20,
-      percent_vf: 30, stage: 2, organization: 1,
+      id: 1,
+      cost: 1000,
+      driver_cost: 600,
+      created_by: 10,
+      vehicle_found_by: 20,
+      percent_vf: 30,
+      stage: 2,
+      organization: 1,
     }
     const mapping = new Map()
     mapping.set(20, [{ employee: 20, employee_payment: 0, order }])
@@ -268,8 +298,24 @@ describe('calculateEmployeeReport', () => {
     mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
 
     mockTableData['user_conditions'] = [
-      { user_id: 10, organization: 1, percent_of_gross: 0, percent_of_profit: 0, fixed_salary: 0, income_tax: 0, created_by: 1 },
-      { user_id: 20, organization: 1, percent_of_gross: 0, percent_of_profit: 0, fixed_salary: 0, income_tax: 0, created_by: 1 },
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        fixed_salary: 0,
+        income_tax: 0,
+        created_by: 1,
+      },
+      {
+        user_id: 20,
+        organization: 1,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        fixed_salary: 0,
+        income_tax: 0,
+        created_by: 1,
+      },
     ]
 
     const result = await calculateEmployeeReport(1, new Map(), mapping, new Map())
@@ -290,13 +336,55 @@ describe('calculateEmployeeReport', () => {
     mockFromFor('user_conditions')
 
     mockTableData['user_conditions'] = [
-      { user_id: 10, organization: 1, percent_of_gross: 10, percent_of_profit: 0, fixed_salary: 0, income_tax: 0, created_by: 1 },
-      { user_id: 20, organization: 1, percent_of_gross: 10, percent_of_profit: 0, fixed_salary: 0, income_tax: 0, created_by: 1 },
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 10,
+        percent_of_profit: 0,
+        fixed_salary: 0,
+        income_tax: 0,
+        created_by: 1,
+      },
+      {
+        user_id: 20,
+        organization: 1,
+        percent_of_gross: 10,
+        percent_of_profit: 0,
+        fixed_salary: 0,
+        income_tax: 0,
+        created_by: 1,
+      },
     ]
 
     const mapping = new Map()
-    mapping.set(10, [{ employee: 10, employee_payment: 0, order: { id: 1, cost: 500, driver_cost: 200, created_by: 10, stage: 2, organization: 1 } as any }])
-    mapping.set(20, [{ employee: 20, employee_payment: 0, order: { id: 2, cost: 2000, driver_cost: 1000, created_by: 20, stage: 2, organization: 1 } as any }])
+    mapping.set(10, [
+      {
+        employee: 10,
+        employee_payment: 0,
+        order: {
+          id: 1,
+          cost: 500,
+          driver_cost: 200,
+          created_by: 10,
+          stage: 2,
+          organization: 1,
+        } as any,
+      },
+    ])
+    mapping.set(20, [
+      {
+        employee: 20,
+        employee_payment: 0,
+        order: {
+          id: 2,
+          cost: 2000,
+          driver_cost: 1000,
+          created_by: 20,
+          stage: 2,
+          organization: 1,
+        } as any,
+      },
+    ])
 
     const result = await calculateEmployeeReport(1, new Map(), mapping, new Map())
     expect(result).toHaveLength(2)
@@ -304,5 +392,259 @@ describe('calculateEmployeeReport', () => {
     // emp10: gross 500, 10% = 50 payout
     expect(result[0].summary.employee).toBe(20)
     expect(result[1].summary.employee).toBe(10)
+  })
+})
+
+describe('calculateWeeklyLeasingCommission', () => {
+  beforeEach(() => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+  })
+
+  it('returns empty array when orgId is null', async () => {
+    const result = await calculateWeeklyLeasingCommission(null)
+    expect(result).toEqual([])
+  })
+
+  it('returns empty array when no leasing vehicles', async () => {
+    mockTableData['vehicles'] = []
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toEqual([])
+  })
+
+  it('returns empty array when no stages are ready for payout', async () => {
+    mockTableData['vehicles'] = [{ id: 1, unit_id: 'TRK-001', kind: 'cargo van' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 5000, dispatch_fee: 10, dispatcher_commission: 2 },
+    ]
+    mockTableData['stages'] = []
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toEqual([])
+  })
+
+  it('calculates commission for a single employee with one vehicle', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 5000, dispatch_fee: 10, dispatcher_commission: 2 },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [{ document: 100, vehicle: 10 }]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 3000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toHaveLength(1)
+    expect(result[0].employee_id).toBe(42)
+    expect(result[0].total_commission).toBe(60)
+    expect(result[0].details).toHaveLength(1)
+    expect(result[0].details[0].total_gross).toBe(3000)
+    expect(result[0].details[0].commission_amount).toBe(60)
+
+    vi.useRealTimers()
+  })
+
+  it('sums multiple orders per vehicle before applying tier', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 5000, dispatch_fee: 10, dispatcher_commission: 2 },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [
+      { document: 100, vehicle: 10 },
+      { document: 101, vehicle: 10 },
+    ]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 2000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+      {
+        id: 101,
+        number: 1002,
+        cost: 3000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toHaveLength(1)
+    expect(result[0].details[0].total_gross).toBe(5000)
+    expect(result[0].details[0].commission_amount).toBe(100)
+    expect(result[0].details[0].orders_count).toBe(2)
+
+    vi.useRealTimers()
+  })
+
+  it('uses last tier when total_gross exceeds all thresholds', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 1000, dispatch_fee: 5, dispatcher_commission: 1 },
+      { vehicle_type_id: 5, gross: 5000, dispatch_fee: 10, dispatcher_commission: 2 },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [{ document: 100, vehicle: 10 }]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 10000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toHaveLength(1)
+    expect(result[0].details[0].commission_amount).toBe(200)
+
+    vi.useRealTimers()
+  })
+
+  it('skips vehicle whose kind has no matching vehicle_type entry', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'unknown type' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [{ document: 100, vehicle: 10 }]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 3000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toHaveLength(0)
+
+    vi.useRealTimers()
+  })
+
+  it('groups by employee and returns multiple results sorted by total_commission desc', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [
+      { id: 10, unit_id: 'TRK-001', kind: 'cargo van' },
+      { id: 20, unit_id: 'TRK-002', kind: 'dry van' },
+    ]
+    mockTableData['vehicle_type'] = [
+      { id: 5, name: 'cargo van' },
+      { id: 6, name: 'dry van' },
+    ]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 10000, dispatch_fee: 10, dispatcher_commission: 2 },
+      { vehicle_type_id: 6, gross: 10000, dispatch_fee: 10, dispatcher_commission: 3 },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [
+      { document: 100, vehicle: 10 },
+      { document: 200, vehicle: 20 },
+    ]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 5000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+      {
+        id: 200,
+        number: 2001,
+        cost: 8000,
+        created_by: 7,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1)
+    expect(result).toHaveLength(2)
+    expect(result[0].employee_id).toBe(7)
+    expect(result[0].total_commission).toBe(240)
+    expect(result[1].employee_id).toBe(42)
+    expect(result[1].total_commission).toBe(100)
+
+    vi.useRealTimers()
+  })
+
+  it('filters by employeeId when provided', async () => {
+    vi.setSystemTime(new Date('2026-06-01'))
+
+    mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: 10000, dispatch_fee: 10, dispatcher_commission: 2 },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [
+      { document: 100, vehicle: 10 },
+      { document: 101, vehicle: 10 },
+    ]
+    mockTableData['orders_journal'] = [
+      {
+        id: 100,
+        number: 1001,
+        cost: 3000,
+        created_by: 42,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+      {
+        id: 101,
+        number: 1002,
+        cost: 2000,
+        created_by: 7,
+        stage: 2,
+        organization: 1,
+        excluded: false,
+      },
+    ]
+
+    const result = await calculateWeeklyLeasingCommission(1, 42)
+    expect(result).toHaveLength(1)
+    expect(result[0].employee_id).toBe(42)
+
+    vi.useRealTimers()
   })
 })
