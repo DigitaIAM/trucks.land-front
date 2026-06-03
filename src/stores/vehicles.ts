@@ -25,7 +25,7 @@ export interface VehicleCreate {
   door_width: number
   door_height: number
   kind: string
-  leasing_agreement: boolean
+  contract: boolean
 }
 
 export interface VehicleUpdate {
@@ -44,7 +44,7 @@ export interface VehicleUpdate {
   door_width?: number
   door_height?: number
   kind?: string
-  leasing_agreement?: boolean
+  contract?: boolean
 }
 
 function convert(vehicle: Vehicle): Vehicle {
@@ -83,20 +83,15 @@ export const useVehiclesStore = defineStore('vehicle', () => {
     }
   })
 
-  function create(vehicle: VehicleCreate) {
-    supabase
-      .from('vehicles')
-      .insert(vehicle)
-      .select()
-      .then((response) => {
-        // console.log('response', response)
-        if (response.status == 201) {
-          response.data?.forEach((json) => {
-            const vehicle = convert(json as Vehicle)
-            mapping.value.set(vehicle.id, vehicle)
-          })
-        }
-      })
+  async function create(vehicle: VehicleCreate) {
+    const response = await supabase.from('vehicles').insert(vehicle).select()
+
+    if (response.error) throw response.error
+
+    response.data?.forEach((json) => {
+      const vehicle = convert(json as Vehicle)
+      mapping.value.set(vehicle.id, vehicle)
+    })
   }
 
   function update(id: number, vehicle: VehicleUpdate) {

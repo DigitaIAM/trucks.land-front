@@ -32,7 +32,9 @@ const door_width = ref<number>()
 const door_height = ref<number>()
 
 const vanType = ref<string>()
-const leasing_agreement = ref(false)
+const contract = ref(false)
+
+const saveError = ref<string | null>(null)
 
 const emit = defineEmits(['closed'])
 
@@ -41,12 +43,14 @@ watch(
   (vehicle) => {
     resetAndShow(vehicle)
   },
-  { deep: true }
+  { deep: true },
 )
 
 const vehicleStore = useVehiclesStore()
 
 function resetAndShow(vehicle: Vehicle | null) {
+  saveError.value = null
+
   id.value = vehicle?.id
 
   owner.value = vehicle ? { id: vehicle.owner } : null
@@ -67,75 +71,58 @@ function resetAndShow(vehicle: Vehicle | null) {
 
   is_active.value = vehicle?.is_active || false
   vanType.value = vehicle?.type ?? 'cargo van'
-  leasing_agreement.value = vehicle?.leasing_agreement || false
+  contract.value = vehicle?.contract || false
 
   edit_vehicle.showModal()
 }
 
 async function saveVehicle() {
+  saveError.value = null
+
+  const vehicleData = {
+    owner: owner.value?.id,
+    unit_id: unit_id.value,
+    vin: vin.value,
+    model: model.value,
+    kind: kind.value,
+    color: color.value,
+    year: year.value,
+    load_capacity: load_capacity.value,
+    length: length.value,
+    width: width.value,
+    height: height.value,
+    door_width: door_width.value,
+    door_height: door_height.value,
+    is_active: is_active.value,
+    type: vanType.value,
+    contract: contract.value,
+  }
+
   try {
     if (id.value == null) {
-      await vehicleStore.create({
-        owner: owner.value?.id,
-        unit_id: unit_id.value,
-        vin: vin.value,
-        model: model.value,
-        kind: kind.value,
-
-        color: color.value,
-        year: year.value,
-
-        load_capacity: load_capacity.value,
-        length: length.value,
-        width: width.value,
-        height: height.value,
-        door_width: door_width.value,
-        door_height: door_height.value,
-
-        is_active: is_active.value,
-        type: vanType.value,
-        leasing_agreement: leasing_agreement.value
-      } as VehicleCreate)
+      await vehicleStore.create(vehicleData as VehicleCreate)
     } else {
-      vehicleStore.update(id.value, {
-        owner: owner.value?.id,
-        unit_id: unit_id.value,
-        vin: vin.value,
-        model: model.value,
-        kind: kind.value,
-
-        color: color.value,
-        year: year.value,
-
-        load_capacity: load_capacity.value,
-        length: length.value,
-        width: width.value,
-        height: height.value,
-        door_width: door_width.value,
-        door_height: door_height.value,
-
-        is_active: is_active.value,
-        type: vanType.value,
-        leasing_agreement: leasing_agreement.value
-      } as VehicleUpdate)
+      await vehicleStore.update(id.value, vehicleData as VehicleUpdate)
     }
     edit_vehicle.close()
     emit('closed')
   } catch (e) {
-    console.log('error', e)
+    saveError.value = e?.message ?? 'Unknown error'
   }
 }
 
 function handleClick() {
-  leasing_agreement.value = !leasing_agreement.value
+  contract.value = !contract.value
 }
-
 </script>
 
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="vehicleStore"></SearchVue>
     <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
+  </div>
+  <div v-if="saveError" class="mt-4 px-4 py-2 rounded bg-red-100 text-red-700 text-sm">
+    {{ saveError }}
   </div>
   <Modal id="edit_vehicle">
     <ModalBox class="w-4/5">
@@ -154,7 +141,6 @@ function handleClick() {
           </Button>
         </div>
       </div>
-
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-4/5 md:mb-0">
@@ -235,11 +221,8 @@ function handleClick() {
         </div>
       </div>
       <div class="flex space-x-3 mb-4 mt-10 w-full">
-        <Button
-          class="mr-3"
-          :class="{ 'bg-accent': leasing_agreement }"
-          @click="handleClick"
-        >leasing agreement
+        <Button class="mr-3" :class="{ 'bg-accent': contract }" @click="handleClick"
+          >contract
         </Button>
       </div>
       <ModalAction>

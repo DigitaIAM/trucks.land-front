@@ -31,23 +31,13 @@ function resolve(
   }
 }
 
-
 function editVehicle(vehicle: Vehicle) {
   selectedVehicle.value = vehicle
 }
 
-
 function onClose() {
   selectedVehicle.value = null
 }
-
-function leasing (vehicle: Vehicle) {
-  if (vehicle.leasing_agreement) {
-    return '+';
-} else {
-  return '';
-}}
-
 
 const cols = [
   {
@@ -73,8 +63,8 @@ const cols = [
     size: 200,
   },
   {
-    label: 'leasing agreement',
-    value: (v: Vehicle) => leasing(v),
+    label: 'contract',
+    value: (v: Vehicle) => (v.contract ? '+' : ''),
     size: 200,
   },
 ]
@@ -119,7 +109,12 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="vehicle in vehiclesStore.listing" :key="vehicle.id" class="hover:bg-base-200" @click="editVehicle(vehicle)">
+      <tr
+        v-for="vehicle in vehiclesStore.listing"
+        :key="vehicle.id"
+        class="hover:bg-base-200"
+        @click="editVehicle(vehicle)"
+      >
         <td
           v-for="col in cols"
           class="py-3 px-4"
@@ -134,10 +129,8 @@ watch(
           </p>
         </td>
       </tr>
-
     </tbody>
   </table>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
