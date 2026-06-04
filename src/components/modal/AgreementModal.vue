@@ -104,7 +104,7 @@ async function saveAndEdit() {
               note: note.value,
             }
           : null,
-        percent: 0,
+        percent: null,
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -117,7 +117,7 @@ async function saveAndEdit() {
         vehicle_found_by: vehicle_found_by.value?.id ?? null,
         percent_vf: percent_vf.value,
         cost: cost.value,
-        percent: 0,
+        percent: null,
         details: note.value
           ? {
               note: note.value,

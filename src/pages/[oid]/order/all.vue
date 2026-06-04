@@ -203,7 +203,7 @@ const cols = [
   },
   {
     label: 'spend',
-    value: (v) => '$' + (v.driver_cost ?? 0),
+    value: (v: Order) => '$' + (v.driver_cost ?? 0),
     color: (v: Status) => v.color,
     size: 80,
   },

@@ -16,14 +16,14 @@ export interface EventCreate {
   city: string
   state: string
   zip: string
-  cost: number
+  cost: number | null
   driver: number
   company: number
   vehicle: number
   vehicle_found_by: number
   percent_vf: number
   details: object
-  percent: number
+  percent: number | null
 }
 
 export interface EventUpdate {
@@ -35,7 +35,7 @@ export interface EventUpdate {
   city?: string
   state?: string
   zip?: string
-  cost?: number
+  cost?: number | null
   driver?: number
   company?: number
   vehicle?: number
@@ -43,7 +43,7 @@ export interface EventUpdate {
   percent_vf?: number
   owner?: number
   details?: object
-  percent?: number
+  percent?: number | null
 }
 
 export const useEventsStore = defineStore('event', () => {
