@@ -234,7 +234,7 @@ onMounted(async () => {
                 <td class="py-4 text-sm font-medium text-gray-700">{{ index + 1 }}</td>
 
                 <td class="py-4 text-sm text-gray-600">
-                  {{ index === getTiersForVehicle(truck.id).length - 1 ? 'over' : 'to' }}
+                  {{ index === getTiersForVehicle(truck.id).length - 1 ? 'over' : 'till' }}
                 </td>
 
                 <td class="py-4 pr-4">
