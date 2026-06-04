@@ -19,7 +19,7 @@ const vehicle = ref<Vehicle | null>(null)
 const vehicle_found_by = ref<User | null>(null)
 const percent_vf = ref<number | null>(null)
 const cost = ref<number | null>(null)
-const percent = ref<number | null>(null)
+const isContractVehicle = ref(false)
 
 const emit = defineEmits(['on-update'])
 
@@ -45,6 +45,21 @@ const ownersStore = useOwnersStore()
 
 const colorMode = useColorMode()
 
+watch(
+  () => vehicle.value?.id,
+  async (id) => {
+    if (id != null) {
+      const v = await vehiclesStore.resolve(id)
+      isContractVehicle.value = v?.contract ?? false
+      if (v?.contract && !props.edit) {
+        cost.value = 0
+      }
+    } else {
+      isContractVehicle.value = false
+    }
+  },
+)
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'agreement') {
@@ -60,7 +75,6 @@ function resetAndShow(event: OrderEvent | null) {
     vehicle_found_by.value = event && event.vehicle_found_by ? { id: event.vehicle_found_by } : null
     percent_vf.value = event.percent_vf
     cost.value = event.cost
-    percent.value = event.percent
 
     create_agreement.showModal()
     setTimeout(() => (inputFocus.value = true), 50)
@@ -85,12 +99,12 @@ async function saveAndEdit() {
         vehicle_found_by: vehicle_found_by.value?.id ?? null,
         percent_vf: percent_vf.value,
         cost: cost.value,
-        percent: percent.value,
         details: note.value
           ? {
               note: note.value,
             }
           : null,
+        percent: 0,
       } as EventUpdate)
     } else {
       await eventsStore.create({
@@ -103,7 +117,7 @@ async function saveAndEdit() {
         vehicle_found_by: vehicle_found_by.value?.id ?? null,
         percent_vf: percent_vf.value,
         cost: cost.value,
-        percent: percent.value,
+        percent: 0,
         details: note.value
           ? {
               note: note.value,
@@ -198,16 +212,9 @@ function close() {
       </fieldset>
 
       <fieldset :disabled="props.disabled">
-        <div class="flex space-x-3 mb-2 mt-2 w-full">
-          <div class="md:w-1/2 md:mb-0">
-            <Label class="mb-1">Payment $</Label>
-            <TextInput class="block w-full" v-model="cost" :disabled="percent > 0" />
-          </div>
-          <Text class="pt-8">or</Text>
-          <div class="md:w-1/2 md:mb-0">
-            <Label class="mb-1">Percent % </Label>
-            <TextInput class="block w-full" v-model="percent" :disabled="cost > 0" />
-          </div>
+        <div class="mb-2 mt-2 w-full">
+          <Label class="mb-1">Payment $</Label>
+          <TextInput class="block w-full" v-model="cost" :disabled="isContractVehicle" />
         </div>
       </fieldset>
 

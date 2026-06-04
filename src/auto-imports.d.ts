@@ -387,7 +387,7 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { EmployeeReportRecord } from './composables/use-employee-report-calculator'
+  export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission } from './composables/use-employee-report-calculator'
   import('./composables/use-employee-report-calculator')
   // @ts-ignore
   export type { Reference } from './models/reference'

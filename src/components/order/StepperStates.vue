@@ -443,9 +443,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p v-if="eventDate.vehicle" class="text-md">
             <QueryAndShow :id="eventDate.vehicle" :store="vehiclesStore" />
           </p>
-          <p class="text-md">
-            {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
-          </p>
+          <p v-if="eventDate.cost > 0" class="text-md">${{ eventDate.cost }}</p>
           <p v-if="eventDate.details?.note" class="text-md" style="color: #f0b90b">
             {{ eventDate.details?.note || '' }}
           </p>

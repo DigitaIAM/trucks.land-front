@@ -5,6 +5,7 @@ export interface OrderEnriched extends Order {
   driver_payment?: number
   vehicle_found_by?: number
   percent_vf: number
+  events: []
 }
 
 export interface Order extends OrderCreate {

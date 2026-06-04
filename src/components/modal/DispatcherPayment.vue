@@ -87,6 +87,13 @@ const cols = [
             return statusesStore.resolve(v.stage)
           }
 
+          const isContract = summary?.contract_details?.some(
+            (d) => d.vehicle_id === Number((v as any).vehicle),
+          )
+          if (isContract) {
+            return Promise.resolve({ name: 'contract' })
+          }
+
           if (v.vehicle_found_by) {
             return Promise.resolve({ name: 'vehicle was found' })
           }
@@ -247,14 +254,15 @@ async function openOrder(order: Order) {
             <!-- Orders Section -->
             <tr>
               <td
-                rowspan="5"
+                rowspan="6"
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] w-[200px] text-xs uppercase tracking-wider"
               >
                 Orders
               </td>
-              <td class="px-6 py-3 text-[#cbd5e0]">quantity (total / in progress)</td>
+              <td class="px-6 py-3 text-[#cbd5e0]">standard / contract / in progress</td>
               <td class="px-6 py-3 text-right font-medium text-white">
-                {{ summary?.orders_number || 0 }} / {{ summary?.orders_in_progress?.size || 0 }}
+                {{ summary?.orders_number || 0 }} / {{ summary?.orders_number_contract || 0 }} /
+                {{ summary?.orders_in_progress?.size || 0 }}
               </td>
             </tr>
 
@@ -287,6 +295,12 @@ async function openOrder(order: Order) {
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">driver payments</td>
               <td class="px-6 py-3 text-right font-medium text-white">
                 $ {{ (summary?.orders_driver || 0).toFixed(2) }}
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">contract</td>
+              <td class="px-6 py-3 text-right font-medium text-white">
+                $ {{ (summary?.orders_amount_contract || 0).toFixed(2) }}
               </td>
             </tr>
 
@@ -326,7 +340,7 @@ async function openOrder(order: Order) {
             <!-- Commission Section -->
             <tr>
               <td
-                rowspan="1"
+                rowspan="2"
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
               >
                 Commission
@@ -339,7 +353,12 @@ async function openOrder(order: Order) {
                 {{ calculatedCommission.toFixed(2) }}
               </td>
             </tr>
-
+            <tr>
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">contract</td>
+              <td class="px-6 py-3 text-right text-white font-medium">
+                $ {{ summary?.contract_commission_total.toFixed(2) }}
+              </td>
+            </tr>
             <!-- Salary/Other Section (ИСПРАВЛЕННЫЙ ROWSPAN) -->
             <tr>
               <td

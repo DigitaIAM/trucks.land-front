@@ -114,6 +114,12 @@ const cols = [
     size: 100,
   },
   {
+    label: 'exclusive contract',
+    value: (v: EmployeePaymentSummary) =>
+      v.orders_amount_contract == 0 ? '' : '$' + (Number(v.orders_amount_contract) || 0).toFixed(0),
+    size: 100,
+  },
+  {
     label: 'fixed salary',
     value: (v: EmployeePaymentSummary) =>
       v.paymentTerms.fixed_salary == null ? '' : '$' + v.paymentTerms.fixed_salary || '',

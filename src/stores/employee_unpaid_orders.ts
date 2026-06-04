@@ -5,7 +5,10 @@ import {
   loadUnpaidSettlements,
   calculateEmployeeReport,
 } from '@/composables/use-employee-report-calculator.ts'
-import type { EmployeeReportRecord } from '@/composables/use-employee-report-calculator.ts'
+import type {
+  EmployeeReportRecord,
+  ContractCommissionDetail,
+} from '@/composables/use-employee-report-calculator.ts'
 import type { OrderEnriched } from '@/stores/orders.ts'
 
 export interface EmployeePaymentRecord {
@@ -16,6 +19,7 @@ export interface EmployeePaymentRecord {
 export interface EmployeePaymentSummary {
   employee: number
   orders_number: number
+  orders_number_contract: number
   vehicle: number
   orders_amount: number
   orders_driver: number
@@ -23,6 +27,7 @@ export interface EmployeePaymentSummary {
   orders_amount_direct: number
   orders_driver_direct: number
   orders_profit_direct: number
+  orders_amount_contract: number
   toPayment: number
   orders: Map<number, Order>
   orders_in_progress: Map<number, Order>
@@ -35,6 +40,9 @@ export interface EmployeePaymentSummary {
   missed_days: number
   settlements: Array<SettlementEmployee>
   payout_usd: number
+  contract_details: Array<ContractCommissionDetail>
+  contract_commission_total: number
+  orderToVehicle: Map<number, number>
 }
 
 export interface PaymentTerms {

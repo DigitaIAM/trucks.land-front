@@ -1,5 +1,6 @@
 import { groupBy } from '@/utils/group-by.ts'
 import dayjs, { Dayjs } from 'dayjs'
+import isoWeek from 'dayjs/plugin/isoWeek'
 import type { Order, OrderEnriched } from '@/stores/orders.ts'
 import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 import type { User } from '@/stores/users.ts'
@@ -8,6 +9,8 @@ import type {
   EmployeePaymentSummary,
   PaymentTerms,
 } from '@/stores/employee_unpaid_orders.ts'
+
+dayjs.extend(isoWeek)
 
 export interface EmployeeReportRecord {
   user: User
@@ -19,6 +22,26 @@ interface Absence {
   employee: string | number
   start_date: string
   end_date: string
+}
+
+export interface ContractCommissionDetail {
+  vehicle_id: number
+  vehicle_unit_id: string
+  vehicle_type_name: string
+  orders_count: number
+  total_gross: number
+  dispatch_fee_percent: number
+  dispatcher_commission_percent: number
+  commission_amount: number
+}
+
+export interface WeeklyContractCommission {
+  employee_id: number
+  week: number
+  year: number
+  total_commission: number
+  details_count: number
+  details: ContractCommissionDetail[]
 }
 
 export function getWorkingDaysInRange(startDate: Dayjs, endDate: Dayjs) {
@@ -56,7 +79,7 @@ export async function loadOrdersInProgress(orgId: number | null) {
 export async function loadUnpaidOrders(orgId: number | null) {
   const requestPayments = supabase
     .from('employee_unpaid_orders')
-    .select('*')
+    .select('*, events:order_events(*)')
     .eq('organization', orgId)
 
   const responsePayments = await requestPayments
@@ -174,6 +197,26 @@ export async function calculateEmployeeReport(
 
   const allTermsData = responseTerms.data || []
 
+  const { data: contractVehiclesData } = await supabase
+    .from('vehicles')
+    .select('id, unit_id, kind')
+    .eq('contract', true)
+  const vehicleMap = new Map<number, { unit_id: string; kind: string }>()
+  contractVehiclesData?.forEach((v) => vehicleMap.set(v.id, { unit_id: v.unit_id, kind: v.kind }))
+
+  const { data: vehicleTypesData } = await supabase.from('vehicle_type').select('id, name')
+  const vehicleTypeMap = new Map<string, number>()
+  vehicleTypesData?.forEach((vt) => vehicleTypeMap.set(vt.name, vt.id))
+
+  const { data: tiersData } = await supabase
+    .from('vehicle_commission_tiers')
+    .select('*')
+    .eq('deleted', false)
+  const tiersByVehicleType = groupBy(
+    (tiersData || []) as CommissionTier[],
+    (t) => t.vehicle_type_id,
+  )
+
   const terms = groupBy(
     allTermsData.map((v) => v as PaymentTerms),
     (v) => v.user_id,
@@ -189,16 +232,20 @@ export async function calculateEmployeeReport(
   for (const employeeKey of finalKeys) {
     const employee = Number(employeeKey)
 
+    let orders_number = 0
+    let orders_number_contract = 0
     let orders_amount = 0
     let orders_driver = 0
     let orders_profit = 0
     let orders_amount_direct = 0
     let orders_driver_direct = 0
     let orders_profit_direct = 0
+    let orders_amount_contract = 0
     let missedWorkingDays = 0
     let toPayment = 0
 
     const orders = new Map<number, Order>()
+    const orderToVehicle = new Map<number, number>()
     const paymentsByOrder = new Map<number, number>()
 
     const employeeTerms = (terms.get(employee)?.at(0) || {
@@ -212,6 +259,7 @@ export async function calculateEmployeeReport(
     }) as PaymentTerms
 
     const employeeRecords = mapping.get(employee) || []
+    const vehicleContractData = new Map<number, { totalGross: number; orderCount: number }>()
 
     employeeRecords.forEach((p) => {
       // const order =
@@ -250,9 +298,50 @@ export async function calculateEmployeeReport(
           }
         }
 
-        orders_amount += costVal * pc
-        orders_driver += driverCostVal * pc
-        orders_profit += profit * pc
+        // console.log('p.order', p.order)
+
+        const sortedEvents = [...p.order.events].sort((a, b) => {
+          return new Date(a.datetime) - new Date(b.datetime)
+        })
+
+        let vehicleId
+        for (const event of sortedEvents) {
+          if (event.kind === 'agreement') {
+            // console.log('event agreement', event)
+            if (vehicleId) {
+              console.log('p.order', p.order)
+              throw 'two vehicles: ' + vehicleId + ' and ' + event.vehicle
+            }
+            vehicleId = event.vehicle
+          } else if (event.kind === 'change') {
+            // console.log('event change', event)
+            vehicleId = event.vehicle
+          }
+        }
+
+        // console.log('vehicleId', vehicleId)
+
+        if (vehicleId && vehicleMap.has(vehicleId)) {
+          if (pc != 1) {
+            throw 'unexpected pc ' + pc
+          }
+          console.log('contract', vehicleId)
+          orders_number_contract += 1
+          orders_amount_contract += costVal * pc
+
+          const d = vehicleContractData.get(vehicleId) || { totalGross: 0, orderCount: 0 }
+
+          d.totalGross += costVal * pc
+          d.orderCount += 1
+          vehicleContractData.set(vehicleId, d)
+
+          orderToVehicle.set(p.order.id, vehicleId)
+        } else {
+          orders_number += 1
+          orders_amount += costVal * pc
+          orders_driver += driverCostVal * pc
+          orders_profit += profit * pc
+        }
       }
 
       const num = Number(paymentsByOrder.get(p.order.id)) || 0
@@ -260,6 +349,43 @@ export async function calculateEmployeeReport(
 
       orders.set(p.order.id, p.order)
     })
+
+    const contractDetails: ContractCommissionDetail[] = []
+
+    for (const [vehicleId, data] of vehicleContractData) {
+      const vehicle = vehicleMap.get(vehicleId)
+      if (!vehicle) throw 'unexpected: unknown vehicle ' + vehicleId
+
+      const vehicleTypeId = vehicleTypeMap.get(vehicle.kind)
+      if (!vehicleTypeId) throw 'unexpected: unknown vehicle type ' + vehicle.kind
+
+      const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
+      if (vehicleTiers.length === 0) throw 'unexpected: no vehicle tiers ' + vehicle.kind
+
+      const sortedTiers = [...vehicleTiers].sort((a, b) => a.gross - b.gross)
+      let matchedTier = sortedTiers[sortedTiers.length - 1]
+      for (const tier of sortedTiers) {
+        if (data.totalGross <= tier.gross) {
+          matchedTier = tier
+          break
+        }
+      }
+
+      const commissionAmount = (data.totalGross * matchedTier.dispatcher_commission) / 100
+
+      contractDetails.push({
+        vehicle_id: vehicleId,
+        vehicle_unit_id: vehicle.unit_id,
+        vehicle_type_name: vehicle.kind,
+        orders_count: data.orderCount,
+        total_gross: data.totalGross,
+        dispatch_fee_percent: matchedTier.dispatch_fee,
+        dispatcher_commission_percent: matchedTier.dispatcher_commission,
+        commission_amount: commissionAmount,
+      })
+
+      toPayment += commissionAmount
+    }
 
     const settlementsRecords = [] as Array<SettlementEmployee>
     let settlementsTotal = 0
@@ -330,6 +456,7 @@ export async function calculateEmployeeReport(
       summary: {
         employee: employee,
         orders_number: orders.size,
+        orders_number_contract: orderToVehicle.size,
         vehicle: 0,
         orders_amount: orders_amount,
         orders_driver: orders_driver,
@@ -337,6 +464,7 @@ export async function calculateEmployeeReport(
         orders_amount_direct: orders_amount_direct,
         orders_driver_direct: orders_driver_direct,
         orders_profit_direct: orders_profit_direct,
+        orders_amount_contract: orders_amount_contract,
         toPayment: toPayment,
         orders: orders,
         orders_in_progress: orders_in_progress,
@@ -350,6 +478,9 @@ export async function calculateEmployeeReport(
         missed_days: missedWorkingDays,
         payout_usd:
           Number(finalToPayment || 0) + Number(finalSettlements || 0) - Math.abs(Number(fine || 0)),
+        contract_details: contractDetails,
+        contract_commission_total: contractDetails.reduce((sum, d) => sum + d.commission_amount, 0),
+        orderToVehicle: orderToVehicle,
       } as EmployeePaymentSummary,
     })
   }
@@ -357,4 +488,11 @@ export async function calculateEmployeeReport(
   list.sort((a, b) => b.summary.payout_usd - a.summary.payout_usd)
 
   return list
+}
+
+interface CommissionTier {
+  vehicle_type_id: number
+  gross: number
+  dispatch_fee: number
+  dispatcher_commission: number
 }
