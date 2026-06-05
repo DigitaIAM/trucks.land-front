@@ -89,7 +89,7 @@ async function generatePdfAndSend() {
     ],
   }
 
-  // await sendEmail(token, email)
+  await sendEmail(token, email)
 }
 
 const state = reactive({})
