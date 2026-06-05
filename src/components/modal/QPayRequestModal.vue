@@ -96,11 +96,11 @@ async function resetAndShow(doc: Order | null) {
       paymentNextDay.value = now.hour() >= 14
 
       const org = await organizationsStore.resolve(doc?.organization)
-      amount.value = props.document?.driver_cost
+      amount.value = props.document?.driver_cost ?? props.document?.cost
       percent.value = org?.qp_percent
-      to_pay.value =
-        (props.document?.driver_cost || 0) -
-        ((props.document?.driver_cost || 0) * (percent?.value || 0)) / 100
+
+      const driverCost = props.document?.driver_cost ?? doc.cost
+      to_pay.value = (driverCost || 0) - ((driverCost || 0) * (percent?.value || 0)) / 100
       owner.value = await ownerStore.resolve(doc?.owner)
     }
   }
