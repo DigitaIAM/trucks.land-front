@@ -176,6 +176,29 @@ function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
 
+async function exportToExcel() {
+  isProcessing.value = true
+  progressTotal.value = 4
+  progressCurrent.value = 0
+  currentStatus.value = ''
+
+  try {
+    const map = await paymentToOwnerStore.fetching(-1)
+    const documents = Array.from(map.values())
+
+    await weekExportToExcel(documents, (current, total, status) => {
+      progressCurrent.value = current
+      progressTotal.value = total
+      currentStatus.value = status
+    })
+  } finally {
+    setTimeout(() => {
+      isProcessing.value = false
+      currentStatus.value = ''
+    }, 2000)
+  }
+}
+
 async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
   if (!documents) return
 
@@ -257,11 +280,7 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
   <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row items-center px-4 mb-2 mt-3">
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
-    <Button
-      class="btn-soft font-light tracking-wider px-3"
-      @click="weekExportToExcel(paymentToOwnerStore.fetching(-1))"
-      >Excel
-    </Button>
+    <Button class="btn-soft font-light tracking-wider px-3" @click="exportToExcel()">Excel </Button>
     <Button
       disabled
       class="btn-soft font-light tracking-wider ml-6"
