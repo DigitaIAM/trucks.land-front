@@ -42,6 +42,7 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
   async function createPayment(org: number, year: number, week: number) {
     const paymentToOwnerStore = usePaymentToOwnerStore()
+    const tierStore = useVehicleCommissionTierStore()
 
     const data = owners.value.slice()
     for (const summary of data) {
@@ -59,11 +60,16 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       for (const order of summary.orders.values()) {
         // const payment = summary.paymentsByOrder.get(order.id)
         if (order.stage != 3) {
+          const amount =
+            order.contract && order.vehicle_type_id
+              ? tierStore.calcAmount(order.cost, order.vehicle_type_id)
+              : summary.paymentsByOrder.get(order.id)
+
           paymentRecords.push({
             doc_payment: -1,
             doc_order: order.id,
             order_cost: order.cost,
-            amount: summary.paymentsByOrder.get(order.id),
+            amount,
           } as PaymentToOwnerOrderCreate)
         } else {
           paymentRecords.push({

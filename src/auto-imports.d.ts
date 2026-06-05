@@ -352,6 +352,7 @@ declare global {
   const useUsersStore: typeof import('./stores/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
+  const useVehicleCommissionTierStore: typeof import('./stores/vehicle_commission_tiers')['useVehicleCommissionTierStore']
   const useVehicleTypeStore: typeof import('./stores/vehicle_type')['useVehicleTypeStore']
   const useVehiclesStore: typeof import('./stores/vehicles')['useVehiclesStore']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
@@ -491,6 +492,9 @@ declare global {
   // @ts-ignore
   export type { User, UserCreate, UserUpdate } from './stores/users'
   import('./stores/users')
+  // @ts-ignore
+  export type { VehicleCommissionTier } from './stores/vehicle_commission_tiers'
+  import('./stores/vehicle_commission_tiers')
   // @ts-ignore
   export type { VehicleType, VehicleTypeCreate } from './stores/vehicle_type'
   import('./stores/vehicle_type')
@@ -822,6 +826,7 @@ declare module 'vue' {
     readonly useUsersStore: UnwrapRef<typeof import('./stores/users')['useUsersStore']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
+    readonly useVehicleCommissionTierStore: UnwrapRef<typeof import('./stores/vehicle_commission_tiers')['useVehicleCommissionTierStore']>
     readonly useVehicleTypeStore: UnwrapRef<typeof import('./stores/vehicle_type')['useVehicleTypeStore']>
     readonly useVehiclesStore: UnwrapRef<typeof import('./stores/vehicles')['useVehiclesStore']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
