@@ -3,6 +3,7 @@ import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, ColumnOptions, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import { filterCharSet } from './pdf-helper.ts'
 import moment from 'moment-timezone'
+import { useQuickPaysStore } from '@/stores/quick_pays.ts'
 
 function text_left(
   page: PDFPage,
@@ -54,6 +55,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const ordersStore = useOrdersStore()
   const eventsStore = useEventsStore()
   const vehiclesStore = useVehiclesStore()
+  const quickPaysStore = useQuickPaysStore()
 
   const org = await useOrganizationsStore().resolve(document.organization)
   if (org == null) {
@@ -67,7 +69,24 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   const orders = await usePaymentToOwnerOrdersStore().loading(document.id)
 
-  //console.log('orders', orders)
+  let contractVehicle: any = null
+  for (const line of orders.values()) {
+    const events = await eventsStore.fetching(line.doc_order)
+    for (const event of events) {
+      if (event.kind === 'agreement') {
+        const v = await vehiclesStore.resolve(event.vehicle)
+        if (v) {
+          contractVehicle = v
+          break
+        }
+      }
+    }
+    if (contractVehicle) break
+  }
+
+  const isContract = contractVehicle?.contract === true
+
+  // console.log('orders', orders)
 
   //const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
 
@@ -113,28 +132,25 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   cy -= bls + text_right(page, boldFont, 16, contra.name.toUpperCase(), rightSide, cy)
 
+  if (isContract && contractVehicle) {
+    cy -=
+      bls +
+      text_right(
+        page,
+        boldFont,
+        16,
+        filterCharSet(`Unit: ${contractVehicle.unit_id}`, font),
+        rightSide,
+        cy,
+      )
+  }
+
   cy -= bls * 2
 
-  const cx = rightSide - margin
+  const fs = 12
 
-  const fs = 10
-  text_right(page, boldFont, fs, 'Trip Related Pay:', cx, cy)
-  const pay = document.amount
-  cy -= bls + text_left(page, font, fs, `\$${pay.toFixed(2)}`, cx + bls, cy)
-
-  text_right(page, boldFont, fs, 'Total Reimbursable Expenses:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-
-  text_right(page, boldFont, fs, 'Total Deductions:', cx, cy)
-  cy -= bls + text_left(page, font, fs, '$0.00', cx + bls, cy)
-
-  text_right(page, boldFont, fs, 'Total Pay:', cx, cy)
-  cy -=
-    bls +
-    text_left(page, font, fs, `\$${(document.amount - document.expenses).toFixed(0)}`, cx + bls, cy)
-
-  text_right(page, boldFont, fs, 'Total Trips:', cx, cy)
-  cy -= bls + text_left(page, font, fs, `${orders.length}`, cx + bls, cy)
+  text_right(page, boldFont, fs, `Total Trips: ${orders.length}`, rightSide, cy)
+  cy -= bls * 2
 
   // Set the table options
   const options = {
@@ -160,7 +176,9 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
     font: font,
     column: {
       widthMode: 'auto',
-      overrideWidths: [30, 60, 60, 60, 100, 100, 85],
+      overrideWidths: isContract
+        ? [25, 55, 45, 100, 100, 50, 75] // без vehicle
+        : [25, 55, 55, 45, 90, 90, 45, 75], // с vehicle
     } as ColumnOptions,
   } as DrawTableOptions
 
@@ -168,19 +186,27 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const fh10 = font.heightAtSize(options.textSize) * 2
 
   let tableData = [
-    ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount'],
+    isContract
+      ? ['#', 'load', 'miles', 'pick up', 'delivery', 'amount', 'quick pay']
+      : ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount', 'quick pay'],
   ] as CellContent[][]
 
   let lines = 0
   let pos = 0
   let tableDimensions = { endY: cy }
 
+  const quickPayMap = new Map<number, QuickPay | null>()
+
+  console.log('orders type', Array.isArray(orders), orders)
+
   for (const line of orders.values()) {
     const orderId = line.doc_order
     const events = await eventsStore.fetching(orderId)
     const order = await ordersStore.resolve(orderId)
+    const quickPay = await quickPaysStore.findByOrder(orderId)
+    quickPayMap.set(orderId, quickPay)
 
-    // console.log('line', order)
+    console.log('line', line)
 
     if (order?.stage === 3) {
     } else {
@@ -224,7 +250,9 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
         page = pdfDoc.addPage()
         tableData = [
-          ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount'],
+          isContract
+            ? ['#', 'load', 'miles', 'pick up', 'delivery', 'amount', 'quick pay']
+            : ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount', 'quick pay'],
         ] as CellContent[][]
 
         cy = page.getHeight() - margin
@@ -233,108 +261,114 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
       lines += cLines
 
-      tableData.push([
-        `${++pos}`,
-        `${org.code2}-${order?.number}`,
-        vehicle,
-        `${order?.total_miles}`,
-        pickup,
-        delivery,
-        `\$${line.amount?.toFixed(2)}`,
-      ])
+      tableData.push(
+        isContract
+          ? [
+              `${++pos}`,
+              `${org.code2}-${order?.number}`,
+              `${order?.total_miles}`,
+              pickup,
+              delivery,
+              `\$${line.amount?.toFixed(2)}`,
+              quickPay ? 'yes' : 'no',
+            ]
+          : [
+              `${++pos}`,
+              `${org.code2}-${order?.number}`,
+              vehicle,
+              `${order?.total_miles}`,
+              pickup,
+              delivery,
+              `\$${line.amount?.toFixed(2)}`,
+              quickPay ? 'yes' : 'no',
+            ],
+      )
     }
   }
+
+  const totalQuickPay = Array.from(quickPayMap.values()).reduce(
+    (sum, qp) => sum + (qp?.to_pay ?? 0),
+    0,
+  )
 
   if (tableData.length > 1) {
     tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
   }
 
   //tableBottom
-  const tableBottomY = tableDimensions.endY // Calculate the bottom edge of the table
-  const textMargin = 40 // Desired margin below the table
-  let textY = tableBottomY - textMargin // Y-coordinate for the start of the text
-  const textX = 50
+  const tableBottomY = tableDimensions.endY
+  const textMargin = 40
 
-  // const dispatch_fee = 4
-  // const quick_pay = 1.5
-  // text_left(page, font, fs, 'Dispatch fee %:', textX + bls, textY)
-  // textY -=
-  //   bls +
-  //   text_left(
-  //     page,
-  //     font,
-  //     fs,
-  //     `${dispatch_fee}`,
-  //     font.widthOfTextAtSize('Dispatch fee %:', fs) + 60,
-  //     textY,
-  //   )
+  const totalGross = orders.reduce((sum, line) => sum + (line.order_cost ?? 0), 0)
 
-  // text_left(page, font, fs, 'Factoring/Quick pay fee %:', textX + bls, textY)
-  // textY -=
-  //   bls +
-  //   text_left(
-  //     page,
-  //     font,
-  //     fs,
-  //     `${quick_pay}`,
-  //     font.widthOfTextAtSize('Factoring/Quick pay fee %:', fs) + 60,
-  //     textY,
-  //   )
+  let bottomY = tableBottomY - textMargin
 
-  // text_left(page, font, fs, 'Total gross:', textX + bls, textY)
-  // textY -=
-  //   bls +
-  //   text_left(
-  //     page,
-  //     font,
-  //     fs,
-  //     `\$${document?.orders}`,
-  //     font.widthOfTextAtSize('Total gross:', fs) + 60,
-  //     textY,
-  //   )
-  //
-  // text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
-  // textY -=
-  //   bls * 2 +
-  //   text_left(
-  //     page,
-  //     boldFont,
-  //     fs,
-  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100).toFixed(2)}`,
-  //     boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
-  //     textY,
-  //   )
-  //
-  // textY -= text_right(page, boldFont, fs, 'Expenses:', cx, textY + bls)
-  //
-  // for (const expense of expenses) {
-  //   text_right(page, font, fs, expense.notes, cx, textY)
-  //   textY -= bls + text_left(page, font, fs, `\$${expense.amount}`, cx + bls, textY)
-  // }
-  //
-  // text_left(page, boldFont, fs, 'Calculation:', textX + bls, textY)
-  // textY -=
-  //   bls * 2 +
-  //   text_left(
-  //     page,
-  //     boldFont,
-  //     fs,
-  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(2)}`,
-  //     boldFont.widthOfTextAtSize('Calculation:', fs) + 60,
-  //     textY,
-  //   )
-  //
-  // text_left(page, boldFont, fs, 'Total Pay:', textX + bls, textY)
-  // textY -=
-  //   bls * 2 +
-  //   text_left(
-  //     page,
-  //     boldFont,
-  //     fs,
-  //     `\$${(document?.orders - (document?.orders * (dispatch_fee + quick_pay)) / 100 - document.expenses).toFixed(0)}`,
-  //     boldFont.widthOfTextAtSize('Total Pay:', fs) + 60,
-  //     textY,
-  //   )
+  if (isContract) {
+    const totalAmount = orders.reduce((sum, line) => sum + (line.amount ?? 0), 0)
+    const dispatchFeePercent = (totalAmount / totalGross) * 100
+    const contractorPercent = 100 - dispatchFeePercent
+
+    text_left(page, boldFont, 10, `Total Gross: $${totalGross.toFixed(2)}`, margin, bottomY)
+    bottomY -= font.heightAtSize(10) + 5
+
+    text_left(
+      page,
+      boldFont,
+      10,
+      `Contractor Gross Earnings: $${totalAmount.toFixed(2)}`,
+      margin,
+      bottomY,
+    )
+    bottomY -= font.heightAtSize(10) + 5
+
+    text_left(
+      page,
+      boldFont,
+      10,
+      `Dispatch Fee: ${dispatchFeePercent.toFixed(0)} % - $${((totalGross * dispatchFeePercent) / 100).toFixed(2)}`,
+      margin,
+      bottomY,
+    )
+    bottomY -= font.heightAtSize(10) + 5
+
+    text_left(
+      page,
+      boldFont,
+      10,
+      `Contractor Percentage: ${contractorPercent.toFixed(0)}%`,
+      margin,
+      bottomY,
+    )
+    bottomY -= font.heightAtSize(10) + 5
+
+    if (totalQuickPay > 0) {
+      text_left(
+        page,
+        boldFont,
+        10,
+        `Quick Pay requested for: $${totalQuickPay.toFixed(2)}`,
+        margin,
+        bottomY,
+      )
+      bottomY -= font.heightAtSize(10) + 5
+    }
+
+    const netPayment = totalAmount - totalQuickPay
+    text_left(page, boldFont, 10, `Net Payment: $${netPayment.toFixed(2)}`, margin, bottomY)
+    bottomY -= font.heightAtSize(10) + 5
+  } else {
+    if (totalQuickPay > 0) {
+      text_left(
+        page,
+        boldFont,
+        10,
+        `Quick Pay requested for: $${totalQuickPay.toFixed(2)}`,
+        margin,
+        bottomY,
+      )
+      bottomY -= font.heightAtSize(10) + 5
+    }
+  }
 
   return pdfDoc
 }

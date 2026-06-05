@@ -183,7 +183,22 @@ export const useQuickPaysStore = defineStore('quick_pays', () => {
     }
   }
 
-  return { setContext, setFilters, listing, create, changeStatus, update }
+  async function findByOrder(orderId: number): Promise<QuickPay | null> {
+    const response = await supabase
+      .from('quick_pays')
+      .select()
+      .eq('document', orderId)
+      .maybeSingle()
+
+    if (response.status === 200) {
+      return response.data as QuickPay | null
+    } else {
+      console.log('error', response)
+      throw 'unexpended response status: ' + response.status
+    }
+  }
+
+  return { setContext, setFilters, listing, create, changeStatus, update, findByOrder }
 })
 
 if (import.meta.hot) {
