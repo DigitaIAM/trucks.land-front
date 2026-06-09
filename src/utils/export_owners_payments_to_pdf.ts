@@ -88,7 +88,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   // console.log('orders', orders)
 
-  //const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
+  const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
 
   const pdfDoc = await PDFDocument.create()
 
@@ -120,11 +120,11 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   // head
   let cy = 800
-  cy -= bls + text_right(page, font, 12, 'Pay Sheet', rightSide, cy)
+  cy -= bls + text_right(page, font, 12, 'Pay sheet', rightSide, cy)
   cy -=
     bls +
     text_right(page, boldFont, 16, `${document.week}-${org.code3}- ${document.id}`, rightSide, cy)
-  cy -= bls + text_right(page, font, 12, 'Pay Period', rightSide, cy)
+  cy -= bls + text_right(page, font, 12, 'Pay period', rightSide, cy)
   cy -=
     bls + text_right(page, boldFont, 16, `WEEK ${document.week} of ${document.year}`, rightSide, cy)
 
@@ -149,14 +149,14 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   const fs = 12
 
-  text_right(page, boldFont, fs, `Total Trips: ${orders.length}`, rightSide, cy)
-  cy -= bls * 2
+  text_right(page, boldFont, fs, `Total trips: ${orders.length}`, rightSide, cy)
+  cy -= bls * 4
 
   // Set the table options
   const options = {
     textSize: 10,
     title: {
-      text: 'Shipments Details',
+      text: 'SHIPMENTS DETAILS',
       textSize: 12,
       font: font,
       alignment: 'center',
@@ -300,74 +300,102 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const textMargin = 40
 
   const totalGross = orders.reduce((sum, line) => sum + (line.order_cost ?? 0), 0)
+  const totalExp = expenses?.reduce((s, e) => s + Number(e.amount ?? 0), 0) ?? 0
 
   let bottomY = tableBottomY - textMargin
+
+  function drawDeductions() {
+    if (totalExp > 0) {
+      bottomY -= 3
+      text_left(page, boldFont, 10, `Deductions: $${totalExp.toFixed(2)}`, margin, bottomY)
+      bottomY -= font.heightAtSize(10) + 8
+      for (const e of expenses!) {
+        const label = `${e.notes || '-'}:`
+        text_left(page, font, 10, label, margin, bottomY)
+        const labelWidth = font.widthOfTextAtSize(filterCharSet(label, font), 10)
+        text_left(
+          page,
+          font,
+          10,
+          `$${Number(e.amount).toFixed(2)}`,
+          margin + labelWidth + 10,
+          bottomY,
+        )
+        bottomY -= font.heightAtSize(10) + 5
+      }
+      bottomY -= 5
+    }
+  }
 
   if (isContract) {
     const totalAmount = orders.reduce((sum, line) => sum + (line.amount ?? 0), 0)
     const dispatchFeePercent = (totalAmount / totalGross) * 100
     const contractorPercent = 100 - dispatchFeePercent
 
-    text_left(page, boldFont, 10, `Total Gross: $${totalGross.toFixed(2)}`, margin, bottomY)
-    bottomY -= font.heightAtSize(10) + 5
+    text_left(page, boldFont, 10, `Total gross: $${totalGross.toFixed(2)}`, margin, bottomY)
+    bottomY -= font.heightAtSize(10) + 10
 
     text_left(
       page,
       boldFont,
       10,
-      `Contractor Gross Earnings: $${totalAmount.toFixed(2)}`,
+      `Contractor gross earnings: $${totalAmount.toFixed(2)}`,
       margin,
       bottomY,
     )
-    bottomY -= font.heightAtSize(10) + 5
+    bottomY -= font.heightAtSize(10) + 10
 
     text_left(
       page,
       boldFont,
       10,
-      `Dispatch Fee:  ${contractorPercent.toFixed(0)}% - $${((totalGross * contractorPercent) / 100).toFixed(2)}`,
+      `Dispatch FEE:  ${contractorPercent.toFixed(0)}% - $${((totalGross * contractorPercent) / 100).toFixed(2)}`,
       margin,
       bottomY,
     )
-    bottomY -= font.heightAtSize(10) + 5
+    bottomY -= font.heightAtSize(10) + 10
 
     text_left(
       page,
       boldFont,
       10,
-      `Contractor Percentage: ${dispatchFeePercent.toFixed(0)} %`,
+      `Contractor percentage: ${dispatchFeePercent.toFixed(0)} %`,
       margin,
       bottomY,
     )
-    bottomY -= font.heightAtSize(10) + 5
+    bottomY -= font.heightAtSize(10) + 10
 
     if (totalQuickPay > 0) {
       text_left(
         page,
         boldFont,
         10,
-        `Quick Pay requested for: $${totalQuickPay.toFixed(2)}`,
+        `Quick pay requested for: $${totalQuickPay.toFixed(2)}`,
         margin,
         bottomY,
       )
-      bottomY -= font.heightAtSize(10) + 5
+      bottomY -= font.heightAtSize(10) + 10
     }
 
-    const netPayment = totalAmount - totalQuickPay
-    text_left(page, boldFont, 10, `Net Payment: $${netPayment.toFixed(2)}`, margin, bottomY)
-    bottomY -= font.heightAtSize(10) + 5
+    drawDeductions()
+
+    const netPayment = totalAmount - totalQuickPay - totalExp
+    text_left(page, boldFont, 10, `Net payment: $${netPayment.toFixed(2)}`, margin, bottomY)
+    bottomY -= font.heightAtSize(10) + 10
   } else {
     if (totalQuickPay > 0) {
       text_left(
         page,
         boldFont,
         10,
-        `Quick Pay requested for: $${totalQuickPay.toFixed(2)}`,
+        `Quick pay requested for: $${totalQuickPay.toFixed(2)}`,
         margin,
         bottomY,
       )
-      bottomY -= font.heightAtSize(10) + 5
+      bottomY -= font.heightAtSize(10) + 10
     }
+
+    drawDeductions()
   }
 
   return pdfDoc
