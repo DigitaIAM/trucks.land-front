@@ -44,6 +44,10 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
     const paymentToOwnerStore = usePaymentToOwnerStore()
     const tierStore = useVehicleCommissionTierStore()
 
+    while (tierStore.loading) {
+      await sleep(10)
+    }
+
     const data = owners.value.slice()
     for (const summary of data) {
       if (summary.payout < 0.0) {
@@ -55,6 +59,14 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
       processing.value = [summary.owner, processing.value[0]]
 
+      const grossByVehicleType = new Map<number, number>()
+      for (const order of summary.orders.values()) {
+        if (order.contract && order.vehicle_type_id && order.stage != 3) {
+          const prev = grossByVehicleType.get(order.vehicle_type_id) ?? 0
+          grossByVehicleType.set(order.vehicle_type_id, prev + order.cost)
+        }
+      }
+
       const paymentRecords = []
 
       for (const order of summary.orders.values()) {
@@ -62,7 +74,11 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         if (order.stage != 3) {
           const amount =
             order.contract && order.vehicle_type_id
-              ? tierStore.calcAmount(order.cost, order.vehicle_type_id)
+              ? tierStore.calcAmount(
+                  order.cost,
+                  grossByVehicleType.get(order.vehicle_type_id) ?? order.cost,
+                  order.vehicle_type_id,
+                )
               : summary.paymentsByOrder.get(order.id)
 
           paymentRecords.push({

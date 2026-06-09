@@ -13,20 +13,30 @@ export const useVehicleCommissionTierStore = defineStore('vehicle_commission_tie
   const tiers = ref<Array<VehicleCommissionTier>>([])
 
   const { initialized, loading } = useInitializeStore(async () => {
+    // console.log('loading tiers...')
     const response = await supabase.from('vehicle_commission_tiers').select().eq('deleted', false)
-
+    // console.log('tiers response:', response.data, response.error)
     tiers.value = (response.data as Array<VehicleCommissionTier>) ?? []
   })
 
-  function calcAmount(orderCost: number, vehicleTypeId: number): number {
+  // watch(
+  //   tiers,
+  //   (val) => {
+  //     console.log('tiers loaded:', val)
+  //     console.log('test calcAmount(6000, 7100, 2):', calcAmount(6000, 7100, 2)) // ← обновить
+  //   },
+  //   { immediate: true },
+  // )
+
+  function calcAmount(orderCost: number, weeklyGross: number, vehicleTypeId: number): number {
     const applicable = tiers.value
       .filter((t) => t.vehicle_type_id === vehicleTypeId)
-      .sort((a, b) => b.gross - a.gross)
+      .sort((a, b) => Number(b.gross) - Number(a.gross))
 
-    const tier = applicable.find((t) => orderCost >= t.gross)
+    const tier = applicable.find((t) => weeklyGross >= Number(t.gross))
     if (!tier) return orderCost
 
-    return Math.round(orderCost * (1 - tier.dispatch_fee / 100) * 100) / 100
+    return Math.round(orderCost * (1 - Number(tier.dispatch_fee) / 100) * 100) / 100
   }
 
   return { tiers, initialized, loading, calcAmount }

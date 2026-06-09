@@ -30,6 +30,7 @@ import moment from 'moment-timezone'
 const reportOwnerStore = useReportOwner()
 const ownersStore = useOwnersStore()
 const authStore = useAuthStore()
+const tierStore = useVehicleCommissionTierStore()
 
 const state = reactive({})
 

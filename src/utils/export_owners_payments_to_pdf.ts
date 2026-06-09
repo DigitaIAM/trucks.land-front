@@ -325,7 +325,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       page,
       boldFont,
       10,
-      `Dispatch Fee: ${dispatchFeePercent.toFixed(0)} % - $${((totalGross * dispatchFeePercent) / 100).toFixed(2)}`,
+      `Dispatch Fee:  ${contractorPercent.toFixed(0)}% - $${((totalGross * contractorPercent) / 100).toFixed(2)}`,
       margin,
       bottomY,
     )
@@ -335,7 +335,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       page,
       boldFont,
       10,
-      `Contractor Percentage: ${contractorPercent.toFixed(0)}%`,
+      `Contractor Percentage: ${dispatchFeePercent.toFixed(0)} %`,
       margin,
       bottomY,
     )
