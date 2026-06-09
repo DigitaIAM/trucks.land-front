@@ -1,11 +1,20 @@
 <script setup lang="ts">
+import dayjs from 'dayjs'
+
 const expensesOwnerStore = useExpensesToOwnerStore()
+const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const ownerStore = useOwnersStore()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 
 const props = defineProps<{
-  edit: ExpensesToOwner | null
+  edit?: ExpensesToOwner | null
+  documentId?: number
+  documentOwner?: number
+  documentWeek?: number
+  documentYear?: number
+  show?: number
+  embedded?: boolean
 }>()
 
 const id = ref<number>()
@@ -20,9 +29,18 @@ const emit = defineEmits(['closed'])
 watch(
   () => props.edit,
   (expense) => {
-    resetAndShow(expense)
+    if (expense) resetAndShow(expense)
   },
-  { deep: true }
+  { deep: true },
+)
+
+watch(
+  () => props.show,
+  () => {
+    if (props.show) {
+      resetAndShow(null)
+    }
+  },
 )
 
 function resetAndShow(expense: ExpensesToOwner | null) {
@@ -30,7 +48,11 @@ function resetAndShow(expense: ExpensesToOwner | null) {
 
   id.value = expense?.id
   organization.value = expense?.organization
-  owner.value = expense ? { id: expense.owner } : null
+  owner.value = expense
+    ? { id: expense.owner }
+    : props.documentOwner
+      ? { id: props.documentOwner }
+      : null
   notes.value = expense?.notes || ''
   amount.value = expense?.amount
   created_by.value = expense ? { id: expense.created_by } : account ? { id: account.id } : null
@@ -38,20 +60,40 @@ function resetAndShow(expense: ExpensesToOwner | null) {
   expense_modal.showModal()
 }
 
-function saveExpenses() {
+async function saveExpenses() {
   if (id.value == null) {
-    expensesOwnerStore.create({
+    const week = props.documentWeek ?? dayjs().isoWeek()
+    const year = props.documentYear ?? dayjs().year()
+
+    const created = await expensesOwnerStore.create({
       organization: authStore.oid,
       owner: owner.value?.id,
       notes: notes.value,
-      amount: amount.value
+      amount: amount.value,
+      week,
+      year,
     } as ExpensesToOwnerCreate)
+
+    if (created && props.documentId) {
+      const account = authStore.currentAccount()
+      await paymentToOwnerExpenseStore.create({
+        created_by: account?.id || 0,
+        doc_payment: props.documentId,
+        doc_expense: created.id,
+        amount: created.amount,
+      } as PaymentToOwnerExpenseCreate)
+    }
   } else {
     expensesOwnerStore.update(id.value, {
       owner: owner.value?.id,
       notes: notes.value,
-      amount: amount.value
+      amount: amount.value,
     } as ExpensesToOwnerUpdate)
+
+    await supabase
+      .from('owner_payment_expenses')
+      .update({ amount: amount.value })
+      .eq('doc_expense', id.value)
   }
   expense_modal.close()
   emit('closed')
@@ -59,10 +101,9 @@ function saveExpenses() {
 </script>
 
 <template>
-  <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
+  <div v-if="!embedded" class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <Text size="2xl">Expenses</Text>
     <SearchVue :store="ownerStore"></SearchVue>
-    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
   </div>
   <Modal id="expense_modal">
     <ModalBox class="w-2/5">

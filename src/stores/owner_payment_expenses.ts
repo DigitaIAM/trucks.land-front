@@ -23,8 +23,6 @@ export const usePaymentToOwnerExpenseStore = defineStore('owner_payment_expenses
         .select('*, expense:owner_expenses(*)')
         .eq('doc_payment', documentId)
 
-      // console.log('response', response)
-
       if (response.status == 200) {
         const list: Array<ExpensesToOwner> = []
 
@@ -44,7 +42,25 @@ export const usePaymentToOwnerExpenseStore = defineStore('owner_payment_expenses
     }
   }
 
-  return { loading, listing }
+  async function create(record: PaymentToOwnerExpenseCreate) {
+    const response = await supabase.from('owner_payment_expenses').insert(record).select()
+
+    if (response.status == 201 && record.doc_payment) {
+      await loading(record.doc_payment)
+    }
+  }
+
+  async function updateAmount(docPayment: number, docExpense: number, amount: number) {
+    await supabase
+      .from('owner_payment_expenses')
+      .update({ amount })
+      .eq('doc_payment', docPayment)
+      .eq('doc_expense', docExpense)
+
+    await loading(docPayment)
+  }
+
+  return { loading, listing, create, updateAmount }
 })
 
 if (import.meta.hot) {

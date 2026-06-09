@@ -88,6 +88,11 @@ const cols = [
     size: 200,
   },
   {
+    label: 'week',
+    value: (v: ExpensesToOwner) => (v.week ? `${v.week} / ${v.year}` : '-'),
+    size: 100,
+  },
+  {
     label: 'expenses',
     value: (v: ExpensesToOwner) => v.notes,
     size: 150,

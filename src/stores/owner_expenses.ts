@@ -11,12 +11,16 @@ export interface ExpensesToOwnerCreate {
   owner: number
   notes: string
   amount: number
+  week?: number
+  year?: number
 }
 
 export interface ExpensesToOwnerUpdate {
   owner?: number
   notes?: string
   amount?: number
+  week?: number
+  year?: number
 }
 
 export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {
@@ -48,20 +52,19 @@ export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {
     }
   }
 
-  function create(expense: ExpensesToOwnerCreate) {
-    supabase
+  async function create(expense: ExpensesToOwnerCreate): Promise<ExpensesToOwner | null> {
+    const response = await supabase
       .from('owner_expenses')
       .insert(expense)
       .select()
-      .then((response) => {
-        if (response.status == 201) {
-          response.data?.forEach((json) => {
-            const expense = json as ExpensesToOwner
-            listing.value.push(expense)
-          })
-        }
-        console.log('response', response)
-      })
+
+    if (response.status == 201 && response.data?.length) {
+      const created = response.data[0] as ExpensesToOwner
+      listing.value.push(created)
+      return created
+    }
+    console.log('response', response)
+    return null
   }
 
   function update(id: number, expense: ExpensesToOwnerUpdate) {

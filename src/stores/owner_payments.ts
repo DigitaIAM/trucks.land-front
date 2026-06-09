@@ -215,6 +215,21 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
     return null
   }
 
+  async function refreshOne(id: number): Promise<PaymentToOwnerSummary | null> {
+    const response = await supabase
+      .from('owner_payments_journal')
+      .select()
+      .eq('id', id)
+      .single()
+
+    if (response.status === 200 && response.data) {
+      const payment = response.data as PaymentToOwnerSummary
+      mapping.value.set(payment.id, payment)
+      return payment
+    }
+    return null
+  }
+
   return {
     fetching,
     fetchingDetails,
@@ -224,6 +239,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
     setContext,
     setFilters,
     fetchOne,
+    refreshOne,
   }
 })
 

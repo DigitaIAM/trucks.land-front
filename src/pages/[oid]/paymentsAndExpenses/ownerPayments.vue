@@ -56,6 +56,10 @@ function onClose() {
   selectedDocument.value = null
 }
 
+function onDocumentUpdated(document: PaymentToOwnerSummary) {
+  selectedDocument.value = document
+}
+
 const state = reactive({})
 
 function resolve(
@@ -276,7 +280,7 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
 </script>
 
 <template>
-  <PaymentsForOwnerOrders :document="selectedDocument" @closed="onClose" />
+  <PaymentsForOwnerOrders :document="selectedDocument" @document-updated="onDocumentUpdated" />
   <Text class="px-4" size="2xl">Payments</Text>
   <div class="flex flex-row items-center px-4 mb-2 mt-3">
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>

@@ -3,6 +3,7 @@ import { createFetch } from '@vueuse/core'
 import { generateOwnerPaymentPdf } from '@/utils/export_owners_payments_to_pdf.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
 import { sendEmail } from '@/utils/email.ts'
+import ExpensesOwner from '@/components/modal/ExpensesOwner.vue'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -13,7 +14,10 @@ const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const orderStore = useOrdersStore()
 const ownerStore = useOwnersStore()
 const organizationsStore = useOrganizationsStore()
+const paymentToOwnerStore = usePaymentToOwnerStore()
 const statusesStore = useStatusesStore()
+
+const showExpenseTrigger = ref(0)
 
 watch(
   () => props.document,
@@ -29,6 +33,18 @@ function resetAndShow(document: PaymentToOwnerSummary) {
   details.showModal()
   paymentToOwnerOrdersStore.loading(document.id)
   paymentToOwnerExpenseStore.loading(document.id)
+}
+
+const emit = defineEmits<{
+  (e: 'document-updated', document: PaymentToOwnerSummary): void
+}>()
+
+async function onExpenseClosed() {
+  if (props.document) {
+    await paymentToOwnerExpenseStore.loading(props.document.id)
+    const fresh = await paymentToOwnerStore.refreshOne(props.document.id)
+    if (fresh) emit('document-updated', fresh)
+  }
 }
 
 async function generatePdfAndSend() {
@@ -185,7 +201,7 @@ const expensesCols = [
 <template>
   <Modal id="details">
     <ModalBox class="max-w-[calc(90vw-6.25rem)]">
-      <div class="grid grid-cols-2">
+      <div class="flex items-center justify-between w-full gap-4">
         <div class="flex flex-col-5 gap-10">
           <Text size="2xl">Payment # {{ document?.id }}</Text>
           <Text size="2xl">week {{ document?.week }}</Text>
@@ -197,8 +213,11 @@ const expensesCols = [
           </div>
           <Text size="2xl">$ {{ document?.payout }}</Text>
         </div>
-        <div class="justify-self-end">
-          <Button class="btn-soft font-light tracking-wider" @click="generatePdfAndSend">
+        <div class="flex items-center gap-3">
+          <Button class="btn-soft font-light tracking-wider" @click="showExpenseTrigger++">
+            Add expense
+          </Button>
+          <Button class="btn-soft font-light tracking-wider mr-3" @click="generatePdfAndSend">
             Send to
             <QueryAndShow name="email" :id="props.document?.owner" :store="ownerStore" />
           </Button>
@@ -209,7 +228,7 @@ const expensesCols = [
         <Text size="lg">Orders {{ paymentToOwnerOrdersStore.listing.length }}</Text>
         <Text size="lg">Orders amount $ {{ document?.orders }}</Text>
         <Text size="lg">Payment $ {{ document?.amount }}</Text>
-        <Text size="lg">Expenses $ {{ document?.expenses }}</Text>
+        <Text size="lg">Payment $ {{ document?.expenses }}</Text>
         <Text size="lg">Payout $ {{ document?.payout }}</Text>
       </div>
       <div class="mb-4 mt-10">
@@ -253,7 +272,9 @@ const expensesCols = [
         </tbody>
       </table>
       <div class="mt-10">
-        <Text bold size="lg" class="mb-4">Expenses</Text>
+        <div class="flex justify-between items-center mb-4">
+          <Text bold size="lg">Expenses</Text>
+        </div>
         <table class="w-full text-left table-auto min-w-max">
           <thead>
             <tr
@@ -297,6 +318,16 @@ const expensesCols = [
       </ModalAction>
     </ModalBox>
   </Modal>
+
+  <ExpensesOwner
+    :document-id="document?.id"
+    :document-owner="document?.owner"
+    :document-week="document?.week"
+    :document-year="document?.year"
+    :show="showExpenseTrigger"
+    @closed="onExpenseClosed"
+    :embedded="true"
+  />
 </template>
 
 <style scoped></style>
