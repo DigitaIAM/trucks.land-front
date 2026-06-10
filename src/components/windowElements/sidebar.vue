@@ -119,6 +119,15 @@ const links = [
     path: '/paymentsAndExpenses/employee_absence',
     perm: (access) => access.is_admin || access.is_payroll_accountant,
   },
+  {
+    name: 'Combined report',
+    //SALARY accountant
+    icon: defineAsyncComponent(
+      () => import('~icons/streamline/ai-generate-variation-spark?width=1em&height=1em'),
+    ),
+    path: '/paymentsAndExpenses/combined-dispatcher-report',
+    perm: (access) => access.is_payroll_accountant,
+  },
   // {
   //   name: 'Hiring',
   //   icon: defineAsyncComponent(() => import('~icons/streamline/user-sync-online-in-person')),
