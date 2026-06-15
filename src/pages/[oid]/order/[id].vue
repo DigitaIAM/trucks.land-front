@@ -214,6 +214,37 @@ async function deleteStage() {
     await ordersStore.deleteStage(order)
   }
 }
+
+const showStatusHistory = ref(false)
+const statusHistory = ref<Array<{ status: Status; created_at: string; created_by_name: string }>>(
+  [],
+)
+
+async function loadStatusHistory() {
+  const order = _order.value
+  if (!order) return
+  const { data } = await supabase
+    .from('order_stages')
+    .select()
+    .eq('document', order.id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+  statusHistory.value = await Promise.all(
+    (data as OrderStage[]).map(async (row) => ({
+      status: await statusesStore.resolve(row.stage),
+      created_at: new Date(row.created_at).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short',
+        hour12: true,
+      }),
+      created_by_name: (await usersStore.resolve(row.created_by))?.name ?? '—',
+    })),
+  )
+  showStatusHistory.value = true
+}
 </script>
 
 <template>
@@ -257,7 +288,8 @@ async function deleteStage() {
         <div class="flex space-x-3 w-full">
           <Button
             :style="'background-color: ' + (currentStatus?.color ?? '#333333')"
-            class="btn-soft font-light tracking-wider text-white"
+            class="btn-soft font-light tracking-wider text-white cursor-pointer"
+            @click="loadStatusHistory"
             >{{ currentStatus?.name }}
           </Button>
           <template v-if="allowChangeStage">
@@ -348,6 +380,34 @@ async function deleteStage() {
     </div>
     <StepperUploading :order="_order"></StepperUploading>
   </div>
+
+  <Modal v-model="showStatusHistory" closeOnClickOutside>
+    <ModalBox class="w-3/5">
+      <Text size="2xl">Order status history</Text>
+      <div class="mt-4 space-y-2">
+        <div
+          v-for="entry in statusHistory"
+          :key="entry.created_at"
+          class="flex items-center space-x-3 p-2 rounded"
+        >
+          <div
+            class="w-4 h-4 rounded-full flex-shrink-0"
+            :style="{ backgroundColor: entry.status?.color }"
+          ></div>
+          <span class="font-medium">{{ entry.status?.name }}</span>
+          <span class="text-sm opacity-70">{{ entry.created_by_name }}</span>
+          <span class="text-sm opacity-70 ml-auto">{{ entry.created_at }}</span>
+        </div>
+      </div>
+      <ModalAction>
+        <form method="dialog">
+          <Button class="btn-soft font-light tracking-wider" @click="showStatusHistory = false">
+            Close
+          </Button>
+        </form>
+      </ModalAction>
+    </ModalBox>
+  </Modal>
 </template>
 
 <style scoped>
