@@ -27,17 +27,21 @@ const resolvedVehicles = reactive<Record<number, { name: string }>>({})
 const vehicleRows = computed(() => {
   if (!props.summary) return []
 
-  const vehicleMap = new Map<number, { ordersCount: number; totalProfit: number }>()
+  const vehicleMap = new Map<number, { ordersCount: number; totalGross: number; totalProfit: number }>()
   let noVehicleOrders = 0
+  let noVehicleGross = 0
   let noVehicleProfit = 0
 
   for (const [orderId, order] of props.summary.orders) {
-    const profit = (order.cost || 0) - (order.driver_cost || 0)
+    const cost = order.cost || 0
+    const driverCost = order.driver_cost || 0
+    const profit = cost - driverCost
     const vehicleId = props.summary.orderToVehicle.get(Number(orderId))
 
     if (vehicleId) {
-      const d = vehicleMap.get(vehicleId) || { ordersCount: 0, totalProfit: 0 }
+      const d = vehicleMap.get(vehicleId) || { ordersCount: 0, totalGross: 0, totalProfit: 0 }
       d.ordersCount++
+      d.totalGross += cost
       d.totalProfit += profit
       vehicleMap.set(vehicleId, d)
       // Trigger lazy resolve
@@ -49,6 +53,7 @@ const vehicleRows = computed(() => {
       }
     } else {
       noVehicleOrders++
+      noVehicleGross += cost
       noVehicleProfit += profit
     }
   }
@@ -57,6 +62,7 @@ const vehicleRows = computed(() => {
     vehicleId: number | null
     vehicleName: string
     ordersCount: number
+    totalGross: number
     totalProfit: number
   }> = []
 
@@ -65,6 +71,7 @@ const vehicleRows = computed(() => {
       vehicleId,
       vehicleName: resolvedVehicles[vehicleId]?.name ?? '...',
       ordersCount: data.ordersCount,
+      totalGross: data.totalGross,
       totalProfit: data.totalProfit,
     })
   }
@@ -74,6 +81,7 @@ const vehicleRows = computed(() => {
       vehicleId: null,
       vehicleName: 'No vehicle',
       ordersCount: noVehicleOrders,
+      totalGross: noVehicleGross,
       totalProfit: noVehicleProfit,
     })
   }
@@ -83,6 +91,10 @@ const vehicleRows = computed(() => {
 
 const totalOrders = computed(() => {
   return vehicleRows.value.reduce((sum, r) => sum + r.ordersCount, 0)
+})
+
+const totalGross = computed(() => {
+  return vehicleRows.value.reduce((sum, r) => sum + r.totalGross, 0)
 })
 
 const totalProfit = computed(() => {
@@ -110,6 +122,7 @@ function close() {
       <div class="flex flex-cols-7 gap-20 mt-10">
         <Text bold size="lg">Total</Text>
         <Text size="lg">Orders {{ totalOrders }}</Text>
+        <Text size="lg">Gross $ {{ totalGross.toFixed(0) }}</Text>
         <Text size="lg">Profit $ {{ totalProfit.toFixed(0) }}</Text>
       </div>
 
@@ -126,12 +139,15 @@ function close() {
                 <p class="block antialiasing tracking-wider font-thin leading-none">Unit Id</p>
               </th>
               <th class="p-4" style="width: 100px">
-                <p class="block antialiasing tracking-wider font-thin leading-none">
-                  количество грузов
-                </p>
+                <p class="block antialiasing tracking-wider font-thin leading-none">Gross</p>
               </th>
               <th class="p-4" style="width: 100px">
                 <p class="block antialiasing tracking-wider font-thin leading-none">Profit</p>
+              </th>
+              <th class="p-4" style="width: 100px">
+                <p class="block antialiasing tracking-wider font-thin leading-none">
+                  количество грузов
+                </p>
               </th>
             </tr>
           </thead>
@@ -157,7 +173,7 @@ function close() {
                     class="block antialiasing tracking-wide font-light leading-normal truncate"
                     style="width: 100px"
                   >
-                    {{ row.ordersCount }}
+                    ${{ row.totalGross.toFixed(0) }}
                   </p>
                 </td>
                 <td class="py-3 px-4" style="width: 100px">
@@ -166,6 +182,14 @@ function close() {
                     style="width: 100px"
                   >
                     ${{ row.totalProfit.toFixed(0) }}
+                  </p>
+                </td>
+                <td class="py-3 px-4" style="width: 100px">
+                  <p
+                    class="block antialiasing tracking-wide font-light leading-normal truncate"
+                    style="width: 100px"
+                  >
+                    {{ row.ordersCount }}
                   </p>
                 </td>
               </tr>

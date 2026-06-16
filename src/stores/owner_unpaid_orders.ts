@@ -1,4 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import dayjs from 'dayjs'
+import isoWeek from 'dayjs/plugin/isoWeek'
 import {
   loadOwnerPayments,
   loadOwnerExpenses,
@@ -6,6 +8,8 @@ import {
 } from '@/composables/use-owner-report-calculator.ts'
 import type { Order } from '@/stores/orders.ts'
 import type { ExpensesToOwner } from '@/stores/owner_expenses.ts'
+
+dayjs.extend(isoWeek)
 
 export interface OwnerPaymentRecord {
   owner: number
@@ -48,6 +52,8 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       await sleep(10)
     }
 
+    const weekEndDate = dayjs().year(year).isoWeek(week).endOf('isoWeek').toDate()
+
     const data = owners.value.slice()
     for (const summary of data) {
       if (summary.payout < 0.0) {
@@ -67,6 +73,22 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         }
       }
 
+      const orderIds = Array.from(summary.orders.keys())
+      const { data: agreementData } = await supabase
+        .from('order_events')
+        .select('document, driver, vehicle')
+        .in('document', orderIds)
+        .eq('kind', 'agreement')
+
+      const agreementMap = new Map<number, { driver: number | null; vehicle: number | null }>()
+      if (agreementData) {
+        for (const ev of agreementData as Array<{ document: number; driver: number; vehicle: number }>) {
+          if (!agreementMap.has(ev.document)) {
+            agreementMap.set(ev.document, { driver: ev.driver, vehicle: ev.vehicle })
+          }
+        }
+      }
+
       const paymentRecords = []
 
       for (const order of summary.orders.values()) {
@@ -80,6 +102,18 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
                   order.vehicle_type_id,
                 )
               : summary.paymentsByOrder.get(order.id)
+
+          if (order.contract && order.vehicle_type_id) {
+            const agreement = agreementMap.get(order.id)
+            await supabase.from('order_events').insert({
+              document: order.id,
+              kind: 'weekly-calculation',
+              datetime: weekEndDate,
+              cost: amount,
+              driver: agreement?.driver ?? null,
+              vehicle: agreement?.vehicle ?? null,
+            })
+          }
 
           paymentRecords.push({
             doc_payment: -1,
