@@ -4,6 +4,7 @@ import {
   loadUnpaidOrders,
   loadUnpaidSettlements,
   calculateEmployeeReport,
+  loadDispatcherPerformanceReport,
 } from '@/composables/use-employee-report-calculator.ts'
 import type {
   EmployeeReportRecord,
@@ -64,6 +65,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
   const report = ref<Array<EmployeeReportRecord>>([])
   const processing = ref<Array<number>>([])
   const searchQuery = ref<string | null>(null)
+  const dateFrom = ref<string>('')
+  const dateTo = ref<string>('')
 
   async function loading(orgId: number | null, userId: number | null) {
     const ordersInProcessing = await loadOrdersInProgress(orgId)
@@ -203,7 +206,13 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
     searchQuery.value = text
   }
 
-  return { loading, employees, processing, createPayment, searchAndListing }
+  async function loadPerformanceReport(orgId: number, from: string, to: string) {
+    dateFrom.value = from
+    dateTo.value = to
+    report.value = await loadDispatcherPerformanceReport(orgId, from, to)
+  }
+
+  return { loading, employees, processing, createPayment, searchAndListing, loadPerformanceReport, dateFrom, dateTo }
 })
 
 if (import.meta.hot) {

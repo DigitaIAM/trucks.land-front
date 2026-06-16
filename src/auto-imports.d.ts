@@ -18,6 +18,7 @@ declare global {
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const calculateEmployeeReport: typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']
   const calculateOwnerReport: typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']
+  const calculateWeeklyContractCommission: typeof import('./composables/use-employee-report-calculator')['calculateWeeklyContractCommission']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -59,6 +60,7 @@ declare global {
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
+  const loadDispatcherPerformanceReport: typeof import('./composables/use-employee-report-calculator')['loadDispatcherPerformanceReport']
   const loadOrdersInProgress: typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']
   const loadOwnerExpenses: typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']
   const loadOwnerPayments: typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']
@@ -520,6 +522,7 @@ declare module 'vue' {
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly calculateEmployeeReport: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']>
     readonly calculateOwnerReport: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']>
+    readonly calculateWeeklyContractCommission: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calculateWeeklyContractCommission']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -557,6 +560,7 @@ declare module 'vue' {
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
+    readonly loadDispatcherPerformanceReport: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadDispatcherPerformanceReport']>
     readonly loadOrdersInProgress: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']>
     readonly loadOwnerExpenses: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']>
     readonly loadOwnerPayments: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']>

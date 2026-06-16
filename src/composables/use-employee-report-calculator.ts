@@ -490,6 +490,262 @@ export async function calculateEmployeeReport(
   return list
 }
 
+export async function calculateWeeklyContractCommission(
+  orgId: number | null,
+  week: number,
+  year: number,
+  filterEmployeeId?: number,
+): Promise<WeeklyContractCommission[]> {
+  if (!orgId) return []
+
+  const { data: contractVehiclesData } = await supabase
+    .from('vehicles')
+    .select('id, unit_id, kind')
+    .eq('contract', true)
+  const vehicleMap = new Map<number, { unit_id: string; kind: string }>()
+  contractVehiclesData?.forEach((v) => vehicleMap.set(v.id, { unit_id: v.unit_id, kind: v.kind }))
+  if (vehicleMap.size === 0) return []
+
+  const { data: vehicleTypesData } = await supabase.from('vehicle_type').select('id, name')
+  const vehicleTypeMap = new Map<string, number>()
+  vehicleTypesData?.forEach((vt) => vehicleTypeMap.set(vt.name, vt.id))
+
+  const { data: tiersData } = await supabase
+    .from('vehicle_commission_tiers')
+    .select('*')
+    .eq('deleted', false)
+  const tiersByVehicleType = groupBy(
+    (tiersData || []) as CommissionTier[],
+    (t) => t.vehicle_type_id,
+  )
+
+  const { data: stagesData } = await supabase
+    .from('stages')
+    .select('id')
+    .eq('is_ready_for_payout', true)
+  const readyStageIds = new Set((stagesData || []).map((s: any) => s.id))
+  if (readyStageIds.size === 0) return []
+
+  const startOfWeek = dayjs().year(year).isoWeek(week).startOf('isoWeek')
+  const endOfWeek = dayjs().year(year).isoWeek(week).endOf('isoWeek')
+
+  const response = await supabase
+    .from('orders_journal')
+    .select()
+    .eq('organization', orgId)
+    .gte('created_at', startOfWeek.format('YYYY-MM-DD HH:mm:ss'))
+    .lte('created_at', endOfWeek.format('YYYY-MM-DD HH:mm:ss'))
+  const allOrders = (response.data || []) as Order[]
+
+  const { data: eventsData } = await supabase
+    .from('order_events')
+    .select('document, vehicle')
+  const orderVehicleMap = new Map<number, number>()
+  if (eventsData) {
+    for (const event of eventsData as Array<{ document: number; vehicle: number }>) {
+      orderVehicleMap.set(event.document, event.vehicle)
+    }
+  }
+
+  const employeeVehicleData = new Map<
+    number,
+    Map<number, { totalGross: number; orderCount: number }>
+  >()
+
+  for (const order of allOrders) {
+    if (order.excluded || !readyStageIds.has(order.stage)) continue
+
+    const vehicleId = orderVehicleMap.get(order.id)
+    if (!vehicleId || !vehicleMap.has(vehicleId)) continue
+
+    const vehicle = vehicleMap.get(vehicleId)!
+    if (!vehicleTypeMap.has(vehicle.kind)) continue
+
+    if (!employeeVehicleData.has(order.created_by)) {
+      employeeVehicleData.set(order.created_by, new Map())
+    }
+    const vehicleData = employeeVehicleData.get(order.created_by)!
+
+    const d = vehicleData.get(vehicleId) || { totalGross: 0, orderCount: 0 }
+    d.totalGross += order.cost
+    d.orderCount += 1
+    vehicleData.set(vehicleId, d)
+  }
+
+  const result: WeeklyContractCommission[] = []
+
+  for (const [empId, vehicles] of employeeVehicleData) {
+    const details: ContractCommissionDetail[] = []
+
+    for (const [vId, data] of vehicles) {
+      const vehicle = vehicleMap.get(vId)!
+      const vehicleTypeId = vehicleTypeMap.get(vehicle.kind)
+      if (!vehicleTypeId) continue
+
+      const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
+      if (vehicleTiers.length === 0) continue
+
+      const sortedTiers = [...vehicleTiers].sort((a, b) => a.gross - b.gross)
+      let matchedTier = sortedTiers[sortedTiers.length - 1]
+      for (const tier of sortedTiers) {
+        if (data.totalGross <= tier.gross) {
+          matchedTier = tier
+          break
+        }
+      }
+
+      const commissionAmount = (data.totalGross * matchedTier.dispatcher_commission) / 100
+
+      details.push({
+        vehicle_id: vId,
+        vehicle_unit_id: vehicle.unit_id,
+        vehicle_type_name: vehicle.kind,
+        orders_count: data.orderCount,
+        total_gross: data.totalGross,
+        dispatch_fee_percent: matchedTier.dispatch_fee,
+        dispatcher_commission_percent: matchedTier.dispatcher_commission,
+        commission_amount: commissionAmount,
+      })
+    }
+
+    if (details.length > 0) {
+      result.push({
+        employee_id: empId,
+        week,
+        year,
+        total_commission: details.reduce((sum, d) => sum + d.commission_amount, 0),
+        details_count: details.length,
+        details,
+      })
+    }
+  }
+
+  if (filterEmployeeId !== undefined) {
+    return result
+      .filter((r) => r.employee_id === filterEmployeeId)
+      .sort((a, b) => b.total_commission - a.total_commission)
+  }
+
+  return result.sort((a, b) => b.total_commission - a.total_commission)
+}
+
+export async function loadDispatcherPerformanceReport(
+  orgId: number,
+  from: string,
+  to: string,
+): Promise<EmployeeReportRecord[]> {
+  const { data: ordersData, error } = await supabase
+    .from('orders_journal')
+    .select()
+    .eq('organization', orgId)
+    .gte('created_at', from)
+    .lte('created_at', to + ' 23:59:59')
+
+  if (error || !ordersData) {
+    console.error('Error loading orders:', error?.message)
+    return []
+  }
+
+  const allOrders = ordersData as Order[]
+
+  // Exclude cancelled / excluded orders
+  const activeOrders = allOrders.filter((o) => !o.excluded && o.stage !== 3)
+
+  const orderIds = activeOrders.map((o) => o.id)
+  const { data: eventsData } = await supabase
+    .from('order_events')
+    .select('document, vehicle, datetime')
+    .in('document', orderIds)
+    .in('kind', ['agreement', 'change'])
+
+  // Build global order → vehicle map (last chronologically wins)
+  const globalOrderToVehicle = new Map<number, number>()
+  if (eventsData && eventsData.length > 0) {
+    const grouped = groupBy(
+      eventsData as Array<{ document: number; vehicle: number; datetime: string }>,
+      (e) => e.document,
+    )
+    for (const [docId, events] of grouped) {
+      events.sort(
+        (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime(),
+      )
+      const lastEvent = events[events.length - 1]
+      if (lastEvent.vehicle) {
+        globalOrderToVehicle.set(Number(docId), lastEvent.vehicle)
+      }
+    }
+  }
+
+  const dispatcherOrders = groupBy(activeOrders, (o) => o.created_by)
+  const userStore = useUsersStore()
+  const result: EmployeeReportRecord[] = []
+
+  for (const [dispatcherId, orders] of dispatcherOrders) {
+    const empId = Number(dispatcherId)
+    const ordersMap = new Map<number, Order>()
+    const empOrderToVehicle = new Map<number, number>()
+
+    let totalCost = 0
+    let totalDriverCost = 0
+
+    for (const order of orders) {
+      ordersMap.set(order.id, order)
+      totalCost += order.cost
+      totalDriverCost += order.driver_cost
+
+      const vId = globalOrderToVehicle.get(order.id)
+      if (vId) {
+        empOrderToVehicle.set(order.id, vId)
+      }
+    }
+
+    const profit = totalCost - totalDriverCost
+
+    result.push({
+      user: (await userStore.resolve(empId)) as User,
+      summary: {
+        employee: empId,
+        orders_number: orders.length,
+        orders_number_contract: 0,
+        vehicle: 0,
+        orders_amount: totalCost,
+        orders_driver: totalDriverCost,
+        orders_profit: profit,
+        orders_amount_direct: 0,
+        orders_driver_direct: 0,
+        orders_profit_direct: 0,
+        orders_amount_contract: 0,
+        toPayment: 0,
+        orders: ordersMap,
+        orders_in_progress: new Map(),
+        paymentsByOrder: new Map(),
+        paymentTerms: {
+          created_by: 0,
+          organization: orgId,
+          user_id: empId,
+          percent_of_gross: 0,
+          percent_of_profit: 0,
+          fixed_salary: 0,
+          income_tax: 0,
+        },
+        settlements: [],
+        settlements_total: 0,
+        vacation_amount: 0,
+        advance_amount: 0,
+        settlement_fine: 0,
+        missed_days: 0,
+        payout_usd: profit,
+        contract_details: [],
+        contract_commission_total: 0,
+        orderToVehicle: empOrderToVehicle,
+      },
+    })
+  }
+
+  result.sort((a, b) => b.summary.payout_usd - a.summary.payout_usd)
+  return result
+}
+
 interface CommissionTier {
   vehicle_type_id: number
   gross: number

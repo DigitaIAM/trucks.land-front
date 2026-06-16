@@ -9,15 +9,12 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
-const reportDispatcher = useReportDispatcher()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await reportDispatcher.loading(org.id)
-    // console.table(org)
     return org
   },
   { key: 'org' },
@@ -25,15 +22,20 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment-timezone'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import dayjs from 'dayjs'
 import DispatcherOrdersForMonth from '@/components/modal/DispatcherOrdersForMonth.vue'
 import { dispatcherPerformanceExportToExcel } from '@/utils/dispatcherPerformanceToExcel.ts'
-import { dispatchersOrdersMonth } from '@/utils/dispatchers_orders_month.ts'
+import moment from 'moment-timezone'
 
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
 
 const currentDay = ref(moment().tz('America/New_York'))
+
+const dateFrom = ref<Date>(dayjs().startOf('month').toDate())
+const dateTo = ref<Date>(dayjs().toDate())
 
 defineOptions({
   __loaders: [useOrgData],
@@ -89,23 +91,36 @@ const cols = [
     size: 100,
   },
 ]
+
+async function loadReport() {
+  if (!authStore.org?.id) return
+  const from = dayjs(dateFrom.value).format('YYYY-MM-DD')
+  const to = dayjs(dateTo.value).format('YYYY-MM-DD')
+  await reportDispatcherStore.loadPerformanceReport(authStore.org.id, from, to)
+}
+
+watch([dateFrom, dateTo], () => {
+  loadReport()
+})
+
+onMounted(() => {
+  loadReport()
+})
 </script>
 
 <template>
   <DispatcherOrdersForMonth :summary="selectedRecord" />
 
   <div class="flex flex-row items-center gap-6 px-4 mb-2 mt-3">
+    <VueDatePicker v-model="dateFrom" :enable-time-picker="false" />
+    <Text>—</Text>
+    <VueDatePicker v-model="dateTo" :enable-time-picker="false" />
     <SearchVue :store="reportDispatcherStore"></SearchVue>
     <Text>{{ currentDay.format('L') }}</Text>
     <Button
       class="btn-soft font-light tracking-wider"
       @click="dispatcherPerformanceExportToExcel(reportDispatcherStore.employees!)"
       >Excel</Button
-    >
-    <Button
-      class="btn-soft font-light tracking-wider"
-      @click="dispatchersOrdersMonth(reportDispatcherStore.employees!)"
-      >Orders</Button
     >
   </div>
   <table class="w-full mt-6 text-left table-auto min-w-max">
