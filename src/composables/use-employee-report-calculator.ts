@@ -653,11 +653,20 @@ export async function loadDispatcherPerformanceReport(
   const activeOrders = allOrders.filter((o) => !o.excluded && performanceStages.has(o.stage))
 
   const orderIds = activeOrders.map((o) => o.id)
-  const { data: eventsData } = await supabase
-    .from('order_events')
-    .select('document, vehicle, datetime')
-    .in('document', orderIds)
-    .in('kind', ['agreement', 'change'])
+  const batchSize = 100
+  const eventBatches: any[] = []
+  for (let i = 0; i < orderIds.length; i += batchSize) {
+    const batch = orderIds.slice(i, i + batchSize)
+    eventBatches.push(
+      supabase
+        .from('order_events')
+        .select('document, vehicle, datetime')
+        .in('document', batch)
+        .in('kind', ['agreement', 'change']),
+    )
+  }
+  const batchResults = await Promise.all(eventBatches)
+  const eventsData = batchResults.flatMap((r) => r.data || [])
 
   // Build global order → vehicle map (last chronologically wins)
   const globalOrderToVehicle = new Map<number, number>()

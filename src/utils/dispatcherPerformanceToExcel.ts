@@ -4,6 +4,8 @@ import type { EmployeePaymentSummary } from '@/stores/employee_unpaid_orders.ts'
 
 export async function dispatcherPerformanceExportToExcel(
   payments: Array<EmployeePaymentSummary>,
+  dateFrom?: string,
+  dateTo?: string,
 ) {
   const workbook = new Workbook()
   const userStore = useUsersStore()
@@ -103,6 +105,6 @@ export async function dispatcherPerformanceExportToExcel(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    'Dispatcher_Performance.xlsx',
+    `Dispatcher_Performance${dateFrom ? `_${dateFrom}_${dateTo}` : ''}.xlsx`,
   )
 }
