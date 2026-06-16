@@ -27,7 +27,10 @@ const resolvedVehicles = reactive<Record<number, { name: string }>>({})
 const vehicleRows = computed(() => {
   if (!props.summary) return []
 
-  const vehicleMap = new Map<number, { ordersCount: number; totalGross: number; totalProfit: number }>()
+  const vehicleMap = new Map<
+    number,
+    { ordersCount: number; totalGross: number; totalProfit: number }
+  >()
   let noVehicleOrders = 0
   let noVehicleGross = 0
   let noVehicleProfit = 0
@@ -146,7 +149,7 @@ function close() {
               </th>
               <th class="p-4" style="width: 100px">
                 <p class="block antialiasing tracking-wider font-thin leading-none">
-                  количество грузов
+                  number of orders
                 </p>
               </th>
             </tr>
