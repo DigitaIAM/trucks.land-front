@@ -648,8 +648,9 @@ export async function loadDispatcherPerformanceReport(
 
   const allOrders = ordersData as Order[]
 
-  // Exclude cancelled / excluded orders
-  const activeOrders = allOrders.filter((o) => !o.excluded && o.stage !== 3)
+  // Only include orders in payment-ready or completed stages
+  const performanceStages = new Set([12, 13, 14, 15])
+  const activeOrders = allOrders.filter((o) => !o.excluded && performanceStages.has(o.stage))
 
   const orderIds = activeOrders.map((o) => o.id)
   const { data: eventsData } = await supabase
