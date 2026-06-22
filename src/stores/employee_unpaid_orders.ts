@@ -132,8 +132,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               records.push({
                 doc_payment: -1,
                 doc_order: order.id,
-                order_cost: order.cost,
-                driver_cost: order.driver_cost,
+                order_cost: Number(order.cost) || 0,
+                driver_cost: Number(order.driver_cost) || 0,
                 profit_kind: 'direct-vehicle',
                 profit_pc: percent,
               } as PaymentToDispatcherOrderCreate)
@@ -144,8 +144,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               records.push({
                 doc_payment: -1,
                 doc_order: order.id,
-                order_cost: order.cost,
-                driver_cost: order.driver_cost,
+                order_cost: Number(order.cost) || 0,
+                driver_cost: Number(order.driver_cost) || 0,
                 profit_kind: 'direct-dispatcher',
                 profit_pc: currentPc,
               } as PaymentToDispatcherOrderCreate)
@@ -154,8 +154,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
             records.push({
               doc_payment: -1,
               doc_order: order.id,
-              order_cost: order.cost,
-              driver_cost: order.driver_cost,
+              order_cost: Number(order.cost) || 0,
+              driver_cost: Number(order.driver_cost) || 0,
               profit_kind: 'profit',
               profit_pc: 100,
             } as PaymentToDispatcherOrderCreate)
