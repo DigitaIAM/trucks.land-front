@@ -683,7 +683,7 @@ function onClose() {
         <div
           class="px-6 py-3 font-semibold text-xs text-white uppercase bg-[#33414b] tracking-wider"
         >
-          Contract Commission Breakdown
+          Contract commission
           <span v-if="contractBreakdownLoading" class="ml-2 opacity-70">loading...</span>
         </div>
         <div class="px-6 py-4">
