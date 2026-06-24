@@ -128,7 +128,6 @@ const loginAndRedirect = (email: string, password: string) => {
 
           <Button v-if="inSignupMode" primary @click.prevent="handleSignup"> Signup</Button>
           <Button v-else primary @click.prevent="handleLogin"> Login</Button>
-
         </form>
       </CardBody>
     </Card>

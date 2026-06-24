@@ -1,5 +1,6 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
+import { sleep } from '@/utils/datetime'
 
 export async function employeePaymentsExportToExcel(orgId: number, year: number, month: number) {
   const workbook = new Workbook()
@@ -11,6 +12,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     { header: '№', key: 'index', width: 5, style: { alignment: { horizontal: 'center' } } },
     { header: 'ФИО', key: 'employee', width: 30 },
     { header: 'Оклад в USD', key: 'fixed_salary', width: 15 },
+    { header: 'Контракт комиссия в USD', key: 'contract_tiers', width: 20 },
     { header: 'Комиссионные в USD', key: 'to_payment', width: 20 },
     { header: 'Бонусы в USD', key: 'bonus', width: 15 },
     { header: 'Премия в USD', key: 'premium', width: 15 },
@@ -45,6 +47,92 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     await Promise.all((payments || []).map((payment) => dispatcherOrdersStore.request(payment.id)))
   ).flat()
 
+  // Contract tiers calculation per payment
+  const contractTiersMap = new Map<number, number>()
+  const contractOrders = allOrders.filter((o) => o.profit_kind === 'contract')
+  if (contractOrders.length > 0) {
+    const orderIds = [...new Set(contractOrders.map((o) => o.doc_order))]
+    const { data: ordersData } = await supabase
+      .from('orders_journal')
+      .select('id, vehicle, week')
+      .in('id', orderIds)
+    const orderVehicleMap = new Map<number, number>()
+    const orderWeekMap = new Map<number, number>()
+    ordersData?.forEach((o: any) => {
+      if (o.vehicle) orderVehicleMap.set(o.id, o.vehicle)
+      if (o.week) orderWeekMap.set(o.id, o.week)
+    })
+
+    const vehicleIds = [...new Set(orderVehicleMap.values())]
+    const vehiclesStore = useVehiclesStore()
+    const vehicleEntries = await Promise.all(
+      vehicleIds.map(async (id) => {
+        const v = await vehiclesStore.resolve(id)
+        if (!v) return null
+        return { id: v.id, kind: v.kind }
+      }),
+    )
+    const vehicleMap = new Map<number, { kind: string }>()
+    vehicleEntries.forEach((v) => {
+      if (v) vehicleMap.set(v.id, { kind: v.kind })
+    })
+
+    const vehicleTypeStore = useVehicleTypeStore()
+    while (!vehicleTypeStore.initialized) await sleep(10)
+    const typeList = vehicleTypeStore.listing
+    const typeMap = new Map<string, number>()
+    typeList?.forEach((vt: any) => typeMap.set(vt.name, vt.id))
+
+    const tierStore = useVehicleCommissionTierStore()
+    while (!tierStore.initialized) await sleep(10)
+
+    const paymentWeekVehicle = new Map<
+      string,
+      {
+        docPayment: number
+        week: number
+        vehicleId: number
+        totalGross: number
+      }
+    >()
+    for (const co of contractOrders) {
+      const vehicleId = orderVehicleMap.get(co.doc_order)
+      const week = orderWeekMap.get(co.doc_order)
+      if (!vehicleId || !week) continue
+      const key = `${co.doc_payment}_${week}_${vehicleId}`
+      const existing = paymentWeekVehicle.get(key) || {
+        docPayment: co.doc_payment,
+        week,
+        vehicleId,
+        totalGross: 0,
+      }
+      existing.totalGross += Number(co.order_cost || 0)
+      paymentWeekVehicle.set(key, existing)
+    }
+
+    for (const [, data] of paymentWeekVehicle) {
+      const vehicle = vehicleMap.get(data.vehicleId)
+      if (!vehicle) continue
+      const typeId = typeMap.get(vehicle.kind)
+      if (!typeId) continue
+      const vehicleTiers = tierStore.tiers.filter((t: any) => t.vehicle_type_id === typeId)
+      if (vehicleTiers.length === 0) continue
+      const sortedTiers = [...vehicleTiers].sort((a: any, b: any) => a.gross - b.gross)
+      let matchedTier = sortedTiers[sortedTiers.length - 1]
+      for (const tier of sortedTiers) {
+        if (data.totalGross <= tier.gross) {
+          matchedTier = tier
+          break
+        }
+      }
+      const commission = (data.totalGross * matchedTier.dispatcher_commission) / 100
+      contractTiersMap.set(
+        data.docPayment,
+        (contractTiersMap.get(data.docPayment) || 0) + commission,
+      )
+    }
+  }
+
   const paymentsWithNames = await Promise.all(
     (payments || []).map(async (record) => {
       const employeeData = await userStore.resolve(record.employee)
@@ -61,44 +149,8 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
 
   let n = 1
   for (const record of paymentsWithNames) {
-    const employeeOrders = allOrders.filter((o) => o.doc_payment === record.id)
-
-    // Суммы direct заказов
-    const directStats = employeeOrders.reduce(
-      (acc, order) => {
-        if (order.profit_kind === 'direct-vehicle' || order.profit_kind === 'direct-dispatcher') {
-          acc.orderCost += Number(order.order_cost || 0)
-          acc.driverCost += Number(order.driver_cost || 0)
-        }
-        return acc
-      },
-      { orderCost: 0, driverCost: 0 },
-    )
-
-    // Обычные заказы — вычитаем direct из общих сумм
-    const regularGross = Number(record.gross) - directStats.orderCost
-    const regularDriverPayment = Number(record.driver_payment) - directStats.driverCost
-    const regularToPayment =
-      ((regularGross - regularDriverPayment) * record.percent_of_profit) / 100
-
-    // Direct заказы
-    const directProfit = employeeOrders.reduce((acc, order) => {
-      if (order.profit_kind === 'direct-vehicle' || order.profit_kind === 'direct-dispatcher') {
-        const orderProfit = Number(order.order_cost || 0) - Number(order.driver_cost || 0)
-        const profitPc = Number(order.profit_pc || 0)
-
-        if (order.profit_kind === 'direct-vehicle') {
-          acc += (orderProfit * profitPc) / 100
-        } else {
-          // direct-dispatcher получает оставшийся процент
-          acc += (orderProfit * (100 - profitPc)) / 100
-        }
-      }
-      return acc
-    }, 0)
-
-    const directToPayment = (directProfit * record.percent_of_profit) / 100
-    const to_payment = regularToPayment + directToPayment
+    const contractTiers = contractTiersMap.get(record.id) || 0
+    const to_payment = (record.to_pay || 0) - contractTiers - (record.fixed_salary || 0)
 
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0
@@ -115,6 +167,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       index: n,
       employee: record.fullName,
       fixed_salary: record.fixed_salary || 0,
+      contract_tiers: contractTiers,
       to_payment: to_payment,
       bonus: bonus,
       premium: premium,
