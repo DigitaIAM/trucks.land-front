@@ -3,10 +3,7 @@ import type { ExpensesToOwner } from '@/stores/owner_expenses.ts'
 import type { OwnerPaymentRecord, OwnerPaymentSummary } from '@/stores/owner_unpaid_orders.ts'
 
 export async function loadOwnerPayments(orgId: number | null) {
-  const response = await supabase
-    .from('owner_unpaid_orders')
-    .select()
-    .eq('organization', orgId)
+  const response = await supabase.from('owner_unpaid_orders').select().eq('organization', orgId)
 
   const paymentsMap = new Map<number, Array<OwnerPaymentRecord>>()
   response.data?.forEach((json) => {
@@ -25,10 +22,7 @@ export async function loadOwnerPayments(orgId: number | null) {
 }
 
 export async function loadOwnerExpenses(orgId: number | null) {
-  const response = await supabase
-    .from('owner_unpaid_expenses')
-    .select()
-    .eq('organization', orgId)
+  const response = await supabase.from('owner_unpaid_expenses').select().eq('organization', orgId)
 
   const expensesMap = new Map<number, Array<ExpensesToOwner>>()
   response.data?.forEach((json) => {

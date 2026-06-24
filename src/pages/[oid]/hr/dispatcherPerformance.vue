@@ -119,7 +119,13 @@ onMounted(() => {
     <Text>{{ currentDay.format('L') }}</Text>
     <Button
       class="btn-soft font-light tracking-wider"
-      @click="dispatcherPerformanceExportToExcel(reportDispatcherStore.employees!, reportDispatcherStore.dateFrom, reportDispatcherStore.dateTo)"
+      @click="
+        dispatcherPerformanceExportToExcel(
+          reportDispatcherStore.employees!,
+          reportDispatcherStore.dateFrom,
+          reportDispatcherStore.dateTo,
+        )
+      "
       >Excel</Button
     >
   </div>

@@ -82,7 +82,11 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
       const agreementMap = new Map<number, { driver: number | null; vehicle: number | null }>()
       if (agreementData) {
-        for (const ev of agreementData as Array<{ document: number; driver: number; vehicle: number }>) {
+        for (const ev of agreementData as Array<{
+          document: number
+          driver: number
+          vehicle: number
+        }>) {
           if (!agreementMap.has(ev.document)) {
             agreementMap.set(ev.document, { driver: ev.driver, vehicle: ev.vehicle })
           }

@@ -7,7 +7,6 @@ meta:
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
 
-
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
 const ordersStore = useOrdersStore()
@@ -46,7 +45,8 @@ const buttons = [
   {
     label: 'Settlements',
     icon: DispatcherIcon,
-    link: '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/settlements_to_employee',
+    link:
+      '/' + orgData.data.value.code3.toLowerCase() + '/paymentsAndExpenses/settlements_to_employee',
   },
   // {
   //   label: 'Driver',

@@ -53,10 +53,7 @@ export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {
   }
 
   async function create(expense: ExpensesToOwnerCreate): Promise<ExpensesToOwner | null> {
-    const response = await supabase
-      .from('owner_expenses')
-      .insert(expense)
-      .select()
+    const response = await supabase.from('owner_expenses').insert(expense).select()
 
     if (response.status == 201 && response.data?.length) {
       const created = response.data[0] as ExpensesToOwner

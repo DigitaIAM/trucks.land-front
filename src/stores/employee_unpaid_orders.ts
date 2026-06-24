@@ -151,12 +151,14 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               } as PaymentToDispatcherOrderCreate)
             }
           } else {
+            const isContract = summary.orderToVehicle?.has(order.id) ?? false
+
             records.push({
               doc_payment: -1,
               doc_order: order.id,
               order_cost: Number(order.cost) || 0,
               driver_cost: Number(order.driver_cost) || 0,
-              profit_kind: 'profit',
+              profit_kind: isContract ? 'contract' : 'profit',
               profit_pc: 100,
             } as PaymentToDispatcherOrderCreate)
           }
@@ -212,7 +214,16 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
     report.value = await loadDispatcherPerformanceReport(orgId, from, to)
   }
 
-  return { loading, employees, processing, createPayment, searchAndListing, loadPerformanceReport, dateFrom, dateTo }
+  return {
+    loading,
+    employees,
+    processing,
+    createPayment,
+    searchAndListing,
+    loadPerformanceReport,
+    dateFrom,
+    dateTo,
+  }
 })
 
 if (import.meta.hot) {

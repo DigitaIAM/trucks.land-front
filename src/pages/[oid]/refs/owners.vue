@@ -74,7 +74,12 @@ watch(
       </tr>
     </thead>
     <tbody>
-      <tr v-for="owner in ownersStore.listing" :key="owner.id" class="hover:bg-base-200" @click="editOwner(owner)">
+      <tr
+        v-for="owner in ownersStore.listing"
+        :key="owner.id"
+        class="hover:bg-base-200"
+        @click="editOwner(owner)"
+      >
         <td
           v-for="col in cols"
           class="py-3 px-4"

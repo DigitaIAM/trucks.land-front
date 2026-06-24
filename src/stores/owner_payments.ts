@@ -216,11 +216,7 @@ export const usePaymentToOwnerStore = defineStore('owner_payments', () => {
   }
 
   async function refreshOne(id: number): Promise<PaymentToOwnerSummary | null> {
-    const response = await supabase
-      .from('owner_payments_journal')
-      .select()
-      .eq('id', id)
-      .single()
+    const response = await supabase.from('owner_payments_journal').select().eq('id', id).single()
 
     if (response.status === 200 && response.data) {
       const payment = response.data as PaymentToOwnerSummary

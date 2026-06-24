@@ -537,9 +537,7 @@ export async function calculateWeeklyContractCommission(
     .lte('created_at', endOfWeek.format('YYYY-MM-DD HH:mm:ss'))
   const allOrders = (response.data || []) as Order[]
 
-  const { data: eventsData } = await supabase
-    .from('order_events')
-    .select('document, vehicle')
+  const { data: eventsData } = await supabase.from('order_events').select('document, vehicle')
   const orderVehicleMap = new Map<number, number>()
   if (eventsData) {
     for (const event of eventsData as Array<{ document: number; vehicle: number }>) {
@@ -676,9 +674,7 @@ export async function loadDispatcherPerformanceReport(
       (e) => e.document,
     )
     for (const [docId, events] of grouped) {
-      events.sort(
-        (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime(),
-      )
+      events.sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
       const lastEvent = events[events.length - 1]
       if (lastEvent.vehicle) {
         globalOrderToVehicle.set(Number(docId), lastEvent.vehicle)
