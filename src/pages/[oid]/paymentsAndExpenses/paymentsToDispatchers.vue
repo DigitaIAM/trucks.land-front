@@ -142,6 +142,8 @@ const currentMonth = computed(() => {
 })
 
 async function handleCloseMonth() {
+  if (!confirm('Вы уверены что готовы закрыть месяц?')) return
+
   try {
     const now = new Date().toISOString()
 
