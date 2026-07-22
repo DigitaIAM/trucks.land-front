@@ -148,20 +148,24 @@ export async function calculateEmployeeReport(
   ordersInProcessing: Map<number, Array<Order>>,
   mapping: Map<number, Array<EmployeePaymentRecord>>,
   settlements: Map<number, Array<SettlementEmployee>>,
+  month?: number,
+  year?: number,
 ) {
   if (!orgId) {
     return []
   }
 
-  const { data: lastPayment } = await supabase
-    .from('employee_payments')
-    .select('created_at')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  let from: dayjs.Dayjs
+  let till: dayjs.Dayjs
 
-  const from = dayjs(lastPayment?.created_at)
-  const till = dayjs().subtract(1, 'day')
+  if (month && year) {
+    from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+    till = from.endOf('month')
+  } else {
+    const now = dayjs()
+    from = now.subtract(1, 'month').startOf('month')
+    till = now.subtract(1, 'month').endOf('month')
+  }
 
   const response = await supabase
     .from('employee_absences')

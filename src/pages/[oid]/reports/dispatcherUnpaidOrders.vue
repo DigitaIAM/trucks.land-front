@@ -6,6 +6,7 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
+import moment from 'moment-timezone'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
@@ -16,7 +17,8 @@ export const useOrgData = defineBasicLoader(
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    await reportDispatcher.loading(org.id)
+    const ts = moment().tz('America/New_York').subtract(3, 'days')
+    await reportDispatcher.loading(org.id, null, ts.month() + 1, ts.year())
     // console.table(org)
     return org
   },
@@ -25,8 +27,6 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
-import moment from 'moment-timezone'
-
 const reportDispatcherStore = useReportDispatcher()
 const usersStore = useUsersStore()
 
