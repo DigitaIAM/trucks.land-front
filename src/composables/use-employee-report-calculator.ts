@@ -247,6 +247,8 @@ export async function calculateEmployeeReport(
     let orders_amount_contract = 0
     let missedWorkingDays = 0
     let toPayment = 0
+    let fullNonContractGross = 0
+    let fullNonContractDriverPayment = 0
 
     const orders = new Map<number, Order>()
     const orderToVehicle = new Map<number, number>()
@@ -345,6 +347,8 @@ export async function calculateEmployeeReport(
           orders_amount += costVal * pc
           orders_driver += driverCostVal * pc
           orders_profit += profit * pc
+          fullNonContractGross += costVal
+          fullNonContractDriverPayment += driverCostVal
         }
       }
 
@@ -452,8 +456,13 @@ export async function calculateEmployeeReport(
     const orders_in_progress = new Map<number, Order>()
     listOfOrdersInProcessing.forEach((order) => orders_in_progress.set(order.id, order))
 
-    const finalToPayment = Number(toPayment) || 0
     const finalSettlements = Number(settlementsTotal) || 0
+
+    const profitCommission = employeeTerms?.percent_of_profit
+      ? ((fullNonContractGross - fullNonContractDriverPayment) * employeeTerms.percent_of_profit) / 100
+      : 0
+    const contractCommission = contractDetails.reduce((sum, d) => sum + d.commission_amount, 0)
+    const rawFixedSalary = Number(employeeTerms?.fixed_salary) || 0
 
     list.push({
       user: (await userStore.resolve(employee)) as User,
@@ -481,9 +490,9 @@ export async function calculateEmployeeReport(
         settlement_fine: fine,
         missed_days: missedWorkingDays,
         payout_usd:
-          Number(finalToPayment || 0) + Number(finalSettlements || 0) - Math.abs(Number(fine || 0)),
+          profitCommission + contractCommission + rawFixedSalary + finalSettlements - Math.abs(Number(fine || 0)),
         contract_details: contractDetails,
-        contract_commission_total: contractDetails.reduce((sum, d) => sum + d.commission_amount, 0),
+        contract_commission_total: contractCommission,
         orderToVehicle: orderToVehicle,
       } as EmployeePaymentSummary,
     })

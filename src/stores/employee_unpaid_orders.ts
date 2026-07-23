@@ -184,7 +184,10 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           percent_of_gross: summary.paymentTerms.percent_of_gross,
           percent_of_profit: summary.paymentTerms.percent_of_profit,
           fixed_salary: summary.paymentTerms.fixed_salary,
-          to_pay: summary.toPayment,
+          to_pay:
+            summary.payout_usd -
+            (Number(summary.settlements_total) || 0) +
+            Math.abs(Number(summary.settlement_fine || 0)),
           ex_rate: ex_rate,
           income_tax: summary.paymentTerms.income_tax,
         } as PaymentToEmployeeCreate,
