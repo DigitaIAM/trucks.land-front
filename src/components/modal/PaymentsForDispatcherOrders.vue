@@ -257,19 +257,34 @@ const contractOrders = computed(() => {
   )
 })
 
+const nonContractGross = computed(() => {
+  return Number(props.document?.gross || 0) - contractOrders.value.totalOrderCost
+})
+
+const nonContractDriverPayment = computed(() => {
+  return Number(props.document?.driver_payment || 0) - contractOrders.value.totalDriverCost
+})
+
 const ordersRowspan = computed(() => {
   let count = 4 // Базовые: Quantity, Amount, Driver Payment, profit
   if (directDispatcherOrders.value.count > 0) count++
   if (directVehicleOrders.value.count > 0) count++
-  if (contractOrders.value.count > 0) count++
   return count
 })
 
 const commissionToPay = computed(() => {
-  const toPay = props.document?.to_pay || 0
-  const tiers = contractBreakdownTotal.value
-  const fixedSalary = Number(props.document?.fixed_salary || 0)
-  return toPay - tiers - fixedSalary
+  const profit = nonContractGross.value - nonContractDriverPayment.value
+  const percent = Number(props.document?.percent_of_profit || 0)
+  return (profit * percent) / 100
+})
+
+const payoutTotal = computed(() => {
+  return commissionToPay.value
+    + contractBreakdownTotal.value
+    + Number(props.document?.fixed_salary || 0)
+    + Number(props.document?.settlement_bonus || 0)
+    + Number(props.document?.settlement_premium || 0)
+    - Number(props.document?.settlement_fine || 0)
 })
 
 interface ContractVehicleBreakdown {
@@ -480,7 +495,7 @@ function onClose() {
           <Text size="xl" class="font-medium">
             <QueryAndShow name="real_name" :id="document?.employee" :store="userStore" />
           </Text>
-          <Text size="xl" bold>$ {{ document?.payout_usd.toFixed(2) }}</Text>
+          <Text size="xl" bold>$ {{ payoutTotal.toFixed(2) }}</Text>
         </div>
 
         <div class="flex items-center gap-3">
@@ -515,20 +530,23 @@ function onClose() {
               <td class="px-6 py-3 text-[#cbd5e0]">quantity orders</td>
               <td class="px-6 py-3 text-right font-medium text-white">
                 {{ paymentToDispatcherOrdersStore.listing.length }}
+                <span v-if="contractOrders.count > 0" class="ml-1 opacity-70 text-xs">
+                  ({{ contractOrders.count }} contract)
+                </span>
               </td>
             </tr>
 
             <tr>
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">orders amount</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
-                $ {{ document?.gross.toFixed(2) }}
+                $ {{ nonContractGross.toFixed(2) }}
               </td>
             </tr>
 
             <tr>
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">driver payment</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
-                $ {{ document?.driver_payment.toFixed(2) }}
+                $ {{ nonContractDriverPayment.toFixed(2) }}
               </td>
             </tr>
 
@@ -537,7 +555,7 @@ function onClose() {
               <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
                 $
                 {{
-                  (Number(document?.gross || 0) - Number(document?.driver_payment || 0)).toFixed(2)
+                  (nonContractGross - nonContractDriverPayment).toFixed(2)
                 }}
               </td>
             </tr>
@@ -561,17 +579,6 @@ function onClose() {
               </td>
               <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
                 $ {{ directVehicleOrders.totalDirectProfit.toFixed(2) }}
-              </td>
-            </tr>
-
-            <!-- Подсекция: Contract orders -->
-            <tr v-if="contractOrders.count > 0">
-              <td class="px-6 py-2 text-[#cbd5e0] border-t border-[#526471]">
-                contract
-                <span class="ml-1 opacity-70">({{ contractOrders.count }} orders)</span>
-              </td>
-              <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
-                $ {{ contractOrders.totalOrderCost.toFixed(2) }}
               </td>
             </tr>
 
@@ -668,7 +675,7 @@ function onClose() {
               </td>
               <!-- Третья колонка для суммы -->
               <td class="px-6 py-5 text-right font-bold">
-                $ {{ (document?.payout_usd || 0).toFixed(2) }}
+                $ {{ payoutTotal.toFixed(2) }}
               </td>
             </tr>
           </tbody>
