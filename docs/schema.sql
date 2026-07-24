@@ -487,6 +487,7 @@ select
     ep.percent_of_gross,
     ep.percent_of_driver,
     ep.to_pay,
+    ep.contract_commission,
     ep.ex_rate,
     ep.income_tax,
     COALESCE(ps.number::numeric, 0::numeric) as number_of_orders,

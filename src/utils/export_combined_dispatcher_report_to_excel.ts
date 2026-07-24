@@ -4,7 +4,10 @@ import { saveAs } from 'file-saver'
 export interface ExcelRecord {
   employeeName: string
   fixed_salary: number
-  to_pay: number
+  to_pay_cnu: number
+  to_pay_cvs: number
+  to_pay_caf: number
+  contract_commission: number
   settlement_bonus: number
   settlement_premium: number
   settlement_fine: number
@@ -26,7 +29,10 @@ export async function combinedDispatcherReportExportToExcel(
     { header: '№', key: 'index', width: 5, style: { alignment: { horizontal: 'center' } } },
     { header: 'ФИО', key: 'employee', width: 30 },
     { header: 'Оклад в USD', key: 'fixed_salary', width: 15 },
-    { header: 'Комиссионные в USD', key: 'to_payment', width: 20 },
+    { header: 'Комиссионные CNU', key: 'to_pay_cnu', width: 18 },
+    { header: 'Комиссионные CVS', key: 'to_pay_cvs', width: 18 },
+    { header: 'Комиссионные CAF', key: 'to_pay_caf', width: 18 },
+    { header: 'Комиссионные contract', key: 'contract_commission', width: 20 },
     { header: 'Бонусы в USD', key: 'bonus', width: 15 },
     { header: 'Премия в USD', key: 'premium', width: 15 },
     { header: 'Штраф в USD', key: 'fine', width: 15 },
@@ -70,7 +76,10 @@ export async function combinedDispatcherReportExportToExcel(
       index: n,
       employee: record.employeeName,
       fixed_salary: record.fixed_salary || 0,
-      to_payment: record.to_pay,
+      to_pay_cnu: record.to_pay_cnu || 0,
+      to_pay_cvs: record.to_pay_cvs || 0,
+      to_pay_caf: record.to_pay_caf || 0,
+      contract_commission: record.contract_commission || 0,
       bonus: record.settlement_bonus,
       premium: record.settlement_premium,
       total_usd: total_USD,

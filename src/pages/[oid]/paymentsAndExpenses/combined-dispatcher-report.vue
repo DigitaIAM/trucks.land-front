@@ -42,6 +42,10 @@ interface MergedReportRecord {
   employeeName: string
   fixed_salary: number
   to_pay: number
+  to_pay_cnu: number
+  to_pay_cvs: number
+  to_pay_caf: number
+  contract_commission: number
   settlement_bonus: number
   settlement_premium: number
   settlement_fine: number
@@ -80,7 +84,7 @@ async function loadData() {
   }
 
   const allRecords: Array<
-    Omit<PaymentToEmployeeSummary, 'settlements'> & { settlements: SettlementEmployee[] }
+    Omit<PaymentToEmployeeSummary, 'settlements'> & { settlements: SettlementEmployee[]; orgCode: string }
   > = []
 
   for (const org of orgs) {
@@ -117,7 +121,7 @@ async function loadData() {
       })
 
       const { settlements: _s, ...recordRest } = record
-      allRecords.push({ ...recordRest, settlements })
+      allRecords.push({ ...recordRest, settlements, orgCode: org.code3 })
     }
   }
 
@@ -148,9 +152,17 @@ async function loadData() {
     }
 
     const existing = merged.get(empId)
+    const toPay = Number(record.to_pay) || 0
+    const fixedSalary = Number(record.fixed_salary) || 0
+    const contractCommission = Number(record.contract_commission) || 0
+
     if (existing) {
-      existing.fixed_salary += Number(record.fixed_salary) || 0
-      existing.to_pay += Number(record.to_pay) || 0
+      existing.fixed_salary += fixedSalary
+      existing.to_pay += toPay
+      if (record.orgCode === 'CNU') existing.to_pay_cnu += toPay - fixedSalary
+      else if (record.orgCode === 'CVS') existing.to_pay_cvs += toPay
+      else if (record.orgCode === 'CAF') existing.to_pay_caf += toPay
+      existing.contract_commission += contractCommission
       existing.settlement_bonus += bonus
       existing.settlement_premium += premium
       existing.settlement_fine += fine
@@ -160,11 +172,19 @@ async function loadData() {
     } else {
       const user = await usersStore.resolve(empId)
 
+      const to_pay_cnu = record.orgCode === 'CNU' ? toPay - fixedSalary : 0
+      const to_pay_cvs = record.orgCode === 'CVS' ? toPay : 0
+      const to_pay_caf = record.orgCode === 'CAF' ? toPay : 0
+
       merged.set(empId, {
         employee: empId,
         employeeName: user?.real_name || `ID: ${empId}`,
-        fixed_salary: Number(record.fixed_salary) || 0,
-        to_pay: Number(record.to_pay) || 0,
+        fixed_salary: fixedSalary,
+        to_pay: toPay,
+        to_pay_cnu,
+        to_pay_cvs,
+        to_pay_caf,
+        contract_commission: contractCommission,
         settlement_bonus: bonus,
         settlement_premium: premium,
         settlement_fine: fine,
@@ -192,7 +212,10 @@ async function handleExport() {
   const excelData: ExcelRecord[] = filteredData.value.map((r) => ({
     employeeName: r.employeeName,
     fixed_salary: r.fixed_salary,
-    to_pay: r.to_pay,
+    to_pay_cnu: r.to_pay_cnu - r.contract_commission,
+    to_pay_cvs: r.to_pay_cvs,
+    to_pay_caf: r.to_pay_caf,
+    contract_commission: r.contract_commission,
     settlement_bonus: r.settlement_bonus,
     settlement_premium: r.settlement_premium,
     settlement_fine: r.settlement_fine,
@@ -289,7 +312,16 @@ loadData()
           <p class="block antialiasing tracking-wider font-thin leading-none">fixed salary</p>
         </th>
         <th class="p-4" style="width: 100px">
-          <p class="block antialiasing tracking-wider font-thin leading-none">commission</p>
+          <p class="block antialiasing tracking-wider font-thin leading-none">commission CNU</p>
+        </th>
+        <th class="p-4" style="width: 100px">
+          <p class="block antialiasing tracking-wider font-thin leading-none">commission CVS</p>
+        </th>
+        <th class="p-4" style="width: 100px">
+          <p class="block antialiasing tracking-wider font-thin leading-none">commission CAF</p>
+        </th>
+        <th class="p-4" style="width: 100px">
+          <p class="block antialiasing tracking-wider font-thin leading-none">commission contract</p>
         </th>
         <th class="p-4" style="width: 100px">
           <p class="block antialiasing tracking-wider font-thin leading-none">bonus</p>
@@ -328,7 +360,22 @@ loadData()
         </td>
         <td class="py-3 px-4">
           <p class="block antialiasing tracking-wide font-light leading-normal">
-            {{ row.to_pay ? '$' + row.to_pay.toFixed(0) : '' }}
+            {{ (row.to_pay_cnu - row.contract_commission) ? '$' + (row.to_pay_cnu - row.contract_commission).toFixed(0) : '' }}
+          </p>
+        </td>
+        <td class="py-3 px-4">
+          <p class="block antialiasing tracking-wide font-light leading-normal">
+            {{ row.to_pay_cvs ? '$' + row.to_pay_cvs.toFixed(0) : '' }}
+          </p>
+        </td>
+        <td class="py-3 px-4">
+          <p class="block antialiasing tracking-wide font-light leading-normal">
+            {{ row.to_pay_caf ? '$' + row.to_pay_caf.toFixed(0) : '' }}
+          </p>
+        </td>
+        <td class="py-3 px-4">
+          <p class="block antialiasing tracking-wide font-light leading-normal">
+            {{ row.contract_commission ? '$' + row.contract_commission.toFixed(0) : '' }}
           </p>
         </td>
         <td class="py-3 px-4">

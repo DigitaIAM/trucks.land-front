@@ -15,6 +15,7 @@ export interface PaymentToEmployeeSummary {
   percent_of_gross: number
   percent_of_profit: number
   to_pay: number
+  contract_commission: number
   fixed_salary: number
   settlement_bonus: number
   settlement_premium: string
@@ -47,6 +48,7 @@ export interface PaymentToEmployeeCreate {
   percent_of_profit: number
   fixed_salary: number
   to_pay: number
+  contract_commission: number
   ex_rate: number
   income_tax: number
 }
