@@ -88,7 +88,7 @@ async function resetAndShow(doc: Order | null) {
       isReadOnly.value = true
       amount.value = doc.qp_amount
       percent.value = doc.qp_percent
-      to_pay.value = doc.qp_to_pay
+      to_pay.value = Math.round(doc.qp_to_pay ?? 0)
       owner.value = await ownerStore.resolve(doc.qp_owner)
     } else {
       const now = moment().tz('America/New_York')
@@ -100,7 +100,7 @@ async function resetAndShow(doc: Order | null) {
       percent.value = org?.qp_percent
 
       const driverCost = props.document?.driver_cost ?? doc.cost
-      to_pay.value = (driverCost || 0) - ((driverCost || 0) * (percent?.value || 0)) / 100
+      to_pay.value = Math.round((driverCost || 0) - ((driverCost || 0) * (percent?.value || 0)) / 100)
       owner.value = await ownerStore.resolve(doc?.owner)
     }
   }
@@ -122,7 +122,7 @@ async function saveQP(stage: Status | null) {
           vehicle: props.document?.vehicle,
           amount: amount.value,
           percent: percent.value,
-          to_pay: to_pay.value,
+          to_pay: Math.round(to_pay.value ?? 0),
           note: note.value,
         } as QuickPayCreate,
         stage,

@@ -42,7 +42,7 @@ async function resetAndShow(qpay: OrderAndQuickPay | null) {
     owner.value = await ownerStore.resolve(qpay.qp_owner)
     amount.value = qpay.qp_amount
     percent.value = qpay.qp_percent
-    to_pay.value = qpay.qp_to_pay
+    to_pay.value = Math.round(qpay.qp_to_pay)
     note.value = qpay.qp_note
     qpay_modal.showModal()
 
@@ -75,7 +75,7 @@ async function changeStatusAndUpdate(next: Status | null | undefined) {
     if (doc && next) {
       let data: QuickPayUpdate | null = {
         percent: percent.value,
-        to_pay: to_pay.value,
+        to_pay: Math.round(to_pay.value),
         note: note.value,
       } as QuickPayUpdate
       if (isReadOnly.value) {
@@ -93,7 +93,7 @@ function recalculate(event) {
   const pc = Number(event.data || percent.value)
   console.log('recalculate', pc, event)
   if (pc >= 0 && pc <= 5) {
-    to_pay.value = amount.value * ((100.0 - pc) / 100.0)
+    to_pay.value = Math.round(amount.value * ((100.0 - pc) / 100.0))
     error.value = false
   } else {
     error.value = true
