@@ -13,6 +13,7 @@ export interface ExpensesToOwnerCreate {
   amount: number
   week?: number
   year?: number
+  kind?: 'expense' | 'additional_payment'
 }
 
 export interface ExpensesToOwnerUpdate {
@@ -21,6 +22,7 @@ export interface ExpensesToOwnerUpdate {
   amount?: number
   week?: number
   year?: number
+  kind?: 'expense' | 'additional_payment'
 }
 
 export const useExpensesToOwnerStore = defineStore('owner_expenses', () => {

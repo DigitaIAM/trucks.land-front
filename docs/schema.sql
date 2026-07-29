@@ -396,6 +396,10 @@ where
     ope.doc_payment is null;
 
 
+--
+-- requires: ALTER TABLE owner_expenses ADD COLUMN kind text NOT NULL DEFAULT 'expense';
+--           ALTER TABLE owner_expenses ADD CONSTRAINT check_kind CHECK (kind IN ('expense', 'additional_payment'));
+--
 create view public.owner_payments_journal as
 select
     p.id,
@@ -406,9 +410,10 @@ select
     p.year,
     p.week,
     COALESCE(ps.order_cost, 0::numeric) as orders,
-    COALESCE(px.amount, 0::numeric) as expenses,
+    COALESCE(px.expenses, 0::numeric) as expenses,
+    COALESCE(px.additional_payments, 0::numeric) as additional_payments,
     COALESCE(ps.amount, 0::numeric) as amount,
-    COALESCE(ps.amount, 0::numeric) - COALESCE(px.amount, 0::numeric) as payout
+    COALESCE(ps.amount, 0::numeric) - COALESCE(px.expenses, 0::numeric) + COALESCE(px.additional_payments, 0::numeric) as payout
 from
     owner_payments p
         left join lateral (
@@ -423,12 +428,14 @@ from
             ) ps on ps.doc_payment = p.id
         left join lateral (
         select
-            ex.doc_payment,
-            sum(ex.amount) as amount
+            ope.doc_payment,
+            sum(ope.amount) filter (where oe.kind = 'expense' or oe.kind is null) as expenses,
+            sum(ope.amount) filter (where oe.kind = 'additional_payment') as additional_payments
         from
-            owner_payment_expenses ex
+            owner_payment_expenses ope
+            left join owner_expenses oe on oe.id = ope.doc_expense
         group by
-            ex.doc_payment
+            ope.doc_payment
             ) px on px.doc_payment = p.id;
 
 

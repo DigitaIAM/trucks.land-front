@@ -13,6 +13,7 @@ export interface PaymentToOwnerSummary {
   orders: number
   amount: number
   expenses: number
+  additional_payments: number
   payout: number
 }
 
