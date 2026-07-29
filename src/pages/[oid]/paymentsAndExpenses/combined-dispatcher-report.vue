@@ -77,7 +77,8 @@ async function loadData() {
   const cnuOrg = orgs.find((o) => o.code3 === 'CNU')
 
   const typeStore = useEmployeeSettlementsTypeStore()
-  await typeStore.initialized
+  await until(() => typeStore.initialized).toBe(true)
+  await new Promise((r) => setTimeout(r, 0))
   const typeMap = new Map<number, string>()
   for (const t of typeStore.listing ?? []) {
     typeMap.set(t.id, t.settlement_type.toLowerCase().trim())
@@ -86,6 +87,7 @@ async function loadData() {
   const allRecords: Array<
     Omit<PaymentToEmployeeSummary, 'settlements'> & { settlements: SettlementEmployee[]; orgCode: string }
   > = []
+  const processedSettlementIds = new Set<number>()
 
   for (const org of orgs) {
     const journalData = await paymentToEmployeeStore.fetchJournalData(
@@ -117,6 +119,7 @@ async function loadData() {
         const link = json as { settlement: SettlementEmployee }
         if (link.settlement) {
           settlements.push(link.settlement)
+          processedSettlementIds.add(link.settlement.id)
         }
       })
 
@@ -192,6 +195,60 @@ async function loadData() {
         settlement_advance: advance,
         payout_usd: Number(record.payout_usd) || 0,
       })
+    }
+  }
+
+  const monthStart = moment({ year: currentYear.value, month: currentMonth.value - 1, day: 1 })
+    .startOf('month')
+    .toISOString()
+  const monthEnd = moment({ year: currentYear.value, month: currentMonth.value - 1, day: 1 })
+    .endOf('month')
+    .add(1, 'day')
+    .toISOString()
+
+  for (const org of orgs) {
+    const { data: monthSettlements } = await supabase
+      .from('employee_settlements')
+      .select('*')
+      .eq('organization', org.id)
+      .gte('created_at', monthStart)
+      .lt('created_at', monthEnd)
+
+    for (const s of monthSettlements ?? []) {
+      const settlement = s as SettlementEmployee
+      if (processedSettlementIds.has(settlement.id)) continue
+
+      const empId = settlement.employee
+      const typeName = typeMap.get(Number(settlement.settlement_type)) || ''
+      const amount = Number(settlement.amount) || 0
+
+      let existing = merged.get(empId)
+      if (!existing) {
+        const user = await usersStore.resolve(empId)
+        existing = {
+          employee: empId,
+          employeeName: user?.real_name || `ID: ${empId}`,
+          fixed_salary: 0,
+          to_pay: 0,
+          to_pay_cnu: 0,
+          to_pay_cvs: 0,
+          to_pay_caf: 0,
+          contract_commission: 0,
+          settlement_bonus: 0,
+          settlement_premium: 0,
+          settlement_fine: 0,
+          settlement_vacation: 0,
+          settlement_advance: 0,
+          payout_usd: 0,
+        }
+        merged.set(empId, existing)
+      }
+
+      if (typeName === 'fine') existing.settlement_fine += amount
+      else if (typeName === 'vacation pay') existing.settlement_vacation += amount
+      else if (typeName === 'advance') existing.settlement_advance += amount
+      else if (typeName === 'premium') existing.settlement_premium += amount
+      else existing.settlement_bonus += amount
     }
   }
 
