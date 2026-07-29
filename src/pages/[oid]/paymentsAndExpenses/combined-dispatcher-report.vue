@@ -85,7 +85,10 @@ async function loadData() {
   }
 
   const allRecords: Array<
-    Omit<PaymentToEmployeeSummary, 'settlements'> & { settlements: SettlementEmployee[]; orgCode: string }
+    Omit<PaymentToEmployeeSummary, 'settlements'> & {
+      settlements: SettlementEmployee[]
+      orgCode: string
+    }
   > = []
   const processedSettlementIds = new Set<number>()
 
@@ -378,7 +381,9 @@ loadData()
           <p class="block antialiasing tracking-wider font-thin leading-none">commission CAF</p>
         </th>
         <th class="p-4" style="width: 100px">
-          <p class="block antialiasing tracking-wider font-thin leading-none">commission contract</p>
+          <p class="block antialiasing tracking-wider font-thin leading-none">
+            commission contract
+          </p>
         </th>
         <th class="p-4" style="width: 100px">
           <p class="block antialiasing tracking-wider font-thin leading-none">bonus</p>
@@ -417,7 +422,11 @@ loadData()
         </td>
         <td class="py-3 px-4">
           <p class="block antialiasing tracking-wide font-light leading-normal">
-            {{ (row.to_pay_cnu - row.contract_commission) ? '$' + (row.to_pay_cnu - row.contract_commission).toFixed(0) : '' }}
+            {{
+              row.to_pay_cnu - row.contract_commission
+                ? '$' + (row.to_pay_cnu - row.contract_commission).toFixed(0)
+                : ''
+            }}
           </p>
         </td>
         <td class="py-3 px-4">

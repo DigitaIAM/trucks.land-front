@@ -65,14 +65,6 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
       processing.value = [summary.owner, processing.value[0]]
 
-      const grossByVehicleType = new Map<number, number>()
-      for (const order of summary.orders.values()) {
-        if (order.contract && order.vehicle_type_id && order.stage != 3) {
-          const prev = grossByVehicleType.get(order.vehicle_type_id) ?? 0
-          grossByVehicleType.set(order.vehicle_type_id, prev + order.cost)
-        }
-      }
-
       const orderIds = Array.from(summary.orders.keys())
       const { data: agreementData } = await supabase
         .from('order_events')
@@ -93,29 +85,67 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
         }
       }
 
+      const vehicleIds = new Set<number>()
+      for (const ag of agreementMap.values()) {
+        if (ag.vehicle != null) vehicleIds.add(ag.vehicle)
+      }
+
+      const vehicleKindMap = new Map<number, string>()
+      if (vehicleIds.size > 0) {
+        const { data: vehiclesData } = await supabase
+          .from('vehicles')
+          .select('id, kind')
+          .in('id', [...vehicleIds])
+        vehiclesData?.forEach((v: any) => vehicleKindMap.set(v.id, v.kind))
+      }
+
+      const { data: vehicleTypesData } = await supabase.from('vehicle_type').select('id, name')
+      const vehicleTypeMap = new Map<string, number>()
+      vehicleTypesData?.forEach((vt: any) => vehicleTypeMap.set(vt.name, vt.id))
+
+      const grossByVehicle = new Map<number, number>()
+      const vehicleToTypeId = new Map<number, number>()
+      for (const order of summary.orders.values()) {
+        if (order.contract && order.stage != 3) {
+          const ag = agreementMap.get(order.id)
+          const vehicleId = ag?.vehicle
+          if (vehicleId == null) continue
+
+          const prev = grossByVehicle.get(vehicleId) ?? 0
+          grossByVehicle.set(vehicleId, prev + order.cost)
+
+          if (!vehicleToTypeId.has(vehicleId)) {
+            const kind = vehicleKindMap.get(vehicleId)
+            const typeId = kind ? vehicleTypeMap.get(kind) : undefined
+            if (typeId != null) vehicleToTypeId.set(vehicleId, typeId)
+          }
+        }
+      }
+
       const paymentRecords = []
 
       for (const order of summary.orders.values()) {
-        // const payment = summary.paymentsByOrder.get(order.id)
         if (order.stage != 3) {
+          const ag = agreementMap.get(order.id)
+          const vehicleId = ag?.vehicle
+
           const amount =
-            order.contract && order.vehicle_type_id
+            order.contract && vehicleId != null && vehicleToTypeId.has(vehicleId)
               ? tierStore.calcAmount(
                   order.cost,
-                  grossByVehicleType.get(order.vehicle_type_id) ?? order.cost,
-                  order.vehicle_type_id,
+                  grossByVehicle.get(vehicleId) ?? order.cost,
+                  vehicleToTypeId.get(vehicleId)!,
                 )
               : summary.paymentsByOrder.get(order.id)
 
-          if (order.contract && order.vehicle_type_id) {
-            const agreement = agreementMap.get(order.id)
+          if (order.contract && vehicleId != null && vehicleToTypeId.has(vehicleId)) {
             await supabase.from('order_events').insert({
               document: order.id,
               kind: 'weekly-calculation',
               datetime: weekEndDate,
               cost: amount,
-              driver: agreement?.driver ?? null,
-              vehicle: agreement?.vehicle ?? null,
+              driver: ag?.driver ?? null,
+              vehicle: vehicleId,
             })
           }
 

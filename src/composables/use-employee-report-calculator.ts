@@ -216,10 +216,7 @@ export async function calculateEmployeeReport(
     .from('vehicle_commission_tiers')
     .select('*')
     .eq('deleted', false)
-  const tiersByVehicleType = groupBy(
-    (tiersData || []) as CommissionTier[],
-    (t) => t.vehicle_type_id,
-  )
+  const tiersByVehicleType = groupBy((tiersData || []) as CommissionTier[], (t) => t.vehicle_type)
 
   const terms = groupBy(
     allTermsData.map((v) => v as PaymentTerms),
@@ -370,16 +367,18 @@ export async function calculateEmployeeReport(
       const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
       if (vehicleTiers.length === 0) throw 'unexpected: no vehicle tiers ' + vehicle.kind
 
-      const sortedTiers = [...vehicleTiers].sort((a, b) => a.gross - b.gross)
+      const sortedTiers = [...vehicleTiers].sort(
+        (a, b) => Number(a.level_after) - Number(b.level_after),
+      )
       let matchedTier = sortedTiers[sortedTiers.length - 1]
       for (const tier of sortedTiers) {
-        if (data.totalGross <= tier.gross) {
+        if (data.totalGross <= Number(tier.level_after)) {
           matchedTier = tier
           break
         }
       }
 
-      const commissionAmount = (data.totalGross * matchedTier.dispatcher_commission) / 100
+      const commissionAmount = (data.totalGross * Number(matchedTier.commission)) / 100
 
       contractDetails.push({
         vehicle_id: vehicleId,
@@ -387,8 +386,8 @@ export async function calculateEmployeeReport(
         vehicle_type_name: vehicle.kind,
         orders_count: data.orderCount,
         total_gross: data.totalGross,
-        dispatch_fee_percent: matchedTier.dispatch_fee,
-        dispatcher_commission_percent: matchedTier.dispatcher_commission,
+        dispatch_fee_percent: Number(matchedTier.dispatch_FEE),
+        dispatcher_commission_percent: Number(matchedTier.commission),
         commission_amount: commissionAmount,
       })
 
@@ -459,7 +458,8 @@ export async function calculateEmployeeReport(
     const finalSettlements = Number(settlementsTotal) || 0
 
     const profitCommission = employeeTerms?.percent_of_profit
-      ? ((fullNonContractGross - fullNonContractDriverPayment) * employeeTerms.percent_of_profit) / 100
+      ? ((fullNonContractGross - fullNonContractDriverPayment) * employeeTerms.percent_of_profit) /
+        100
       : 0
     const contractCommission = contractDetails.reduce((sum, d) => sum + d.commission_amount, 0)
     const rawFixedSalary = Number(employeeTerms?.fixed_salary) || 0
@@ -490,7 +490,11 @@ export async function calculateEmployeeReport(
         settlement_fine: fine,
         missed_days: missedWorkingDays,
         payout_usd:
-          profitCommission + contractCommission + rawFixedSalary + finalSettlements - Math.abs(Number(fine || 0)),
+          profitCommission +
+          contractCommission +
+          rawFixedSalary +
+          finalSettlements -
+          Math.abs(Number(fine || 0)),
         contract_details: contractDetails,
         contract_commission_total: contractCommission,
         orderToVehicle: orderToVehicle,
@@ -527,10 +531,7 @@ export async function calculateWeeklyContractCommission(
     .from('vehicle_commission_tiers')
     .select('*')
     .eq('deleted', false)
-  const tiersByVehicleType = groupBy(
-    (tiersData || []) as CommissionTier[],
-    (t) => t.vehicle_type_id,
-  )
+  const tiersByVehicleType = groupBy((tiersData || []) as CommissionTier[], (t) => t.vehicle_type)
 
   const { data: stagesData } = await supabase
     .from('stages')
@@ -596,16 +597,18 @@ export async function calculateWeeklyContractCommission(
       const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
       if (vehicleTiers.length === 0) continue
 
-      const sortedTiers = [...vehicleTiers].sort((a, b) => a.gross - b.gross)
+      const sortedTiers = [...vehicleTiers].sort(
+        (a, b) => Number(a.level_after) - Number(b.level_after),
+      )
       let matchedTier = sortedTiers[sortedTiers.length - 1]
       for (const tier of sortedTiers) {
-        if (data.totalGross <= tier.gross) {
+        if (data.totalGross <= Number(tier.level_after)) {
           matchedTier = tier
           break
         }
       }
 
-      const commissionAmount = (data.totalGross * matchedTier.dispatcher_commission) / 100
+      const commissionAmount = (data.totalGross * Number(matchedTier.commission)) / 100
 
       details.push({
         vehicle_id: vId,
@@ -613,8 +616,8 @@ export async function calculateWeeklyContractCommission(
         vehicle_type_name: vehicle.kind,
         orders_count: data.orderCount,
         total_gross: data.totalGross,
-        dispatch_fee_percent: matchedTier.dispatch_fee,
-        dispatcher_commission_percent: matchedTier.dispatcher_commission,
+        dispatch_fee_percent: Number(matchedTier.dispatch_FEE),
+        dispatcher_commission_percent: Number(matchedTier.commission),
         commission_amount: commissionAmount,
       })
     }
@@ -766,8 +769,8 @@ export async function loadDispatcherPerformanceReport(
 }
 
 interface CommissionTier {
-  vehicle_type_id: number
-  gross: number
-  dispatch_fee: number
-  dispatcher_commission: number
+  vehicle_type: number
+  level_after: string
+  dispatch_FEE: string
+  commission: string
 }

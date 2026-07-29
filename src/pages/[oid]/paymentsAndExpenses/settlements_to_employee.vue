@@ -187,20 +187,32 @@ function _applyFilters() {
   const yearFilter = filters.value.find((v) => v.key === 'year')
 
   if (monthFilter && yearFilter) {
-    const month = typeof monthFilter.val === 'object' ? monthFilter.val.id : parseInt(monthFilter.val)
+    const month =
+      typeof monthFilter.val === 'object' ? monthFilter.val.id : parseInt(monthFilter.val)
     const year = typeof yearFilter.val === 'object' ? yearFilter.val.id : parseInt(yearFilter.val)
 
-    const start = moment({ year, month: month - 1, day: 1 }).startOf('month').toISOString()
-    const end = moment({ year, month: month - 1, day: 1 }).endOf('month').add(1, 'day').toISOString()
+    const start = moment({ year, month: month - 1, day: 1 })
+      .startOf('month')
+      .toISOString()
+    const end = moment({ year, month: month - 1, day: 1 })
+      .endOf('month')
+      .add(1, 'day')
+      .toISOString()
 
     resolved.push({ key: 'created_at_range', val: { start, end } } as KV)
   } else if (monthFilter) {
-    const month = typeof monthFilter.val === 'object' ? monthFilter.val.id : parseInt(monthFilter.val)
+    const month =
+      typeof monthFilter.val === 'object' ? monthFilter.val.id : parseInt(monthFilter.val)
     const now = moment()
     const year = month > now.month() + 1 ? now.year() - 1 : now.year()
 
-    const start = moment({ year, month: month - 1, day: 1 }).startOf('month').toISOString()
-    const end = moment({ year, month: month - 1, day: 1 }).endOf('month').add(1, 'day').toISOString()
+    const start = moment({ year, month: month - 1, day: 1 })
+      .startOf('month')
+      .toISOString()
+    const end = moment({ year, month: month - 1, day: 1 })
+      .endOf('month')
+      .add(1, 'day')
+      .toISOString()
 
     resolved.push({ key: 'created_at_range', val: { start, end } } as KV)
   } else if (yearFilter) {

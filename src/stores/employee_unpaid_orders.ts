@@ -68,12 +68,24 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
   const dateFrom = ref<string>('')
   const dateTo = ref<string>('')
 
-  async function loading(orgId: number | null, userId: number | null, month?: number, year?: number) {
+  async function loading(
+    orgId: number | null,
+    userId: number | null,
+    month?: number,
+    year?: number,
+  ) {
     const ordersInProcessing = await loadOrdersInProgress(orgId)
     const mapping = await loadUnpaidOrders(orgId)
     const settlements = await loadUnpaidSettlements(orgId, userId)
 
-    report.value = await calculateEmployeeReport(orgId, ordersInProcessing, mapping, settlements, month, year)
+    report.value = await calculateEmployeeReport(
+      orgId,
+      ordersInProcessing,
+      mapping,
+      settlements,
+      month,
+      year,
+    )
   }
 
   const employees = computed(() => {
