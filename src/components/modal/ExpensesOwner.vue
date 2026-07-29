@@ -15,7 +15,10 @@ const props = defineProps<{
   documentYear?: number
   show?: number
   embedded?: boolean
+  kind?: 'expense' | 'additional_payment'
 }>()
+
+const modalId = `expense_modal_${Math.random().toString(36).substring(2, 9)}`
 
 const id = ref<number>()
 const organization = ref<number>()
@@ -23,6 +26,7 @@ const owner = ref<number>()
 const notes = ref('')
 const amount = ref<number>()
 const created_by = ref<User>()
+const kindForm = ref<'expense' | 'additional_payment'>('expense')
 
 const emit = defineEmits(['closed'])
 
@@ -56,8 +60,8 @@ function resetAndShow(expense: ExpensesToOwner | null) {
   notes.value = expense?.notes || ''
   amount.value = expense?.amount
   created_by.value = expense ? { id: expense.created_by } : account ? { id: account.id } : null
-
-  expense_modal.showModal()
+  kindForm.value = expense?.kind ?? props.kind ?? 'expense'
+  ;(document.getElementById(modalId) as HTMLDialogElement)?.showModal()
 }
 
 async function saveExpenses() {
@@ -72,6 +76,7 @@ async function saveExpenses() {
       amount: amount.value,
       week,
       year,
+      kind: kindForm.value,
     } as ExpensesToOwnerCreate)
 
     if (created && props.documentId) {
@@ -88,6 +93,7 @@ async function saveExpenses() {
       owner: owner.value?.id,
       notes: notes.value,
       amount: amount.value,
+      kind: kindForm.value,
     } as ExpensesToOwnerUpdate)
 
     await supabase
@@ -95,7 +101,7 @@ async function saveExpenses() {
       .update({ amount: amount.value })
       .eq('doc_expense', id.value)
   }
-  expense_modal.close()
+  ;(document.getElementById(modalId) as HTMLDialogElement)?.close()
   emit('closed')
 }
 </script>
@@ -105,12 +111,25 @@ async function saveExpenses() {
     <Text size="2xl">Expenses</Text>
     <SearchVue :store="ownerStore"></SearchVue>
   </div>
-  <Modal id="expense_modal">
+  <Modal :id="modalId">
     <ModalBox class="w-2/5">
-      <div class="flex space-x-2 w-full">
-        <Text class="w-full mt-1" size="xl">Expenses # {{ id }}</Text>
-        <Label class="mb-1">created by</Label>
-        <selector class="w-full" :modelValue="created_by" :store="usersStore" disabled />
+      <div class="flex space-x-2 w-full items-center">
+        <div class="join">
+          <Button
+            class="join-item btn-sm"
+            :class="kindForm === 'expense' ? 'btn-neutral' : 'btn-soft'"
+            @click="kindForm = 'expense'"
+          >
+            Expense
+          </Button>
+          <Button
+            class="join-item btn-sm"
+            :class="kindForm === 'additional_payment' ? 'btn-neutral' : 'btn-soft'"
+            @click="kindForm = 'additional_payment'"
+          >
+            Payment
+          </Button>
+        </div>
       </div>
       <div>
         <Label class="mt-2 mb-2">Owner</Label>
@@ -126,7 +145,8 @@ async function saveExpenses() {
       <ModalAction>
         <form method="dialog">
           <Button class="btn-soft font-light tracking-wider" @click="saveExpenses()">
-            <span v-if="id > 0">Update</span><span v-else>Create</span>
+            <span v-if="id > 0">Update</span>
+            <span v-else>Create {{ kindForm === 'expense' ? 'expense' : 'payment' }}</span>
           </Button>
           <Button class="btn-soft font-light tracking-wider ml-6">Close</Button>
         </form>

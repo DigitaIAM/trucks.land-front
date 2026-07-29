@@ -279,12 +279,14 @@ const commissionToPay = computed(() => {
 })
 
 const payoutTotal = computed(() => {
-  return commissionToPay.value
-    + contractBreakdownTotal.value
-    + Number(props.document?.fixed_salary || 0)
-    + Number(props.document?.settlement_bonus || 0)
-    + Number(props.document?.settlement_premium || 0)
-    - Number(props.document?.settlement_fine || 0)
+  return (
+    commissionToPay.value +
+    contractBreakdownTotal.value +
+    Number(props.document?.fixed_salary || 0) +
+    Number(props.document?.settlement_bonus || 0) +
+    Number(props.document?.settlement_premium || 0) -
+    Number(props.document?.settlement_fine || 0)
+  )
 })
 
 interface ContractVehicleBreakdown {
@@ -554,9 +556,7 @@ function onClose() {
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">total profit</td>
               <td class="px-6 py-3 text-right font-bold text-white border-t border-[#526471]">
                 $
-                {{
-                  (nonContractGross - nonContractDriverPayment).toFixed(2)
-                }}
+                {{ (nonContractGross - nonContractDriverPayment).toFixed(2) }}
               </td>
             </tr>
 
@@ -674,9 +674,7 @@ function onClose() {
                 Payout
               </td>
               <!-- Третья колонка для суммы -->
-              <td class="px-6 py-5 text-right font-bold">
-                $ {{ payoutTotal.toFixed(2) }}
-              </td>
+              <td class="px-6 py-5 text-right font-bold">$ {{ payoutTotal.toFixed(2) }}</td>
             </tr>
           </tbody>
         </table>
