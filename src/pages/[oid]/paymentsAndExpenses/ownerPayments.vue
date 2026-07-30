@@ -36,11 +36,31 @@ const ownersStore = useOwnersStore()
 const usersStore = useUsersStore()
 
 const selectedDocument = ref<PaymentToOwnerSummary | null>(null)
+const selectedPayments = ref(new Set<number>())
 
 const isProcessing = ref(false)
 const progressCurrent = ref(0)
 const progressTotal = ref(0)
 const currentStatus = ref('')
+
+const allSelected = computed(() => {
+  const listing = paymentToOwnerStore.listing
+  return listing.length > 0 && listing.every((l) => selectedPayments.value.has(l.id))
+})
+
+function toggleSelectAll() {
+  if (allSelected.value) {
+    selectedPayments.value = new Set()
+  } else {
+    selectedPayments.value = new Set(paymentToOwnerStore.listing.map((l) => l.id))
+  }
+}
+
+function toggleSelect(id: number) {
+  const next = new Set(selectedPayments.value)
+  next.has(id) ? next.delete(id) : next.add(id)
+  selectedPayments.value = next
+}
 
 const filters = ref<Array<KV>>([])
 
@@ -204,12 +224,10 @@ async function exportToExcel() {
 }
 
 async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
-  if (!documents) return
-
-  console.log('documents', documents)
+  if (!documents || documents.length === 0) return
 
   isProcessing.value = true
-  progressTotal.value = documents
+  progressTotal.value = documents.length
   progressCurrent.value = 0
 
   try {
@@ -222,7 +240,13 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
     for (const doc of documents) {
       const contra = await ownersStore.resolve(doc.owner)
 
-      currentStatus.value = `Sending to: ${contra?.name || 'Unknown'}`
+      if (!contra?.email) {
+        console.warn(`owner #${doc.owner} has no email, skipping`)
+        progressCurrent.value++
+        continue
+      }
+
+      currentStatus.value = `Sending to: ${contra.name}`
 
       try {
         const pdfDoc = await generateOwnerPaymentPdf(doc)
@@ -231,8 +255,13 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
         const email = {
           from: { address: `noreply@cnulogistics.com` },
           to: [
-            { email_address: { address: `shabanovanatali@gmail.com`, name: `${contra?.name}` } },
-          ], // `${contra?.email}`
+            {
+              email_address: {
+                address: contra.email,
+                name: contra.name,
+              },
+            },
+          ], // contra.email  `shabanovanatali@gmail.com`
           subject: `CNU Pay Sheet ${doc.week} Week ${doc.year} `,
           htmlbody:
             'Greetings,<br />' +
@@ -286,11 +315,13 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
     <SearchForPaymentsOwner @selected="setFilter"></SearchForPaymentsOwner>
     <Button class="btn-soft font-light tracking-wider px-3" @click="exportToExcel()">Excel </Button>
     <Button
-      disabled
+      :disabled="selectedPayments.size === 0 || isProcessing"
       class="btn-soft font-light tracking-wider ml-6"
-      @click="sendAllPayments(paymentToOwnerStore.listing)"
-      >Send to everyone
-    </Button>
+      @click="
+        sendAllPayments(paymentToOwnerStore.listing.filter((l) => selectedPayments.has(l.id)))
+      "
+      >Send to selected ({{ selectedPayments.size }})</Button
+    >
   </div>
   <div v-if="isProcessing" class="p-4 mb-4 border rounded-lg bg-gray-50 dark:bg-slate-800">
     <div class="flex justify-between mb-1">
@@ -332,6 +363,14 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
       <tr
         class="text-sm text-gray-700 uppercase dark:text-gray-400 border-b dark:border-gray-700 border-gray-200"
       >
+        <th class="p-4" style="width: 50px">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            :checked="allSelected"
+            @change="toggleSelectAll"
+          />
+        </th>
         <th
           v-for="col in cols"
           :key="'head_' + col.label"
@@ -351,6 +390,14 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
         class="hover:bg-base-200"
         @click="openPayment(line)"
       >
+        <td class="py-3 px-4" style="width: 50px" @click.stop>
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            :checked="selectedPayments.has(line.id)"
+            @change="toggleSelect(line.id)"
+          />
+        </td>
         <td
           v-for="col in cols"
           :key="'row_' + col.label + '_' + line.id"

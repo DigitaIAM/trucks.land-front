@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { createFetch } from '@vueuse/core'
-import { generateOwnerPaymentPdf } from '@/utils/export_owners_payments_to_pdf.ts'
-import { openInNewTab } from '@/utils/pdf-helper.ts'
-import { sendEmail } from '@/utils/email.ts'
 import ExpensesOwner from '@/components/modal/ExpensesOwner.vue'
 
 const props = defineProps<{
@@ -13,7 +9,6 @@ const paymentToOwnerOrdersStore = usePaymentToOwnerOrdersStore()
 const paymentToOwnerExpenseStore = usePaymentToOwnerExpenseStore()
 const orderStore = useOrdersStore()
 const ownerStore = useOwnersStore()
-const organizationsStore = useOrganizationsStore()
 const paymentToOwnerStore = usePaymentToOwnerStore()
 const statusesStore = useStatusesStore()
 const eventsStore = useEventsStore()
@@ -57,66 +52,7 @@ async function onExpenseClosed() {
   }
 }
 
-async function generatePdfAndSend() {
-  const document = props.document
-  if (document == null) {
-    throw 'missing document'
-  }
 
-  const org = await organizationsStore.resolve(document.organization)
-  if (org == null) {
-    throw 'missing organization'
-  }
-
-  const token = await useAccessTokenStore().getTokenZoho(org.id)
-  if (token == null) {
-    throw 'missing token'
-  }
-
-  const contra = await ownerStore.resolve(document.owner)
-  if (contra == null) {
-    throw 'missing owner'
-  }
-
-  const pdfDoc = await generateOwnerPaymentPdf(document)
-
-  await openInNewTab(pdfDoc)
-
-  // Send by email
-  const base64String = await pdfDoc.saveAsBase64()
-
-  const email = {
-    from: { address: `emily@cnulogistics.com` },
-    to: [{ email_address: { address: `${contra.email}`, name: `${contra.name}` } }], // 'shabanovanatali@gmail.com', name: '' `${contra.email}`, name: `${contra.name}`
-    cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
-    subject: `CNU Pay Sheet ${document.week} Week ${document.year} `,
-    htmlbody:
-      'Greetings,<br />' +
-      '<br />' +
-      'Payment sheet of week #&nbsp;' +
-      `${document.week}` +
-      '&nbsp;of&nbsp;' +
-      `${document.year}` +
-      '&nbsp;is attached.<br />' +
-      '<br />' +
-      'For any inquiries regarding calculations, please contact us at emily@cnulogistics.com' +
-      '<br />' +
-      'Best Regards,<br />' +
-      '<br />' +
-      `${org.name}<br />` +
-      `${org.address1}<br />` +
-      `${org.address2}<br />`,
-    attachments: [
-      {
-        name: `paySheet_${document.week}-${org.code3}-${document.id}.pdf`,
-        content: base64String,
-        mime_type: 'application/pdf',
-      },
-    ],
-  }
-
-  await sendEmail(token, email)
-}
 
 const state = reactive({})
 
@@ -259,10 +195,7 @@ const expensesCols = [
           <Button class="btn-soft font-light tracking-wider" @click="showPaymentTrigger++">
             Add payment
           </Button>
-          <Button class="btn-soft font-light tracking-wider mr-3" @click="generatePdfAndSend">
-            Send to
-            <QueryAndShow name="email" :id="props.document?.owner" :store="ownerStore" />
-          </Button>
+
         </div>
       </div>
       <div class="flex flex-cols-7 gap-6 mt-10">
