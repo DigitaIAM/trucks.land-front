@@ -257,7 +257,7 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
           to: [
             {
               email_address: {
-                address: contra.email,
+                address: `shabanovanatali@gmail.com`,
                 name: contra.name,
               },
             },

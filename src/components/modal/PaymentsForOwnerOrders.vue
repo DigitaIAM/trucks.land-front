@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ExpensesOwner from '@/components/modal/ExpensesOwner.vue'
+import { generateOwnerPaymentPdf } from '@/utils/export_owners_payments_to_pdf.ts'
 
 const props = defineProps<{
   document: PaymentToOwnerSummary | null
@@ -52,7 +53,14 @@ async function onExpenseClosed() {
   }
 }
 
-
+async function openPdf() {
+  if (!props.document) return
+  const pdfDoc = await generateOwnerPaymentPdf(props.document)
+  const pdfBytes = await pdfDoc.save()
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+}
 
 const state = reactive({})
 
@@ -195,7 +203,7 @@ const expensesCols = [
           <Button class="btn-soft font-light tracking-wider" @click="showPaymentTrigger++">
             Add payment
           </Button>
-
+          <Button class="btn-soft font-light tracking-wider" @click="openPdf"> PDF </Button>
         </div>
       </div>
       <div class="flex flex-cols-7 gap-6 mt-10">

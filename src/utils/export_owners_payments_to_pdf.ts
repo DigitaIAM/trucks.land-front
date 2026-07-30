@@ -69,22 +69,20 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   const orders = await usePaymentToOwnerOrdersStore().loading(document.id)
 
-  let contractVehicle: any = null
+  const contractVehicles: Vehicle[] = []
   for (const line of orders.values()) {
     const events = await eventsStore.fetching(line.doc_order)
     for (const event of events) {
       if (event.kind === 'agreement') {
         const v = await vehiclesStore.resolve(event.vehicle)
-        if (v) {
-          contractVehicle = v
-          break
+        if (v && v.contract && !contractVehicles.some((cv) => cv.id === v.id)) {
+          contractVehicles.push(v)
         }
       }
     }
-    if (contractVehicle) break
   }
 
-  const isContract = contractVehicle?.contract === true
+  const isContract = contractVehicles.length > 0
 
   // console.log('orders', orders)
 
@@ -132,14 +130,18 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   cy -= bls + text_right(page, boldFont, 16, contra.name.toUpperCase(), rightSide, cy)
 
-  if (isContract && contractVehicle) {
+  if (isContract) {
+    const unitText =
+      contractVehicles.length === 1
+        ? `Unit: ${contractVehicles[0].unit_id}`
+        : `Units: ${contractVehicles.map((v) => v.unit_id).join(', ')}`
     cy -=
       bls +
       text_right(
         page,
         boldFont,
         16,
-        filterCharSet(`Unit: ${contractVehicle.unit_id}`, font),
+        filterCharSet(unitText, font),
         rightSide,
         cy,
       )
@@ -243,7 +245,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
         }
       }
 
-      const cLines = Math.max(1, Math.max(pickup.length, delivery.length))
+      const cLines = Math.max(1, Math.max(vehicle.length, pickup.length, delivery.length))
 
       if (cy - fh12 - fh10 * (lines + cLines) < fh12 + margin) {
         tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
