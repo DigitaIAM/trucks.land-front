@@ -56,7 +56,16 @@ const cols = [
   {
     label: 'date',
     value: (v: Order) => useDateMyFormat(v.created_at),
-    size: 200,
+    size: 150,
+  },
+  {
+    label: 'vehicle',
+    value: (v: Order) => {
+      const vehicleId =
+        Number((v as any).vehicle) || props.summary?.orderToVehicleAll?.get(v.id) || 0
+      return props.summary?.vehicleIdToUnitId?.get(vehicleId) || ''
+    },
+    size: 100,
   },
   {
     label: 'cost',

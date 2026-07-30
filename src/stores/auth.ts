@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
     promise.value = supabase.auth
       .signInWithPassword({
         email: email,
-        password: password
+        password: password,
       })
       .then(({ data, error }) => {
         // console.log('signInWithEmail data', data)
@@ -91,7 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
     getPromise: () => promise.value,
     logout,
     lastError,
-    clearError
+    clearError,
   }
 })
 

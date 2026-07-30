@@ -20,9 +20,7 @@ export function makeExclusiveClass({
   return computed(() => {
     const active = propList.filter((v: string) => props[v.replace('-', '')])
     if (active.length > 1) {
-      throw new Error(
-        `only one ${prop} can be enabled at a time. Current are ${active}`,
-      )
+      throw new Error(`only one ${prop} can be enabled at a time. Current are ${active}`)
     }
     const current = active[0] || ''
     const _prefix = current.startsWith('-') ? '' : prefix

@@ -201,12 +201,15 @@ export async function calculateEmployeeReport(
 
   const allTermsData = responseTerms.data || []
 
-  const { data: contractVehiclesData } = await supabase
+  const { data: vehiclesData } = await supabase
     .from('vehicles')
-    .select('id, unit_id, kind')
-    .eq('contract', true)
+    .select('id, unit_id, kind, contract')
   const vehicleMap = new Map<number, { unit_id: string; kind: string }>()
-  contractVehiclesData?.forEach((v) => vehicleMap.set(v.id, { unit_id: v.unit_id, kind: v.kind }))
+  const vehicleIdToUnitId = new Map<number, string>()
+  vehiclesData?.forEach((v) => {
+    if (v.contract) vehicleMap.set(v.id, { unit_id: v.unit_id, kind: v.kind })
+    vehicleIdToUnitId.set(v.id, v.unit_id)
+  })
 
   const { data: vehicleTypesData } = await supabase.from('vehicle_type').select('id, name')
   const vehicleTypeMap = new Map<string, number>()
@@ -249,6 +252,7 @@ export async function calculateEmployeeReport(
 
     const orders = new Map<number, Order>()
     const orderToVehicle = new Map<number, number>()
+    const orderToVehicleAll = new Map<number, number>()
     const paymentsByOrder = new Map<number, number>()
 
     const employeeTerms = (terms.get(employee)?.at(0) || {
@@ -322,7 +326,7 @@ export async function calculateEmployeeReport(
           }
         }
 
-        // console.log('vehicleId', vehicleId)
+        if (vehicleId) orderToVehicleAll.set(p.order.id, vehicleId)
 
         if (vehicleId && vehicleMap.has(vehicleId)) {
           if (pc != 1) {
@@ -365,7 +369,10 @@ export async function calculateEmployeeReport(
       if (!vehicleTypeId) throw 'unexpected: unknown vehicle type ' + vehicle.kind
 
       const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
-      if (vehicleTiers.length === 0) throw 'unexpected: no vehicle tiers ' + vehicle.kind
+      if (vehicleTiers.length === 0) {
+        console.warn(`missing vehicle commission tiers for "${vehicle.kind}" (vehicle #${vehicleId}), skipping`)
+        continue
+      }
 
       const sortedTiers = [...vehicleTiers].sort(
         (a, b) => Number(a.level_after) - Number(b.level_after),
@@ -498,6 +505,8 @@ export async function calculateEmployeeReport(
         contract_details: contractDetails,
         contract_commission_total: contractCommission,
         orderToVehicle: orderToVehicle,
+        orderToVehicleAll: orderToVehicleAll,
+        vehicleIdToUnitId: vehicleIdToUnitId,
       } as EmployeePaymentSummary,
     })
   }
@@ -700,6 +709,13 @@ export async function loadDispatcherPerformanceReport(
 
   const dispatcherOrders = groupBy(activeOrders, (o) => o.created_by)
   const userStore = useUsersStore()
+
+  const { data: perfVehiclesData } = await supabase
+    .from('vehicles')
+    .select('id, unit_id')
+  const perfVehicleIdToUnitId = new Map<number, string>()
+  perfVehiclesData?.forEach((v) => perfVehicleIdToUnitId.set(v.id, v.unit_id))
+
   const result: EmployeeReportRecord[] = []
 
   for (const [dispatcherId, orders] of dispatcherOrders) {
@@ -760,6 +776,8 @@ export async function loadDispatcherPerformanceReport(
         contract_details: [],
         contract_commission_total: 0,
         orderToVehicle: empOrderToVehicle,
+        orderToVehicleAll: empOrderToVehicle,
+        vehicleIdToUnitId: perfVehicleIdToUnitId,
       },
     })
   }
