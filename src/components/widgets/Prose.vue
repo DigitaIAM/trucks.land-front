@@ -25,8 +25,13 @@
   @apply text-accent;
 }
 
-.prose h1 a, .prose h2 a, .prose h3 a, .prose h4 a, .prose h5 a, .prose h6 a {
+.prose h1 a,
+.prose h2 a,
+.prose h3 a,
+.prose h4 a,
+.prose h5 a,
+.prose h6 a {
   text-decoration: none;
-  @apply font-bold
+  @apply font-bold;
 }
 </style>

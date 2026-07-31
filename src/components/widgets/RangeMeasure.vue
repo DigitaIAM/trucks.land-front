@@ -2,40 +2,59 @@
 import { computed } from 'vue'
 import RangeMeasureTick from './RangeMeasureTick.vue'
 
-const props = withDefaults(defineProps<{
-  modelValue?: number | string
-  min?: number | string
-  max?: number | string
-  step?: number | string
+const props = withDefaults(
+  defineProps<{
+    modelValue?: number | string
+    min?: number | string
+    max?: number | string
+    step?: number | string
 
-  numbered?: boolean
-  asButtons?: boolean
-  disabled?: boolean
+    numbered?: boolean
+    asButtons?: boolean
+    disabled?: boolean
 
-  color?: string
-  neutral?: boolean
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  success?: boolean
-  warning?: boolean
-  info?: boolean
-  error?: boolean
+    color?: string
+    neutral?: boolean
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    success?: boolean
+    warning?: boolean
+    info?: boolean
+    error?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  min: 0,
-  max: 100,
-  step: 1,
-})
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    min: 0,
+    max: 100,
+    step: 1,
+  },
+)
 defineEmits(['update:modelValue'])
 
 const classes = computed(() => {
-  const { color, neutral, primary, secondary, accent, success, info, warning, error, size, lg, md, sm, xs, disabled } = props
+  const {
+    color,
+    neutral,
+    primary,
+    secondary,
+    accent,
+    success,
+    info,
+    warning,
+    error,
+    size,
+    lg,
+    md,
+    sm,
+    xs,
+    disabled,
+  } = props
   return {
     'text-neutral': neutral || color === 'neutral',
     'text-primary': primary || color === 'primary',
@@ -54,7 +73,11 @@ const classes = computed(() => {
 })
 const values = computed(() => {
   const vals = []
-  for (let index = Number.parseInt(props.min as string); index < Number.parseInt(props.max as string) + 1; index++) {
+  for (
+    let index = Number.parseInt(props.min as string);
+    index < Number.parseInt(props.max as string) + 1;
+    index++
+  ) {
     vals.push({
       value: index,
       isVisible: index % Number.parseInt(props.step as string) === 0,

@@ -24,7 +24,22 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue'])
 
 const classes = computed(() => {
-  const { color, neutral, primary, secondary, accent, success, info, warning, error, size, xs, sm, md, lg } = props
+  const {
+    color,
+    neutral,
+    primary,
+    secondary,
+    accent,
+    success,
+    info,
+    warning,
+    error,
+    size,
+    xs,
+    sm,
+    md,
+    lg,
+  } = props
   return {
     'toggle-neutral': neutral || color === 'neutral',
     'toggle-primary': primary || color === 'primary',
@@ -55,5 +70,5 @@ const currentValue = computed({
     class="toggle"
     :disabled="disabled"
     :class="classes"
-  >
+  />
 </template>

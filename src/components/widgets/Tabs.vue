@@ -2,56 +2,52 @@
 import { computed, inject } from 'vue'
 import Tab from './Tab.vue'
 
-const props = withDefaults(defineProps<{
-  is?: string | object | Component
-  tabs?: string[]
+const props = withDefaults(
+  defineProps<{
+    is?: string | object | Component
+    tabs?: string[]
 
-  variant?: 'bordered' | 'lifted' | 'boxed' | 'inline-boxed'
-  bordered?: boolean
-  lifted?: boolean
-  boxed?: boolean
-  inlineBoxed?: boolean
+    variant?: 'bordered' | 'lifted' | 'boxed' | 'inline-boxed'
+    bordered?: boolean
+    lifted?: boolean
+    boxed?: boolean
+    inlineBoxed?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  is: 'a',
-  tabs: [] as any,
-})
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    is: 'a',
+    tabs: [] as any,
+  },
+)
 
 const tabManager: any = inject('tabManager')
 
 const _variant = computed(() => {
-  if (props.bordered || props.variant === 'bordered')
-    return 'bordered'
-  if (props.lifted || props.variant === 'lifted')
-    return 'lifted'
+  if (props.bordered || props.variant === 'bordered') return 'bordered'
+  if (props.lifted || props.variant === 'lifted') return 'lifted'
   return undefined
 })
 const _size = computed(() => {
-  if (props.size)
-    return props.size
-  if (props.lg)
-    return 'lg'
-  if (props.md)
-    return 'md'
-  if (props.sm)
-    return 'sm'
-  if (props.xs)
-    return 'xs'
+  if (props.size) return props.size
+  if (props.lg) return 'lg'
+  if (props.md) return 'md'
+  if (props.sm) return 'sm'
+  if (props.xs) return 'xs'
   return 'md'
 })
 
 const classes = computed(() => {
   return {
     'tabs-boxed':
-      props.variant === 'boxed'
-      || props.variant === 'inline-boxed'
-      || props.boxed
-      || props.inlineBoxed,
+      props.variant === 'boxed' ||
+      props.variant === 'inline-boxed' ||
+      props.boxed ||
+      props.inlineBoxed,
     'inline-block': props.variant === 'inline-boxed' || props.inlineBoxed,
   }
 })

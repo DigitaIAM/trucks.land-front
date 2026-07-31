@@ -19,12 +19,11 @@ const checkbox = ref(null)
 
 // Allow internal or external control
 const isChecked = ref<any>(props.modelValue)
-watch(isChecked, val => emit('update:modelValue', val))
+watch(isChecked, (val) => emit('update:modelValue', val))
 watch(
   () => props.modelValue,
   (val) => {
-    if (isChecked.value !== val)
-      isChecked.value = val
+    if (isChecked.value !== val) isChecked.value = val
   },
 )
 
@@ -33,8 +32,7 @@ watch(
   () => [props.indeterminate, checkbox.value],
   ([val]) => {
     nextTick(() => {
-      if (checkbox.value != null)
-        (checkbox.value as any).indeterminate = val
+      if (checkbox.value != null) (checkbox.value as any).indeterminate = val
       isChecked.value = null
     })
   },
@@ -44,7 +42,7 @@ watch(
 
 <template>
   <label class="swap" :class="classes">
-    <input ref="checkbox" v-model="isChecked" type="checkbox">
+    <input ref="checkbox" v-model="isChecked" type="checkbox" />
     <div class="swap-off">
       <slot />
     </div>

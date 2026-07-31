@@ -25,14 +25,12 @@ watch(
     if (val) {
       start()
       hasChanged.value = true
-    }
-    else if (!isPending.value) {
+    } else if (!isPending.value) {
       stop()
     }
   },
 )
 
- 
 const isCurrent = computed(() => props.modelValue == props.tick)
 
 const classes = computed(() => {

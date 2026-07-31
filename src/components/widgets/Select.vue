@@ -1,63 +1,58 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-type Color = | 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error'
+type Color = 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error'
 
-const props = withDefaults(defineProps<{
-  modelValue: any
-  options: Record<string, any>[] | any[]
-  value?: (val: any) => any
-  label?: (val: any) => any
-  resultAsObject?: boolean
-  join?: boolean
+const props = withDefaults(
+  defineProps<{
+    modelValue: any
+    options: Record<string, any>[] | any[]
+    value?: (val: any) => any
+    label?: (val: any) => any
+    resultAsObject?: boolean
+    join?: boolean
 
-  bordered?: boolean
-  ghost?: boolean
-  disabled?: boolean
+    bordered?: boolean
+    ghost?: boolean
+    disabled?: boolean
 
-  color?: Color
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  info?: boolean
-  success?: boolean
-  warning?: boolean
-  error?: boolean
+    color?: Color
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    info?: boolean
+    success?: boolean
+    warning?: boolean
+    error?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  value: (val: any) => {
-    if (!val)
-      return null
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    value: (val: any) => {
+      if (!val) return null
 
-    return typeof val === 'string'
-      ? (val as string)
-      : (val?.value || val?.id || val?._id || val)
+      return typeof val === 'string' ? (val as string) : val?.value || val?.id || val?._id || val
+    },
+    label: (val: any) =>
+      typeof val === 'string' ? (val as string) : val.label || val.name || val.title,
+    resultAsObject: false,
   },
-  label: (val: any) =>
-    typeof val === 'string'
-      ? (val as string)
-      : (val.label || val.name || val.title),
-  resultAsObject: false,
-})
+)
 const emit = defineEmits(['update:modelValue'])
 
 const computedVModel = computed({
   get: () => {
-    if (props.resultAsObject && props.modelValue != null)
-      return props.value(props.modelValue)
+    if (props.resultAsObject && props.modelValue != null) return props.value(props.modelValue)
 
     return props.modelValue
   },
   set: (val) => {
-    if (val === undefined)
-      val = null
-    if (props.resultAsObject && val != null)
-      val = props.options.find(o => props.value(o) === val)
+    if (val === undefined) val = null
+    if (props.resultAsObject && val != null) val = props.options.find((o) => props.value(o) === val)
 
     emit('update:modelValue', val)
   },

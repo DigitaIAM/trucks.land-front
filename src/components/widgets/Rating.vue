@@ -1,54 +1,57 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  modelValue?: number | string
-  count?: number | string
-  half?: boolean
+const props = withDefaults(
+  defineProps<{
+    modelValue?: number | string
+    count?: number | string
+    half?: boolean
 
-  disabled?: boolean
+    disabled?: boolean
 
-  color?: string
-  neutral?: boolean
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  info?: boolean
-  success?: boolean
-  warning?: boolean
-  error?: boolean
+    color?: string
+    neutral?: boolean
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    info?: boolean
+    success?: boolean
+    warning?: boolean
+    error?: boolean
 
-  bg?: string
+    bg?: string
 
-  shape?: string
-  squircle?: boolean
-  heart?: boolean
-  hexagon?: boolean
-  hexagon2?: boolean
-  decagon?: boolean
-  pentagon?: boolean
-  diamond?: boolean
-  square?: boolean
-  circle?: boolean
-  parallelogram?: boolean
-  parallelogram2?: boolean
-  parallelogram3?: boolean
-  parallelogram4?: boolean
-  star?: boolean
-  star2?: boolean
-  triangle?: boolean
-  triangle2?: boolean
-  triangle3?: boolean
-  triangle4?: boolean
+    shape?: string
+    squircle?: boolean
+    heart?: boolean
+    hexagon?: boolean
+    hexagon2?: boolean
+    decagon?: boolean
+    pentagon?: boolean
+    diamond?: boolean
+    square?: boolean
+    circle?: boolean
+    parallelogram?: boolean
+    parallelogram2?: boolean
+    parallelogram3?: boolean
+    parallelogram4?: boolean
+    star?: boolean
+    star2?: boolean
+    triangle?: boolean
+    triangle2?: boolean
+    triangle3?: boolean
+    triangle4?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  count: 5,
-})
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    count: 5,
+  },
+)
 const emit = defineEmits(['update:modelValue'])
 
 const shapes = [
@@ -125,11 +128,9 @@ const maskClasses = computed(() => {
 const max = computed(() => Number.parseInt(props.count as string))
 
 function handleValue(digit: number, half = false) {
-  if (props.disabled)
-    return
+  if (props.disabled) return
 
-  if (props.half)
-    return emit('update:modelValue', half ? digit - 0.5 : digit)
+  if (props.half) return emit('update:modelValue', half ? digit - 0.5 : digit)
 
   return emit('update:modelValue', digit)
 }
@@ -143,7 +144,7 @@ function handleValue(digit: number, half = false) {
       class="rating-hidden"
       :checked="modelValue === 0"
       @change="$emit('update:modelValue', 0)"
-    >
+    />
     <template v-for="digit in max" :key="digit">
       <input
         type="radio"
@@ -152,7 +153,7 @@ function handleValue(digit: number, half = false) {
         :class="[maskClasses, bg, { 'mask-half-1': half }]"
         :checked="half ? modelValue === digit - 0.5 : modelValue === digit"
         @change="() => handleValue(digit, true)"
-      >
+      />
       <input
         v-if="half"
         type="radio"
@@ -161,7 +162,7 @@ function handleValue(digit: number, half = false) {
         :class="[maskClasses, bg]"
         :checked="modelValue === digit"
         @change="() => handleValue(digit)"
-      >
+      />
     </template>
   </div>
 </template>

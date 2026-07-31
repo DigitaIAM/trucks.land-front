@@ -1,22 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  value: any
-  max?: any
+const props = withDefaults(
+  defineProps<{
+    value: any
+    max?: any
 
-  color?: string
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  success?: boolean
-  info?: boolean
-  warning?: boolean
-  error?: boolean
-}>(), {
-  value: 0,
-  max: 100,
-})
+    color?: string
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    success?: boolean
+    info?: boolean
+    warning?: boolean
+    error?: boolean
+  }>(),
+  {
+    value: 0,
+    max: 100,
+  },
+)
 
 const classes = computed(() => {
   const { color, primary, secondary, accent, success, info, warning, error } = props
@@ -33,10 +36,5 @@ const classes = computed(() => {
 </script>
 
 <template>
-  <progress
-    :value="value"
-    :max="max"
-    class="progress"
-    :class="classes"
-  />
+  <progress :value="value" :max="max" class="progress" :class="classes" />
 </template>

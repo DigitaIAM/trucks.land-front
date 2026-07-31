@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 
-const props = withDefaults(defineProps<{
-  is?: string | object | Component
-  name?: string
-  active?: boolean
+const props = withDefaults(
+  defineProps<{
+    is?: string | object | Component
+    name?: string
+    active?: boolean
 
-  variant?: 'bordered' | 'lifted'
-  bordered?: boolean
-  lifted?: boolean
+    variant?: 'bordered' | 'lifted'
+    bordered?: boolean
+    lifted?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  is: 'a',
-})
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    is: 'a',
+  },
+)
 
 const manager: any = inject('tabManager')
 
@@ -38,7 +41,10 @@ const classes = computed(() => {
 
 <template>
   <component
-    :is="is" class="tab" :class="classes" tabindex="0"
+    :is="is"
+    class="tab"
+    :class="classes"
+    tabindex="0"
     @click="() => (manager.currentTab = name)"
     @keypress.enter="() => (manager.currentTab = name)"
   >

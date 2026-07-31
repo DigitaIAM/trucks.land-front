@@ -27,13 +27,27 @@ const emit = defineEmits(['update:modelValue'])
 const radioGroup: any = inject('radio-group', null)
 
 const _props = computed(() => {
-  if (radioGroup)
-    return Object.assign({}, radioGroup.props, props)
+  if (radioGroup) return Object.assign({}, radioGroup.props, props)
   else return props
 })
 
 const classes = computed(() => {
-  const { color, neutral, primary, secondary, accent, success, warning, info, error, size, xs, sm, md, lg } = _props.value
+  const {
+    color,
+    neutral,
+    primary,
+    secondary,
+    accent,
+    success,
+    warning,
+    info,
+    error,
+    size,
+    xs,
+    sm,
+    md,
+    lg,
+  } = _props.value
   return {
     'radio-neutral': neutral || color === 'neutral',
     'radio-primary': primary || color === 'primary',
@@ -52,13 +66,11 @@ const classes = computed(() => {
 
 const currentValue = computed({
   get() {
-    if (radioGroup)
-      return radioGroup.currentValue
+    if (radioGroup) return radioGroup.currentValue
     return props.modelValue
   },
   set(val: string) {
-    if (radioGroup)
-      radioGroup.currentValue = val
+    if (radioGroup) radioGroup.currentValue = val
     emit('update:modelValue', val)
   },
 })
@@ -66,7 +78,12 @@ const currentValue = computed({
 
 <template>
   <input
-    v-model="currentValue" type="radio" v-bind="{ ..._props, ...$attrs }" class="radio" :class="classes"
-    :disabled="disabled" :value="props.value"
-  >
+    v-model="currentValue"
+    type="radio"
+    v-bind="{ ..._props, ...$attrs }"
+    class="radio"
+    :class="classes"
+    :disabled="disabled"
+    :value="props.value"
+  />
 </template>

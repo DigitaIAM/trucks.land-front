@@ -1,32 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  modelValue?: string
-  placeholder?: string
-  type?: 'text' | 'phone' | 'email' | 'search'
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    placeholder?: string
+    type?: 'text' | 'phone' | 'email' | 'search'
 
-  color?: string
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  info?: boolean
-  success?: boolean
-  warning?: boolean
-  error?: boolean
+    color?: string
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    info?: boolean
+    success?: boolean
+    warning?: boolean
+    error?: boolean
 
-  bordered?: boolean
-  ghost?: boolean
-  disabled?: boolean
+    bordered?: boolean
+    ghost?: boolean
+    disabled?: boolean
 
-  size?: 'lg' | 'md' | 'sm' | 'xs'
-  lg?: boolean
-  md?: boolean
-  sm?: boolean
-  xs?: boolean
-}>(), {
-  type: 'text',
-})
+    size?: 'lg' | 'md' | 'sm' | 'xs'
+    lg?: boolean
+    md?: boolean
+    sm?: boolean
+    xs?: boolean
+  }>(),
+  {
+    type: 'text',
+  },
+)
 defineEmits(['update:modelValue'])
 
 const classes = computed(() => {
@@ -46,7 +49,6 @@ const classes = computed(() => {
     'textarea-md': props.md || props.size === 'md',
     'textarea-sm': props.sm || props.size === 'sm',
     'textarea-xs': props.xs || props.size === 'xs',
-
   }
 })
 </script>

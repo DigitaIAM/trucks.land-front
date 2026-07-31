@@ -16,8 +16,7 @@ provide('tabManager', manager)
 watch(
   () => props.tab,
   (val) => {
-    if (val !== manager.currentTab)
-      manager.currentTab = val
+    if (val !== manager.currentTab) manager.currentTab = val
   },
 )
 
@@ -25,8 +24,7 @@ watch(
 watch(
   () => manager.currentTab,
   (val) => {
-    if (val !== props.tab)
-      emit('update:tab', val)
+    if (val !== props.tab) emit('update:tab', val)
   },
 )
 </script>

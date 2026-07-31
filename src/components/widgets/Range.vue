@@ -27,7 +27,22 @@ const props = defineProps<{
 defineEmits(['update:modelValue'])
 
 const classes = computed(() => {
-  const { color, neutral, primary, secondary, accent, success, info, warning, error, size, lg, md, sm, xs } = props
+  const {
+    color,
+    neutral,
+    primary,
+    secondary,
+    accent,
+    success,
+    info,
+    warning,
+    error,
+    size,
+    lg,
+    md,
+    sm,
+    xs,
+  } = props
   return {
     'range-neutral': neutral || color === 'neutral',
     'range-primary': primary || color === 'primary',
@@ -56,5 +71,5 @@ const classes = computed(() => {
     :disabled="disabled"
     :value="modelValue"
     @input="$emit('update:modelValue', ($event.target as any).value)"
-  >
+  />
 </template>

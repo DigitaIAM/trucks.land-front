@@ -9,7 +9,23 @@ const props = defineProps<{
   inline?: boolean
   inlineBlock?: boolean
 
-  color?: | 'neutral' | 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error' | 'primary-content' | 'secondary-content' | 'neutral-content' | 'accent-content' | 'info-content' | 'success-content' | 'warning-content' | 'error-content'
+  color?:
+    | 'neutral'
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'primary-content'
+    | 'secondary-content'
+    | 'neutral-content'
+    | 'accent-content'
+    | 'info-content'
+    | 'success-content'
+    | 'warning-content'
+    | 'error-content'
   neutral?: boolean
   primary?: boolean
   secondary?: boolean
@@ -27,7 +43,20 @@ const props = defineProps<{
   warningContent?: boolean
   errorContent?: boolean
 
-  size?: | '9xl' | '8xl' | '7xl' | '6xl' | '5xl' | '4xl' | '3xl' | '2xl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
+  size?:
+    | '9xl'
+    | '8xl'
+    | '7xl'
+    | '6xl'
+    | '5xl'
+    | '4xl'
+    | '3xl'
+    | '2xl'
+    | 'xl'
+    | 'lg'
+    | 'md'
+    | 'sm'
+    | 'xs'
   xl?: boolean
   lg?: boolean
   md?: boolean
@@ -51,7 +80,16 @@ const props = defineProps<{
   serif?: boolean
   mono?: boolean
 
-  weight?: | 'thin' | 'extralight' | 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black'
+  weight?:
+    | 'thin'
+    | 'extralight'
+    | 'light'
+    | 'normal'
+    | 'medium'
+    | 'semibold'
+    | 'bold'
+    | 'extrabold'
+    | 'black'
   thin?: boolean
   extralight?: boolean
   light?: boolean
@@ -67,30 +105,24 @@ const classes = computed(() => {
   return {
     'join-item': props.join,
 
-    'block': props.block,
-    'inline': props.inline,
+    block: props.block,
+    inline: props.inline,
     'inline-block': props.inlineBlock,
 
     'text-primary': props.primary || props.color === 'primary',
-    'text-primary-content':
-      props.primaryContent || props.color === 'primary-content',
+    'text-primary-content': props.primaryContent || props.color === 'primary-content',
     'text-secondary': props.secondary || props.color === 'secondary',
-    'text-secondary-content':
-      props.secondaryContent || props.color === 'secondary-content',
+    'text-secondary-content': props.secondaryContent || props.color === 'secondary-content',
     'text-neutral': props.neutral || props.color === 'neutral',
-    'text-neutral-content':
-      props.neutralContent || props.color === 'neutral-content',
+    'text-neutral-content': props.neutralContent || props.color === 'neutral-content',
     'text-accent': props.accent || props.color === 'accent',
-    'text-accent-content':
-      props.accentContent || props.color === 'accent-content',
+    'text-accent-content': props.accentContent || props.color === 'accent-content',
     'text-info': props.info || props.color === 'info',
     'text-info-content': props.infoContent || props.color === 'info-content',
     'text-success': props.success || props.color === 'success',
-    'text-success-content':
-      props.successContent || props.color === 'success-content',
+    'text-success-content': props.successContent || props.color === 'success-content',
     'text-warning': props.warning || props.color === 'warning',
-    'text-warning-content':
-      props.warningContent || props.color === 'warning-content',
+    'text-warning-content': props.warningContent || props.color === 'warning-content',
     'text-error': props.error || props.color === 'error',
     'text-error-content': props.errorContent || props.color === 'error-content',
 
@@ -113,9 +145,9 @@ const classes = computed(() => {
     'text-right': props.right || props.align === 'right',
     'text-justify': props.justify || props.align === 'justify',
 
-    'uppercase': props.uppercase || props.case === 'upper',
-    'lowercase': props.lowercase || props.case === 'lower',
-    'capitalize': props.capitalize || props.case === 'capitalize',
+    uppercase: props.uppercase || props.case === 'upper',
+    lowercase: props.lowercase || props.case === 'lower',
+    capitalize: props.capitalize || props.case === 'capitalize',
     'normal-case': props.normalCase || props.case === 'normal',
 
     'font-sans': props.sans || props.font === 'sans',
