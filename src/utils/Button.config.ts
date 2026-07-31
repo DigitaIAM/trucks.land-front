@@ -15,12 +15,6 @@ export const directionVariants = ['top', 'bottom', 'left', 'right']
 export const colorVariants = ['neutral', 'primary', 'secondary', 'accent']
 export const stateVariants = ['info', 'success', 'warning', 'error']
 export const allColorVariants = [...colorVariants, ...stateVariants]
-export const variants = [
-  ...colorVariants,
-  ...stateVariants,
-  'ghost',
-  'link',
-  'glass',
-]
+export const variants = [...colorVariants, ...stateVariants, 'ghost', 'link', 'glass']
 export const sizes = ['xs', 'sm', 'md', 'lg']
 export const shapes = ['circle', 'square']

@@ -22,7 +22,8 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue'])
 
 const classes = computed(() => {
-  const { color, primary, secondary, accent, success, warning, info, error, size, xs, sm, md, lg } = props
+  const { color, primary, secondary, accent, success, warning, info, error, size, xs, sm, md, lg } =
+    props
   return {
     'checkbox-primary': primary || color === 'primary',
     'checkbox-secondary': secondary || color === 'secondary',
@@ -45,11 +46,5 @@ const currentValue = computed({
 </script>
 
 <template>
-  <input
-    v-model="currentValue"
-    type="checkbox"
-    v-bind="$attrs"
-    class="checkbox"
-    :class="classes"
-  >
+  <input v-model="currentValue" type="checkbox" v-bind="$attrs" class="checkbox" :class="classes" />
 </template>

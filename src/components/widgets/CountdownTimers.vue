@@ -2,10 +2,13 @@
 import { useIntervalFn } from '@vueuse/core'
 import { computed, watch } from 'vue'
 
-const props = withDefaults(defineProps<{
-  durationInSeconds?: number
-  untilDate?: Date
-}>(), { durationInSeconds: 0 })
+const props = withDefaults(
+  defineProps<{
+    durationInSeconds?: number
+    untilDate?: Date
+  }>(),
+  { durationInSeconds: 0 },
+)
 const emit = defineEmits(['done'])
 
 const calculateDate = () => props.untilDate || new Date(Date.now() + props.durationInSeconds * 1000)
@@ -29,8 +32,7 @@ useIntervalFn(() => {
 }, 1000)
 
 watch(timeLeft, () => {
-  if (timeLeft.value === 0)
-    emit('done')
+  if (timeLeft.value === 0) emit('done')
 })
 
 const totalSeconds = computed(() => Math.round(timeLeft.value / 1000))

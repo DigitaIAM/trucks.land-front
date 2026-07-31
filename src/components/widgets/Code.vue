@@ -18,8 +18,7 @@ export default {
 
     const source = ref(null)
     const lang = computed(() => {
-      if (props.language === 'vue')
-        return 'html'
+      if (props.language === 'vue') return 'html'
       else return props.language
     })
     const languageClass = computed(() => `language-${lang.value}`)
@@ -34,10 +33,7 @@ export default {
     })
     onBeforeUpdate(() => {
       if (typeof context.slots.default[0] === 'string') {
-        const newText = context.slots.default[0].replace(
-          /^\s*|\s*$/g,
-          '',
-        )
+        const newText = context.slots.default[0].replace(/^\s*|\s*$/g, '')
         context.el.querySelector('code').textContent = newText
         Prism.highlightAllUnder(source.value)
       }
@@ -55,12 +51,8 @@ export default {
 <template>
   <div class="relative mockup-code">
     <div class="absolute flex flex-row items-center top-1 right-1">
-      <div v-if="copied" class="pr-2 text-sm">
-        copied
-      </div>
-      <Button sm @click="doCopy">
-        copy
-      </Button>
+      <div v-if="copied" class="pr-2 text-sm">copied</div>
+      <Button sm @click="doCopy"> copy </Button>
     </div>
     <ClientOnly>
       <pre
@@ -70,9 +62,7 @@ export default {
       ><code><slot /></code></pre>
 
       <template #fallback>
-        <pre
-          class="whitespace-pre-wrap daisy-code-highlight"
-        ><code><slot /></code></pre>
+        <pre class="whitespace-pre-wrap daisy-code-highlight"><code><slot /></code></pre>
       </template>
     </ClientOnly>
   </div>

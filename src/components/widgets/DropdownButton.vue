@@ -11,7 +11,14 @@ const toggle = toggleDropdown
 </script>
 
 <template>
-  <Button :id="id" ref="buttonEl" :aria-expanded="isOpen" aria-haspopup="menu" class="dropdown-button" @click="toggle">
+  <Button
+    :id="id"
+    ref="buttonEl"
+    :aria-expanded="isOpen"
+    aria-haspopup="menu"
+    class="dropdown-button"
+    @click="toggle"
+  >
     <slot />
   </Button>
 </template>

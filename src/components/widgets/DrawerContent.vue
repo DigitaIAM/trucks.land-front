@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { createDrawerState } from '../utils/drawer-utils'
 
-const props = withDefaults(defineProps<{
-  name?: string
-}>(), {
-  name: 'drawer',
-})
+const props = withDefaults(
+  defineProps<{
+    name?: string
+  }>(),
+  {
+    name: 'drawer',
+  },
+)
 
 const drawerState = createDrawerState(props.name)
 </script>

@@ -7,15 +7,17 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue'])
 
 const _value = ref(props.modelValue)
-watch(() => props.modelValue, (val) => {
-  _value.value = val
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    _value.value = val
+  },
+)
 const value = computed({
   get: () => _value.value,
   set: (val) => {
     _value.value = val
-    if (props.modelValue !== val)
-      emit('update:modelValue', val)
+    if (props.modelValue !== val) emit('update:modelValue', val)
   },
 })
 

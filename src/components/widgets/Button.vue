@@ -53,7 +53,8 @@ const classes = computed(() => {
     'btn-error': !props.disabled && (props.error || props.color === 'error'),
 
     'text-primary': !props.disabled && (props.primary || props.color === 'primary') && props.link,
-    'text-secondary': !props.disabled && (props.secondary || props.color === 'secondary') && props.link,
+    'text-secondary':
+      !props.disabled && (props.secondary || props.color === 'secondary') && props.link,
     'text-neutral': !props.disabled && (props.neutral || props.color === 'neutral') && props.link,
     'text-accent': !props.disabled && (props.accent || props.color === 'accent') && props.link,
     'text-info': !props.disabled && (props.info || props.color === 'info') && props.link,
@@ -61,7 +62,7 @@ const classes = computed(() => {
     'text-warning': !props.disabled && (props.warning || props.color === 'warning') && props.link,
     'text-error': !props.disabled && (props.error || props.color === 'error') && props.link,
 
-    'glass': !props.disabled && props.glass,
+    glass: !props.disabled && props.glass,
 
     'btn-circle': props.circle || props.shape === 'circle',
     'btn-square': props.square || props.shape === 'square',
@@ -87,12 +88,11 @@ const classes = computed(() => {
 const disabledAttrs = computed(() => {
   if (props.disabled) {
     return {
-      'tabindex': -1,
-      'role': 'button',
+      tabindex: -1,
+      role: 'button',
       'aria-disabled': true,
     }
-  }
-  else {
+  } else {
     return {}
   }
 })

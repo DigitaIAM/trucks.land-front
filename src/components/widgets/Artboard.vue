@@ -15,7 +15,7 @@ const props = defineProps<{
 const classes = computed(() => {
   return {
     'artboard-demo': props.demo,
-    'horizontal': props.horizontal,
+    horizontal: props.horizontal,
     'phone-1': props.phone1 || props.size === 'phone-1',
     'phone-2': props.phone2 || props.size === 'phone-2',
     'phone-3': props.phone3 || props.size === 'phone-3',

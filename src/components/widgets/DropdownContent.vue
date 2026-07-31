@@ -18,14 +18,17 @@ let activate
 let deactivate
 
 if (autoFocus.value) {
-  const { activate: _activate, deactivate: _deactivate, hasFocus } = useFocusTrap(contentEl, { immediate: true })
+  const {
+    activate: _activate,
+    deactivate: _deactivate,
+    hasFocus,
+  } = useFocusTrap(contentEl, { immediate: true })
   activate = _activate
   deactivate = _deactivate
 
   // hide the dropdown when the focus-trap drops focus (by pressing escape, for example)
   watchEffect(() => {
-    if (!hasFocus.value)
-      close()
+    if (!hasFocus.value) close()
   })
 }
 // const { activate, deactivate, hasFocus } = useFocusTrap(contentEl, { immediate: true })
@@ -38,8 +41,7 @@ watchEffect(async () => {
       await nextTick()
       activate()
     }
-  }
-  else {
+  } else {
     if (autoFocus.value) {
       deactivate()
       await nextTick()

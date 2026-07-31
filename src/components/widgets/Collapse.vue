@@ -19,17 +19,13 @@ const accordionValue: any = inject('accordion-value', ref('no-accordion-value'))
 const useAccordion = computed(() => {
   return accordionValue.value !== 'no-accordion-value'
 })
-const isAccordionSelected = computed(
-  () => {
-    if (!useAccordion.value)
-      return false
-    return accordionValue.value === props.value
-  },
-)
+const isAccordionSelected = computed(() => {
+  if (!useAccordion.value) return false
+  return accordionValue.value === props.value
+})
 
 function handleClick() {
-  if (useAccordion.value)
-    accordionValue.value = props.value
+  if (useAccordion.value) accordionValue.value = props.value
 }
 
 const classes = computed(() => {
@@ -49,7 +45,7 @@ const classes = computed(() => {
       v-if="toggle || useAccordion"
       :type="useAccordion ? 'radio' : 'checkbox'"
       :checked="isAccordionSelected"
-    >
+    />
     <slot />
   </div>
 </template>

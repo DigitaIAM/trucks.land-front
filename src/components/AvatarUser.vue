@@ -1,9 +1,7 @@
 <script setup lang="ts">
-
 const props = defineProps<{
   username?: string
 }>()
-
 
 const firstLetter = computed(() => props.username?.charAt(0).toUpperCase())
 

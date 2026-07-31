@@ -8,7 +8,14 @@ const buttonEl = inject('buttonEl')
 </script>
 
 <template>
-  <div :id="id" ref="buttonEl" :aria-expanded="isOpen" aria-haspopup="menu" class="dropdown-target" @click="toggle">
+  <div
+    :id="id"
+    ref="buttonEl"
+    :aria-expanded="isOpen"
+    aria-haspopup="menu"
+    class="dropdown-target"
+    @click="toggle"
+  >
     <slot />
   </div>
 </template>

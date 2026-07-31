@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  horizontal?: boolean
-  vertical?: boolean
-}>(), {
-  horizontal: false,
-  vertical: false,
-})
+const props = withDefaults(
+  defineProps<{
+    horizontal?: boolean
+    vertical?: boolean
+  }>(),
+  {
+    horizontal: false,
+    vertical: false,
+  },
+)
 
 const classes = computed(() => {
   return {

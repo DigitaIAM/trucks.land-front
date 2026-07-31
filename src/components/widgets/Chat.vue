@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  pre?: boolean
-  align?: string
-  start?: boolean
-  end?: boolean
-}>(), {
-  align: 'start',
-})
+const props = withDefaults(
+  defineProps<{
+    pre?: boolean
+    align?: string
+    start?: boolean
+    end?: boolean
+  }>(),
+  {
+    align: 'start',
+  },
+)
 
 const classes = computed(() => {
   const { align, start, end } = props
