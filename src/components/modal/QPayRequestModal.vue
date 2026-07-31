@@ -101,7 +101,7 @@ async function resetAndShow(doc: Order | null) {
 
       const driverCost = props.document?.driver_cost ?? doc.cost
       to_pay.value = Math.round(
-        (driverCost || 0) - ((driverCost || 0) * (percent?.value || 0)) / 100,
+        (driverCost || 0) - Math.floor(((driverCost || 0) * (percent?.value || 0)) / 100),
       )
       owner.value = await ownerStore.resolve(doc?.owner)
     }

@@ -93,7 +93,7 @@ function recalculate(event) {
   const pc = Number(event.data || percent.value)
   console.log('recalculate', pc, event)
   if (pc >= 0 && pc <= 5) {
-    to_pay.value = Math.round(amount.value * ((100.0 - pc) / 100.0))
+    to_pay.value = Math.round(amount.value - Math.floor((amount.value * pc) / 100))
     error.value = false
   } else {
     error.value = true
