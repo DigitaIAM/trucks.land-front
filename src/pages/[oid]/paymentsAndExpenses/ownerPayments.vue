@@ -253,11 +253,11 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
         const base64String = await pdfDoc.saveAsBase64()
 
         const email = {
-          from: { address: `noreply@cnulogistics.com` },
+          from: { address: `emily@cnulogistics.com` },
           to: [
             {
               email_address: {
-                address: `shabanovanatali@gmail.com`,
+                address: contra.email,
                 name: contra.name,
               },
             },
