@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     '/[oid]/journals/incomeView': RouteRecordInfo<'/[oid]/journals/incomeView', '/:oid/journals/incomeView', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/qpays/to-approve': RouteRecordInfo<'/[oid]/journals/qpays/to-approve', '/:oid/journals/qpays/to-approve', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/journals/qpays/to-pay': RouteRecordInfo<'/[oid]/journals/qpays/to-pay', '/:oid/journals/qpays/to-pay', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
+    '/[oid]/journals/similarLoads': RouteRecordInfo<'/[oid]/journals/similarLoads', '/:oid/journals/similarLoads', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/me': RouteRecordInfo<'/[oid]/me', '/:oid/me', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
     '/[oid]/order/[id]': RouteRecordInfo<'/[oid]/order/[id]', '/:oid/order/:id', { oid: ParamValue<true>, id: ParamValue<true> }, { oid: ParamValue<false>, id: ParamValue<false> }>,
     '/[oid]/order/all': RouteRecordInfo<'/[oid]/order/all', '/:oid/order/all', { oid: ParamValue<true> }, { oid: ParamValue<false> }>,
@@ -128,6 +129,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/[oid]/journals/qpays/to-pay.vue': {
       routes: '/[oid]/journals/qpays/to-pay'
+      views: never
+    }
+    'src/pages/[oid]/journals/similarLoads.vue': {
+      routes: '/[oid]/journals/similarLoads'
       views: never
     }
     'src/pages/[oid]/me.vue': {

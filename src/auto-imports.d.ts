@@ -51,6 +51,7 @@ declare global {
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getWorkingDaysInRange: typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']
+  const groupKey: typeof import('./composables/use-similar-loads')['groupKey']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -64,8 +65,10 @@ declare global {
   const loadOrdersInProgress: typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']
   const loadOwnerExpenses: typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']
   const loadOwnerPayments: typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']
+  const loadSimilarLoads: typeof import('./composables/use-similar-loads')['loadSimilarLoads']
   const loadUnpaidOrders: typeof import('./composables/use-employee-report-calculator')['loadUnpaidOrders']
   const loadUnpaidSettlements: typeof import('./composables/use-employee-report-calculator')['loadUnpaidSettlements']
+  const locationKey: typeof import('./composables/use-similar-loads')['locationKey']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const markRaw: typeof import('vue')['markRaw']
   const nextTick: typeof import('vue')['nextTick']
@@ -109,6 +112,7 @@ declare global {
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const sha256: typeof import('./composables/use-similar-loads')['sha256']
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
@@ -265,7 +269,7 @@ declare global {
   const useOrdersTeamsDispatcherStore: (typeof import('./stores/orders_teams_dispatcher'))['useOrdersTeamsDispatcherStore']
   const useOrdersTracking: typeof import('./stores/orders_tracking')['useOrdersTracking']
   const useOrganizationsStore: typeof import('./stores/organizations')['useOrganizationsStore']
-  const useOwnerVehicleStore: typeof import('./stores/owner_vehicle')['useOwnerVehicleStore']
+  const useOwnerVehicleStore: (typeof import('./stores/owner_vehicle'))['useOwnerVehicleStore']
   const useOwnersStore: typeof import('./stores/owners')['useOwnersStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
@@ -392,6 +396,9 @@ declare global {
   // @ts-ignore
   export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission } from './composables/use-employee-report-calculator'
   import('./composables/use-employee-report-calculator')
+  // @ts-ignore
+  export type { SimilarLoadOrder, SimilarLoadGroup } from './composables/use-similar-loads'
+  import('./composables/use-similar-loads')
   // @ts-ignore
   export type { Reference } from './models/reference'
   import('./models/reference')
@@ -551,6 +558,7 @@ declare module 'vue' {
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getWorkingDaysInRange: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']>
+    readonly groupKey: UnwrapRef<typeof import('./composables/use-similar-loads')['groupKey']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -564,8 +572,10 @@ declare module 'vue' {
     readonly loadOrdersInProgress: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadOrdersInProgress']>
     readonly loadOwnerExpenses: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerExpenses']>
     readonly loadOwnerPayments: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['loadOwnerPayments']>
+    readonly loadSimilarLoads: UnwrapRef<typeof import('./composables/use-similar-loads')['loadSimilarLoads']>
     readonly loadUnpaidOrders: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadUnpaidOrders']>
     readonly loadUnpaidSettlements: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['loadUnpaidSettlements']>
+    readonly locationKey: UnwrapRef<typeof import('./composables/use-similar-loads')['locationKey']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
@@ -609,6 +619,7 @@ declare module 'vue' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly sha256: UnwrapRef<typeof import('./composables/use-similar-loads')['sha256']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>

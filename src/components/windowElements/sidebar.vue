@@ -63,6 +63,12 @@ const links = [
     perm: (access) => access.is_accountant,
   },
   {
+    name: 'Similar loads',
+    icon: defineAsyncComponent(() => import('~icons/streamline/copy-paste')),
+    path: '/journals/similarLoads',
+    perm: (access) => access.is_admin || access.is_accountant,
+  },
+  {
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
