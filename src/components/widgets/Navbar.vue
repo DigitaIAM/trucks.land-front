@@ -1,10 +1,13 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  is?: string | object | Component
-  glass?: boolean
-}>(), {
-  is: 'div',
-})
+withDefaults(
+  defineProps<{
+    is?: string | object | Component
+    glass?: boolean
+  }>(),
+  {
+    is: 'div',
+  },
+)
 </script>
 
 <template>

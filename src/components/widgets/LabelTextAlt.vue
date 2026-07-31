@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import Text from './Text.vue'
 
-withDefaults(defineProps<{
-  is?: string
-}>(), {
-  is: 'span',
-})
+withDefaults(
+  defineProps<{
+    is?: string
+  }>(),
+  {
+    is: 'span',
+  },
+)
 </script>
 
 <template>

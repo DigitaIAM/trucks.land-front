@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  is?: string
+const props = withDefaults(
+  defineProps<{
+    is?: string
 
-  align?: 'start' | 'center' | 'end'
-  start?: boolean
-  center?: boolean
-  end?: boolean
+    align?: 'start' | 'center' | 'end'
+    start?: boolean
+    center?: boolean
+    end?: boolean
 
-  vAlign?: 'top' | 'middle' | 'bottom'
-  top?: boolean
-  middle?: boolean
-  bottom?: boolean
-}>(), {
-  is: 'div',
-})
+    vAlign?: 'top' | 'middle' | 'bottom'
+    top?: boolean
+    middle?: boolean
+    bottom?: boolean
+  }>(),
+  {
+    is: 'div',
+  },
+)
 const classes = computed(() => {
   return {
     'indicator-start': props.start || props.align === 'start',

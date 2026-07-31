@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import Text from './Text.vue'
 
-withDefaults(defineProps<{
-  is?: string
-}>(), {
-  is: 'label',
-})
+withDefaults(
+  defineProps<{
+    is?: string
+  }>(),
+  {
+    is: 'label',
+  },
+)
 </script>
 
 <template>

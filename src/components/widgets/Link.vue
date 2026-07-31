@@ -1,22 +1,33 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  is?: string
-  hover?: boolean
+const props = withDefaults(
+  defineProps<{
+    is?: string
+    hover?: boolean
 
-  color?: 'neutral' | 'primary' | 'secondary' | 'accent' | 'success' | 'info' | 'warning' | 'error'
-  neutral?: boolean
-  primary?: boolean
-  secondary?: boolean
-  accent?: boolean
-  success?: boolean
-  info?: boolean
-  warning?: boolean
-  error?: boolean
-}>(), {
-  is: 'a',
-})
+    color?:
+      | 'neutral'
+      | 'primary'
+      | 'secondary'
+      | 'accent'
+      | 'success'
+      | 'info'
+      | 'warning'
+      | 'error'
+    neutral?: boolean
+    primary?: boolean
+    secondary?: boolean
+    accent?: boolean
+    success?: boolean
+    info?: boolean
+    warning?: boolean
+    error?: boolean
+  }>(),
+  {
+    is: 'a',
+  },
+)
 
 const classes = computed(() => {
   return {

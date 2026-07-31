@@ -35,14 +35,10 @@ export function makeMaskClasses(props: any) {
       'mask-diamond': props.diamond || props.shape === 'diamond',
       'mask-square': props.square || props.shape === 'square',
       'mask-circle': props.circle || props.shape === 'circle',
-      'mask-parallelogram':
-        props.parallelogram || props.shape === 'parallelogram',
-      'mask-parallelogram-2':
-        props.parallelogram2 || props.shape === 'parallelogram-2',
-      'mask-parallelogram-3':
-        props.parallelogram3 || props.shape === 'parallelogram-3',
-      'mask-parallelogram-4':
-        props.parallelogram4 || props.shape === 'parallelogram-4',
+      'mask-parallelogram': props.parallelogram || props.shape === 'parallelogram',
+      'mask-parallelogram-2': props.parallelogram2 || props.shape === 'parallelogram-2',
+      'mask-parallelogram-3': props.parallelogram3 || props.shape === 'parallelogram-3',
+      'mask-parallelogram-4': props.parallelogram4 || props.shape === 'parallelogram-4',
       'mask-star': props.star || props.shape === 'star',
       'mask-star-2': props.star2 || props.shape === 'star-2',
       'mask-triangle': props.triangle || props.shape === 'triangle',

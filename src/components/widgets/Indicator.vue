@@ -1,9 +1,12 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  is?: string
-}>(), {
-  is: 'div',
-})
+withDefaults(
+  defineProps<{
+    is?: string
+  }>(),
+  {
+    is: 'div',
+  },
+)
 </script>
 
 <template>

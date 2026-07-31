@@ -1,9 +1,12 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  is?: string | object | Component
-}>(), {
-  is: 'div',
-})
+withDefaults(
+  defineProps<{
+    is?: string | object | Component
+  }>(),
+  {
+    is: 'div',
+  },
+)
 </script>
 
 <template>

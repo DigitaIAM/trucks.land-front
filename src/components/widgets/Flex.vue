@@ -1,33 +1,36 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  is?: string | object | Component
-  join?: boolean
+const props = withDefaults(
+  defineProps<{
+    is?: string | object | Component
+    join?: boolean
 
-  // https://tailwindcss.com/docs/flex
-  flex?: boolean
-  flex1?: boolean
-  flexAuto?: boolean
-  flexInitial?: boolean
-  none?: boolean
+    // https://tailwindcss.com/docs/flex
+    flex?: boolean
+    flex1?: boolean
+    flexAuto?: boolean
+    flexInitial?: boolean
+    none?: boolean
 
-  grow?: boolean
+    grow?: boolean
 
-  // https://tailwindcss.com/docs/flex-direction
-  direction?: 'row' | 'col' | 'row-reverse' | 'col-reverse'
-  row?: boolean
-  col?: boolean
-  reverse?: boolean
+    // https://tailwindcss.com/docs/flex-direction
+    direction?: 'row' | 'col' | 'row-reverse' | 'col-reverse'
+    row?: boolean
+    col?: boolean
+    reverse?: boolean
 
-  // https://tailwindcss.com/docs/flex-wrap
-  wrap?: boolean
-  nowrap?: boolean
-  wrapReverse?: boolean
-}>(), {
-  is: 'div',
-  flex: true,
-})
+    // https://tailwindcss.com/docs/flex-wrap
+    wrap?: boolean
+    nowrap?: boolean
+    wrapReverse?: boolean
+  }>(),
+  {
+    is: 'div',
+    flex: true,
+  },
+)
 
 const classes = computed(() => {
   return {

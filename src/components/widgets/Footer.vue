@@ -2,13 +2,16 @@
 import { computed } from 'vue'
 import Text from './Text.vue'
 
-const props = withDefaults(defineProps<{
-  center?: boolean
-  is?: string
-}>(), {
-  center: false,
-  is: 'footer',
-})
+const props = withDefaults(
+  defineProps<{
+    center?: boolean
+    is?: string
+  }>(),
+  {
+    center: false,
+    is: 'footer',
+  },
+)
 
 const classes = computed(() => {
   return {

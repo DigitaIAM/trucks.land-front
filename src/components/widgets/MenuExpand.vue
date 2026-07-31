@@ -3,19 +3,22 @@ import { onMounted, provide, ref } from 'vue'
 import { onClickOutside, syncRefs, useElementHover } from '@vueuse/core'
 import { randomString } from '../utils/random-string'
 
-const props = withDefaults(defineProps<{
-  hover?: boolean
-  delayEnter?: number
-  delayLeave?: number
-  closeOnClickOutside?: boolean
-}>(), {
-  position: 'bottom',
-  end: false,
-  hover: false,
-  delayEnter: 0,
-  delayLeave: 300,
-  closeOnClickOutside: false,
-})
+const props = withDefaults(
+  defineProps<{
+    hover?: boolean
+    delayEnter?: number
+    delayLeave?: number
+    closeOnClickOutside?: boolean
+  }>(),
+  {
+    position: 'bottom',
+    end: false,
+    hover: false,
+    delayEnter: 0,
+    delayLeave: 300,
+    closeOnClickOutside: false,
+  },
+)
 // "Expand" Visibility
 const isOpen = defineModel('open', { local: true, default: false, type: Boolean })
 provide('isExpandOpen', isOpen)
@@ -66,13 +69,18 @@ onMounted(() => {
 
 function handleClick(ev: MouseEvent) {
   ev.preventDefault()
-  if (ev.target === expandEl.value.children[0])
-    isOpen.value = !isOpen.value
+  if (ev.target === expandEl.value.children[0]) isOpen.value = !isOpen.value
 }
 </script>
 
 <template>
-  <details :id="wrapperId" ref="expandEl" class="dropdown menu-expand" :open="isOpen" @click="handleClick">
+  <details
+    :id="wrapperId"
+    ref="expandEl"
+    class="dropdown menu-expand"
+    :open="isOpen"
+    @click="handleClick"
+  >
     <slot v-bind="{ toggle, open, close }" />
   </details>
 </template>

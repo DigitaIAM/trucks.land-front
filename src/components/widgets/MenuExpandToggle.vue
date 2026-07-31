@@ -7,7 +7,13 @@ const toggle = inject('toggleExpand')
 </script>
 
 <template>
-  <summary :id="id" :aria-expanded="isOpen" aria-haspopup="menu" class="menu-expand-toggle" @click.prevent.stop="toggle">
+  <summary
+    :id="id"
+    :aria-expanded="isOpen"
+    aria-haspopup="menu"
+    class="menu-expand-toggle"
+    @click.prevent.stop="toggle"
+  >
     <slot />
   </summary>
 </template>

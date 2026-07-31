@@ -6,7 +6,7 @@ const props = defineProps<{
   vertical?: boolean
   horizontal?: boolean
 
-  size?: | 'lg' | 'md' | 'sm' | 'xs'
+  size?: 'lg' | 'md' | 'sm' | 'xs'
   lg?: boolean
   md?: boolean
   sm?: boolean
