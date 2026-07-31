@@ -135,16 +135,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       contractVehicles.length === 1
         ? `Unit: ${contractVehicles[0].unit_id}`
         : `Units: ${contractVehicles.map((v) => v.unit_id).join(', ')}`
-    cy -=
-      bls +
-      text_right(
-        page,
-        boldFont,
-        16,
-        filterCharSet(unitText, font),
-        rightSide,
-        cy,
-      )
+    cy -= bls + text_right(page, boldFont, 16, filterCharSet(unitText, font), rightSide, cy)
   }
 
   cy -= bls * 2
@@ -385,6 +376,18 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
     text_left(page, boldFont, 10, `Net payment: $${netPayment.toFixed(2)}`, margin, bottomY)
     bottomY -= font.heightAtSize(10) + 10
   } else {
+    const totalDriverPayment = orders.reduce((sum, line) => sum + (line.amount ?? 0), 0)
+
+    text_left(
+      page,
+      boldFont,
+      10,
+      `Total driver payment: $${totalDriverPayment.toFixed(2)}`,
+      margin,
+      bottomY,
+    )
+    bottomY -= font.heightAtSize(10) + 10
+
     if (totalQuickPay > 0) {
       text_left(
         page,
