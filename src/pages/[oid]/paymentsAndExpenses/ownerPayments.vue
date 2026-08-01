@@ -261,7 +261,8 @@ async function sendAllPayments(documents: PaymentToOwnerSummary[]) {
                 name: contra.name,
               },
             },
-          ], // contra.email  `shabanovanatali@gmail.com`
+          ],
+          cc: [{ email_address: { address: 'emily@cnulogistics.com' } }], // contra.email  `shabanovanatali@gmail.com`
           subject: `CNU Pay Sheet ${doc.week} Week ${doc.year} `,
           htmlbody:
             'Greetings,<br />' +
