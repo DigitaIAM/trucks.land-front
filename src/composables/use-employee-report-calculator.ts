@@ -193,6 +193,7 @@ export async function calculateEmployeeReport(
     )
     .eq('organization', orgId)
     .eq('users.fired', false)
+    .order('created_at', { ascending: false })
 
   if (responseTerms.error) {
     console.error('Error supabase:', responseTerms.error.message)

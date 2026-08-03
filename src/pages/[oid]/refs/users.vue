@@ -33,8 +33,28 @@ defineOptions({
 const orgData = useOrgData()
 
 const usersStore = useUsersStore()
+const userConditionsStore = useUserConditionsStore()
 
 const selectedUser = ref<User | null>(null)
+
+const employeesWithConditions = ref<Set<number>>(new Set())
+
+onMounted(async () => {
+  employeesWithConditions.value = new Set(
+    await userConditionsStore.employeesWithConditions(authStore.org?.id ?? null),
+  )
+})
+
+const sortedListing = computed(() => {
+  const list = usersStore.listing ?? []
+  return [...list].sort((a, b) => {
+    const aHas = employeesWithConditions.value.has(a.id)
+    const bHas = employeesWithConditions.value.has(b.id)
+    if (aHas && !bHas) return -1
+    if (!aHas && bHas) return 1
+    return 0
+  })
+})
 
 function editUser(user: User) {
   selectedUser.value = user
@@ -121,7 +141,7 @@ watch(
     </thead>
     <tbody>
       <tr
-        v-for="user in usersStore.listing"
+        v-for="user in sortedListing"
         :key="user.id"
         class="hover:bg-base-200"
         @click="editUser(user)"

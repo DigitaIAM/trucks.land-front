@@ -72,7 +72,7 @@ const links = [
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
-    perm: (access) => access.is_admin || access.is_hr || access.is_payroll_accountant,
+    perm: (access) => access.is_admin || access.is_hr, //|| access.is_payroll_accountant
   },
   {
     name: 'Create payments',
@@ -132,6 +132,13 @@ const links = [
       () => import('~icons/streamline/ai-generate-variation-spark?width=1em&height=1em'),
     ),
     path: '/paymentsAndExpenses/combined-dispatcher-report',
+    perm: (access) => access.is_payroll_accountant,
+  },
+  {
+    name: 'Working conditions',
+    //SALARY accountant
+    icon: defineAsyncComponent(() => import('~icons/streamline/office-worker')),
+    path: '/refs/users',
     perm: (access) => access.is_payroll_accountant,
   },
   // {

@@ -12,13 +12,18 @@ const props = defineProps<{
 
 const id = ref<number>()
 
+function toNumberOrNull(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const n = Number(value)
+  return Number.isNaN(n) ? null : n
+}
+
 const title = ref('')
 const name = ref('')
 const real_name = ref('')
 const phone = ref('')
 const email = ref('')
 const team = ref('')
-const percent_of_gross = ref<number | null>(null)
 const percent_of_profit = ref<number | null>(null)
 const fixed_salary = ref<number | null>(null)
 const income_tax = ref<number | null>(null)
@@ -60,6 +65,11 @@ const authStore = useAuthStore()
 
 const isNew = computed(() => id.value == null)
 const canCreate = computed(() => authStore.account?.access.is_admin === true)
+const canEditConditions = computed(
+  () =>
+    authStore.account?.access.is_admin === true ||
+    authStore.account?.access.is_payroll_accountant === true,
+)
 
 function openModal() {
   ;(document.getElementById('edit_user') as HTMLDialogElement | null)?.showModal()
@@ -106,7 +116,6 @@ async function resetAndShow(user: User | null) {
   email.value = user?.email || ''
 
   const condition = await userConditionsStore.getCondition(props.org.id, user?.id)
-  percent_of_gross.value = condition?.percent_of_gross
   percent_of_profit.value = condition?.percent_of_profit
   fixed_salary.value = condition?.fixed_salary
   income_tax.value = condition?.income_tax
@@ -180,6 +189,19 @@ async function saveUser() {
       }
 
       await usersStore.update(id.value, userData)
+
+      if (canEditConditions.value && id.value) {
+        await userConditionsStore.save(
+          props.org.id,
+          id.value,
+          {
+            percent_of_profit: toNumberOrNull(percent_of_profit.value),
+            fixed_salary: toNumberOrNull(fixed_salary.value),
+            income_tax: toNumberOrNull(income_tax.value),
+          },
+          authStore.account?.id ?? 0,
+        )
+      }
     }
 
     closeModal()
@@ -319,25 +341,20 @@ function close() {
 
       <div class="flex space-x-3 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">
-          <Label> % of gross</Label>
-          <TextInput disabled v-model="percent_of_gross" />
-        </div>
-        <Text class="py-8">or</Text>
-        <div class="md:w-1/3 md:mb-0">
           <Label> % of profit</Label>
-          <TextInput disabled v-model="percent_of_profit" />
+          <TextInput :disabled="!canEditConditions || isNew" v-model="percent_of_profit" />
         </div>
         <Text class="py-8">or</Text>
         <div class="md:w-1/3 md:mb-0">
           <Label> fixed salary $</Label>
-          <TextInput disabled v-model="fixed_salary" />
+          <TextInput :disabled="!canEditConditions || isNew" v-model="fixed_salary" />
         </div>
       </div>
 
       <div class="flex space-x-3 mb-2 w-full">
         <div class="md:w-1/2 md:mb-0">
           <Label> Income tax %</Label>
-          <TextInput disabled v-model="income_tax" />
+          <TextInput :disabled="!canEditConditions || isNew" v-model="income_tax" />
         </div>
         <div v-if="!isNew && team" class="md:w-1/2 md:mb-0">
           <Label>Team #</Label>

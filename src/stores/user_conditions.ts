@@ -58,13 +58,14 @@ export const useUserConditionsStore = defineStore('user_conditions', () => {
         .select()
         .eq('organization', orgId)
         .eq('user_id', userId)
-        .maybeSingle()
+        .order('created_at', { ascending: false })
+        .limit(1)
 
       if (error) {
         console.log('error', error)
         return null
       }
-      return data as Condition
+      return (data?.[0] as Condition) ?? null
     }
     return null
   }
@@ -84,7 +85,69 @@ export const useUserConditionsStore = defineStore('user_conditions', () => {
     }
   }
 
-  return { setContext, listing, getCondition, employeesWithSalary }
+  async function employeesWithConditions(orgId: number | null): Promise<number[]> {
+    if (!orgId) return []
+
+    const { data, error } = await supabase
+      .from('user_conditions')
+      .select('user_id')
+      .eq('organization', orgId)
+
+    if (error) {
+      console.error('error', error)
+      return []
+    }
+
+    return Array.from(new Set(data.map((item) => item.user_id)))
+  }
+
+  async function save(
+    orgId: number,
+    userId: number,
+    params: {
+      percent_of_gross?: number | null
+      percent_of_profit: number | null
+      fixed_salary: number | null
+      income_tax: number | null
+    },
+    performedBy: number,
+  ) {
+    const existing = await getCondition(orgId, userId)
+
+    if (existing) {
+      const salaryChanged = existing.fixed_salary !== params.fixed_salary
+      const profitChanged = existing.percent_of_profit !== params.percent_of_profit
+      const taxChanged = existing.income_tax !== params.income_tax
+
+      if (!salaryChanged && !profitChanged && !taxChanged) {
+        const { error } = await supabase
+          .from('user_conditions')
+          .update(params)
+          .eq('id', existing.id)
+
+        if (error) throw error
+
+        return existing.id
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('user_conditions')
+      .insert({
+        organization: orgId,
+        user_id: userId,
+        ...params,
+        created_by: performedBy,
+      } as ConditionCreate)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return (data as Condition).id
+  }
+
+  return { setContext, listing, getCondition, employeesWithSalary, employeesWithConditions, save }
 })
 
 if (import.meta.hot) {
