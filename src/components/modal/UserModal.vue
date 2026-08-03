@@ -143,7 +143,11 @@ async function resetAndShow(user: User | null) {
   if (access?.is_accountant) {
     str += 'accountant, '
   }
-  title.value = str.substring(0, str.length - 2)
+  if (str && !user?.fired) {
+    title.value = str.substring(0, str.length - 2)
+  } else {
+    title.value = ''
+  }
 
   openModal()
 }

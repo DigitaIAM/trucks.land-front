@@ -55,6 +55,8 @@ watch(
         id="headlessui-combobox-input-:r5n:"
         role="combobox"
         type="text"
+        autocomplete="off"
+        spellcheck="false"
         aria-expanded="false"
         aria-autocomplete="list"
         v-model="searchQuery"
