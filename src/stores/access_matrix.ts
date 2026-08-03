@@ -8,7 +8,7 @@ export interface AccessMatrix extends AccessMatrixCreate {
 
 export interface AccessMatrixCreate {
   organization: number
-  user_uuid: number
+  user_uuid: string
   user_id: number
   is_admin: boolean
   is_dispatcher: boolean
@@ -16,7 +16,8 @@ export interface AccessMatrixCreate {
   is_accountant: boolean
   is_hr: boolean
   is_payroll_accountant: boolean
-  team: number
+  team: number | null
+  created_by?: number
 }
 
 interface Key {
@@ -54,8 +55,8 @@ export const useAccessMatrixStore = defineStore('access_matrix', () => {
 
   async function getAccessMatrix(
     orgId: number | null,
-    userId: string | null,
-  ): Promise<string | null> {
+    userId: number | string | null,
+  ): Promise<AccessMatrix | null> {
     // console.log('orgId', orgId)
     // console.log('userId', userId)
     if (orgId && userId) {

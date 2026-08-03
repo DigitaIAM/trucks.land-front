@@ -9,6 +9,7 @@ export interface User extends UserCreate {
 }
 
 export interface UserCreate {
+  uid: string
   name: string
   real_name: string
   phone: string
@@ -16,7 +17,7 @@ export interface UserCreate {
   team: string
   fired: boolean
   fired_at: Date
-  performed_by: number
+  performed_by?: number
 }
 
 export interface UserUpdate {
@@ -77,6 +78,83 @@ export const useUsersStore = defineStore('user', () => {
       console.error('Ошибка при создании пользователя:', error)
       throw error
     }
+  }
+
+  async function register(params: {
+    orgId: number
+    performedBy?: number
+    email: string
+    password: string
+    name: string
+    real_name: string
+    phone: string
+    team: string
+    access: {
+      is_admin: boolean
+      is_dispatcher: boolean
+      is_tracking: boolean
+      is_hr: boolean
+      is_accountant: boolean
+      is_payroll_accountant: boolean
+    }
+  }) {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: params.email,
+      password: params.password,
+      options: {
+        data: {
+          name: params.name,
+          real_name: params.real_name,
+          phone: params.phone,
+        },
+      },
+    })
+
+    if (authError) throw authError
+    if (!authData?.user) throw new Error('Не удалось создать аккаунт пользователя')
+
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        uid: authData.user.id,
+        name: params.name,
+        real_name: params.real_name,
+        phone: params.phone,
+        email: params.email,
+        team: params.team,
+        fired: false,
+      } as UserCreate)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    const newUser = data as User
+
+    try {
+      const { error: accessError } = await supabase.from('access_matrix').insert({
+        organization: params.orgId,
+        user_uuid: authData.user.id,
+        user_id: newUser.id,
+        is_admin: params.access.is_admin,
+        is_dispatcher: params.access.is_dispatcher,
+        is_tracking: params.access.is_tracking,
+        is_hr: params.access.is_hr,
+        is_accountant: params.access.is_accountant,
+        is_payroll_accountant: params.access.is_payroll_accountant,
+        team: params.team ? Number(params.team) : null,
+        created_by: params.performedBy,
+      } as AccessMatrixCreate)
+
+      if (accessError) throw accessError
+    } catch (error) {
+      await supabase.from('users').delete().eq('id', newUser.id)
+      console.error('Ошибка при назначении ролей пользователю:', error)
+      throw error
+    }
+
+    mapping.value.set(newUser.id, newUser)
+    return newUser
   }
 
   async function update(
@@ -203,6 +281,7 @@ export const useUsersStore = defineStore('user', () => {
     loading,
     listing,
     create,
+    register,
     update,
     resolve,
     resolveUUID,

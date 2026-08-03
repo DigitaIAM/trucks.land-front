@@ -110,7 +110,14 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 600,
-        order: { id: 1, cost: 1000, driver_cost: 600, owner: 100, stage: 2, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 600,
+          owner: 100,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
 
@@ -129,14 +136,19 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 600,
-        order: { id: 1, cost: 1000, driver_cost: 600, owner: 100, stage: 2, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 600,
+          owner: 100,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
 
     const expenses = new Map()
-    expenses.set(100, [
-      { id: 1, owner: 100, amount: 150, notes: 'repair', organization: 1 } as any,
-    ])
+    expenses.set(100, [{ id: 1, owner: 100, amount: 150, notes: 'repair', organization: 1 } as any])
 
     const result = await calculateOwnerReport(payments, expenses, null)
     expect(result[0].payout).toBe(450) // 600 - 150
@@ -149,7 +161,14 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 600,
-        order: { id: 1, cost: 1000, driver_cost: 600, owner: 100, stage: 3, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 600,
+          owner: 100,
+          stage: 3,
+          organization: 1,
+        } as any,
       },
     ])
 
@@ -167,14 +186,19 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 100,
-        order: { id: 1, cost: 1000, driver_cost: 100, owner: 100, stage: 2, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 100,
+          owner: 100,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
 
     const expenses = new Map()
-    expenses.set(100, [
-      { id: 1, owner: 100, amount: 500, notes: 'repair', organization: 1 } as any,
-    ])
+    expenses.set(100, [{ id: 1, owner: 100, amount: 500, notes: 'repair', organization: 1 } as any])
 
     const result = await calculateOwnerReport(payments, expenses, null)
     expect(result[0].payout).toBe(-400)
@@ -186,14 +210,28 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 200,
-        order: { id: 1, cost: 1000, driver_cost: 200, owner: 100, stage: 2, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 200,
+          owner: 100,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
     payments.set(200, [
       {
         owner: 200,
         driver_payment: 800,
-        order: { id: 2, cost: 2000, driver_cost: 800, owner: 200, stage: 2, organization: 1 } as any,
+        order: {
+          id: 2,
+          cost: 2000,
+          driver_cost: 800,
+          owner: 200,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
 
@@ -214,14 +252,28 @@ describe('calculateOwnerReport', () => {
       {
         owner: 100,
         driver_payment: 600,
-        order: { id: 1, cost: 1000, driver_cost: 600, owner: 100, stage: 2, organization: 1 } as any,
+        order: {
+          id: 1,
+          cost: 1000,
+          driver_cost: 600,
+          owner: 100,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
     payments.set(200, [
       {
         owner: 200,
         driver_payment: 800,
-        order: { id: 2, cost: 2000, driver_cost: 800, owner: 200, stage: 2, organization: 1 } as any,
+        order: {
+          id: 2,
+          cost: 2000,
+          driver_cost: 800,
+          owner: 200,
+          stage: 2,
+          organization: 1,
+        } as any,
       },
     ])
 

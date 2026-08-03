@@ -1,4 +1,16 @@
 import { vi } from 'vitest'
+import { ref, computed } from 'vue'
+import { computedAsync } from '@vueuse/core'
+import type { supabase as supabaseClient } from './src/composables/use-supabase'
+
+const testGlobals = globalThis as unknown as {
+  ref: typeof ref
+  computed: typeof computed
+  computedAsync: typeof computedAsync
+}
+testGlobals.ref = ref
+testGlobals.computed = computed
+testGlobals.computedAsync = computedAsync
 
 function createMockQuery(data: unknown, status = 200) {
   const response = { data, status, error: null, count: null }
@@ -10,6 +22,10 @@ function createMockQuery(data: unknown, status = 200) {
     lte: vi.fn(() => query),
     order: vi.fn(() => query),
     limit: vi.fn(() => query),
+    insert: vi.fn(() => query),
+    update: vi.fn(() => query),
+    delete: vi.fn(() => query),
+    single: vi.fn(() => query),
     maybeSingle: vi.fn(() => query),
     then: vi.fn((resolve: (v: typeof response) => void) => {
       resolve(response)
@@ -25,7 +41,10 @@ global.supabase = {
   channel: vi.fn(() => ({
     on: vi.fn(() => ({ subscribe: vi.fn() })),
   })),
-} as any
+  auth: {
+    signUp: vi.fn(async () => ({ data: { user: { id: 'auth-uuid' } }, error: null })),
+  },
+} as unknown as typeof supabaseClient
 
 global.useUsersStore = vi.fn(() => ({
   resolve: vi.fn(async (id: number) => ({ id, real_name: 'User ' + id, name: 'user' + id, access: {} })),

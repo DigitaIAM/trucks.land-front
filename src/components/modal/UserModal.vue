@@ -26,7 +26,48 @@ const fired = ref(false)
 const fired_at = ref(new Date() as Date | undefined)
 const performed_by = ref<number>()
 
+const password = ref('')
+
+const roleModel = reactive<{
+  is_admin: boolean
+  is_dispatcher: boolean
+  is_tracking: boolean
+  is_hr: boolean
+  is_accountant: boolean
+  is_payroll_accountant: boolean
+}>({
+  is_admin: false,
+  is_dispatcher: false,
+  is_tracking: false,
+  is_hr: false,
+  is_accountant: false,
+  is_payroll_accountant: false,
+})
+
+const roles = [
+  { key: 'is_admin', label: 'Admin' },
+  { key: 'is_dispatcher', label: 'Dispatcher' },
+  { key: 'is_tracking', label: 'Tracking' },
+  { key: 'is_hr', label: 'HR' },
+  { key: 'is_accountant', label: 'Accountant' },
+  { key: 'is_payroll_accountant', label: 'Payroll accountant' },
+] as const
+
 const emit = defineEmits(['closed'])
+
+const usersStore = useUsersStore()
+const authStore = useAuthStore()
+
+const isNew = computed(() => id.value == null)
+const canCreate = computed(() => authStore.account?.access.is_admin === true)
+
+function openModal() {
+  ;(document.getElementById('edit_user') as HTMLDialogElement | null)?.showModal()
+}
+
+function closeModal() {
+  ;(document.getElementById('edit_user') as HTMLDialogElement | null)?.close()
+}
 
 watch(
   () => props.edit,
@@ -34,18 +75,30 @@ watch(
   { deep: true },
 )
 
-const usersStore = useUsersStore()
-const authStore = useAuthStore()
-
 const colorMode = useColorMode()
 
 async function resetAndShow(user: User | null) {
   if (user === null) {
-    edit_user.close()
+    closeModal()
     return
   }
 
   id.value = user?.id
+
+  if (user?.id == null) {
+    name.value = ''
+    real_name.value = ''
+    phone.value = ''
+    email.value = ''
+    team.value = ''
+    password.value = ''
+    for (const key of Object.keys(roleModel) as Array<keyof typeof roleModel>) {
+      roleModel[key] = false
+    }
+    title.value = 'New user'
+    openModal()
+    return
+  }
 
   name.value = user?.name || ''
   real_name.value = user?.real_name || ''
@@ -61,9 +114,9 @@ async function resetAndShow(user: User | null) {
   fired_at.value = user?.fired_at
   performed_by.value = user?.performed_by
 
-  const access = await accessMatrixStore.getAccessMatrix(props.org.id, user?.id)
+  const access = await accessMatrixStore.getAccessMatrix(props.org.id, user?.id ?? null)
 
-  team.value = access?.team
+  team.value = access?.team?.toString() ?? ''
 
   let str = ''
   if (access?.is_admin) {
@@ -83,31 +136,57 @@ async function resetAndShow(user: User | null) {
   }
   title.value = str.substring(0, str.length - 2)
 
-  edit_user.showModal()
+  openModal()
 }
 
 async function saveUser() {
   try {
-    const userData = {
-      name: name.value,
-      real_name: real_name.value,
-      phone: phone.value,
-      email: email.value,
-      team: team.value,
-      fired: fired.value,
-      fired_at: fired_at.value,
-    }
-
     if (id.value == null) {
-      await usersStore.create(userData as UserCreate)
+      if (!canCreate.value) {
+        alert('У вас нет прав на создание пользователей')
+        return
+      }
+      if (!password.value) {
+        alert('Укажите пароль для нового сотрудника')
+        return
+      }
+      if (team.value && Number.isNaN(Number(team.value))) {
+        alert('Team # должен быть числом')
+        return
+      }
+
+      await usersStore.register({
+        orgId: props.org.id,
+        performedBy: authStore.account?.id,
+        email: email.value,
+        password: password.value,
+        name: name.value,
+        real_name: real_name.value,
+        phone: phone.value,
+        team: team.value,
+        access: { ...roleModel },
+      })
+
+      alert('Сотрудник зарегистрирован. На его email отправлено письмо для подтверждения аккаунта.')
     } else {
+      const userData = {
+        name: name.value,
+        real_name: real_name.value,
+        phone: phone.value,
+        email: email.value,
+        team: team.value,
+        fired: fired.value,
+        fired_at: fired_at.value,
+      }
+
       await usersStore.update(id.value, userData)
     }
 
-    edit_user.close()
+    closeModal()
     emit('closed')
   } catch (e) {
     console.error('Ошибка при сохранении профиля:', e)
+    alert((e as Error)?.message ?? 'Не удалось сохранить профиль')
   }
 }
 
@@ -145,7 +224,7 @@ async function toggleEmployeeStatus() {
     if (historyError) throw historyError
 
     fired.value = isFiring
-    edit_user.value?.close()
+    closeModal()
     emit('closed')
 
     alert(isFiring ? 'Сотрудник уволен' : 'Сотрудник успешно принят на работу')
@@ -155,7 +234,7 @@ async function toggleEmployeeStatus() {
 }
 
 function close() {
-  edit_user.close()
+  closeModal()
   emit('closed')
 }
 </script>
@@ -163,7 +242,7 @@ function close() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="usersStore"></SearchVue>
-    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow({} as User)"
+    <Button v-if="canCreate" class="btn-soft font-light tracking-wider" @click="resetAndShow({} as User)"
       >Create</Button
     >
   </div>
@@ -176,7 +255,7 @@ function close() {
         </div>
       </div>
 
-      <div v-if="id > 0 && fired_at" class="mt-2 text-sm font-medium">
+      <div v-if="!isNew && fired_at" class="mt-2 text-sm font-medium">
         <div v-if="fired" class="text-red-600">
           Fired: {{ moment(fired_at).format('YYYY-MM-DD') }}
         </div>
@@ -205,6 +284,28 @@ function close() {
         </div>
       </div>
 
+      <div v-if="isNew && canCreate" class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Password</Label>
+          <TextInput type="password" v-model="password" />
+        </div>
+        <div class="md:w-1/2 md:mb-0">
+          <Label>Team #</Label>
+          <TextInput v-model="team" />
+        </div>
+      </div>
+
+      <div v-if="isNew && canCreate" class="flex space-x-3 mb-2 mt-4 w-full flex-wrap gap-y-2">
+        <label
+          v-for="role in roles"
+          :key="role.key"
+          class="flex items-center gap-2 mr-6 cursor-pointer"
+        >
+          <input type="checkbox" v-model="roleModel[role.key]" class="checkbox checkbox-sm" />
+          <span class="text-sm">{{ role.label }}</span>
+        </label>
+      </div>
+
       <div class="flex space-x-48 mb-4 mt-6 w-full">
         <Text size="2xl">Сonditions</Text>
       </div>
@@ -231,7 +332,7 @@ function close() {
           <Label> Income tax %</Label>
           <TextInput disabled v-model="income_tax" />
         </div>
-        <div v-if="team" class="md:w-1/2 md:mb-0">
+        <div v-if="!isNew && team" class="md:w-1/2 md:mb-0">
           <Label>Team #</Label>
           <TextInput v-model="team" disabled />
         </div>
@@ -240,7 +341,7 @@ function close() {
       <ModalAction>
         <div class="flex justify-between w-full">
           <VueDatePicker
-            v-if="id > 0"
+            v-if="!isNew"
             class="my-custom-datepicker mr-3"
             teleport-center
             :enable-time-picker="false"
@@ -248,7 +349,7 @@ function close() {
             :dark="colorMode.preference == 'dark'"
           ></VueDatePicker>
           <Button
-            v-if="id > 0"
+            v-if="!isNew"
             type="button"
             @click="toggleEmployeeStatus"
             :class="fired ? 'bg-green-600' : 'bg-red-600'"
@@ -259,7 +360,7 @@ function close() {
           <div v-else></div>
           <div class="flex gap-3">
             <Button @click="saveUser" class="btn-soft font-light tracking-wider">
-              {{ id ? 'Update' : 'Create' }}
+              {{ isNew ? 'Create' : 'Update' }}
             </Button>
 
             <Button @click="close" class="btn-soft font-light tracking-wider"> Close </Button>
