@@ -84,6 +84,7 @@ const params = {
 describe('useUsersStore.register', () => {
   const from = global.supabase.from as Mock
   const signUp = global.supabase.auth.signUp as Mock
+  const setSession = global.supabase.auth.setSession as Mock
   const tables: Record<string, ReturnType<typeof mockUsersTable> | ReturnType<typeof mockWrite>> = {}
 
   beforeEach(() => {
@@ -117,10 +118,16 @@ describe('useUsersStore.register', () => {
       },
     })
 
+    expect(setSession).toHaveBeenCalledWith({
+      access_token: 'admin-token',
+      refresh_token: 'admin-refresh',
+    })
+
     expect(tables.users.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         uid: 'auth-uuid',
         email: 'ivan@example.com',
+        team: 2,
         fired: false,
       }),
     )

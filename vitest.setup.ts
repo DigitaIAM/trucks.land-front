@@ -43,6 +43,11 @@ global.supabase = {
   })),
   auth: {
     signUp: vi.fn(async () => ({ data: { user: { id: 'auth-uuid' } }, error: null })),
+    getSession: vi.fn(async () => ({
+      data: { session: { access_token: 'admin-token', refresh_token: 'admin-refresh' } },
+      error: null,
+    })),
+    setSession: vi.fn(async () => ({ data: { session: {} }, error: null })),
   },
 } as unknown as typeof supabaseClient
 

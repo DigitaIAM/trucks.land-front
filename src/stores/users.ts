@@ -14,7 +14,7 @@ export interface UserCreate {
   real_name: string
   phone: string
   email: string
-  team: string
+  team: number | null
   fired: boolean
   fired_at: Date
   performed_by?: number
@@ -25,7 +25,7 @@ export interface UserUpdate {
   real_name?: string
   phone?: string
   email?: string
-  team?: string
+  team?: number | null
   fired?: boolean
   fired_at?: Date
   performed_by?: number
@@ -98,6 +98,9 @@ export const useUsersStore = defineStore('user', () => {
       is_payroll_accountant: boolean
     }
   }) {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const adminSession = sessionData.session
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: params.email,
       password: params.password,
@@ -113,6 +116,16 @@ export const useUsersStore = defineStore('user', () => {
     if (authError) throw authError
     if (!authData?.user) throw new Error('Не удалось создать аккаунт пользователя')
 
+    if (adminSession) {
+      const { error: restoreError } = await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      })
+      if (restoreError) {
+        console.error('Не удалось восстановить сессию администратора:', restoreError)
+      }
+    }
+
     const { data, error } = await supabase
       .from('users')
       .insert({
@@ -121,7 +134,7 @@ export const useUsersStore = defineStore('user', () => {
         real_name: params.real_name,
         phone: params.phone,
         email: params.email,
-        team: params.team,
+        team: params.team ? Number(params.team) : null,
         fired: false,
       } as UserCreate)
       .select()

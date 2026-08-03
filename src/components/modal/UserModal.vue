@@ -45,12 +45,12 @@ const roleModel = reactive<{
 })
 
 const roles = [
-  { key: 'is_admin', label: 'Admin' },
-  { key: 'is_dispatcher', label: 'Dispatcher' },
-  { key: 'is_tracking', label: 'Tracking' },
+  { key: 'is_admin', label: 'admin' },
+  { key: 'is_dispatcher', label: 'dispatcher' },
+  { key: 'is_tracking', label: 'tracking' },
   { key: 'is_hr', label: 'HR' },
-  { key: 'is_accountant', label: 'Accountant' },
-  { key: 'is_payroll_accountant', label: 'Payroll accountant' },
+  { key: 'is_accountant', label: 'accountant' },
+  { key: 'is_payroll_accountant', label: 'payroll accountant' },
 ] as const
 
 const emit = defineEmits(['closed'])
@@ -120,19 +120,19 @@ async function resetAndShow(user: User | null) {
 
   let str = ''
   if (access?.is_admin) {
-    str += 'Admin, '
+    str += 'admin, '
   }
   if (access?.is_dispatcher) {
-    str += 'Dispatcher, '
+    str += 'dispatcher, '
   }
   if (access?.is_tracking) {
-    str += 'Tracking, '
+    str += 'tracking, '
   }
   if (access?.is_hr) {
     str += 'HR, '
   }
   if (access?.is_accountant) {
-    str += 'Accountant, '
+    str += 'accountant, '
   }
   title.value = str.substring(0, str.length - 2)
 
@@ -167,14 +167,14 @@ async function saveUser() {
         access: { ...roleModel },
       })
 
-      alert('Сотрудник зарегистрирован. На его email отправлено письмо для подтверждения аккаунта.')
+      alert('Сотрудник зарегистрирован')
     } else {
       const userData = {
         name: name.value,
         real_name: real_name.value,
         phone: phone.value,
         email: email.value,
-        team: team.value,
+        team: team.value ? Number(team.value) : null,
         fired: fired.value,
         fired_at: fired_at.value,
       }
@@ -242,7 +242,10 @@ function close() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="usersStore"></SearchVue>
-    <Button v-if="canCreate" class="btn-soft font-light tracking-wider" @click="resetAndShow({} as User)"
+    <Button
+      v-if="canCreate"
+      class="btn-soft font-light tracking-wider"
+      @click="resetAndShow({} as User)"
       >Create</Button
     >
   </div>
@@ -295,6 +298,10 @@ function close() {
         </div>
       </div>
 
+      <div v-if="isNew && canCreate" class="flex space-x-48 mb-4 mt-6 w-full">
+        <Text size="2xl">Roles</Text>
+      </div>
+
       <div v-if="isNew && canCreate" class="flex space-x-3 mb-2 mt-4 w-full flex-wrap gap-y-2">
         <label
           v-for="role in roles"
@@ -302,7 +309,7 @@ function close() {
           class="flex items-center gap-2 mr-6 cursor-pointer"
         >
           <input type="checkbox" v-model="roleModel[role.key]" class="checkbox checkbox-sm" />
-          <span class="text-sm">{{ role.label }}</span>
+          <Label>{{ role.label }}</Label>
         </label>
       </div>
 
