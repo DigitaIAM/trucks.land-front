@@ -404,7 +404,7 @@ describe('calculateEmployeeReport', () => {
     mockTableData['vehicles'] = [{ id: 50, unit_id: 'LS-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
 
@@ -443,7 +443,7 @@ describe('calculateEmployeeReport', () => {
     mockTableData['vehicles'] = [{ id: 50, unit_id: 'LS-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
 
@@ -494,7 +494,7 @@ describe('calculateEmployeeReport', () => {
     mockTableData['vehicles'] = [{ id: 50, unit_id: 'LS-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
 
@@ -531,7 +531,7 @@ describe('calculateEmployeeReport', () => {
     mockTableData['vehicles'] = [{ id: 50, unit_id: 'LS-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
 
@@ -642,7 +642,7 @@ describe('calculateWeeklyContractCommission', () => {
     mockTableData['vehicles'] = [{ id: 1, unit_id: 'TRK-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '5000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = []
 
@@ -654,7 +654,7 @@ describe('calculateWeeklyContractCommission', () => {
     mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '5000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
     mockTableData['order_events'] = [{ document: 100, vehicle: 10 }]
@@ -685,7 +685,7 @@ describe('calculateWeeklyContractCommission', () => {
     mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '5000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
     mockTableData['order_events'] = [
@@ -724,8 +724,8 @@ describe('calculateWeeklyContractCommission', () => {
     mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '1000', dispatch_FEE: '5', commission: '1' },
-      { vehicle_type: 5, level_after: '5000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '1000', dispatch_fee: '5', dispatcher_commission: '1' },
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
     mockTableData['order_events'] = [{ document: 100, vehicle: 10 }]
@@ -777,8 +777,8 @@ describe('calculateWeeklyContractCommission', () => {
       { id: 6, name: 'dry van' },
     ]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
-      { vehicle_type: 6, level_after: '10000', dispatch_FEE: '10', commission: '3' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
+      { vehicle_type_id: 6, gross: '10000', dispatch_fee: '10', dispatcher_commission: '3' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
     mockTableData['order_events'] = [
@@ -818,7 +818,7 @@ describe('calculateWeeklyContractCommission', () => {
     mockTableData['vehicles'] = [{ id: 10, unit_id: 'TRK-001', kind: 'cargo van' }]
     mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
     mockTableData['vehicle_commission_tiers'] = [
-      { vehicle_type: 5, level_after: '10000', dispatch_FEE: '10', commission: '2' },
+      { vehicle_type_id: 5, gross: '10000', dispatch_fee: '10', dispatcher_commission: '2' },
     ]
     mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
     mockTableData['order_events'] = [
@@ -849,5 +849,100 @@ describe('calculateWeeklyContractCommission', () => {
     const result = await calculateWeeklyContractCommission(1, 22, 2026, 42)
     expect(result).toHaveLength(1)
     expect(result[0].employee_id).toBe(42)
+  })
+
+  it('week 31: splits V3484 between dispatchers and computes per-dispatcher commission (vehicle_type 2)', async () => {
+    mockTableData['vehicles'] = [
+      { id: 10, unit_id: 'V3460', kind: 'semi' },
+      { id: 20, unit_id: 'V3466', kind: 'semi' },
+      { id: 30, unit_id: 'V3484', kind: 'semi' },
+      { id: 40, unit_id: 'V3418', kind: 'semi' },
+    ]
+    mockTableData['vehicle_type'] = [{ id: 2, name: 'semi' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 2, gross: '3500', dispatch_fee: '10', dispatcher_commission: '1' },
+      { vehicle_type_id: 2, gross: '5000', dispatch_fee: '12', dispatcher_commission: '1.5' },
+      { vehicle_type_id: 2, gross: '5001', dispatch_fee: '15', dispatcher_commission: '2.25' },
+    ]
+    mockTableData['stages'] = [{ id: 2, is_ready_for_payout: true }]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 10 },
+      { document: 2, vehicle: 10 },
+      { document: 3, vehicle: 20 },
+      { document: 4, vehicle: 20 },
+      { document: 5, vehicle: 20 },
+      { document: 6, vehicle: 20 },
+      { document: 7, vehicle: 20 },
+      { document: 8, vehicle: 30 },
+      { document: 9, vehicle: 30 },
+      { document: 10, vehicle: 30 },
+      { document: 11, vehicle: 30 },
+      { document: 12, vehicle: 40 },
+      { document: 13, vehicle: 40 },
+      { document: 14, vehicle: 40 },
+      { document: 15, vehicle: 40 },
+    ]
+    mockTableData['orders_journal'] = [
+      { id: 1, cost: 3900, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3460 Tim White
+      { id: 2, cost: 2000, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3460 Tim White
+      { id: 3, cost: 3500, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3466 Uktam
+      { id: 4, cost: 1350, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3466 Uktam
+      { id: 5, cost: 150, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3466 Uktam
+      { id: 6, cost: 750, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3466 Uktam
+      { id: 7, cost: 2400, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3466 Uktam
+      { id: 8, cost: 2950, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3484 Uktam
+      { id: 9, cost: 2700, created_by: 7, stage: 2, organization: 1, excluded: false }, // V3484 Uktam
+      { id: 10, cost: 1800, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3484 Tim White
+      { id: 11, cost: 1550, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3484 Tim White
+      { id: 12, cost: 1000, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3418 Tim White
+      { id: 13, cost: 2900, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3418 Tim White
+      { id: 14, cost: 2400, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3418 Tim White
+      { id: 15, cost: 1650, created_by: 42, stage: 2, organization: 1, excluded: false }, // V3418 Tim White
+    ]
+
+    const result = await calculateWeeklyContractCommission(1, 31, 2026)
+    expect(result).toHaveLength(2)
+
+    const tim = result.find((r) => r.employee_id === 42)!
+    const uktam = result.find((r) => r.employee_id === 7)!
+
+    expect(tim.details).toHaveLength(3)
+    expect(uktam.details).toHaveLength(2)
+
+    const timV3460 = tim.details.find((d) => d.vehicle_unit_id === 'V3460')!
+    expect(timV3460.total_gross).toBe(5900)
+    expect(timV3460.orders_count).toBe(2)
+    expect(timV3460.dispatch_fee_percent).toBe(15)
+    expect(timV3460.dispatcher_commission_percent).toBe(2.25)
+    expect(timV3460.commission_amount).toBeCloseTo(132.75, 3)
+
+    const timV3484 = tim.details.find((d) => d.vehicle_unit_id === 'V3484')!
+    expect(timV3484.total_gross).toBe(3350)
+    expect(timV3484.orders_count).toBe(2)
+    expect(timV3484.dispatch_fee_percent).toBe(10)
+    expect(timV3484.dispatcher_commission_percent).toBe(1)
+    expect(timV3484.commission_amount).toBeCloseTo(33.5, 3)
+
+    const timV3418 = tim.details.find((d) => d.vehicle_unit_id === 'V3418')!
+    expect(timV3418.total_gross).toBe(7950)
+    expect(timV3418.orders_count).toBe(4)
+    expect(timV3418.commission_amount).toBeCloseTo(178.875, 3)
+
+    expect(tim.total_commission).toBeCloseTo(345.125, 3)
+
+    const uktamV3466 = uktam.details.find((d) => d.vehicle_unit_id === 'V3466')!
+    expect(uktamV3466.total_gross).toBe(8150)
+    expect(uktamV3466.orders_count).toBe(5)
+    expect(uktamV3466.commission_amount).toBeCloseTo(183.375, 3)
+
+    const uktamV3484 = uktam.details.find((d) => d.vehicle_unit_id === 'V3484')!
+    expect(uktamV3484.total_gross).toBe(5650)
+    expect(uktamV3484.orders_count).toBe(2)
+    expect(uktamV3484.commission_amount).toBeCloseTo(127.125, 3)
+
+    expect(uktam.total_commission).toBeCloseTo(310.5, 3)
+
+    expect(result[0].employee_id).toBe(42)
+    expect(result[1].employee_id).toBe(7)
   })
 })

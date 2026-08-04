@@ -58,3 +58,18 @@ global.useUsersStore = vi.fn(() => ({
 global.useOwnersStore = vi.fn(() => ({
   resolve: vi.fn(async (id: number) => ({ id, name: 'Owner ' + id })),
 }))
+
+global.useInitializeStore = vi.fn((apiCall: () => Promise<void>) => {
+  const initialized = ref(false)
+  const loading = ref(false)
+  ;(async () => {
+    loading.value = true
+    try {
+      await apiCall()
+      initialized.value = true
+    } finally {
+      loading.value = false
+    }
+  })()
+  return { initialized, loading }
+})

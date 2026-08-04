@@ -115,19 +115,19 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       if (!vehicle) continue
       const typeId = typeMap.get(vehicle.kind)
       if (!typeId) continue
-      const vehicleTiers = tierStore.tiers.filter((t: any) => t.vehicle_type === typeId)
+      const vehicleTiers = tierStore.tiers.filter((t: any) => t.vehicle_type_id === typeId)
       if (vehicleTiers.length === 0) continue
       const sortedTiers = [...vehicleTiers].sort(
-        (a: any, b: any) => Number(a.level_after) - Number(b.level_after),
+        (a: any, b: any) => Number(a.gross) - Number(b.gross),
       )
       let matchedTier = sortedTiers[sortedTiers.length - 1]
       for (const tier of sortedTiers) {
-        if (data.totalGross <= Number(tier.level_after)) {
+        if (data.totalGross <= Number(tier.gross)) {
           matchedTier = tier
           break
         }
       }
-      const commission = (data.totalGross * Number(matchedTier.commission)) / 100
+      const commission = (data.totalGross * Number(matchedTier.dispatcher_commission)) / 100
       contractTiersMap.set(
         data.docPayment,
         (contractTiersMap.get(data.docPayment) || 0) + commission,

@@ -3,10 +3,10 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 export interface VehicleCommissionTier {
   idx: number
   id: number
-  vehicle_type: number
-  level_after: string
-  dispatch_FEE: string
-  commission: string
+  vehicle_type_id: number
+  gross: string
+  dispatch_fee: string
+  dispatcher_commission: string
   deleted: boolean
 }
 
@@ -31,13 +31,13 @@ export const useVehicleCommissionTierStore = defineStore('vehicle_commission_tie
 
   function calcAmount(orderCost: number, weeklyGross: number, vehicleTypeId: number): number {
     const applicable = tiers.value
-      .filter((t) => t.vehicle_type === vehicleTypeId)
-      .sort((a, b) => Number(b.level_after) - Number(a.level_after))
+      .filter((t) => t.vehicle_type_id === vehicleTypeId)
+      .sort((a, b) => Number(b.gross) - Number(a.gross))
 
-    const tier = applicable.find((t) => weeklyGross >= Number(t.level_after))
+    const tier = applicable.find((t) => weeklyGross >= Number(t.gross))
     if (!tier) return orderCost
 
-    return Math.round(orderCost * (1 - Number(tier.dispatch_FEE) / 100) * 100) / 100
+    return Math.round(orderCost * (1 - Number(tier.dispatch_fee) / 100) * 100) / 100
   }
 
   return { tiers, initialized, loading, calcAmount }
