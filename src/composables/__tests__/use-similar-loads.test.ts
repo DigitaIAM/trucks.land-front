@@ -22,7 +22,7 @@ function mockQuery(initialData: unknown, status = 200) {
       return q
     }),
     gte: vi.fn((key: string, val: unknown) => {
-      filters.push((row) => (row[key] as number) >= (val as number))
+      filters.push((row) => (row[key] as string) >= (val as string))
       return q
     }),
     lte: vi.fn((key: string, val: unknown) => {
@@ -80,6 +80,14 @@ function rcFile(document: number, path: string) {
   return { document, kind: 'RC', is_deleted: false, path }
 }
 
+function recentOrder(id: number, extra: Record<string, unknown> = {}) {
+  return {
+    id,
+    created_at: new Date().toISOString(),
+    ...extra,
+  }
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   for (const key of Object.keys(mockTableData)) {
@@ -133,9 +141,9 @@ describe('loadSimilarLoads', () => {
     expect(result).toEqual([])
   })
 
-  it('queries orders for the organization and current year', async () => {
+  it('queries orders for the organization within the last four weeks', async () => {
     mockTables()
-    mockTableData['orders_journal'] = [{ id: 1, broker: 10, organization: 7, year: 2026 }]
+    mockTableData['orders_journal'] = [recentOrder(1, { broker: 10, organization: 7, year: 2026 })]
     mockTableData['order_files'] = [rcFile(1, '2026/01/01/1/RC_x.pdf')]
 
     await loadSimilarLoads(7)
@@ -145,17 +153,19 @@ describe('loadSimilarLoads', () => {
 
     const query = fromMock.mock.results[0].value as ReturnType<typeof mockQuery>
     expect(query.eq).toHaveBeenCalledWith('organization', 7)
-    expect(query.eq).toHaveBeenCalledWith('year', new Date().getFullYear())
+    const since = new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000).toISOString()
+    const sinceArg = query.gte.mock.calls[0][1] as string
+    expect(Math.abs(new Date(since).getTime() - new Date(sinceArg).getTime())).toBeLessThan(5000)
     expect(query.order).toHaveBeenCalledWith('created_at', { ascending: false })
   })
 
   it('groups similar loads by broker and route, keeping only groups of two or more', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, organization: 7, year: 2026 },
-      { id: 3, broker: 10, number: 103, organization: 7, year: 2026 },
-      { id: 4, broker: 20, number: 104, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
+      recentOrder(3, { broker: 10, number: 103, organization: 7, year: 2026 }),
+      recentOrder(4, { broker: 20, number: 104, organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -181,11 +191,43 @@ describe('loadSimilarLoads', () => {
     expect(result[0].orders[0].delivery?.address).toBe('9 State Ave')
   })
 
+  it('excludes groups whose key is in verifiedKeys', async () => {
+    mockTables()
+    mockTableData['orders_journal'] = [
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
+      recentOrder(3, { broker: 10, number: 103, organization: 7, year: 2026 }),
+      recentOrder(4, { broker: 10, number: 104, organization: 7, year: 2026 }),
+    ]
+    mockTableData['order_events'] = [
+      pickup(1, '1 Main St'),
+      delivery(1, '9 State Ave'),
+      pickup(2, '1 Main St'),
+      delivery(2, '9 State Ave'),
+      pickup(3, 'Other St', 'Decatur', '62522'),
+      delivery(3, 'Other Ave', 'Peoria', '61602'),
+      pickup(4, 'Other St', 'Decatur', '62522'),
+      delivery(4, 'Other Ave', 'Peoria', '61602'),
+    ]
+    mockTableData['order_files'] = [
+      rcFile(1, '2026/01/01/1/RC_a.pdf'),
+      rcFile(2, '2026/01/01/2/RC_b.pdf'),
+      rcFile(3, '2026/01/01/3/RC_c.pdf'),
+      rcFile(4, '2026/01/01/4/RC_d.pdf'),
+    ]
+
+    const verified = new Set([groupKey(10, pickup(1, '1 Main St'), delivery(1, '9 State Ave'))])
+    const result = await loadSimilarLoads(7, verified)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].orders.map((order) => order.id).sort()).toEqual([3, 4])
+  })
+
   it('excludes orders without RC files', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -203,8 +245,8 @@ describe('loadSimilarLoads', () => {
   it('marks rcMatch true when all orders share identical RC files', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -228,8 +270,8 @@ describe('loadSimilarLoads', () => {
   it('marks rcMatch false when RC files differ', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -252,8 +294,8 @@ describe('loadSimilarLoads', () => {
   it('uses the latest pickup and delivery event per order', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       { ...pickup(1, 'Old St'), datetime: '2026-01-01T08:00:00' },
@@ -276,8 +318,8 @@ describe('loadSimilarLoads', () => {
   it('groups similar loads by broker and refs when route events are missing', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, refs: 'L307194', organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, refs: 'L307194', organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, refs: 'L307194', organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, refs: 'L307194', organization: 7, year: 2026 }),
     ]
     mockTableData['order_files'] = [
       rcFile(1, '2026/01/01/1/RC_a.pdf'),
@@ -296,8 +338,8 @@ describe('loadSimilarLoads', () => {
   it('does not group orders sharing only broker when route and refs differ', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, refs: 'REF-A', organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, refs: 'REF-B', organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, refs: 'REF-A', organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, refs: 'REF-B', organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -318,8 +360,8 @@ describe('loadSimilarLoads', () => {
   it('does not group orders with empty refs and no route data', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, refs: '', organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, refs: null, organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, refs: '', organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, refs: null, organization: 7, year: 2026 }),
     ]
     mockTableData['order_files'] = [
       rcFile(1, '2026/01/01/1/RC_a.pdf'),
@@ -334,9 +376,9 @@ describe('loadSimilarLoads', () => {
   it('merges groups transitively via shared route or refs', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, refs: 'REF-R', organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, refs: 'REF-S', organization: 7, year: 2026 },
-      { id: 3, broker: 10, number: 103, refs: 'REF-R', organization: 7, year: 2026 },
+      recentOrder(1, { broker: 10, number: 101, refs: 'REF-R', organization: 7, year: 2026 }),
+      recentOrder(2, { broker: 10, number: 102, refs: 'REF-S', organization: 7, year: 2026 }),
+      recentOrder(3, { broker: 10, number: 103, refs: 'REF-R', organization: 7, year: 2026 }),
     ]
     mockTableData['order_events'] = [
       pickup(1, '1 Main St'),
@@ -361,12 +403,54 @@ describe('loadSimilarLoads', () => {
   it('sorts groups by week spread: same week first, then 1, then 2', async () => {
     mockTables()
     mockTableData['orders_journal'] = [
-      { id: 1, broker: 10, number: 101, refs: 'A1', week: 25, organization: 7, year: 2026 },
-      { id: 2, broker: 10, number: 102, refs: 'A2', week: 25, organization: 7, year: 2026 },
-      { id: 3, broker: 10, number: 103, refs: 'B1', week: 10, organization: 7, year: 2026 },
-      { id: 4, broker: 10, number: 104, refs: 'B2', week: 12, organization: 7, year: 2026 },
-      { id: 5, broker: 10, number: 105, refs: 'C1', week: 20, organization: 7, year: 2026 },
-      { id: 6, broker: 10, number: 106, refs: 'C2', week: 21, organization: 7, year: 2026 },
+      recentOrder(1, {
+        broker: 10,
+        number: 101,
+        refs: 'A1',
+        week: 25,
+        organization: 7,
+        year: 2026,
+      }),
+      recentOrder(2, {
+        broker: 10,
+        number: 102,
+        refs: 'A2',
+        week: 25,
+        organization: 7,
+        year: 2026,
+      }),
+      recentOrder(3, {
+        broker: 10,
+        number: 103,
+        refs: 'B1',
+        week: 10,
+        organization: 7,
+        year: 2026,
+      }),
+      recentOrder(4, {
+        broker: 10,
+        number: 104,
+        refs: 'B2',
+        week: 12,
+        organization: 7,
+        year: 2026,
+      }),
+      recentOrder(5, {
+        broker: 10,
+        number: 105,
+        refs: 'C1',
+        week: 20,
+        organization: 7,
+        year: 2026,
+      }),
+      recentOrder(6, {
+        broker: 10,
+        number: 106,
+        refs: 'C2',
+        week: 21,
+        organization: 7,
+        year: 2026,
+      }),
     ]
     mockTableData['order_events'] = [
       pickup(1, 'a', 'CityA', '10001'),

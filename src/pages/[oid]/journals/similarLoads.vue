@@ -6,18 +6,21 @@ meta:
 
 <script lang="ts">
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic'
-import { loadSimilarLoads } from '@/composables/use-similar-loads'
-import type { SimilarLoadOrder } from '@/composables/use-similar-loads'
+import { groupKey, loadSimilarLoads } from '@/composables/use-similar-loads'
+import type { SimilarLoadGroup, SimilarLoadOrder } from '@/composables/use-similar-loads'
+import { useSimilarLoadDismissalsStore } from '@/stores/similar_load_dismissals'
 
 const organizationsStore = useOrganizationsStore()
 const authStore = useAuthStore()
+const dismissalsStore = useSimilarLoadDismissalsStore()
 
 export const useOrgData = defineBasicLoader(
   'oid',
   async (route) => {
     const org = await organizationsStore.resolve3(route.params.oid)
     authStore.org = org
-    const groups = await loadSimilarLoads(org.id)
+    await dismissalsStore.load(org.id)
+    const groups = await loadSimilarLoads(org.id, dismissalsStore.verifiedKeys)
     return { org, groups }
   },
   { key: 'org' },
@@ -36,7 +39,15 @@ defineOptions({
 
 const orgData = useOrgData()
 
-const groups = computed(() => orgData.data.value?.groups ?? [])
+const groups = ref<SimilarLoadGroup[]>(orgData.data.value?.groups ?? [])
+watch(
+  () => orgData.data.value?.groups,
+  (value) => {
+    if (value) {
+      groups.value = value
+    }
+  },
+)
 
 const searchNumber = ref('')
 
@@ -174,6 +185,12 @@ function openOrder(id: number) {
   window.open('/' + orgData.data.value.org.code3.toLowerCase() + '/order/' + id, '_blank')
 }
 
+async function verifyGroup(group: SimilarLoadGroup) {
+  const orgId = orgData.data.value.org.id
+  groups.value = groups.value.filter((item) => item !== group)
+  await dismissalsStore.verify(orgId, groupKey(group.broker, group.pickup, group.delivery))
+}
+
 function brokerName(id: number) {
   return resolveById(
     id,
@@ -215,6 +232,18 @@ function brokerName(id: number) {
         RC identical
       </div>
       <div v-else class="badge badge-error badge-outline font-light tracking-wider">RC differ</div>
+      <Button ghost xs class="ml-auto" title="Mark as verified" @click="verifyGroup(group)">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-4 text-success"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </Button>
     </div>
 
     <table class="w-full text-left table-auto min-w-max">

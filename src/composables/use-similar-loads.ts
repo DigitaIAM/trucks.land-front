@@ -132,14 +132,17 @@ function weekSpread(orders: SimilarLoadOrder[]): number {
   return Math.max(...weeks) - Math.min(...weeks)
 }
 
-export async function loadSimilarLoads(orgId: number): Promise<SimilarLoadGroup[]> {
-  const currentYear = new Date().getFullYear()
+export async function loadSimilarLoads(
+  orgId: number,
+  verifiedKeys: Set<string> = new Set(),
+): Promise<SimilarLoadGroup[]> {
+  const fourWeeksAgo = new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const response = await supabase
     .from('orders_journal')
     .select()
     .eq('organization', orgId)
-    .eq('year', currentYear)
+    .gte('created_at', fourWeeksAgo)
     .order('created_at', { ascending: false })
 
   if (response.status != 200) {
@@ -228,7 +231,11 @@ export async function loadSimilarLoads(orgId: number): Promise<SimilarLoadGroup[
     }
   }
 
-  const candidates = [...components.values()].filter((list) => list.length >= 2)
+  const candidates = [...components.values()].filter(
+    (list) =>
+      list.length >= 2 &&
+      !verifiedKeys.has(groupKey(list[0].broker, list[0].pickup, list[0].delivery)),
+  )
   candidates.sort((a, b) => weekSpread(a) - weekSpread(b))
   await Promise.all(
     candidates.flat().map(async (order) => {

@@ -614,3 +614,36 @@ from
 --     console.log('Итоговый mapping:', map)
 --     return map
 --   }
+
+---------
+-- Similar loads journal: per-user dismissed groups
+---------
+
+CREATE TABLE IF NOT EXISTS public.similar_load_dismissals (
+    id bigint generated always as identity primary key,
+    organization integer not null,
+    user_uuid uuid not null,
+    group_key text not null,
+    created_at timestamptz not null default now(),
+    unique (organization, user_uuid, group_key)
+);
+
+ALTER TABLE public.similar_load_dismissals ENABLE ROW LEVEL SECURITY;
+
+alter policy "Similar load dismissals (own)"
+on public.similar_load_dismissals
+to authenticated
+using (
+    user_uuid = auth.uid()
+    AND EXISTS ( SELECT 1 FROM access_matrix oam
+                 WHERE oam.organization = organization AND oam.user_uuid = auth.uid() )
+);
+
+alter policy "Similar load dismissals (insert)"
+on public.similar_load_dismissals
+to authenticated
+with check (
+    user_uuid = auth.uid()
+    AND EXISTS ( SELECT 1 FROM access_matrix oam
+                 WHERE oam.organization = organization AND oam.user_uuid = auth.uid() )
+);

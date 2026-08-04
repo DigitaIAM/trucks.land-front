@@ -317,6 +317,7 @@ declare global {
   const useSessionStorage: typeof import('@vueuse/core')['useSessionStorage']
   const useSettlementsEmployeeStore: typeof import('./stores/employee_settlements')['useSettlementsEmployeeStore']
   const useShare: typeof import('@vueuse/core')['useShare']
+  const useSimilarLoadDismissalsStore: typeof import('./stores/similar_load_dismissals')['useSimilarLoadDismissalsStore']
   const useSlots: typeof import('vue')['useSlots']
   const useSorted: typeof import('@vueuse/core')['useSorted']
   const useSpeechRecognition: typeof import('@vueuse/core')['useSpeechRecognition']
@@ -489,6 +490,9 @@ declare global {
   // @ts-ignore
   export type { OrderAndQuickPay, QuickPay, QuickPayCreate, QuickPayUpdate } from './stores/quick_pays'
   import('./stores/quick_pays')
+  // @ts-ignore
+  export type { SimilarLoadVerified } from './stores/similar_load_dismissals'
+  import('./stores/similar_load_dismissals')
   // @ts-ignore
   export type { StatusNext } from './stores/stage_transitions'
   import('./stores/stage_transitions')
@@ -803,6 +807,7 @@ declare module 'vue' {
     readonly useSessionStorage: UnwrapRef<typeof import('@vueuse/core')['useSessionStorage']>
     readonly useSettlementsEmployeeStore: UnwrapRef<typeof import('./stores/employee_settlements')['useSettlementsEmployeeStore']>
     readonly useShare: UnwrapRef<typeof import('@vueuse/core')['useShare']>
+    readonly useSimilarLoadDismissalsStore: UnwrapRef<typeof import('./stores/similar_load_dismissals')['useSimilarLoadDismissalsStore']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useSorted: UnwrapRef<typeof import('@vueuse/core')['useSorted']>
     readonly useSpeechRecognition: UnwrapRef<typeof import('@vueuse/core')['useSpeechRecognition']>
