@@ -647,3 +647,55 @@ with check (
     AND EXISTS ( SELECT 1 FROM access_matrix oam
                  WHERE oam.organization = organization AND oam.user_uuid = auth.uid() )
 );
+
+------------
+-- Agreement cost change log: keeps history of agreement event cost edits
+------------
+
+CREATE TABLE IF NOT EXISTS public.agreement_cost_log (
+    id bigint generated always as identity primary key,
+    organization integer not null,
+    document integer not null,
+    event_id bigint not null,
+    old_cost numeric,
+    new_cost numeric,
+    created_by integer not null,
+    created_at timestamptz not null default now()
+);
+
+CREATE INDEX idx_agreement_cost_log_organization_created_at
+    ON public.agreement_cost_log (organization, created_at DESC);
+
+ALTER TABLE public.agreement_cost_log ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION log_agreement_cost_change() RETURNS TRIGGER
+    LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    org integer;
+    cb integer;
+BEGIN
+    SELECT organization INTO org FROM orders WHERE id = NEW.document;
+    SELECT id INTO cb FROM users WHERE uid = auth.uid();
+
+    INSERT INTO public.agreement_cost_log (organization, document, event_id, old_cost, new_cost, created_by)
+    VALUES (org, NEW.document, NEW.id, OLD.cost, NEW.cost, cb);
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER order_events_log_agreement_cost_change
+    AFTER UPDATE ON public.order_events
+    FOR EACH ROW
+    WHEN (OLD.kind = 'agreement' AND OLD.cost IS DISTINCT FROM NEW.cost)
+    EXECUTE FUNCTION log_agreement_cost_change();
+
+alter policy "Agreement cost log (read admin)"
+on public.agreement_cost_log
+to authenticated
+using (
+    EXISTS ( SELECT 1 FROM access_matrix oam
+             WHERE oam.organization = agreement_cost_log.organization
+               AND oam.is_admin = true
+               AND oam.user_uuid = auth.uid() )
+);

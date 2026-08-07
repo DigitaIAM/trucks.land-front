@@ -139,6 +139,7 @@ declare global {
   const useAccessMatrixStore: typeof import('./stores/access_matrix')['useAccessMatrixStore']
   const useAccessTokenStore: typeof import('./stores/access_tokens')['useAccessTokenStore']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
+  const useAgreementCostLogsStore: typeof import('./stores/agreement_cost_logs')['useAgreementCostLogsStore']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
@@ -413,6 +414,9 @@ declare global {
   export type { AccessMatrix, AccessMatrixCreate } from './stores/access_matrix'
   import('./stores/access_matrix')
   // @ts-ignore
+  export type { AgreementCostLog } from './stores/agreement_cost_logs'
+  import('./stores/agreement_cost_logs')
+  // @ts-ignore
   export type { Broker, BrokerCreate, BrokerUpdate } from './stores/brokers'
   import('./stores/brokers')
   // @ts-ignore
@@ -650,6 +654,7 @@ declare module 'vue' {
     readonly useAccessMatrixStore: UnwrapRef<typeof import('./stores/access_matrix')['useAccessMatrixStore']>
     readonly useAccessTokenStore: UnwrapRef<typeof import('./stores/access_tokens')['useAccessTokenStore']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
+    readonly useAgreementCostLogsStore: UnwrapRef<typeof import('./stores/agreement_cost_logs')['useAgreementCostLogsStore']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>

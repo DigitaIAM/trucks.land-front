@@ -131,10 +131,12 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
           const amount =
             order.contract && vehicleId != null && vehicleToTypeId.has(vehicleId)
-              ? tierStore.calcAmount(
-                  order.cost,
-                  grossByVehicle.get(vehicleId) ?? order.cost,
-                  vehicleToTypeId.get(vehicleId)!,
+              ? Math.round(
+                  tierStore.calcAmount(
+                    order.cost,
+                    grossByVehicle.get(vehicleId) ?? order.cost,
+                    vehicleToTypeId.get(vehicleId)!,
+                  ),
                 )
               : summary.paymentsByOrder.get(order.id)
 

@@ -69,6 +69,12 @@ const links = [
     perm: (access) => access.is_admin || access.is_accountant,
   },
   {
+    name: 'Change log',
+    icon: defineAsyncComponent(() => import('~icons/streamline/medical-files-report-history')),
+    path: '/journals/agreementChanges',
+    perm: (access) => access.is_admin,
+  },
+  {
     name: 'Reference books',
     icon: defineAsyncComponent(() => import('~icons/streamline/open-book')),
     path: '/referenceBooks',
