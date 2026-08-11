@@ -63,12 +63,12 @@ describe('calcAmount', () => {
     expect(store.calcAmount(3000, 5000, 1)).toBe(2700)
   })
 
-  it('returns full orderCost when gross is below all tiers', async () => {
+  it('applies the lowest tier when gross is below the first bound', async () => {
     const store = await storeWithTiers([
       { vehicle_type_id: 1, gross: '5000', dispatch_fee: '10', dispatcher_commission: '1' },
     ])
 
-    expect(store.calcAmount(1000, 4000, 1)).toBe(1000)
+    expect(store.calcAmount(1000, 4000, 1)).toBe(900)
   })
 
   it('returns full orderCost when no tiers exist for the vehicle type', async () => {
@@ -87,7 +87,7 @@ describe('calcAmount', () => {
     ])
 
     expect(store.calcAmount(7950, 7950, 1)).toBe(6757.5)
-    expect(store.calcAmount(4000, 4000, 1)).toBe(3600)
+    expect(store.calcAmount(4000, 4000, 1)).toBe(3520)
     expect(store.calcAmount(5000, 5000, 1)).toBe(4400)
   })
 
@@ -155,5 +155,52 @@ describe('week 31 owner calculation (vehicle_type_id 2)', () => {
 
     expect(halaFood).toBe(19592.5)
     expect(frEmpireLog).toBe(6757.5)
+  })
+})
+
+describe('week 32 owner calculation (vehicle_type_id 2, upper-bound scheme)', () => {
+  const tiers = [
+    { vehicle_type_id: 2, gross: '3500', dispatch_fee: '10', dispatcher_commission: '1' },
+    { vehicle_type_id: 2, gross: '5000', dispatch_fee: '12', dispatcher_commission: '1.5' },
+    { vehicle_type_id: 2, gross: '5001', dispatch_fee: '15', dispatcher_commission: '2.25' },
+  ]
+
+  it('matches the "till/over" boundaries', async () => {
+    const store = await storeWithTiers(tiers)
+
+    expect(store.calcAmount(3000, 3500, 2)).toBe(2700)
+    expect(store.calcAmount(3000, 3501, 2)).toBe(2640)
+    expect(store.calcAmount(3000, 5000, 2)).toBe(2640)
+    expect(store.calcAmount(3000, 5001, 2)).toBe(2550)
+    expect(store.calcAmount(3000, 7400, 2)).toBe(2550)
+  })
+
+  it('applies 10% fee below 3500 gross (week-32 vehicle V3460)', async () => {
+    const store = await storeWithTiers(tiers)
+
+    expect(store.calcAmount(1914, 1914, 2)).toBe(1722.6)
+  })
+
+  it('computes week-32 totals per owner', async () => {
+    const store = await storeWithTiers(tiers)
+
+    const v3460 = store.calcAmount(1914, 1914, 2)
+
+    const v3466 =
+      store.calcAmount(250, 5295, 2) +
+      store.calcAmount(1795, 5295, 2) +
+      store.calcAmount(950, 5295, 2) +
+      store.calcAmount(1500, 5295, 2) +
+      store.calcAmount(800, 5295, 2)
+
+    const v3484 =
+      store.calcAmount(2250, 7400, 2) +
+      store.calcAmount(1150, 7400, 2) +
+      store.calcAmount(4000, 7400, 2)
+
+    expect(v3460).toBe(1722.6)
+    expect(v3466).toBe(4500.75)
+    expect(v3484).toBe(6290)
+    expect(v3460 + v3466 + v3484).toBe(12513.35)
   })
 })

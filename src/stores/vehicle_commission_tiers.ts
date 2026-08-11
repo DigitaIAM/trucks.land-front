@@ -32,9 +32,9 @@ export const useVehicleCommissionTierStore = defineStore('vehicle_commission_tie
   function calcAmount(orderCost: number, weeklyGross: number, vehicleTypeId: number): number {
     const applicable = tiers.value
       .filter((t) => t.vehicle_type_id === vehicleTypeId)
-      .sort((a, b) => Number(b.gross) - Number(a.gross))
+      .sort((a, b) => Number(a.gross) - Number(b.gross))
 
-    const tier = applicable.find((t) => weeklyGross >= Number(t.gross))
+    const tier = applicable.find((t) => weeklyGross <= Number(t.gross)) ?? applicable.at(-1)
     if (!tier) return orderCost
 
     return Math.round(orderCost * (1 - Number(tier.dispatch_fee) / 100) * 100) / 100
