@@ -47,6 +47,20 @@ function text_right(
 
 const margin = 50
 
+interface OrderLine {
+  line: PaymentToOwnerOrder
+  order: Order | null
+  events: OrderEvent[]
+  vehicle: Vehicle | null
+  quickPay: QuickPay | null
+}
+
+interface VehicleGroup {
+  vehicle: Vehicle | null
+  contract: boolean
+  lines: OrderLine[]
+}
+
 export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | null) {
   if (document == null) {
     throw 'missing document'
@@ -57,36 +71,61 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   const vehiclesStore = useVehiclesStore()
   const quickPaysStore = useQuickPaysStore()
 
-  const org = await useOrganizationsStore().resolve(document.organization)
-  if (org == null) {
+  const orgResolved = await useOrganizationsStore().resolve(document.organization)
+  if (orgResolved == null) {
     throw 'missing organization'
   }
+  const org = orgResolved
 
-  const contra = await useOwnersStore().resolve(document.owner)
-  if (contra == null) {
+  const contraResolved = await useOwnersStore().resolve(document.owner)
+  if (contraResolved == null) {
     throw 'missing owner'
   }
+  const contra = contraResolved
 
   const orders = await usePaymentToOwnerOrdersStore().loading(document.id)
 
+  const lines: OrderLine[] = []
   const contractVehicles: Vehicle[] = []
+
   for (const line of orders.values()) {
-    const events = await eventsStore.fetching(line.doc_order)
+    const orderId = line.doc_order
+    const events = await eventsStore.fetching(orderId)
+    const order = (await ordersStore.resolve(orderId)) ?? null
+    const quickPay = await quickPaysStore.findByOrder(orderId)
+
+    let vehicle: Vehicle | null = null
     for (const event of events) {
       if (event.kind === 'agreement') {
-        const v = await vehiclesStore.resolve(event.vehicle)
-        if (v && v.contract && !contractVehicles.some((cv) => cv.id === v.id)) {
-          contractVehicles.push(v)
-        }
+        vehicle = await vehiclesStore.resolve(event.vehicle)
+        break
       }
     }
+
+    if (vehicle && vehicle.contract && !contractVehicles.some((cv) => cv.id === vehicle.id)) {
+      contractVehicles.push(vehicle)
+    }
+
+    lines.push({ line, order, events, vehicle, quickPay })
   }
 
   const isContract = contractVehicles.length > 0
 
-  // console.log('orders', orders)
+  const groups: VehicleGroup[] = []
+  const groupMap = new Map<number, VehicleGroup>()
+  for (const entry of lines) {
+    const vehicleId = entry.vehicle?.id ?? -1
+    let group = groupMap.get(vehicleId)
+    if (!group) {
+      group = { vehicle: entry.vehicle, contract: entry.vehicle?.contract ?? false, lines: [] }
+      groupMap.set(vehicleId, group)
+      groups.push(group)
+    }
+    group.lines.push(entry)
+  }
 
   const expenses = await usePaymentToOwnerExpenseStore().loading(document.id)
+  const totalExp = expenses?.reduce((s, e) => s + Number(e.amount ?? 0), 0) ?? 0
 
   const pdfDoc = await PDFDocument.create()
 
@@ -130,14 +169,6 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
 
   cy -= bls + text_right(page, boldFont, 16, contra.name.toUpperCase(), rightSide, cy)
 
-  if (isContract) {
-    const unitText =
-      contractVehicles.length === 1
-        ? `Unit: ${contractVehicles[0].unit_id}`
-        : `Units: ${contractVehicles.map((v) => v.unit_id).join(', ')}`
-    cy -= bls + text_right(page, boldFont, 16, filterCharSet(unitText, font), rightSide, cy)
-  }
-
   cy -= bls * 2
 
   const fs = 12
@@ -145,71 +176,126 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
   text_right(page, boldFont, fs, `Total trips: ${orders.length}`, rightSide, cy)
   cy -= bls * 4
 
-  // Set the table options
-  const options = {
-    textSize: 10,
-    title: {
-      text: 'SHIPMENTS DETAILS',
-      textSize: 12,
-      font: font,
-      alignment: 'center',
-    },
-    header: {
-      hasHeaderRow: true,
-      font: font,
+  const contractHeader = ['#', 'load', 'miles', 'pick up', 'delivery', 'amount', 'quick pay']
+  const driverHeader = [
+    '#',
+    'load',
+    'vehicle',
+    'miles',
+    'pick up',
+    'delivery',
+    'amount',
+    'quick pay',
+  ]
+
+  function makeOptions(contract: boolean) {
+    return {
       textSize: 10,
-      backgroundColor: rgb(0.9, 0.9, 0.9),
+      title: {
+        text: 'SHIPMENTS DETAILS',
+        textSize: 12,
+        font: font,
+        alignment: 'center',
+      },
+      header: {
+        hasHeaderRow: true,
+        font: font,
+        textSize: 10,
+        backgroundColor: rgb(0.9, 0.9, 0.9),
+        contentAlignment: 'center',
+      },
+      border: {
+        color: rgb(0.9, 0.9, 0.9),
+        width: 0.4,
+      },
       contentAlignment: 'center',
-    },
-    border: {
-      color: rgb(0.9, 0.9, 0.9),
-      width: 0.4,
-    },
-    contentAlignment: 'center',
-    font: font,
-    column: {
-      widthMode: 'auto',
-      overrideWidths: isContract
-        ? [25, 55, 45, 100, 100, 50, 75] // без vehicle
-        : [25, 55, 55, 45, 90, 90, 45, 75], // с vehicle
-    } as ColumnOptions,
-  } as DrawTableOptions
+      font: font,
+      column: {
+        widthMode: 'auto',
+        overrideWidths: contract
+          ? [25, 55, 45, 100, 100, 50, 75] // без vehicle
+          : [25, 55, 55, 45, 90, 90, 45, 75], // с vehicle
+      } as ColumnOptions,
+    } as DrawTableOptions
+  }
 
-  const fh12 = font.heightAtSize(options.title.textSize) * 2
-  const fh10 = font.heightAtSize(options.textSize) * 2
+  const fh12 = font.heightAtSize(12) * 2
+  const fh10 = font.heightAtSize(10) * 2
+  const lh10 = font.heightAtSize(10) + 10
 
-  let tableData = [
-    isContract
-      ? ['#', 'load', 'miles', 'pick up', 'delivery', 'amount', 'quick pay']
-      : ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount', 'quick pay'],
-  ] as CellContent[][]
+  const textMargin = 40
 
-  let lines = 0
-  let pos = 0
   let tableDimensions = { endY: cy }
+  let bottomY = 0
 
-  const quickPayMap = new Map<number, QuickPay | null>()
+  if (isContract) {
+    bottomY = cy
+    drawOverallSummary()
+    cy = bottomY
+  }
 
-  console.log('orders type', Array.isArray(orders), orders)
+  function ensureSpaceForSection() {
+    // section header + table title + header row + one data row + section totals
+    const needed = font.heightAtSize(16) + bls + fh12 + fh10 * 2 + 7 * lh10 + margin
+    if (cy - needed < margin) {
+      page = pdfDoc.addPage()
+      cy = page.getHeight() - margin
+    }
+  }
 
-  for (const line of orders.values()) {
-    const orderId = line.doc_order
-    const events = await eventsStore.fetching(orderId)
-    const order = await ordersStore.resolve(orderId)
-    const quickPay = await quickPaysStore.findByOrder(orderId)
-    quickPayMap.set(orderId, quickPay)
+  function drawTotalLine(bold: boolean, text: string) {
+    if (bottomY - lh10 < margin) {
+      page = pdfDoc.addPage()
+      bottomY = page.getHeight() - margin
+    }
+    text_left(page, bold ? boldFont : font, 10, text, margin, bottomY)
+    bottomY -= lh10
+  }
 
-    console.log('line', line)
+  function drawDeductions() {
+    if (totalExp > 0) {
+      drawTotalLine(true, `Deductions: $${totalExp.toFixed(2)}`)
+      for (const e of expenses!) {
+        const label = `${e.notes || '-'}:`
+        const labelWidth = font.widthOfTextAtSize(filterCharSet(label, font), 10)
+        if (bottomY - font.heightAtSize(10) - 5 < margin) {
+          page = pdfDoc.addPage()
+          bottomY = page.getHeight() - margin
+        }
+        text_left(page, font, 10, label, margin, bottomY)
+        text_left(
+          page,
+          font,
+          10,
+          `$${Number(e.amount).toFixed(2)}`,
+          margin + labelWidth + 10,
+          bottomY,
+        )
+        bottomY -= font.heightAtSize(10) + 5
+      }
+      bottomY -= 5
+    }
+  }
 
-    if (order?.stage === 3) {
-    } else {
+  async function drawGroupTable(group: VehicleGroup) {
+    const options = makeOptions(group.contract)
+    const header = group.contract ? contractHeader : driverHeader
+    let tableData = [header] as CellContent[][]
+
+    let lines = 0
+    let pos = 0
+
+    for (const entry of group.lines) {
+      const order = entry.order
+      if (order?.stage === 3) continue
+
       const vehicle = []
       const pickup = []
       const delivery = []
 
-      for (const event of events) {
+      for (const event of entry.events) {
         if (event.kind === 'agreement') {
-          const v = await vehiclesStore.resolve(event.vehicle)
+          const v = entry.vehicle
           if (v) {
             vehicle.push(filterCharSet(v.name, font))
           }
@@ -242,11 +328,7 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
         tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
 
         page = pdfDoc.addPage()
-        tableData = [
-          isContract
-            ? ['#', 'load', 'miles', 'pick up', 'delivery', 'amount', 'quick pay']
-            : ['#', 'load', 'vehicle', 'miles', 'pick up', 'delivery', 'amount', 'quick pay'],
-        ] as CellContent[][]
+        tableData = [header] as CellContent[][]
 
         cy = page.getHeight() - margin
         lines = 0
@@ -255,15 +337,15 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
       lines += cLines
 
       tableData.push(
-        isContract
+        group.contract
           ? [
               `${++pos}`,
               `${org.code2}-${order?.number}`,
               `${order?.total_miles}`,
               pickup,
               delivery,
-              `\$${line.amount?.toFixed(2)}`,
-              quickPay ? 'yes' : 'no',
+              `\$${entry.line.amount?.toFixed(2)}`,
+              entry.quickPay ? 'yes' : 'no',
             ]
           : [
               `${++pos}`,
@@ -272,132 +354,102 @@ export async function generateOwnerPaymentPdf(document: PaymentToOwnerSummary | 
               `${order?.total_miles}`,
               pickup,
               delivery,
-              `\$${line.amount?.toFixed(2)}`,
-              quickPay ? 'yes' : 'no',
+              `\$${entry.line.amount?.toFixed(2)}`,
+              entry.quickPay ? 'yes' : 'no',
             ],
       )
     }
-  }
 
-  const totalQuickPay = Array.from(quickPayMap.values()).reduce(
-    (sum, qp) => sum + (qp?.to_pay ?? 0),
-    0,
-  )
-
-  if (tableData.length > 1) {
-    tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
-  }
-
-  //tableBottom
-  const tableBottomY = tableDimensions.endY
-  const textMargin = 40
-
-  const totalGross = orders.reduce((sum, line) => sum + (line.order_cost ?? 0), 0)
-  const totalExp = expenses?.reduce((s, e) => s + Number(e.amount ?? 0), 0) ?? 0
-
-  let bottomY = tableBottomY - textMargin
-
-  function drawDeductions() {
-    if (totalExp > 0) {
-      bottomY -= 3
-      text_left(page, boldFont, 10, `Deductions: $${totalExp.toFixed(2)}`, margin, bottomY)
-      bottomY -= font.heightAtSize(10) + 8
-      for (const e of expenses!) {
-        const label = `${e.notes || '-'}:`
-        text_left(page, font, 10, label, margin, bottomY)
-        const labelWidth = font.widthOfTextAtSize(filterCharSet(label, font), 10)
-        text_left(
-          page,
-          font,
-          10,
-          `$${Number(e.amount).toFixed(2)}`,
-          margin + labelWidth + 10,
-          bottomY,
-        )
-        bottomY -= font.heightAtSize(10) + 5
-      }
-      bottomY -= 5
+    if (tableData.length > 1) {
+      tableDimensions = await drawTable(pdfDoc, page, tableData, margin, cy, options)
     }
+  }
+
+  function drawContractTotals(group: VehicleGroup) {
+    const totalGross = group.lines.reduce((sum, e) => sum + (e.line.order_cost ?? 0), 0)
+    const totalAmount = group.lines.reduce((sum, e) => sum + (e.line.amount ?? 0), 0)
+    const totalQuickPay = group.lines.reduce((sum, e) => sum + (e.quickPay?.to_pay ?? 0), 0)
+
+    const dispatchFeePercent = totalGross > 0 ? (totalAmount / totalGross) * 100 : 0
+    const contractorPercent = 100 - dispatchFeePercent
+
+    bottomY = tableDimensions.endY - textMargin
+
+    drawTotalLine(true, `Total gross: $${totalGross.toFixed(2)}`)
+    drawTotalLine(true, `Contractor gross earnings: $${totalAmount.toFixed(2)}`)
+    drawTotalLine(
+      true,
+      `Dispatch FEE: ${contractorPercent.toFixed(0)}% - $${(totalGross - totalAmount).toFixed(2)}`,
+    )
+    drawTotalLine(true, `Contractor percentage: ${dispatchFeePercent.toFixed(0)} %`)
+    if (totalQuickPay > 0) {
+      drawTotalLine(true, `Quick pay requested for: $${totalQuickPay.toFixed(2)}`)
+    }
+    drawTotalLine(true, `Net payment: $${(totalAmount - totalQuickPay).toFixed(2)}`)
+  }
+
+  function drawDriverTotals(group: VehicleGroup) {
+    const totalDriverPayment = group.lines.reduce((sum, e) => sum + (e.line.amount ?? 0), 0)
+    const totalQuickPay = group.lines.reduce((sum, e) => sum + (e.quickPay?.to_pay ?? 0), 0)
+
+    bottomY = tableDimensions.endY - textMargin
+
+    drawTotalLine(true, `Total driver payment: $${totalDriverPayment.toFixed(2)}`)
+    if (totalQuickPay > 0) {
+      drawTotalLine(true, `Quick pay requested for: $${totalQuickPay.toFixed(2)}`)
+    }
+  }
+
+  function drawOverallSummary() {
+    const totalGross = lines.reduce((sum, e) => sum + (e.line.order_cost ?? 0), 0)
+    const totalAmount = lines.reduce((sum, e) => sum + (e.line.amount ?? 0), 0)
+    const totalQuickPay = lines.reduce((sum, e) => sum + (e.quickPay?.to_pay ?? 0), 0)
+
+    const dispatchFeePercent = totalGross > 0 ? (totalAmount / totalGross) * 100 : 0
+    const contractorPercent = 100 - dispatchFeePercent
+
+    bottomY -= lh10
+
+    drawTotalLine(true, `Total gross: $${totalGross.toFixed(2)}`)
+    drawTotalLine(true, `Contractor gross earnings: $${totalAmount.toFixed(2)}`)
+    drawTotalLine(
+      true,
+      `Dispatch FEE: ${contractorPercent.toFixed(0)}% - $${(totalGross - totalAmount).toFixed(2)}`,
+    )
+    drawTotalLine(true, `Contractor percentage: ${dispatchFeePercent.toFixed(0)} %`)
+    if (totalQuickPay > 0) {
+      drawTotalLine(true, `Quick pay requested for: $${totalQuickPay.toFixed(2)}`)
+    }
+    drawDeductions()
+    drawTotalLine(true, `Net payment: $${(totalAmount - totalQuickPay - totalExp).toFixed(2)}`)
   }
 
   if (isContract) {
-    const totalAmount = orders.reduce((sum, line) => sum + (line.amount ?? 0), 0)
-    const dispatchFeePercent = (totalAmount / totalGross) * 100
-    const contractorPercent = 100 - dispatchFeePercent
+    for (const group of groups) {
+      if (!group.lines.some((e) => e.order?.stage !== 3)) continue
 
-    text_left(page, boldFont, 10, `Total gross: $${totalGross.toFixed(2)}`, margin, bottomY)
-    bottomY -= font.heightAtSize(10) + 10
+      ensureSpaceForSection()
 
-    text_left(
-      page,
-      boldFont,
-      10,
-      `Contractor gross earnings: $${totalAmount.toFixed(2)}`,
-      margin,
-      bottomY,
-    )
-    bottomY -= font.heightAtSize(10) + 10
+      cy -=
+        bls + text_right(page, boldFont, 16, `Unit: ${group.vehicle?.unit_id ?? ''}`, rightSide, cy)
+      cy -= bls * 2
 
-    text_left(
-      page,
-      boldFont,
-      10,
-      `Dispatch FEE:  ${contractorPercent.toFixed(0)}% - $${((totalGross * contractorPercent) / 100).toFixed(2)}`,
-      margin,
-      bottomY,
-    )
-    bottomY -= font.heightAtSize(10) + 10
+      await drawGroupTable(group)
 
-    text_left(
-      page,
-      boldFont,
-      10,
-      `Contractor percentage: ${dispatchFeePercent.toFixed(0)} %`,
-      margin,
-      bottomY,
-    )
-    bottomY -= font.heightAtSize(10) + 10
+      if (group.contract) {
+        drawContractTotals(group)
+      } else {
+        drawDriverTotals(group)
+      }
 
-    if (totalQuickPay > 0) {
-      text_left(
-        page,
-        boldFont,
-        10,
-        `Quick pay requested for: $${totalQuickPay.toFixed(2)}`,
-        margin,
-        bottomY,
-      )
-      bottomY -= font.heightAtSize(10) + 10
+      cy = bottomY
     }
-
-    drawDeductions()
-
-    const netPayment = totalAmount - totalQuickPay - totalExp
-    text_left(page, boldFont, 10, `Net payment: $${netPayment.toFixed(2)}`, margin, bottomY)
-    bottomY -= font.heightAtSize(10) + 10
   } else {
-    const totalDriverPayment = orders.reduce((sum, line) => sum + (line.amount ?? 0), 0)
+    const group: VehicleGroup = { vehicle: null, contract: false, lines }
 
-    text_left(
-      page,
-      boldFont,
-      10,
-      `Total driver payment: $${totalDriverPayment.toFixed(2)}`,
-      margin,
-      bottomY,
-    )
-    bottomY -= font.heightAtSize(10) + 10
-
-    if (totalQuickPay > 0) {
-      text_left(
-        page,
-        boldFont,
-        10,
-        `Quick pay requested for: $${totalQuickPay.toFixed(2)}`,
-        margin,
-        bottomY,
-      )
-      bottomY -= font.heightAtSize(10) + 10
+    if (group.lines.some((e) => e.order?.stage !== 3)) {
+      await drawGroupTable(group)
+      drawDriverTotals(group)
     }
 
     drawDeductions()
