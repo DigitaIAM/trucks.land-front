@@ -229,6 +229,7 @@ describe('calculateEmployeeReport', () => {
       created_by: 10,
       stage: 2,
       organization: 1,
+      events: [],
     }
     const mapping = new Map()
     mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
@@ -266,6 +267,7 @@ describe('calculateEmployeeReport', () => {
       created_by: 10,
       stage: 2,
       organization: 1,
+      events: [],
     }
     const mapping = new Map()
     mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
@@ -291,6 +293,7 @@ describe('calculateEmployeeReport', () => {
       percent_vf: 30,
       stage: 2,
       organization: 1,
+      events: [],
     }
     const mapping = new Map()
     mapping.set(20, [{ employee: 20, employee_payment: 0, order }])
@@ -368,6 +371,7 @@ describe('calculateEmployeeReport', () => {
           created_by: 10,
           stage: 2,
           organization: 1,
+          events: [],
         } as any,
       },
     ])

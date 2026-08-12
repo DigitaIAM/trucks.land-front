@@ -44,6 +44,23 @@ export interface WeeklyContractCommission {
   details: ContractCommissionDetail[]
 }
 
+export interface ContractVehicleBreakdown {
+  vehicleId: number
+  unitId: string
+  typeName: string
+  ordersCount: number
+  totalGross: number
+  commissionPercent: number
+  commissionAmount: number
+}
+
+export interface ContractWeekBreakdown {
+  week: number
+  label: string
+  vehicles: ContractVehicleBreakdown[]
+  weekTotal: number
+}
+
 export function getWorkingDaysInRange(startDate: Dayjs, endDate: Dayjs) {
   let start = startDate
   const end = endDate
@@ -271,6 +288,7 @@ export async function calculateEmployeeReport(
 
     const employeeRecords = mapping.get(employee) || []
     const vehicleContractData = new Map<number, { totalGross: number; orderCount: number }>()
+    const contractOrderRefs: Array<{ orderId: number; cost: number; vehicleId: number }> = []
 
     employeeRecords.forEach((p) => {
       // const order =
@@ -346,6 +364,8 @@ export async function calculateEmployeeReport(
           d.orderCount += 1
           vehicleContractData.set(vehicleId, d)
 
+          contractOrderRefs.push({ orderId: p.order.id, cost: costVal, vehicleId })
+
           orderToVehicle.set(p.order.id, vehicleId)
         } else {
           orders_number += 1
@@ -363,8 +383,122 @@ export async function calculateEmployeeReport(
       orders.set(p.order.id, p.order)
     })
 
-    const contractDetails: ContractCommissionDetail[] = []
+    const reportYear = year ?? from.year()
 
+    const orderWeekMap = new Map<number, number>()
+    const orderVehicleColumnMap = new Map<number, number>()
+    const contractOrderIds = contractOrderRefs.map((r) => r.orderId)
+    if (contractOrderIds.length > 0) {
+      const batches = []
+      for (let i = 0; i < contractOrderIds.length; i += 100) {
+        batches.push(contractOrderIds.slice(i, i + 100))
+      }
+      const batchResults = await Promise.all(
+        batches.map((ids) =>
+          supabase.from('orders_journal').select('id, week, vehicle').in('id', ids),
+        ),
+      )
+      batchResults
+        .flatMap((r) => r.data || [])
+        .forEach((row) => {
+          orderWeekMap.set(Number(row.id), Number(row.week))
+          orderVehicleColumnMap.set(Number(row.id), Number(row.vehicle))
+        })
+    }
+
+    const weekVehicleData = new Map<
+      string,
+      { vehicleId: number; week: number; totalGross: number; orderCount: number }
+    >()
+    for (const ref of contractOrderRefs) {
+      const week = orderWeekMap.get(ref.orderId)
+      const columnVehicle = orderVehicleColumnMap.get(ref.orderId)
+      if (!week || !columnVehicle) continue
+
+      const key = `${week}_${columnVehicle}`
+      const existing = weekVehicleData.get(key) || {
+        vehicleId: columnVehicle,
+        week,
+        totalGross: 0,
+        orderCount: 0,
+      }
+      existing.totalGross += ref.cost
+      existing.orderCount += 1
+      weekVehicleData.set(key, existing)
+    }
+
+    function matchContractTier(vehicleTypeId: number, gross: number) {
+      const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
+      if (vehicleTiers.length === 0) return null
+
+      const sortedTiers = [...vehicleTiers].sort(
+        (a, b) => Number(a.gross) - Number(b.gross),
+      )
+      let matchedTier = sortedTiers[sortedTiers.length - 1]
+      for (const tier of sortedTiers) {
+        if (gross <= Number(tier.gross)) {
+          matchedTier = tier
+          break
+        }
+      }
+      return matchedTier
+    }
+
+    const contractBreakdown: ContractWeekBreakdown[] = []
+    let contractCommission = 0
+
+    for (const data of weekVehicleData.values()) {
+      const vehicle = vehicleMap.get(data.vehicleId)
+      if (!vehicle) continue
+
+      const vehicleTypeId = vehicleTypeMap.get(vehicle.kind)
+      if (!vehicleTypeId) continue
+
+      const matchedTier = matchContractTier(vehicleTypeId, data.totalGross)
+      if (!matchedTier) continue
+
+      const commissionAmount = (data.totalGross * Number(matchedTier.dispatcher_commission)) / 100
+      const weekStart = dayjs().year(reportYear).isoWeek(data.week).startOf('isoWeek')
+      const weekEnd = dayjs().year(reportYear).isoWeek(data.week).endOf('isoWeek')
+
+      let wg = contractBreakdown.find((g) => g.week === data.week)
+      if (!wg) {
+        wg = {
+          week: data.week,
+          label: `${weekStart.format('MMM D')} - ${weekEnd.format('MMM D')}`,
+          vehicles: [],
+          weekTotal: 0,
+        }
+        contractBreakdown.push(wg)
+      }
+
+      wg.vehicles.push({
+        vehicleId: data.vehicleId,
+        unitId: vehicle.unit_id,
+        typeName: vehicle.kind,
+        ordersCount: data.orderCount,
+        totalGross: data.totalGross,
+        commissionPercent: Number(matchedTier.dispatcher_commission),
+        commissionAmount,
+      })
+      wg.weekTotal += commissionAmount
+      contractCommission += commissionAmount
+    }
+
+    contractBreakdown.sort((a, b) => a.week - b.week)
+
+    toPayment += contractCommission
+
+    const contractDetails: ContractCommissionDetail[] = []
+    const commissionByVehicle = new Map<number, number>()
+    for (const wg of contractBreakdown) {
+      for (const v of wg.vehicles) {
+        commissionByVehicle.set(
+          v.vehicleId,
+          (commissionByVehicle.get(v.vehicleId) || 0) + v.commissionAmount,
+        )
+      }
+    }
     for (const [vehicleId, data] of vehicleContractData) {
       const vehicle = vehicleMap.get(vehicleId)
       if (!vehicle) throw 'unexpected: unknown vehicle ' + vehicleId
@@ -372,24 +506,13 @@ export async function calculateEmployeeReport(
       const vehicleTypeId = vehicleTypeMap.get(vehicle.kind)
       if (!vehicleTypeId) throw 'unexpected: unknown vehicle type ' + vehicle.kind
 
-      const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
-      if (vehicleTiers.length === 0) {
-        console.warn(`missing vehicle commission tiers for "${vehicle.kind}" (vehicle #${vehicleId}), skipping`)
+      const matchedTier = matchContractTier(vehicleTypeId, data.totalGross)
+      if (!matchedTier) {
+        console.warn(
+          `missing vehicle commission tiers for "${vehicle.kind}" (vehicle #${vehicleId}), skipping`,
+        )
         continue
       }
-
-      const sortedTiers = [...vehicleTiers].sort(
-        (a, b) => Number(a.gross) - Number(b.gross),
-      )
-      let matchedTier = sortedTiers[sortedTiers.length - 1]
-      for (const tier of sortedTiers) {
-        if (data.totalGross <= Number(tier.gross)) {
-          matchedTier = tier
-          break
-        }
-      }
-
-      const commissionAmount = (data.totalGross * Number(matchedTier.dispatcher_commission)) / 100
 
       contractDetails.push({
         vehicle_id: vehicleId,
@@ -399,10 +522,8 @@ export async function calculateEmployeeReport(
         total_gross: data.totalGross,
         dispatch_fee_percent: Number(matchedTier.dispatch_fee),
         dispatcher_commission_percent: Number(matchedTier.dispatcher_commission),
-        commission_amount: commissionAmount,
+        commission_amount: commissionByVehicle.get(vehicleId) || 0,
       })
-
-      toPayment += commissionAmount
     }
 
     const settlementsRecords = [] as Array<SettlementEmployee>
@@ -472,7 +593,6 @@ export async function calculateEmployeeReport(
       ? ((fullNonContractGross - fullNonContractDriverPayment) * employeeTerms.percent_of_profit) /
         100
       : 0
-    const contractCommission = contractDetails.reduce((sum, d) => sum + d.commission_amount, 0)
     const rawFixedSalary = Number(employeeTerms?.fixed_salary) || 0
 
     list.push({
@@ -508,6 +628,7 @@ export async function calculateEmployeeReport(
           Math.abs(Number(fine || 0)),
         contract_details: contractDetails,
         contract_commission_total: contractCommission,
+        contract_breakdown: contractBreakdown,
         orderToVehicle: orderToVehicle,
         orderToVehicleAll: orderToVehicleAll,
         vehicleIdToUnitId: vehicleIdToUnitId,
@@ -782,6 +903,7 @@ export async function loadDispatcherPerformanceReport(
         payout_usd: profit,
         contract_details: [],
         contract_commission_total: 0,
+        contract_breakdown: [],
         orderToVehicle: empOrderToVehicle,
         orderToVehicleAll: empOrderToVehicle,
         vehicleIdToUnitId: perfVehicleIdToUnitId,

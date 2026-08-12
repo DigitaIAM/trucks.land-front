@@ -9,6 +9,7 @@ import {
 import type {
   EmployeeReportRecord,
   ContractCommissionDetail,
+  ContractWeekBreakdown,
 } from '@/composables/use-employee-report-calculator.ts'
 import type { OrderEnriched } from '@/stores/orders.ts'
 
@@ -43,6 +44,7 @@ export interface EmployeePaymentSummary {
   payout_usd: number
   contract_details: Array<ContractCommissionDetail>
   contract_commission_total: number
+  contract_breakdown: Array<ContractWeekBreakdown>
   orderToVehicle: Map<number, number>
   orderToVehicleAll: Map<number, number>
   vehicleIdToUnitId: Map<number, string>

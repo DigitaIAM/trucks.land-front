@@ -396,7 +396,7 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission } from './composables/use-employee-report-calculator'
+  export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission, ContractVehicleBreakdown, ContractWeekBreakdown } from './composables/use-employee-report-calculator'
   import('./composables/use-employee-report-calculator')
   // @ts-ignore
   export type { SimilarLoadOrder, SimilarLoadGroup } from './composables/use-similar-loads'

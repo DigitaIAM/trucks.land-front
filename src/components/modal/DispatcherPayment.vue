@@ -435,6 +435,62 @@ async function openOrder(order: Order) {
         </table>
       </div>
 
+      <!-- Секция: Contract Commission Breakdown -->
+      <div
+        v-if="summary?.contract_breakdown?.length"
+        class="mt-6 mb-6 overflow-hidden rounded-xl border border-[#526471] shadow-md bg-[#3e4d59] text-[#e2e9ef]"
+      >
+        <div
+          class="px-6 py-3 font-semibold text-xs text-white uppercase bg-[#33414b] tracking-wider"
+        >
+          Contract commission
+        </div>
+        <div class="px-6 py-4">
+          <template v-for="week in summary?.contract_breakdown" :key="week.week">
+            <div class="text-sm font-medium text-[#94a3b8] mb-2 mt-3 first:mt-0">
+              Week {{ week.week }} ({{ week.label }})
+            </div>
+            <table class="w-full text-xs mb-3">
+              <thead>
+                <tr class="text-[#94a3b8] border-b border-[#526471]">
+                  <th class="py-1 pr-4 text-left font-medium">Unit</th>
+                  <th class="py-1 pr-4 text-left font-medium">Type</th>
+                  <th class="py-1 pr-4 text-right font-medium">Orders</th>
+                  <th class="py-1 pr-4 text-right font-medium">Gross</th>
+                  <th class="py-1 pr-4 text-right font-medium">%</th>
+                  <th class="py-1 text-right font-medium">Commission</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="v in week.vehicles"
+                  :key="v.vehicleId"
+                  class="border-b border-[#526471]/50"
+                >
+                  <td class="py-1 pr-4 text-white">{{ v.unitId }}</td>
+                  <td class="py-1 pr-4 text-[#cbd5e0]">{{ v.typeName }}</td>
+                  <td class="py-1 pr-4 text-right text-white">{{ v.ordersCount }}</td>
+                  <td class="py-1 pr-4 text-right text-white">$ {{ v.totalGross.toFixed(2) }}</td>
+                  <td class="py-1 pr-4 text-right text-white">{{ v.commissionPercent }}%</td>
+                  <td class="py-1 text-right text-white font-medium">
+                    $ {{ v.commissionAmount.toFixed(2) }}
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="text-white font-medium">
+                  <td colspan="5" class="py-1 text-right">Week total:</td>
+                  <td class="py-1 text-right">$ {{ week.weekTotal.toFixed(2) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </template>
+          <div class="text-sm font-bold text-white border-t border-[#526471] pt-3 mt-2 text-right">
+            Grand total: $ {{ summary?.contract_commission_total.toFixed(2) }}
+          </div>
+        </div>
+      </div>
+
       <div class="">
         <Text v-if="summary?.orders_number > 0" bold size="lg" class="mb-4 mt-4">Orders</Text>
       </div>
