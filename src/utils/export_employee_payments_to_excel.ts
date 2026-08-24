@@ -1,6 +1,61 @@
 import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import { sleep } from '@/utils/datetime'
+import dayjs from 'dayjs'
+import { getWorkingDaysInRange } from '@/composables/use-employee-report-calculator'
+
+function netFixedSalary(fixedSalary: number, year: number, month: number, missedDays: number) {
+  if (!fixedSalary) return 0
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+  const totalWorkingDays = getWorkingDaysInRange(from, till)
+  if (totalWorkingDays <= 0) return fixedSalary
+  return Math.max(0, totalWorkingDays - missedDays) * (fixedSalary / totalWorkingDays)
+}
+
+function countMissedDays(
+  absences: Array<{ start_date: string; end_date: string }>,
+  year: number,
+  month: number,
+) {
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+  let count = 0
+  for (const absence of absences) {
+    let start = dayjs(absence.start_date).isAfter(from) ? dayjs(absence.start_date) : from
+    const end = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
+    while (!start.isAfter(end, 'day')) {
+      if (start.day() !== 0) count++
+      start = start.add(1, 'day')
+    }
+  }
+  return count
+}
+
+async function loadMissedDaysMap(year: number, month: number) {
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+
+  const { data: absencesData } = await supabase
+    .from('employee_absences')
+    .select('employee, start_date, end_date')
+    .lte('start_date', till.format('YYYY-MM-DD'))
+    .gte('end_date', from.format('YYYY-MM-DD'))
+
+  const grouped = new Map<number, Array<{ start_date: string; end_date: string }>>()
+  for (const absence of absencesData ?? []) {
+    const empId = Number(absence.employee)
+    const list = grouped.get(empId) ?? []
+    list.push(absence)
+    grouped.set(empId, list)
+  }
+
+  const missedDaysMap = new Map<number, number>()
+  for (const [empId, list] of grouped) {
+    missedDaysMap.set(empId, countMissedDays(list, year, month))
+  }
+  return missedDaysMap
+}
 
 export async function employeePaymentsExportToExcel(orgId: number, year: number, month: number) {
   const workbook = new Workbook()
@@ -41,6 +96,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } }
 
   const payments = await paymentToEmployeeStore.fetchJournalData(orgId, year, month)
+  const missedDaysMap = await loadMissedDaysMap(year, month)
   const dispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
 
   const allOrders = (
@@ -152,7 +208,13 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   let n = 1
   for (const record of paymentsWithNames) {
     const contractTiers = contractTiersMap.get(record.id) || 0
-    const to_payment = (record.to_pay || 0) - contractTiers - (record.fixed_salary || 0)
+    const netSalary = netFixedSalary(
+      Number(record.fixed_salary) || 0,
+      year,
+      month,
+      missedDaysMap.get(Number(record.employee)) || 0,
+    )
+    const to_payment = (record.to_pay || 0) - contractTiers - netSalary
 
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0
@@ -168,7 +230,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     const row = sheet.addRow({
       index: n,
       employee: record.fullName,
-      fixed_salary: record.fixed_salary || 0,
+      fixed_salary: netSalary || 0,
       contract_tiers: contractTiers,
       to_payment: to_payment,
       bonus: bonus,

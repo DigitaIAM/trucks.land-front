@@ -375,7 +375,10 @@ async function openOrder(order: Order) {
                   1 +
                   (Number(summary?.settlements_total) > 0 ? 1 : 0) +
                   (Number(summary?.vacation_amount) > 0 ? 1 : 0) +
-                  (Number(summary?.missed_days) > 0 ? 1 : 0) +
+                  (Number(summary?.missed_days) > 0 ||
+                  Number(summary?.paymentTerms.fixed_salary) > 0
+                    ? 1
+                    : 0) +
                   (Number(summary?.settlement_fine) > 0 ? 1 : 0) +
                   (Number(summary?.advance_amount) > 0 ? 1 : 0)
                 "
@@ -419,7 +422,7 @@ async function openOrder(order: Order) {
               </td>
             </tr>
 
-            <tr v-if="summary?.missed_days > 0">
+            <tr v-if="summary?.missed_days > 0 || Number(summary?.paymentTerms.fixed_salary) > 0">
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">missed days</td>
               <td class="px-6 py-3 text-right font-medium text-white">
                 {{ summary?.missed_days }}

@@ -207,6 +207,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
           contract_commission: Number(summary.contract_commission_total) || 0,
           ex_rate: ex_rate,
           income_tax: summary.paymentTerms.income_tax,
+          missed_days: Number(summary.missed_days) || 0,
         } as PaymentToEmployeeCreate,
         records,
         settlementsRecords,

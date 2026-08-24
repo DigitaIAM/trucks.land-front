@@ -278,16 +278,64 @@ const commissionToPay = computed(() => {
   return (profit * percent) / 100
 })
 
+const salaryToPay = computed(() => {
+  const fixedSalary = Number(props.document?.fixed_salary || 0)
+  if (!fixedSalary || !props.document?.year || !props.document?.month) return fixedSalary
+
+  const from = dayjs(
+    `${props.document.year}-${String(props.document.month).padStart(2, '0')}-01`,
+  ).startOf('month')
+  const till = from.endOf('month')
+
+  const totalWorkingDays = getWorkingDaysInRange(from, till)
+  if (totalWorkingDays <= 0) return fixedSalary
+
+  const perDay = fixedSalary / totalWorkingDays
+  return Math.max(0, totalWorkingDays - missedDays.value) * perDay
+})
+
 const payoutTotal = computed(() => {
   return (
     commissionToPay.value +
     contractBreakdownTotal.value +
-    Number(props.document?.fixed_salary || 0) +
+    salaryToPay.value +
     Number(props.document?.settlement_bonus || 0) +
     Number(props.document?.settlement_premium || 0) -
     Number(props.document?.settlement_fine || 0)
   )
 })
+
+const missedDays = ref(0)
+
+watch(
+  () => props.document,
+  async (doc) => {
+    missedDays.value = 0
+    if (!doc?.employee || !doc?.year || !doc?.month) return
+
+    const from = dayjs(`${doc.year}-${String(doc.month).padStart(2, '0')}-01`).startOf('month')
+    const till = from.endOf('month')
+
+    const { data: absences } = await supabase
+      .from('employee_absences')
+      .select('employee, start_date, end_date')
+      .eq('employee', doc.employee)
+      .lte('start_date', till.format('YYYY-MM-DD'))
+      .gte('end_date', from.format('YYYY-MM-DD'))
+
+    let count = 0
+    for (const absence of absences ?? []) {
+      let start = dayjs(absence.start_date).isAfter(from) ? dayjs(absence.start_date) : from
+      const end = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
+      while (!start.isAfter(end, 'day')) {
+        if (start.day() !== 0) count++
+        start = start.add(1, 'day')
+      }
+    }
+    missedDays.value = count
+  },
+  { immediate: true },
+)
 
 interface ContractVehicleBreakdown {
   vehicleId: number
@@ -586,7 +634,10 @@ function onClose() {
             <tr>
               <td
                 :rowspan="
-                  1 + (document?.fixed_salary > 0 ? 1 : 0) + (contractOrders.count > 0 ? 1 : 0)
+                  1 +
+                  (document?.fixed_salary > 0 ? 1 : 0) +
+                  (missedDays > 0 ? 1 : 0) +
+                  (contractOrders.count > 0 ? 1 : 0)
                 "
                 class="px-6 py-4 font-semibold text-xs text-white uppercase align-top bg-[#33414b] tracking-wider"
               >
@@ -617,6 +668,13 @@ function onClose() {
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fixed salary</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 $ {{ document?.fixed_salary.toFixed(2) }}
+              </td>
+            </tr>
+
+            <tr v-if="missedDays > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">missed days</td>
+              <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
+                {{ missedDays }}
               </td>
             </tr>
 

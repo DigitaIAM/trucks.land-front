@@ -622,6 +622,122 @@ describe('calculateEmployeeReport', () => {
     expect(summary.paymentTerms.fixed_salary).toBe(500)
     expect(summary.toPayment).toBeGreaterThan(0)
   })
+
+  it('deducts missed days from fixed salary in payout_usd', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['employee_payments'] = null
+    mockTableData['employee_absences'] = [
+      {
+        id: 1,
+        employee: 10,
+        start_date: '2026-06-15',
+        end_date: '2026-06-19', // Mon-Fri: 5 working days
+      },
+    ]
+    mockTableData['user_conditions'] = [
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        fixed_salary: 700,
+        income_tax: 0,
+        created_by: 1,
+        users: { fired: false },
+      },
+    ]
+
+    const result = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 6, 2026)
+    expect(result).toHaveLength(1)
+
+    const summary = result[0].summary
+    expect(summary.missed_days).toBe(5)
+
+    // June 2026: 26 working days, salary per day = 700 / 26
+    const totalWorkingDays = getWorkingDaysInRange(dayjs('2026-06-01'), dayjs('2026-06-30'))
+    const expectedPayout = (totalWorkingDays - 5) * (700 / totalWorkingDays)
+
+    expect(summary.toPayment).toBeCloseTo(expectedPayout, 2)
+    expect(summary.payout_usd).toBeCloseTo(expectedPayout, 2)
+  })
+
+  it('does not count absences from a closed month in the next month calculation', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['employee_payments'] = null
+    mockTableData['employee_absences'] = [
+      {
+        id: 1,
+        employee: 10,
+        start_date: '2026-08-06',
+        end_date: '2026-08-21', // 14 working days in August (2 Sundays inside range)
+      },
+    ]
+    mockTableData['user_conditions'] = [
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        fixed_salary: 650,
+        income_tax: 0,
+        created_by: 1,
+        users: { fired: false },
+      },
+    ]
+
+    // August (closed month): the absence counts and reduces the salary
+    const august = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 8, 2026)
+    expect(august).toHaveLength(1)
+    expect(august[0].summary.missed_days).toBe(14)
+
+    const augustWorkingDays = getWorkingDaysInRange(dayjs('2026-08-01'), dayjs('2026-08-31'))
+    expect(august[0].summary.payout_usd).toBeCloseTo(
+      (augustWorkingDays - 14) * (650 / augustWorkingDays),
+      2,
+    )
+
+    // September (next month): the same absence records must not count
+    const september = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 9, 2026)
+    expect(september).toHaveLength(1)
+    expect(september[0].summary.missed_days).toBe(0)
+    expect(september[0].summary.payout_usd).toBe(650)
+  })
+
+  it('does not count absences when any payment exists for the month', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['employee_payments'] = [{ id: 999, closed: false }]
+    mockTableData['employee_absences'] = [
+      {
+        id: 1,
+        employee: 10,
+        start_date: '2026-08-06',
+        end_date: '2026-08-21',
+      },
+    ]
+    mockTableData['user_conditions'] = [
+      {
+        user_id: 10,
+        organization: 1,
+        percent_of_gross: 0,
+        percent_of_profit: 0,
+        fixed_salary: 650,
+        income_tax: 0,
+        created_by: 1,
+        users: { fired: false },
+      },
+    ]
+
+    const result = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 8, 2026)
+    expect(result).toHaveLength(1)
+    expect(result[0].summary.missed_days).toBe(0)
+    expect(result[0].summary.payout_usd).toBe(650)
+  })
 })
 
 describe('calculateWeeklyContractCommission', () => {

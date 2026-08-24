@@ -184,13 +184,26 @@ export async function calculateEmployeeReport(
     till = now.subtract(1, 'month').endOf('month')
   }
 
-  const response = await supabase
-    .from('employee_absences')
-    .select('*')
-    .lte('start_date', till.format('YYYY-MM-DD'))
-    .gte('end_date', from.format('YYYY-MM-DD'))
+  const monthClosedResponse = await supabase
+    .from('employee_payments')
+    .select('id')
+    .eq('organization', orgId)
+    .eq('year', from.year())
+    .eq('month', from.month() + 1)
+    .limit(1)
 
-  const absencesList = (response.data || []) as Absence[]
+  const monthClosed = (monthClosedResponse.data?.length ?? 0) > 0
+
+  let absencesList: Absence[] = []
+  if (!monthClosed) {
+    const response = await supabase
+      .from('employee_absences')
+      .select('*')
+      .lte('start_date', till.format('YYYY-MM-DD'))
+      .gte('end_date', from.format('YYYY-MM-DD'))
+
+    absencesList = (response.data || []) as Absence[]
+  }
 
   const userStore = useUsersStore()
 
@@ -267,6 +280,7 @@ export async function calculateEmployeeReport(
     let orders_profit_direct = 0
     let orders_amount_contract = 0
     let missedWorkingDays = 0
+    let fixedSalaryToPay = 0
     let toPayment = 0
     let fullNonContractGross = 0
     let fullNonContractDriverPayment = 0
@@ -431,9 +445,7 @@ export async function calculateEmployeeReport(
       const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
       if (vehicleTiers.length === 0) return null
 
-      const sortedTiers = [...vehicleTiers].sort(
-        (a, b) => Number(a.gross) - Number(b.gross),
-      )
+      const sortedTiers = [...vehicleTiers].sort((a, b) => Number(a.gross) - Number(b.gross))
       let matchedTier = sortedTiers[sortedTiers.length - 1]
       for (const tier of sortedTiers) {
         if (gross <= Number(tier.gross)) {
@@ -579,7 +591,8 @@ export async function calculateEmployeeReport(
 
       const salaryPerDay = totalWorkingDays > 0 ? fixedSalary / totalWorkingDays : 0
       const actualDaysWorked = Math.max(0, totalWorkingDays - missedWorkingDays)
-      toPayment += actualDaysWorked * salaryPerDay
+      fixedSalaryToPay = actualDaysWorked * salaryPerDay
+      toPayment += fixedSalaryToPay
     }
 
     const listOfOrdersInProcessing = ordersInProcessing.get(employee) || ([] as Array<Order>)
@@ -593,7 +606,6 @@ export async function calculateEmployeeReport(
       ? ((fullNonContractGross - fullNonContractDriverPayment) * employeeTerms.percent_of_profit) /
         100
       : 0
-    const rawFixedSalary = Number(employeeTerms?.fixed_salary) || 0
 
     list.push({
       user: (await userStore.resolve(employee)) as User,
@@ -623,7 +635,7 @@ export async function calculateEmployeeReport(
         payout_usd:
           profitCommission +
           contractCommission +
-          rawFixedSalary +
+          fixedSalaryToPay +
           finalSettlements -
           Math.abs(Number(fine || 0)),
         contract_details: contractDetails,
@@ -734,9 +746,7 @@ export async function calculateWeeklyContractCommission(
       const vehicleTiers = tiersByVehicleType.get(vehicleTypeId) || []
       if (vehicleTiers.length === 0) continue
 
-      const sortedTiers = [...vehicleTiers].sort(
-        (a, b) => Number(a.gross) - Number(b.gross),
-      )
+      const sortedTiers = [...vehicleTiers].sort((a, b) => Number(a.gross) - Number(b.gross))
       let matchedTier = sortedTiers[sortedTiers.length - 1]
       for (const tier of sortedTiers) {
         if (data.totalGross <= Number(tier.gross)) {
@@ -838,9 +848,7 @@ export async function loadDispatcherPerformanceReport(
   const dispatcherOrders = groupBy(activeOrders, (o) => o.created_by)
   const userStore = useUsersStore()
 
-  const { data: perfVehiclesData } = await supabase
-    .from('vehicles')
-    .select('id, unit_id')
+  const { data: perfVehiclesData } = await supabase.from('vehicles').select('id, unit_id')
   const perfVehicleIdToUnitId = new Map<number, string>()
   perfVehiclesData?.forEach((v) => perfVehicleIdToUnitId.set(v.id, v.unit_id))
 

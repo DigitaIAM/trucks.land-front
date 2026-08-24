@@ -26,6 +26,7 @@ import type { ExcelRecord } from '@/utils/export_combined_dispatcher_report_to_e
 import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 import type { PaymentToEmployeeSummary } from '@/stores/employee_payments.ts'
 import moment from 'moment-timezone'
+import dayjs from 'dayjs'
 
 const ORGANIZATION_CODES = ['CNU', 'CVS', 'CAF']
 
@@ -64,6 +65,59 @@ const cnuExRate = ref(0)
 const years = [2025, 2026]
 
 const exRateAvailable = computed(() => cnuExRate.value > 0)
+
+function netFixedSalary(fixedSalary: number, year: number, month: number, missedDays: number) {
+  if (!fixedSalary) return 0
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+  const totalWorkingDays = getWorkingDaysInRange(from, till)
+  if (totalWorkingDays <= 0) return fixedSalary
+  return Math.max(0, totalWorkingDays - missedDays) * (fixedSalary / totalWorkingDays)
+}
+
+function countMissedDays(
+  absences: Array<{ start_date: string; end_date: string }>,
+  year: number,
+  month: number,
+) {
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+  let count = 0
+  for (const absence of absences) {
+    let start = dayjs(absence.start_date).isAfter(from) ? dayjs(absence.start_date) : from
+    const end = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
+    while (!start.isAfter(end, 'day')) {
+      if (start.day() !== 0) count++
+      start = start.add(1, 'day')
+    }
+  }
+  return count
+}
+
+async function loadMissedDaysMap(year: number, month: number) {
+  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
+  const till = from.endOf('month')
+
+  const { data: absencesData } = await supabase
+    .from('employee_absences')
+    .select('employee, start_date, end_date')
+    .lte('start_date', till.format('YYYY-MM-DD'))
+    .gte('end_date', from.format('YYYY-MM-DD'))
+
+  const grouped = new Map<number, Array<{ start_date: string; end_date: string }>>()
+  for (const absence of absencesData ?? []) {
+    const empId = Number(absence.employee)
+    const list = grouped.get(empId) ?? []
+    list.push(absence)
+    grouped.set(empId, list)
+  }
+
+  const missedDaysMap = new Map<number, number>()
+  for (const [empId, list] of grouped) {
+    missedDaysMap.set(empId, countMissedDays(list, year, month))
+  }
+  return missedDaysMap
+}
 
 async function loadData() {
   loading.value = true
@@ -133,6 +187,8 @@ async function loadData() {
 
   const merged = new Map<number, MergedReportRecord>()
 
+  const missedDaysMap = await loadMissedDaysMap(currentYear.value, currentMonth.value)
+
   for (const record of allRecords) {
     const empId = record.employee
 
@@ -160,12 +216,18 @@ async function loadData() {
     const existing = merged.get(empId)
     const toPay = Number(record.to_pay) || 0
     const fixedSalary = Number(record.fixed_salary) || 0
+    const netSalary = netFixedSalary(
+      fixedSalary,
+      currentYear.value,
+      currentMonth.value,
+      missedDaysMap.get(empId) || 0,
+    )
     const contractCommission = Number(record.contract_commission) || 0
 
     if (existing) {
-      existing.fixed_salary += fixedSalary
+      existing.fixed_salary += netSalary
       existing.to_pay += toPay
-      if (record.orgCode === 'CNU') existing.to_pay_cnu += toPay - fixedSalary
+      if (record.orgCode === 'CNU') existing.to_pay_cnu += toPay - netSalary
       else if (record.orgCode === 'CVS') existing.to_pay_cvs += toPay
       else if (record.orgCode === 'CAF') existing.to_pay_caf += toPay
       existing.contract_commission += contractCommission
@@ -178,14 +240,14 @@ async function loadData() {
     } else {
       const user = await usersStore.resolve(empId)
 
-      const to_pay_cnu = record.orgCode === 'CNU' ? toPay - fixedSalary : 0
+      const to_pay_cnu = record.orgCode === 'CNU' ? toPay - netSalary : 0
       const to_pay_cvs = record.orgCode === 'CVS' ? toPay : 0
       const to_pay_caf = record.orgCode === 'CAF' ? toPay : 0
 
       merged.set(empId, {
         employee: empId,
         employeeName: user?.real_name || `ID: ${empId}`,
-        fixed_salary: fixedSalary,
+        fixed_salary: netSalary,
         to_pay: toPay,
         to_pay_cnu,
         to_pay_cvs,

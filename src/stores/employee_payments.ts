@@ -30,6 +30,7 @@ export interface PaymentToEmployeeSummary {
   year: number
   month: number
   payout_uzs: number
+  missed_days: number
   closed: boolean
 }
 
@@ -51,6 +52,7 @@ export interface PaymentToEmployeeCreate {
   contract_commission: number
   ex_rate: number
   income_tax: number
+  missed_days: number
 }
 
 export interface PaymentToEmployeeSummaryDetails {
