@@ -565,6 +565,7 @@ export async function calculateEmployeeReport(
     let vacationTotal = 0
     let advanceTotal = 0
     let fine = 0
+    let fineUzs = 0
 
     settlements.get(employee)?.forEach((v) => {
       if (v.employee == employee) {
@@ -574,6 +575,8 @@ export async function calculateEmployeeReport(
           vacationTotal += Number(v.amount)
         } else if (String(v.settlement_type) === 'advance') {
           advanceTotal += Number(v.amount)
+        } else if (String(v.settlement_type) === 'fine uzs') {
+          fineUzs += Number(v.amount)
         } else if (String(v.settlement_type) === 'fine') {
           fine += Number(v.amount)
         } else {
@@ -653,6 +656,7 @@ export async function calculateEmployeeReport(
         vacation_amount: vacationTotal,
         advance_amount: advanceTotal,
         settlement_fine: fine,
+        settlement_fine_uzs: fineUzs,
         missed_days: missedWorkingDays,
         payout_usd:
           profitCommission +
@@ -929,6 +933,7 @@ export async function loadDispatcherPerformanceReport(
         vacation_amount: 0,
         advance_amount: 0,
         settlement_fine: 0,
+        settlement_fine_uzs: 0,
         missed_days: 0,
         payout_usd: profit,
         contract_details: [],

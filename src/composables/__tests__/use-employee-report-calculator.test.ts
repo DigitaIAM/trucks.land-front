@@ -304,6 +304,37 @@ describe('calculateEmployeeReport', () => {
     expect(result[0].summary.payout_usd).toBe(100)
   })
 
+  it('tracks USD fine and UZS fine separately in settlements', async () => {
+    mockFromFor('employee_payments')
+    mockFromFor('employee_absences')
+    mockFromFor('user_conditions')
+
+    const order: any = {
+      id: 1,
+      cost: 1000,
+      driver_cost: 600,
+      created_by: 10,
+      stage: 2,
+      organization: 1,
+      events: [],
+    }
+    const mapping = new Map()
+    mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
+
+    const settlements = new Map()
+    settlements.set(10, [
+      { id: 1, employee: 10, amount: 30, settlement_type: 'fine', organization: 1 },
+      { id: 2, employee: 10, amount: 50000, settlement_type: 'fine uzs', organization: 1 },
+    ])
+
+    const result = await calculateEmployeeReport(1, new Map(), mapping, settlements)
+    const summary = result[0].summary
+    // no payment terms -> base 0; USD fine is subtracted, UZS fine is excluded from payout_usd
+    expect(summary.settlement_fine).toBe(30)
+    expect(summary.settlement_fine_uzs).toBe(50000)
+    expect(summary.payout_usd).toBe(-30)
+  })
+
   it('splits profit when vehicle_found_by differs from created_by', async () => {
     mockFromFor('employee_payments')
     mockFromFor('employee_absences')
