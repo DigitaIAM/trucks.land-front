@@ -25,6 +25,7 @@ import { combinedDispatcherReportExportToExcel } from '@/utils/export_combined_d
 import type { ExcelRecord } from '@/utils/export_combined_dispatcher_report_to_excel.ts'
 import type { SettlementEmployee } from '@/stores/employee_settlements.ts'
 import type { PaymentToEmployeeSummary } from '@/stores/employee_payments.ts'
+import { getPayPeriod } from '@/composables/use-employee-report-calculator'
 import moment from 'moment-timezone'
 import dayjs from 'dayjs'
 
@@ -66,10 +67,13 @@ const years = [2025, 2026]
 
 const exRateAvailable = computed(() => cnuExRate.value > 0)
 
-function netFixedSalary(fixedSalary: number, year: number, month: number, missedDays: number) {
+function netFixedSalary(
+  fixedSalary: number,
+  from: dayjs.Dayjs,
+  till: dayjs.Dayjs,
+  missedDays: number,
+) {
   if (!fixedSalary) return 0
-  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
-  const till = from.endOf('month')
   const totalWorkingDays = getWorkingDaysInRange(from, till)
   if (totalWorkingDays <= 0) return fixedSalary
   return Math.max(0, totalWorkingDays - missedDays) * (fixedSalary / totalWorkingDays)
@@ -77,11 +81,9 @@ function netFixedSalary(fixedSalary: number, year: number, month: number, missed
 
 function countMissedDays(
   absences: Array<{ start_date: string; end_date: string }>,
-  year: number,
-  month: number,
+  from: dayjs.Dayjs,
+  till: dayjs.Dayjs,
 ) {
-  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
-  const till = from.endOf('month')
   let count = 0
   for (const absence of absences) {
     let start = dayjs(absence.start_date).isAfter(from) ? dayjs(absence.start_date) : from
@@ -94,10 +96,7 @@ function countMissedDays(
   return count
 }
 
-async function loadLiveMissedDays(year: number, month: number) {
-  const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
-  const till = from.endOf('month')
-
+async function loadLiveMissedDays(from: dayjs.Dayjs, till: dayjs.Dayjs) {
   const { data: absencesData } = await supabase
     .from('employee_absences')
     .select('employee, start_date, end_date')
@@ -114,7 +113,7 @@ async function loadLiveMissedDays(year: number, month: number) {
 
   const liveByEmployee = new Map<number, number>()
   for (const [empId, list] of grouped) {
-    liveByEmployee.set(empId, countMissedDays(list, year, month))
+    liveByEmployee.set(empId, countMissedDays(list, from, till))
   }
   return liveByEmployee
 }
@@ -198,7 +197,16 @@ async function loadData() {
       if (p.missed_days != null) missedDaysById.set(p.id, Number(p.missed_days) || 0)
     }
   }
-  const liveMissedDays = await loadLiveMissedDays(currentYear.value, currentMonth.value)
+  let calcDate: dayjs.Dayjs | null = null
+  for (const r of allRecords) {
+    if (r.created_at) {
+      const created = dayjs(r.created_at)
+      if (!calcDate || created.isAfter(calcDate)) calcDate = created
+    }
+  }
+  const anchorOrg = Number(allRecords.find((r) => r.organization)?.organization || 0)
+  const payPeriod = await getPayPeriod(anchorOrg || 1, calcDate ?? dayjs())
+  const liveMissedDays = await loadLiveMissedDays(payPeriod.from, payPeriod.till)
 
   const contractTotals = new Map<number, { gross: number; driver: number }>()
   if (paymentIds.length > 0) {
@@ -244,8 +252,8 @@ async function loadData() {
     const fixedSalary = Number(record.fixed_salary) || 0
     const netSalary = netFixedSalary(
       fixedSalary,
-      currentYear.value,
-      currentMonth.value,
+      payPeriod.from,
+      payPeriod.till,
       missedDaysById.get(record.id) ?? liveMissedDays.get(Number(record.employee)) ?? 0,
     )
     const contractCommission = Number(record.contract_commission) || 0

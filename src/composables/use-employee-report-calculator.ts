@@ -160,6 +160,27 @@ export async function loadUnpaidSettlements(orgId: number | null, userId: number
   return settlementsMap
 }
 
+export interface PayPeriod {
+  from: dayjs.Dayjs
+  till: dayjs.Dayjs
+}
+
+export async function getPayPeriod(orgId: number, calcDate?: dayjs.Dayjs): Promise<PayPeriod> {
+  const asOf = (calcDate ?? dayjs()).startOf('day')
+
+  const { data } = await supabase
+    .from('employee_payments')
+    .select('created_at')
+    .eq('organization', orgId)
+    .lt('created_at', asOf.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  const lastCalc = data?.[0]?.created_at ? dayjs(data[0].created_at).startOf('day') : null
+
+  return { from: lastCalc ?? asOf.subtract(30, 'day'), till: asOf }
+}
+
 export async function calculateEmployeeReport(
   orgId: number | null,
   ordersInProcessing: Map<number, Array<Order>>,
@@ -167,6 +188,8 @@ export async function calculateEmployeeReport(
   settlements: Map<number, Array<SettlementEmployee>>,
   month?: number,
   year?: number,
+  periodFrom?: string,
+  periodTill?: string,
 ) {
   if (!orgId) {
     return []
@@ -175,21 +198,20 @@ export async function calculateEmployeeReport(
   let from: dayjs.Dayjs
   let till: dayjs.Dayjs
 
-  if (month && year) {
-    from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
-    till = from.endOf('month')
+  if (periodFrom && periodTill) {
+    from = dayjs(periodFrom)
+    till = dayjs(periodTill)
   } else {
-    const now = dayjs()
-    from = now.subtract(1, 'month').startOf('month')
-    till = now.subtract(1, 'month').endOf('month')
+    const payPeriod = await getPayPeriod(orgId)
+    from = payPeriod.from
+    till = payPeriod.till
   }
 
   const monthClosedResponse = await supabase
     .from('employee_payments')
     .select('id')
     .eq('organization', orgId)
-    .eq('year', from.year())
-    .eq('month', from.month() + 1)
+    .gte('created_at', till.toISOString())
     .limit(1)
 
   const monthClosed = (monthClosedResponse.data?.length ?? 0) > 0
@@ -397,7 +419,7 @@ export async function calculateEmployeeReport(
       orders.set(p.order.id, p.order)
     })
 
-    const reportYear = year ?? from.year()
+    const reportYear = year ?? till.year()
 
     const orderWeekMap = new Map<number, number>()
     const orderVehicleColumnMap = new Map<number, number>()

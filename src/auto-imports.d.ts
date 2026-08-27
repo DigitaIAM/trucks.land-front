@@ -50,6 +50,7 @@ declare global {
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getPayPeriod: typeof import('./composables/use-employee-report-calculator')['getPayPeriod']
   const getWorkingDaysInRange: typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']
   const groupKey: typeof import('./composables/use-similar-loads')['groupKey']
   const h: typeof import('vue')['h']
@@ -396,7 +397,7 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission, ContractVehicleBreakdown, ContractWeekBreakdown } from './composables/use-employee-report-calculator'
+  export type { EmployeeReportRecord, ContractCommissionDetail, WeeklyContractCommission, ContractVehicleBreakdown, ContractWeekBreakdown, PayPeriod } from './composables/use-employee-report-calculator'
   import('./composables/use-employee-report-calculator')
   // @ts-ignore
   export type { SimilarLoadOrder, SimilarLoadGroup } from './composables/use-similar-loads'
@@ -565,6 +566,7 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getPayPeriod: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getPayPeriod']>
     readonly getWorkingDaysInRange: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getWorkingDaysInRange']>
     readonly groupKey: UnwrapRef<typeof import('./composables/use-similar-loads')['groupKey']>
     readonly h: UnwrapRef<typeof import('vue')['h']>

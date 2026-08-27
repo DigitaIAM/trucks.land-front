@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { generateDispatcherPaymentPdf } from '@/utils/export_dispatchers_payments_to_pdf.ts'
 import { openInNewTab } from '@/utils/pdf-helper.ts'
+import { getPayPeriod } from '@/composables/use-employee-report-calculator'
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import { sleep } from '@/utils/datetime'
@@ -280,14 +281,9 @@ const commissionToPay = computed(() => {
 
 const salaryToPay = computed(() => {
   const fixedSalary = Number(props.document?.fixed_salary || 0)
-  if (!fixedSalary || !props.document?.year || !props.document?.month) return fixedSalary
+  if (!fixedSalary || !payPeriod.value) return fixedSalary
 
-  const from = dayjs(
-    `${props.document.year}-${String(props.document.month).padStart(2, '0')}-01`,
-  ).startOf('month')
-  const till = from.endOf('month')
-
-  const totalWorkingDays = getWorkingDaysInRange(from, till)
+  const totalWorkingDays = getWorkingDaysInRange(payPeriod.value.from, payPeriod.value.till)
   if (totalWorkingDays <= 0) return fixedSalary
 
   const perDay = fixedSalary / totalWorkingDays
@@ -306,12 +302,16 @@ const payoutTotal = computed(() => {
 })
 
 const missedDays = ref(0)
+const payPeriod = ref<{ from: dayjs.Dayjs; till: dayjs.Dayjs } | null>(null)
 
 watch(
   () => props.document,
   async (doc) => {
     missedDays.value = Number(doc?.missed_days || 0)
     if (!doc?.id) return
+
+    const period = await getPayPeriod(doc.organization, dayjs(doc.created_at))
+    payPeriod.value = period
 
     const { data } = await supabase
       .from('employee_payments')

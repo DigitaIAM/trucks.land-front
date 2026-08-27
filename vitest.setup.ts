@@ -20,6 +20,8 @@ function createMockQuery(data: unknown, status = 200) {
     is: vi.fn(() => query),
     gte: vi.fn(() => query),
     lte: vi.fn(() => query),
+    lt: vi.fn(() => query),
+    gt: vi.fn(() => query),
     order: vi.fn(() => query),
     limit: vi.fn(() => query),
     insert: vi.fn(() => query),
@@ -52,7 +54,12 @@ global.supabase = {
 } as unknown as typeof supabaseClient
 
 global.useUsersStore = vi.fn(() => ({
-  resolve: vi.fn(async (id: number) => ({ id, real_name: 'User ' + id, name: 'user' + id, access: {} })),
+  resolve: vi.fn(async (id: number) => ({
+    id,
+    real_name: 'User ' + id,
+    name: 'user' + id,
+    access: {},
+  })),
 }))
 
 global.useOwnersStore = vi.fn(() => ({

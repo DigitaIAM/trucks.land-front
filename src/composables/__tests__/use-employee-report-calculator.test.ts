@@ -11,6 +11,8 @@ function mockQuery(data: unknown, status = 200) {
     in: vi.fn(() => q),
     gte: vi.fn(() => q),
     lte: vi.fn(() => q),
+    lt: vi.fn(() => q),
+    gt: vi.fn(() => q),
     order: vi.fn(() => q),
     limit: vi.fn(() => q),
     maybeSingle: vi.fn(() => q),
@@ -38,6 +40,7 @@ beforeEach(() => {
 })
 
 import {
+  getPayPeriod,
   getWorkingDaysInRange,
   loadOrdersInProgress,
   loadUnpaidOrders,
@@ -88,6 +91,28 @@ describe('getWorkingDaysInRange', () => {
     const end = dayjs('2026-05-31') // Sunday
     // Mon-Sat = 6 (Sun excluded, but loop still runs on Sun and skips it)
     expect(getWorkingDaysInRange(start, end)).toBe(6)
+  })
+})
+
+describe('getPayPeriod', () => {
+  beforeEach(() => {
+    mockFromFor('employee_payments')
+  })
+
+  it('anchors from at the latest payment created_at before calcDate', async () => {
+    mockTableData['employee_payments'] = [{ id: 1, created_at: '2026-08-21T12:00:00' }]
+
+    const period = await getPayPeriod(1, dayjs('2026-09-21T00:00:00'))
+    expect(period.from.format('YYYY-MM-DD')).toBe('2026-08-21')
+    expect(period.till.format('YYYY-MM-DD')).toBe('2026-09-21')
+  })
+
+  it('falls back to calcDate minus 30 days when no payments exist', async () => {
+    mockTableData['employee_payments'] = []
+
+    const period = await getPayPeriod(1, dayjs('2026-09-21T00:00:00'))
+    expect(period.from.format('YYYY-MM-DD')).toBe('2026-08-22')
+    expect(period.till.format('YYYY-MM-DD')).toBe('2026-09-21')
   })
 })
 
@@ -594,7 +619,7 @@ describe('calculateEmployeeReport', () => {
     expect(summary.payout_usd).toBe(700)
   })
 
-  it('defaults to previous month when month/year are not provided', async () => {
+  it('calculates fixed salary when month/year are not provided', async () => {
     mockFromFor('employee_payments')
     mockFromFor('employee_absences')
     mockFromFor('user_conditions')
@@ -649,7 +674,16 @@ describe('calculateEmployeeReport', () => {
       },
     ]
 
-    const result = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 6, 2026)
+    const result = await calculateEmployeeReport(
+      1,
+      new Map(),
+      new Map(),
+      new Map(),
+      6,
+      2026,
+      '2026-06-01',
+      '2026-06-30',
+    )
     expect(result).toHaveLength(1)
 
     const summary = result[0].summary
@@ -690,7 +724,16 @@ describe('calculateEmployeeReport', () => {
     ]
 
     // August (closed month): the absence counts and reduces the salary
-    const august = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 8, 2026)
+    const august = await calculateEmployeeReport(
+      1,
+      new Map(),
+      new Map(),
+      new Map(),
+      8,
+      2026,
+      '2026-08-01',
+      '2026-08-31',
+    )
     expect(august).toHaveLength(1)
     expect(august[0].summary.missed_days).toBe(14)
 
@@ -701,7 +744,16 @@ describe('calculateEmployeeReport', () => {
     )
 
     // September (next month): the same absence records must not count
-    const september = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 9, 2026)
+    const september = await calculateEmployeeReport(
+      1,
+      new Map(),
+      new Map(),
+      new Map(),
+      9,
+      2026,
+      '2026-09-01',
+      '2026-09-30',
+    )
     expect(september).toHaveLength(1)
     expect(september[0].summary.missed_days).toBe(0)
     expect(september[0].summary.payout_usd).toBe(650)
@@ -733,7 +785,16 @@ describe('calculateEmployeeReport', () => {
       },
     ]
 
-    const result = await calculateEmployeeReport(1, new Map(), new Map(), new Map(), 8, 2026)
+    const result = await calculateEmployeeReport(
+      1,
+      new Map(),
+      new Map(),
+      new Map(),
+      8,
+      2026,
+      '2026-08-01',
+      '2026-08-31',
+    )
     expect(result).toHaveLength(1)
     expect(result[0].summary.missed_days).toBe(0)
     expect(result[0].summary.payout_usd).toBe(650)
