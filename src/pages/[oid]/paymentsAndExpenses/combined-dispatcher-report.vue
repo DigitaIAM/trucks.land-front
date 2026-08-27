@@ -94,7 +94,7 @@ function countMissedDays(
   return count
 }
 
-async function loadMissedDaysMap(year: number, month: number) {
+async function loadLiveMissedDays(year: number, month: number) {
   const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
   const till = from.endOf('month')
 
@@ -112,11 +112,11 @@ async function loadMissedDaysMap(year: number, month: number) {
     grouped.set(empId, list)
   }
 
-  const missedDaysMap = new Map<number, number>()
+  const liveByEmployee = new Map<number, number>()
   for (const [empId, list] of grouped) {
-    missedDaysMap.set(empId, countMissedDays(list, year, month))
+    liveByEmployee.set(empId, countMissedDays(list, year, month))
   }
-  return missedDaysMap
+  return liveByEmployee
 }
 
 async function loadData() {
@@ -187,7 +187,33 @@ async function loadData() {
 
   const merged = new Map<number, MergedReportRecord>()
 
-  const missedDaysMap = await loadMissedDaysMap(currentYear.value, currentMonth.value)
+  const paymentIds = allRecords.map((r) => r.id)
+  const missedDaysById = new Map<number, number>()
+  if (paymentIds.length > 0) {
+    const { data: payMissed } = await supabase
+      .from('employee_payments')
+      .select('id, missed_days')
+      .in('id', paymentIds)
+    for (const p of payMissed ?? []) {
+      if (p.missed_days != null) missedDaysById.set(p.id, Number(p.missed_days) || 0)
+    }
+  }
+  const liveMissedDays = await loadLiveMissedDays(currentYear.value, currentMonth.value)
+
+  const contractTotals = new Map<number, { gross: number; driver: number }>()
+  if (paymentIds.length > 0) {
+    const { data: contractOrders } = await supabase
+      .from('employee_payment_orders')
+      .select('doc_payment, order_cost, driver_cost')
+      .eq('profit_kind', 'contract')
+      .in('doc_payment', paymentIds)
+    for (const co of contractOrders ?? []) {
+      const cur = contractTotals.get(co.doc_payment) || { gross: 0, driver: 0 }
+      cur.gross += Number(co.order_cost || 0)
+      cur.driver += Number(co.driver_cost || 0)
+      contractTotals.set(co.doc_payment, cur)
+    }
+  }
 
   for (const record of allRecords) {
     const empId = record.employee
@@ -220,14 +246,23 @@ async function loadData() {
       fixedSalary,
       currentYear.value,
       currentMonth.value,
-      missedDaysMap.get(empId) || 0,
+      missedDaysById.get(record.id) ?? liveMissedDays.get(Number(record.employee)) ?? 0,
     )
     const contractCommission = Number(record.contract_commission) || 0
+
+    const percent = Number(record.percent_of_profit || 0)
+    const contractTotal = contractTotals.get(record.id)
+    const nonContractProfit =
+      Number(record.gross || 0) -
+      (contractTotal?.gross || 0) -
+      (Number(record.driver_payment || 0) - (contractTotal?.driver || 0))
+    const profitCommission = (nonContractProfit * percent) / 100
+    const commission = profitCommission + contractCommission
 
     if (existing) {
       existing.fixed_salary += netSalary
       existing.to_pay += toPay
-      if (record.orgCode === 'CNU') existing.to_pay_cnu += toPay - netSalary
+      if (record.orgCode === 'CNU') existing.to_pay_cnu += commission
       else if (record.orgCode === 'CVS') existing.to_pay_cvs += toPay
       else if (record.orgCode === 'CAF') existing.to_pay_caf += toPay
       existing.contract_commission += contractCommission
@@ -240,7 +275,7 @@ async function loadData() {
     } else {
       const user = await usersStore.resolve(empId)
 
-      const to_pay_cnu = record.orgCode === 'CNU' ? toPay - netSalary : 0
+      const to_pay_cnu = record.orgCode === 'CNU' ? commission : 0
       const to_pay_cvs = record.orgCode === 'CVS' ? toPay : 0
       const to_pay_caf = record.orgCode === 'CAF' ? toPay : 0
 

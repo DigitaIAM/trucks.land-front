@@ -32,7 +32,7 @@ function countMissedDays(
   return count
 }
 
-async function loadMissedDaysMap(year: number, month: number) {
+async function loadLiveMissedDays(year: number, month: number) {
   const from = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).startOf('month')
   const till = from.endOf('month')
 
@@ -50,11 +50,11 @@ async function loadMissedDaysMap(year: number, month: number) {
     grouped.set(empId, list)
   }
 
-  const missedDaysMap = new Map<number, number>()
+  const liveByEmployee = new Map<number, number>()
   for (const [empId, list] of grouped) {
-    missedDaysMap.set(empId, countMissedDays(list, year, month))
+    liveByEmployee.set(empId, countMissedDays(list, year, month))
   }
-  return missedDaysMap
+  return liveByEmployee
 }
 
 export async function employeePaymentsExportToExcel(orgId: number, year: number, month: number) {
@@ -96,8 +96,20 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } }
 
   const payments = await paymentToEmployeeStore.fetchJournalData(orgId, year, month)
-  const missedDaysMap = await loadMissedDaysMap(year, month)
   const dispatcherOrdersStore = usePaymentToDispatcherOrdersStore()
+
+  const paymentIds = (payments || []).map((p) => p.id)
+  const missedDaysById = new Map<number, number>()
+  if (paymentIds.length > 0) {
+    const { data: payMissed } = await supabase
+      .from('employee_payments')
+      .select('id, missed_days')
+      .in('id', paymentIds)
+    for (const p of payMissed ?? []) {
+      if (p.missed_days != null) missedDaysById.set(p.id, Number(p.missed_days) || 0)
+    }
+  }
+  const liveMissedDays = await loadLiveMissedDays(year, month)
 
   const allOrders = (
     await Promise.all((payments || []).map((payment) => dispatcherOrdersStore.request(payment.id)))
@@ -106,6 +118,20 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   // Contract tiers calculation per payment
   const contractTiersMap = new Map<number, number>()
   const contractOrders = allOrders.filter((o) => o.profit_kind === 'contract')
+
+  const contractGrossByPayment = new Map<number, number>()
+  const contractDriverByPayment = new Map<number, number>()
+  for (const co of contractOrders) {
+    contractGrossByPayment.set(
+      co.doc_payment,
+      (contractGrossByPayment.get(co.doc_payment) || 0) + Number(co.order_cost || 0),
+    )
+    contractDriverByPayment.set(
+      co.doc_payment,
+      (contractDriverByPayment.get(co.doc_payment) || 0) + Number(co.driver_cost || 0),
+    )
+  }
+
   if (contractOrders.length > 0) {
     const orderIds = [...new Set(contractOrders.map((o) => o.doc_order))]
     const { data: ordersData } = await supabase
@@ -208,14 +234,15 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
   let n = 1
   for (const record of paymentsWithNames) {
     const contractTiers = contractTiersMap.get(record.id) || 0
-    const netSalary = netFixedSalary(
-      Number(record.fixed_salary) || 0,
-      year,
-      month,
-      missedDaysMap.get(Number(record.employee)) || 0,
-    )
-    const to_payment = (record.to_pay || 0) - contractTiers - netSalary
+    const missed = missedDaysById.get(record.id) ?? liveMissedDays.get(Number(record.employee)) ?? 0
+    const netSalary = netFixedSalary(Number(record.fixed_salary) || 0, year, month, missed)
 
+    const percent = Number(record.percent_of_profit || 0)
+    const nonContractProfit =
+      Number(record.gross || 0) -
+      (contractGrossByPayment.get(record.id) || 0) -
+      (Number(record.driver_payment || 0) - (contractDriverByPayment.get(record.id) || 0))
+    const to_payment = (nonContractProfit * percent) / 100
     const bonus = Number(record.settlement_bonus) || 0
     const premium = Number(record.settlement_premium) || 0
     const fine = Number(record.settlement_fine) || 0
