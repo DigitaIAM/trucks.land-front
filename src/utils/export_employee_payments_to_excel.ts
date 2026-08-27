@@ -76,6 +76,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     { header: 'Итого в UZS', key: 'payout_uzs', width: 20 },
     { header: 'НДФЛ 7.5%', key: 'income_tax', width: 20 },
     { header: 'Аванс UZS', key: 'advance', width: 15 },
+    { header: 'Штраф в UZS', key: 'fine_uzs', width: 15 },
     { header: 'К выплате UZS', key: 'payout_total', width: 20 },
   ]
 
@@ -105,6 +106,33 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       .in('id', paymentIds)
     for (const p of payMissed ?? []) {
       if (p.missed_days != null) missedDaysById.set(p.id, Number(p.missed_days) || 0)
+    }
+  }
+
+  const employeeSettlementsTypeStore = useEmployeeSettlementsTypeStore()
+  while (!employeeSettlementsTypeStore.initialized) await sleep(10)
+
+  const fineUzsByPayment = new Map<number, number>()
+  if (paymentIds.length > 0) {
+    const { data: settlementLinks } = await supabase
+      .from('employee_payment_settlements')
+      .select('doc_payment, settlement:employee_settlements(*)')
+      .in('doc_payment', paymentIds)
+    for (const json of settlementLinks ?? []) {
+      const link = json as unknown as {
+        doc_payment: number
+        settlement?: { settlement_type: number; amount: number }
+      }
+      const settlement = link.settlement
+      if (!settlement) continue
+      const type = await employeeSettlementsTypeStore.resolve(Number(settlement.settlement_type))
+      if (type && String(type.settlement_type).trim().toLowerCase() === 'fine uzs') {
+        const paymentId = Number(link.doc_payment)
+        fineUzsByPayment.set(
+          paymentId,
+          (fineUzsByPayment.get(paymentId) || 0) + (Number(settlement.amount) || 0),
+        )
+      }
     }
   }
 
@@ -264,7 +292,8 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
     const payout_UZS = total_USD * Number(record.ex_rate) + vacation
     const income_tax = (payout_UZS * (Number(record.income_tax) || 0)) / 100
     const advance = Number(record.settlement_advance) || 0
-    const payout_total = payout_UZS - income_tax - advance
+    const fineUzs = fineUzsByPayment.get(record.id) || 0
+    const payout_total = payout_UZS - income_tax - advance - fineUzs
 
     const row = sheet.addRow({
       index: n,
@@ -281,6 +310,7 @@ export async function employeePaymentsExportToExcel(orgId: number, year: number,
       payout_uzs: payout_UZS,
       income_tax: income_tax,
       advance: advance,
+      fine_uzs: fineUzs,
       payout_total: payout_total,
     })
 

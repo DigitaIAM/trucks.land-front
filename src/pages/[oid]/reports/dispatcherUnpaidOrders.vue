@@ -137,6 +137,14 @@ const cols = [
     size: 80,
   },
   {
+    label: 'fine uzs',
+    value: (v: EmployeePaymentSummary) => {
+      const formatted = new Intl.NumberFormat('ru-RU').format(v.settlement_fine_uzs)
+      return v.settlement_fine_uzs == 0 ? '' : formatted
+    },
+    size: 100,
+  },
+  {
     label: 'to pay',
     value: (v: EmployeePaymentSummary) => '$' + v.payout_usd.toFixed(0),
     size: 100,

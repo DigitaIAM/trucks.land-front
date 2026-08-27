@@ -11,6 +11,7 @@ export interface ExcelRecord {
   settlement_bonus: number
   settlement_premium: number
   settlement_fine: number
+  settlement_fine_uzs: number
   settlement_vacation: number
   settlement_advance: number
   payout_usd: number
@@ -42,6 +43,7 @@ export async function combinedDispatcherReportExportToExcel(
     { header: 'Итого в UZS', key: 'payout_uzs', width: 20 },
     { header: 'НДФЛ 7.5%', key: 'income_tax', width: 20 },
     { header: 'Аванс UZS', key: 'advance', width: 15 },
+    { header: 'Штраф в UZS', key: 'fine_uzs', width: 15 },
     { header: 'К выплате UZS', key: 'payout_total', width: 20 },
   ]
 
@@ -70,7 +72,8 @@ export async function combinedDispatcherReportExportToExcel(
     const payout_UZS = total_USD * exRate + vacation
     const income_tax = (payout_UZS * 7.5) / 100
     const advance = record.settlement_advance
-    const payout_total = payout_UZS - income_tax - advance
+    const fineUzs = record.settlement_fine_uzs || 0
+    const payout_total = payout_UZS - income_tax - advance - fineUzs
 
     const row = sheet.addRow({
       index: n,
@@ -89,6 +92,7 @@ export async function combinedDispatcherReportExportToExcel(
       payout_uzs: payout_UZS,
       income_tax: income_tax,
       advance: advance,
+      fine_uzs: fineUzs,
       payout_total: payout_total,
     })
 

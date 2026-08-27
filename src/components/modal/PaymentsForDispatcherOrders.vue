@@ -301,6 +301,19 @@ const payoutTotal = computed(() => {
   )
 })
 
+const employeeSettlementsTypeStore = useEmployeeSettlementsTypeStore()
+
+const fineUzsTotal = computedAsync(async () => {
+  let total = 0
+  for (const settlement of employeePaymentSettlementsStore.listing) {
+    const type = await employeeSettlementsTypeStore.resolve(Number(settlement.settlement_type))
+    if (type && String(type.settlement_type).trim().toLowerCase() === 'fine uzs') {
+      total += Number(settlement.amount) || 0
+    }
+  }
+  return total
+})
+
 const missedDays = ref(0)
 const payPeriod = ref<{ from: dayjs.Dayjs; till: dayjs.Dayjs } | null>(null)
 
@@ -673,6 +686,7 @@ function onClose() {
                 :rowspan="
                   1 +
                   (Number(document?.settlement_fine) > 0 ? 1 : 0) +
+                  (Number(fineUzsTotal) > 0 ? 1 : 0) +
                   (Number(document?.settlement_vacation) > 0 ? 1 : 0) +
                   (Number(document?.settlement_advance) > 0 ? 1 : 0)
                 "
@@ -695,6 +709,14 @@ function onClose() {
               <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fine</td>
               <td class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]">
                 - $ {{ document?.settlement_fine }}
+              </td>
+            </tr>
+            <tr v-if="Number(fineUzsTotal) > 0">
+              <td class="px-6 py-3 text-[#cbd5e0] border-t border-[#526471]">fine (UZS)</td>
+              <td
+                class="px-6 py-3 text-right font-medium text-white border-t border-[#526471]"
+              >
+                - UZS {{ new Intl.NumberFormat('ru-RU').format(Number(fineUzsTotal)) }}
               </td>
             </tr>
             <tr v-if="document?.settlement_vacation > 0">

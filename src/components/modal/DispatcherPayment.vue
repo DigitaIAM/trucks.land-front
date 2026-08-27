@@ -380,6 +380,7 @@ async function openOrder(order: Order) {
                     ? 1
                     : 0) +
                   (Number(summary?.settlement_fine) > 0 ? 1 : 0) +
+                  (Number(summary?.settlement_fine_uzs) > 0 ? 1 : 0) +
                   (Number(summary?.advance_amount) > 0 ? 1 : 0)
                 "
                 class="px-6 py-4 font-semibold text-white align-top bg-[#33414b] text-xs uppercase tracking-wider"
@@ -404,6 +405,14 @@ async function openOrder(order: Order) {
               <td class="px-6 py-3 text-[#f87171] border-t border-[#526471]">fine</td>
               <td class="px-6 py-3 text-right text-[#f87171] font-medium">
                 - $ {{ summary?.settlement_fine.toFixed(2) }}
+              </td>
+            </tr>
+
+            <!-- Новая строка: Fine (UZS) -->
+            <tr v-if="summary?.settlement_fine_uzs > 0">
+              <td class="px-6 py-3 text-[#f87171] border-t border-[#526471]">fine (UZS)</td>
+              <td class="px-6 py-3 text-right text-[#f87171] font-medium">
+                - UZS {{ summary?.settlement_fine_uzs.toLocaleString() }}
               </td>
             </tr>
 

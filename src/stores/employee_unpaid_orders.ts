@@ -39,6 +39,7 @@ export interface EmployeePaymentSummary {
   vacation_amount: number
   advance_amount: number
   settlement_fine: number
+  settlement_fine_uzs: number
   missed_days: number
   settlements: Array<SettlementEmployee>
   payout_usd: number

@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
 const id = ref<number>()
 const organization = ref<number>()
 const employee = ref<User | null>()
-const settlement_type = ref<number>()
+const settlement_type = ref<EmployeeSettlementsType | null>(null)
 const currency = ref<string>('USD')
 const amount = ref<number>()
 const notes = ref('')
@@ -173,8 +173,8 @@ onMounted(() => {
 })
 
 const getButtonStyle = (type: any) => {
-  const isActive = settlement_type.value?.id === type.id
-  const baseColor = type.color
+  const isActive = settlement_type.value?.id === type?.id
+  const baseColor = type?.color ?? '#ef4444'
   return {
     backgroundColor: isActive ? baseColor : 'transparent',
     color: isActive ? 'white' : baseColor,

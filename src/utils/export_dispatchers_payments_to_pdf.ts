@@ -85,6 +85,7 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
   let totalSettlementsUsd = 0
   let vacationUzs = 0
   let advanceUzs = 0
+  let fineUzs = 0
 
   const usdSettlementsToRender = []
 
@@ -107,6 +108,8 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
       vacationUzs += amt
     } else if (rawType === 'advance') {
       advanceUzs += amt
+    } else if (rawType === 'fine uzs') {
+      fineUzs += amt
     } else {
       // Сюда попадает 'fine' и любые другие USD-корректировки
       totalSettlementsUsd += amt
@@ -183,7 +186,13 @@ export async function generateDispatcherPaymentPdf(document: PaymentToEmployeeSu
     cy -= rowSpacing + 4
   }
 
-  const finalPayoutUzs = toPaySumUzs - taxAmountUzs
+  if (fineUzs !== 0) {
+    text_right(page, font, fs, 'fine (UZS):', cx - 120, cy)
+    text_left(page, font, fs, `-${formatSum(Math.abs(fineUzs))} UZS`, cx - 100, cy)
+    cy -= rowSpacing + 4
+  }
+
+  const finalPayoutUzs = toPaySumUzs - taxAmountUzs - fineUzs
   text_right(page, boldFont, 11, 'FINAL PAYOUT (UZS):', cx - 120, cy)
   text_left(
     page,

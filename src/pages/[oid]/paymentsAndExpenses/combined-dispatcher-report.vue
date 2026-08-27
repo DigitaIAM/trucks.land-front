@@ -51,6 +51,7 @@ interface MergedReportRecord {
   settlement_bonus: number
   settlement_premium: number
   settlement_fine: number
+  settlement_fine_uzs: number
   settlement_vacation: number
   settlement_advance: number
   payout_usd: number
@@ -229,6 +230,7 @@ async function loadData() {
     let bonus = 0
     let premium = 0
     let fine = 0
+    let fineUzs = 0
     let vacation = 0
     let advance = 0
     for (const s of record.settlements || []) {
@@ -236,6 +238,8 @@ async function loadData() {
       const amount = Number(s.amount) || 0
       if (typeName === 'fine') {
         fine += amount
+      } else if (typeName === 'fine uzs') {
+        fineUzs += amount
       } else if (typeName === 'vacation pay') {
         vacation += amount
       } else if (typeName === 'advance') {
@@ -277,6 +281,7 @@ async function loadData() {
       existing.settlement_bonus += bonus
       existing.settlement_premium += premium
       existing.settlement_fine += fine
+      existing.settlement_fine_uzs += fineUzs
       existing.settlement_vacation += vacation
       existing.settlement_advance += advance
       existing.payout_usd += Number(record.payout_usd) || 0
@@ -299,6 +304,7 @@ async function loadData() {
         settlement_bonus: bonus,
         settlement_premium: premium,
         settlement_fine: fine,
+        settlement_fine_uzs: fineUzs,
         settlement_vacation: vacation,
         settlement_advance: advance,
         payout_usd: Number(record.payout_usd) || 0,
@@ -345,6 +351,7 @@ async function loadData() {
           settlement_bonus: 0,
           settlement_premium: 0,
           settlement_fine: 0,
+          settlement_fine_uzs: 0,
           settlement_vacation: 0,
           settlement_advance: 0,
           payout_usd: 0,
@@ -353,6 +360,7 @@ async function loadData() {
       }
 
       if (typeName === 'fine') existing.settlement_fine += amount
+      else if (typeName === 'fine uzs') existing.settlement_fine_uzs += amount
       else if (typeName === 'vacation pay') existing.settlement_vacation += amount
       else if (typeName === 'advance') existing.settlement_advance += amount
       else if (typeName === 'premium') existing.settlement_premium += amount
@@ -384,6 +392,7 @@ async function handleExport() {
     settlement_bonus: r.settlement_bonus,
     settlement_premium: r.settlement_premium,
     settlement_fine: r.settlement_fine,
+    settlement_fine_uzs: r.settlement_fine_uzs,
     settlement_vacation: r.settlement_vacation,
     settlement_advance: r.settlement_advance,
     payout_usd: r.payout_usd,
@@ -500,6 +509,9 @@ loadData()
           <p class="block antialiasing tracking-wider font-thin leading-none">fine</p>
         </th>
         <th class="p-4" style="width: 100px">
+          <p class="block antialiasing tracking-wider font-thin leading-none">fine UZS</p>
+        </th>
+        <th class="p-4" style="width: 100px">
           <p class="block antialiasing tracking-wider font-thin leading-none">payout USD</p>
         </th>
         <th class="p-4" style="width: 100px">
@@ -562,6 +574,15 @@ loadData()
         <td class="py-3 px-4">
           <p class="block antialiasing tracking-wide font-light leading-normal">
             {{ row.settlement_fine ? '$' + row.settlement_fine.toFixed(0) : '' }}
+          </p>
+        </td>
+        <td class="py-3 px-4">
+          <p class="block antialiasing tracking-wide font-light leading-normal">
+            {{
+              row.settlement_fine_uzs
+                ? new Intl.NumberFormat('ru-RU').format(row.settlement_fine_uzs)
+                : ''
+            }}
           </p>
         </td>
         <td class="py-3 px-4">
