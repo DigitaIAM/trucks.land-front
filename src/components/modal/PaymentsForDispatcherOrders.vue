@@ -310,29 +310,18 @@ const missedDays = ref(0)
 watch(
   () => props.document,
   async (doc) => {
-    missedDays.value = 0
-    if (!doc?.employee || !doc?.year || !doc?.month) return
+    missedDays.value = Number(doc?.missed_days || 0)
+    if (!doc?.id) return
 
-    const from = dayjs(`${doc.year}-${String(doc.month).padStart(2, '0')}-01`).startOf('month')
-    const till = from.endOf('month')
+    const { data } = await supabase
+      .from('employee_payments')
+      .select('missed_days')
+      .eq('id', doc.id)
+      .maybeSingle()
 
-    const { data: absences } = await supabase
-      .from('employee_absences')
-      .select('employee, start_date, end_date')
-      .eq('employee', doc.employee)
-      .lte('start_date', till.format('YYYY-MM-DD'))
-      .gte('end_date', from.format('YYYY-MM-DD'))
-
-    let count = 0
-    for (const absence of absences ?? []) {
-      let start = dayjs(absence.start_date).isAfter(from) ? dayjs(absence.start_date) : from
-      const end = dayjs(absence.end_date).isBefore(till) ? dayjs(absence.end_date) : till
-      while (!start.isAfter(end, 'day')) {
-        if (start.day() !== 0) count++
-        start = start.add(1, 'day')
-      }
+    if (data?.missed_days != null) {
+      missedDays.value = Number(data.missed_days) || 0
     }
-    missedDays.value = count
   },
   { immediate: true },
 )
