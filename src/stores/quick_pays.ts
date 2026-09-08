@@ -17,6 +17,9 @@ export interface OrderAndQuickPay extends Order {
   qp_percent: number
   qp_to_pay: number
   qp_note: string
+
+  week?: number
+  year?: number
 }
 
 export interface QuickPay extends QuickPayCreate {

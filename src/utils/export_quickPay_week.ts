@@ -56,8 +56,6 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
     { header: 'Invoice_ExID', key: 'Invoice_ExID', width: 20 },
   ]
 
-  const n = 0
-
   for (const order of quickPayments) {
     const detailsList = await eventStore.fetching(order.id)
 
@@ -120,8 +118,10 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
 
     const currentWeek = moment().tz('America/New_York').subtract(1, 'days').week()
 
+    const week = order.week ?? currentWeek
+
     sheet.addRow({
-      order: `${org?.code2}-${currentWeek}-${order.number}`,
+      order: `${org?.code2}-${week}-${order.number}`,
       ref: order?.refs ?? '',
       date: createdAt,
       unit: vehicle?.unit_id,
@@ -143,7 +143,7 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
       profit: profit,
       percent: percent,
       note: note,
-      tranld: `${org?.code2}-${currentWeek}-${order.number}`,
+      tranld: `${org?.code2}-${week}-${order.number}`,
       tranDate: today,
       vendorRef: owner?.name,
       payableAccountRef_ID: 21000,
@@ -152,9 +152,9 @@ export async function weekExportQuickPay(quickPayments: Array<OrderAndQuickPay>)
       quick_pay: 'yes',
       direct_payment: 'no',
       class: 'CNU Logistics',
-      week_number: currentWeek,
+      week_number: week,
       class_custom: 'CNU Logistics',
-      Invoice_ExID: `${org?.code2}-${currentWeek}-${order.number} INV`,
+      Invoice_ExID: `${org?.code2}-${week}-${order.number} INV`,
     })
 
     const colU = sheet.getColumn('U')
