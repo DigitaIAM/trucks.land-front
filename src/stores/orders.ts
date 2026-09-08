@@ -14,6 +14,8 @@ export interface Order extends OrderCreate {
   created_at: string
   driver_cost: number
   stage: number
+  week?: number
+  year?: number
   qp_id?: number
   qp_owner?: number
   qp_vehicle?: number
@@ -47,6 +49,8 @@ export interface OrderUpdate {
   total_miles?: number
   cost?: number
   excluded?: boolean
+  week?: number
+  year?: number
 }
 
 export interface OrderStage extends Order {

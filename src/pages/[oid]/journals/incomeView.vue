@@ -35,6 +35,8 @@ export const useOrgData = defineBasicLoader(
 </script>
 
 <script setup lang="ts">
+import WeekCell from '@/components/order/WeekCell.vue'
+
 const orders = useOrdersStore()
 const brokersStore = useBrokersStore()
 const usersStore = useUsersStore()
@@ -53,6 +55,21 @@ const orgData = useOrgData()
 const filters = ref([])
 
 const state = reactive({})
+
+const canEditWeek = computed(() => {
+  const access = authStore.account?.access
+  return (access?.is_accountant ?? false) || (access?.is_admin ?? false)
+})
+
+async function saveWeek(order: Order, week: number, year: number) {
+  try {
+    await orders.update(order.id, { week: week, year: year })
+    order.week = week
+    order.year = year
+  } catch (e) {
+    console.log('error', e)
+  }
+}
 
 function resolve(
   order: Order,
@@ -85,7 +102,7 @@ const cols = [
     label: 'week',
     value: (v: Order) => v.week,
     color: (v: Status) => v.color,
-    size: 50,
+    size: 110,
   },
   {
     label: 'status',
@@ -279,7 +296,14 @@ function capitalizeFirstLetter(val) {
           class="py-3 px-4"
           :style="{ width: col.size + 'px' }"
         >
+          <WeekCell
+            v-if="col.label === 'week'"
+            :order="order"
+            :can-edit="canEditWeek"
+            @save="(week, year) => saveWeek(order, week, year)"
+          />
           <p
+            v-else
             class="block antialiasing tracking-wide font-light leading-normal truncate"
             :style="{ width: col.size + 'px' }"
           >

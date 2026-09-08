@@ -179,5 +179,6 @@ declare module 'vue' {
     TopBar: typeof import('./components/windowElements/TopBar.vue')['default']
     UserModal: typeof import('./components/modal/UserModal.vue')['default']
     VehicleModal: typeof import('./components/modal/VehicleModal.vue')['default']
+    WeekCell: typeof import('./components/order/WeekCell.vue')['default']
   }
 }
