@@ -5,19 +5,83 @@ import type { OwnerPaymentRecord, OwnerPaymentSummary } from '@/stores/owner_unp
 export async function loadOwnerPayments(orgId: number | null) {
   const response = await supabase.from('owner_unpaid_orders').select().eq('organization', orgId)
 
-  const paymentsMap = new Map<number, Array<OwnerPaymentRecord>>()
-  response.data?.forEach((json) => {
-    const record = {
-      owner: json['owner'],
-      driver_payment: json['driver_cost'],
-      order: json as Order,
-    } as OwnerPaymentRecord
+  const rows = response.data ?? []
 
-    const key = record.owner
-    const list = paymentsMap.get(key) ?? []
-    list.push(record)
-    paymentsMap.set(key, list)
+  const orderIds = rows.map((json) => Number(json['id'])).filter((id) => !Number.isNaN(id))
+
+  const changeByOrder = new Map<number, Array<{ vehicle: number | null; cost: number | null }>>()
+  const changeVehicleIds = new Set<number>()
+
+  for (let i = 0; i < orderIds.length; i += 100) {
+    const batch = orderIds.slice(i, i + 100)
+    const { data } = await supabase
+      .from('order_events')
+      .select('document, vehicle, cost')
+      .in('document', batch)
+      .eq('kind', 'change')
+
+    data?.forEach((ev) => {
+      const document = Number(ev['document'])
+      const list = changeByOrder.get(document) ?? []
+      list.push({
+        vehicle: ev['vehicle'] != null ? Number(ev['vehicle']) : null,
+        cost: ev['cost'],
+      })
+      changeByOrder.set(document, list)
+
+      if (ev['vehicle'] != null) changeVehicleIds.add(Number(ev['vehicle']))
+    })
+  }
+
+  const allVehicleIds = new Set<number>(changeVehicleIds)
+  rows.forEach((json) => {
+    if (json['vehicle'] != null) allVehicleIds.add(Number(json['vehicle']))
   })
+
+  const vehicleOwner = new Map<number, number>()
+  const vehicleContract = new Map<number, boolean>()
+
+  const vehicleIds = [...allVehicleIds]
+  for (let i = 0; i < vehicleIds.length; i += 100) {
+    const batch = vehicleIds.slice(i, i + 100)
+    const { data } = await supabase.from('vehicles').select('id, owner, contract').in('id', batch)
+
+    data?.forEach((v) => {
+      const id = Number(v['id'])
+      vehicleOwner.set(id, Number(v['owner']))
+      vehicleContract.set(id, v['contract'] === true)
+    })
+  }
+
+  const paymentsMap = new Map<number, Array<OwnerPaymentRecord>>()
+
+  function pushRecord(owner: number | null | undefined, driverPayment: number, order: Order) {
+    if (owner == null || Number.isNaN(Number(owner))) return
+
+    const key = Number(owner)
+    const list = paymentsMap.get(key) ?? []
+    list.push({ owner: key, driver_payment: driverPayment, order } as OwnerPaymentRecord)
+    paymentsMap.set(key, list)
+  }
+
+  rows.forEach((json) => {
+    const order = json as Order
+    const agreementOwner = Number(json['owner'])
+    const agreementVehicle = json['vehicle'] != null ? Number(json['vehicle']) : null
+    const isContract =
+      json['contract'] === true ||
+      (agreementVehicle != null && vehicleContract.get(agreementVehicle) === true)
+
+    pushRecord(agreementOwner, Number(json['driver_cost']) || 0, order)
+
+    if (!isContract) {
+      changeByOrder.get(Number(json['id']))?.forEach((ev) => {
+        const changeOwner = ev.vehicle != null ? vehicleOwner.get(ev.vehicle) : undefined
+        pushRecord(changeOwner ?? agreementOwner, Number(ev.cost) || 0, order)
+      })
+    }
+  })
+
   return paymentsMap
 }
 
@@ -57,7 +121,9 @@ export async function calculateOwnerReport(
       if (v.order.stage === 3) {
         // ignore
       } else {
-        orders_amount += v.order.cost
+        if (!orders.has(v.order.id)) {
+          orders_amount += v.order.cost
+        }
         owner_payment += v.driver_payment
       }
 

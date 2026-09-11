@@ -7,6 +7,7 @@ function mockQuery(data: unknown, status = 200) {
     select: vi.fn(() => q),
     eq: vi.fn(() => q),
     is: vi.fn(() => q),
+    in: vi.fn(() => q),
     gte: vi.fn(() => q),
     lte: vi.fn(() => q),
     order: vi.fn(() => q),
@@ -71,6 +72,62 @@ describe('loadOwnerPayments', () => {
 
     const result = await loadOwnerPayments(1)
     expect(result.get(100)![0].driver_payment).toBe(500)
+  })
+
+  it('adds change payment to the owner of the change vehicle', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 1800,
+        cost: 3320,
+        contract: false,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [{ document: 1, kind: 'change', vehicle: 14306, cost: 1200 }]
+    mockTableData['vehicles'] = [
+      { id: 856, owner: 100, contract: false },
+      { id: 14306, owner: 200, contract: false },
+    ]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(2)
+    expect(result.get(100)![0].driver_payment).toBe(1800)
+    expect(result.get(200)![0].driver_payment).toBe(1200)
+  })
+
+  it('ignores change for contract agreement vehicles', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 0,
+        cost: 3320,
+        contract: true,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [{ document: 1, kind: 'change', vehicle: 14306, cost: 1200 }]
+    mockTableData['vehicles'] = [
+      { id: 856, owner: 100, contract: true },
+      { id: 14306, owner: 200, contract: false },
+    ]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(1)
+    expect(result.get(100)![0].driver_payment).toBe(0)
+    expect(result.has(200)).toBe(false)
   })
 })
 
@@ -280,5 +337,61 @@ describe('calculateOwnerReport', () => {
     const result = await calculateOwnerReport(payments, new Map(), 'alpha')
     expect(result).toHaveLength(1)
     expect(result[0].owner).toBe(100)
+  })
+
+  it('does not double count orders_amount when an order has multiple records for the same owner', async () => {
+    const payments = new Map()
+    payments.set(100, [
+      {
+        owner: 100,
+        driver_payment: 1800,
+        order: { id: 1, cost: 3320, driver_cost: 1800, stage: 2, organization: 1 } as any,
+      },
+      {
+        owner: 100,
+        driver_payment: 1200,
+        order: { id: 1, cost: 3320, driver_cost: 1800, stage: 2, organization: 1 } as any,
+      },
+    ])
+
+    const result = await calculateOwnerReport(payments, new Map(), null)
+    expect(result).toHaveLength(1)
+    expect(result[0].orders_number).toBe(1)
+    expect(result[0].orders_amount).toBe(3320)
+    expect(result[0].orders_driver).toBe(3000)
+    expect(result[0].payout).toBe(3000)
+  })
+
+  it('splits agreement and change between owners end to end', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 1800,
+        cost: 3320,
+        contract: false,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [{ document: 1, kind: 'change', vehicle: 14306, cost: 1200 }]
+    mockTableData['vehicles'] = [
+      { id: 856, owner: 100, contract: false },
+      { id: 14306, owner: 200, contract: false },
+    ]
+
+    const payments = await loadOwnerPayments(1)
+    const report = await calculateOwnerReport(payments, new Map(), null)
+
+    const owner100 = report.find((r) => r.owner === 100)!
+    const owner200 = report.find((r) => r.owner === 200)!
+    expect(owner100.orders_driver).toBe(1800)
+    expect(owner100.orders_amount).toBe(3320)
+    expect(owner200.orders_driver).toBe(1200)
+    expect(owner200.orders_amount).toBe(3320)
   })
 })

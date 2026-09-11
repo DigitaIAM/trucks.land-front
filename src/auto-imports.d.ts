@@ -48,6 +48,7 @@ declare global {
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const getChangeDriverCost: typeof import('./composables/use-employee-report-calculator')['getChangeDriverCost']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getPayPeriod: typeof import('./composables/use-employee-report-calculator')['getPayPeriod']
@@ -564,6 +565,7 @@ declare module 'vue' {
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly getChangeDriverCost: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getChangeDriverCost']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getPayPeriod: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['getPayPeriod']>

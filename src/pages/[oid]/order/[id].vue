@@ -328,6 +328,10 @@ async function loadStatusHistory() {
             <DriverAndVehicle :orderId="_id" />
           </div>
 
+          <div class="mb-6">
+            <ChangedDriverAndVehicle :orderId="_id" />
+          </div>
+
           <div class="flex space-x-3 mb-2 mt-6 w-full">
             <div class="md:w-1/4 md:mb-0">
               <Label class="mb-1">Total pieces</Label>

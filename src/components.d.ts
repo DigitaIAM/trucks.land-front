@@ -31,6 +31,7 @@ declare module 'vue' {
     CardTitle: typeof import('./components/widgets/CardTitle.vue')['default']
     Carousel: typeof import('./components/widgets/Carousel.vue')['default']
     CarouselItem: typeof import('./components/widgets/CarouselItem.vue')['default']
+    ChangedDriverAndVehicle: typeof import('./components/order/ChangedDriverAndVehicle.vue')['default']
     ChangeDriverAndVehicle: typeof import('./components/modal/ChangeDriverAndVehicle.vue')['default']
     Chat: typeof import('./components/widgets/Chat.vue')['default']
     ChatBubble: typeof import('./components/widgets/ChatBubble.vue')['default']

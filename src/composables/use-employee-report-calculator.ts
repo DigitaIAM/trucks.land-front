@@ -61,6 +61,13 @@ export interface ContractWeekBreakdown {
   weekTotal: number
 }
 
+export function getChangeDriverCost(order: OrderEnriched): number {
+  const events = (order.events as Array<{ kind: string; cost: number | null }>) || []
+  return events
+    .filter((e) => e.kind === 'change')
+    .reduce((sum, e) => sum + (Number(e.cost) || 0), 0)
+}
+
 export function getWorkingDaysInRange(startDate: Dayjs, endDate: Dayjs) {
   let start = startDate
   const end = endDate
@@ -332,11 +339,13 @@ export async function calculateEmployeeReport(
 
       if (!p.order || !p.order.id) return
 
+      const changeCost = getChangeDriverCost(p.order)
+
       if (p.order.excluded || p.order.stage === 3) {
         // ignore
       } else {
         const costVal = p.order.cost
-        const driverCostVal = p.order.driver_cost
+        const driverCostVal = (Number(p.order.driver_cost) || 0) + changeCost
         const profit = costVal - driverCostVal
 
         const createdBy = p.order.created_by
@@ -366,17 +375,19 @@ export async function calculateEmployeeReport(
         // console.log('p.order', p.order)
 
         const sortedEvents = [...p.order.events].sort((a, b) => {
-          return new Date(a.datetime) - new Date(b.datetime)
+          return new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
         })
 
         let vehicleId
+        let agreementVehicleId
         for (const event of sortedEvents) {
           if (event.kind === 'agreement') {
             // console.log('event agreement', event)
-            if (vehicleId) {
+            if (agreementVehicleId && event.vehicle && agreementVehicleId !== event.vehicle) {
               console.log('p.order', p.order)
-              throw 'two vehicles: ' + vehicleId + ' and ' + event.vehicle
+              throw 'two vehicles: ' + agreementVehicleId + ' and ' + event.vehicle
             }
+            if (event.vehicle) agreementVehicleId = event.vehicle
             vehicleId = event.vehicle
           } else if (event.kind === 'change') {
             // console.log('event change', event)
@@ -414,7 +425,7 @@ export async function calculateEmployeeReport(
       }
 
       const num = Number(paymentsByOrder.get(p.order.id)) || 0
-      paymentsByOrder.set(p.order.id, num + p.order.driver_cost)
+      paymentsByOrder.set(p.order.id, num + (Number(p.order.driver_cost) || 0) + changeCost)
 
       orders.set(p.order.id, p.order)
     })
