@@ -5,6 +5,7 @@ import {
   loadUnpaidSettlements,
   calculateEmployeeReport,
   loadDispatcherPerformanceReport,
+  getChangeDriverCost,
 } from '@/composables/use-employee-report-calculator.ts'
 import type {
   EmployeeReportRecord,
@@ -142,6 +143,8 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
             profit_pc: 100,
           } as PaymentToDispatcherOrderCreate)
         } else {
+          const changeCost = getChangeDriverCost(order as OrderEnriched)
+
           if (order.vehicle_found_by && order.vehicle_found_by != order.created_by) {
             if (order.vehicle_found_by == summary.employee) {
               const percent = Number(order.percent_vf) || 100
@@ -150,7 +153,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
                 doc_payment: -1,
                 doc_order: order.id,
                 order_cost: Number(order.cost) || 0,
-                driver_cost: Number(order.driver_cost) || 0,
+                driver_cost: (Number(order.driver_cost) || 0) + changeCost,
                 profit_kind: 'direct-vehicle',
                 profit_pc: percent,
               } as PaymentToDispatcherOrderCreate)
@@ -162,7 +165,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
                 doc_payment: -1,
                 doc_order: order.id,
                 order_cost: Number(order.cost) || 0,
-                driver_cost: Number(order.driver_cost) || 0,
+                driver_cost: (Number(order.driver_cost) || 0) + changeCost,
                 profit_kind: 'direct-dispatcher',
                 profit_pc: currentPc,
               } as PaymentToDispatcherOrderCreate)
@@ -174,7 +177,7 @@ export const useReportDispatcher = defineStore('employee_unpaid_orders', () => {
               doc_payment: -1,
               doc_order: order.id,
               order_cost: Number(order.cost) || 0,
-              driver_cost: Number(order.driver_cost) || 0,
+              driver_cost: (Number(order.driver_cost) || 0) + changeCost,
               profit_kind: isContract ? 'contract' : 'profit',
               profit_pc: 100,
             } as PaymentToDispatcherOrderCreate)
