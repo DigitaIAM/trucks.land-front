@@ -38,6 +38,7 @@ watch(
 const eventsStore = useEventsStore()
 const driversStore = useDriversStore()
 const vehiclesStore = useVehiclesStore()
+const ownersStore = useOwnersStore()
 
 const colorMode = useColorMode()
 
@@ -138,6 +139,17 @@ function close() {
       <TextInput class="w-full" v-model="note" ref="firstFocus" />
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
+        <div class="md:w-1/4 md:mb-0">
+          <Label>Vehicle</Label>
+          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+        </div>
+        <div class="md:w-3/4 md:mb-0">
+          <Label>Owner</Label>
+          <QueryAndShow asTextField :id="vehicle?.owner" :store="ownersStore"></QueryAndShow>
+        </div>
+      </div>
+
+      <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-2/3 md:mb-0">
           <Label>Driver</Label>
           <selector v-model="driver" :store="driversStore"></selector>
@@ -147,9 +159,6 @@ function close() {
           <TextInput v-model="cost" />
         </div>
       </div>
-
-      <Label class="mt-2">Vehicle</Label>
-      <selector v-model="vehicle" :store="vehiclesStore"></selector>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/3 md:mb-0">

@@ -15,6 +15,18 @@ export interface OwnerPaymentRecord {
   owner: number
   driver_payment: number
   order: Order
+  vehicle: number | null
+  driver: number | null
+  contract: boolean
+  gross: number
+}
+
+export interface OwnerOrderVehicle {
+  vehicle: number | null
+  driver: number | null
+  contract: boolean
+  gross: number
+  dp: number
 }
 
 export interface OwnerPaymentSummary {
@@ -24,6 +36,7 @@ export interface OwnerPaymentSummary {
   orders_driver: number
   orders: Map<number, Order>
   paymentsByOrder: Map<number, number>
+  orderVehicles: Map<number, Array<OwnerOrderVehicle>>
   expenses_total: number
   expenses: Array<ExpensesToOwner>
   payout: number
@@ -89,6 +102,11 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       for (const ag of agreementMap.values()) {
         if (ag.vehicle != null) vehicleIds.add(ag.vehicle)
       }
+      for (const entries of summary.orderVehicles.values()) {
+        for (const e of entries) {
+          if (e.vehicle != null) vehicleIds.add(e.vehicle)
+        }
+      }
 
       const vehicleKindMap = new Map<number, string>()
       if (vehicleIds.size > 0) {
@@ -105,19 +123,17 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
 
       const grossByVehicle = new Map<number, number>()
       const vehicleToTypeId = new Map<number, number>()
-      for (const order of summary.orders.values()) {
-        if (order.contract && order.stage != 3) {
-          const ag = agreementMap.get(order.id)
-          const vehicleId = ag?.vehicle
-          if (vehicleId == null) continue
+      for (const entries of summary.orderVehicles.values()) {
+        for (const e of entries) {
+          if (!e.contract || e.vehicle == null) continue
 
-          const prev = grossByVehicle.get(vehicleId) ?? 0
-          grossByVehicle.set(vehicleId, prev + order.cost)
+          const prev = grossByVehicle.get(e.vehicle) ?? 0
+          grossByVehicle.set(e.vehicle, prev + e.gross)
 
-          if (!vehicleToTypeId.has(vehicleId)) {
-            const kind = vehicleKindMap.get(vehicleId)
+          if (!vehicleToTypeId.has(e.vehicle)) {
+            const kind = vehicleKindMap.get(e.vehicle)
             const typeId = kind ? vehicleTypeMap.get(kind) : undefined
-            if (typeId != null) vehicleToTypeId.set(vehicleId, typeId)
+            if (typeId != null) vehicleToTypeId.set(e.vehicle, typeId)
           }
         }
       }
@@ -125,44 +141,60 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
       const paymentRecords = []
 
       for (const order of summary.orders.values()) {
-        if (order.stage != 3) {
+        if (order.stage === 3) {
+          paymentRecords.push({
+            doc_payment: -1,
+            doc_order: order.id,
+            order_cost: order.cost,
+            amount: 0,
+          } as PaymentToOwnerOrderCreate)
+          continue
+        }
+
+        const entries = summary.orderVehicles.get(order.id) ?? []
+        const contractEntries = entries.filter((e) => e.contract && e.vehicle != null)
+
+        if (contractEntries.length > 0) {
           const ag = agreementMap.get(order.id)
-          const vehicleId = ag?.vehicle
+          let total = 0
 
-          const amount =
-            order.contract && vehicleId != null && vehicleToTypeId.has(vehicleId)
-              ? Math.round(
-                  tierStore.calcAmount(
-                    order.cost,
-                    grossByVehicle.get(vehicleId) ?? order.cost,
-                    vehicleToTypeId.get(vehicleId)!,
-                  ),
-                )
-              : summary.paymentsByOrder.get(order.id)
+          for (const e of contractEntries) {
+            const typeId = vehicleToTypeId.get(e.vehicle!)
+            const amount =
+              typeId != null
+                ? Math.round(
+                    tierStore.calcAmount(
+                      e.gross,
+                      grossByVehicle.get(e.vehicle!) ?? e.gross,
+                      typeId,
+                    ),
+                  )
+                : e.dp
 
-          if (order.contract && vehicleId != null && vehicleToTypeId.has(vehicleId)) {
             await supabase.from('order_events').insert({
               document: order.id,
               kind: 'weekly-calculation',
               datetime: weekEndDate,
               cost: amount,
-              driver: ag?.driver ?? null,
-              vehicle: vehicleId,
+              driver: e.driver ?? ag?.driver ?? null,
+              vehicle: e.vehicle,
             })
+
+            total += amount
           }
 
           paymentRecords.push({
             doc_payment: -1,
             doc_order: order.id,
             order_cost: order.cost,
-            amount,
+            amount: total,
           } as PaymentToOwnerOrderCreate)
         } else {
           paymentRecords.push({
             doc_payment: -1,
             doc_order: order.id,
             order_cost: order.cost,
-            amount: 0,
+            amount: summary.paymentsByOrder.get(order.id) ?? 0,
           } as PaymentToOwnerOrderCreate)
         }
       }
