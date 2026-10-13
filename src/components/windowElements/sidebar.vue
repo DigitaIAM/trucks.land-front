@@ -107,9 +107,9 @@ const links = [
   {
     name: 'Create payments',
     //SALARY accountant
-    icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
+    icon: defineAsyncComponent(() => import('~icons/streamline/attribution')),
     path: '/reports/dispatcherUnpaidOrders',
-    perm: (access) => access.is_payroll_accountant || access.is_admin,
+    perm: (access) => access.is_payroll_accountant || access.is_admin || access.is_accountant,
   },
   {
     name: 'Payments',

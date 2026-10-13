@@ -102,7 +102,64 @@ describe('loadOwnerPayments', () => {
     expect(result.get(200)![0].driver_payment).toBe(1200)
   })
 
-  it('ignores change for contract agreement vehicles', async () => {
+  it('splits a contract order across two contract vehicles by dp', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 800,
+        cost: 3000,
+        contract: true,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [{ document: 1, kind: 'change', vehicle: 14306, cost: 1200 }]
+    mockTableData['vehicles'] = [
+      { id: 856, owner: 100, contract: true },
+      { id: 14306, owner: 200, contract: true },
+    ]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(2)
+    expect(result.get(100)![0].driver_payment).toBe(800)
+    expect(result.get(100)![0].contract).toBe(true)
+    expect(result.get(100)![0].gross).toBe(800)
+    expect(result.get(200)![0].driver_payment).toBe(1200)
+    expect(result.get(200)![0].contract).toBe(true)
+    expect(result.get(200)![0].gross).toBe(1200)
+  })
+
+  it('keeps agreement cargo as gross for single contract order without change', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 800,
+        cost: 3000,
+        contract: true,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['vehicles'] = [{ id: 856, owner: 100, contract: true }]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(1)
+    expect(result.get(100)![0].driver_payment).toBe(800)
+    expect(result.get(100)![0].contract).toBe(true)
+    expect(result.get(100)![0].gross).toBe(3000)
+  })
+
+  it('creates a non-contract change record when change vehicle is not contract', async () => {
     const from = global.supabase.from as Mock
     from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
 
@@ -125,9 +182,10 @@ describe('loadOwnerPayments', () => {
     ]
 
     const result = await loadOwnerPayments(1)
-    expect(result.size).toBe(1)
+    expect(result.size).toBe(2)
     expect(result.get(100)![0].driver_payment).toBe(0)
-    expect(result.has(200)).toBe(false)
+    expect(result.get(200)![0].driver_payment).toBe(1200)
+    expect(result.get(200)![0].contract).toBe(false)
   })
 })
 
@@ -393,5 +451,49 @@ describe('calculateOwnerReport', () => {
     expect(owner100.orders_amount).toBe(3320)
     expect(owner200.orders_driver).toBe(1200)
     expect(owner200.orders_amount).toBe(3320)
+  })
+
+  it('splits a contract order across two contract vehicles end to end', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: 100,
+        vehicle: 856,
+        driver_cost: 800,
+        cost: 3000,
+        contract: true,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [{ document: 1, kind: 'change', vehicle: 14306, cost: 1200 }]
+    mockTableData['vehicles'] = [
+      { id: 856, owner: 100, contract: true },
+      { id: 14306, owner: 200, contract: true },
+    ]
+
+    const payments = await loadOwnerPayments(1)
+    const report = await calculateOwnerReport(payments, new Map(), null)
+
+    const owner100 = report.find((r) => r.owner === 100)!
+    const owner200 = report.find((r) => r.owner === 200)!
+
+    expect(owner100.orders_driver).toBe(800)
+    expect(owner200.orders_driver).toBe(1200)
+
+    const v100 = owner100.orderVehicles.get(1)!
+    expect(v100).toHaveLength(1)
+    expect(v100[0].vehicle).toBe(856)
+    expect(v100[0].contract).toBe(true)
+    expect(v100[0].gross).toBe(800)
+
+    const v200 = owner200.orderVehicles.get(1)!
+    expect(v200).toHaveLength(1)
+    expect(v200[0].vehicle).toBe(14306)
+    expect(v200[0].contract).toBe(true)
+    expect(v200[0].gross).toBe(1200)
   })
 })
