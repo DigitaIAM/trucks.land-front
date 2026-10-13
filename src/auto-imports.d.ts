@@ -488,7 +488,7 @@ declare global {
   export type { PaymentToOwnerSummary, PaymentToOwner, PaymentToOwnerCreate, PaymentToOwnerSummaryInDetails } from './stores/owner_payments'
   import('./stores/owner_payments')
   // @ts-ignore
-  export type { OwnerPaymentRecord, OwnerPaymentSummary } from './stores/owner_unpaid_orders'
+  export type { OwnerPaymentRecord, OwnerOrderVehicle, OwnerPaymentSummary } from './stores/owner_unpaid_orders'
   import('./stores/owner_unpaid_orders')
   // @ts-ignore
   export type { Owner, OwnerCreate, OwnerUpdate } from './stores/owners'
