@@ -301,10 +301,10 @@ async function createAndPdfBI() {
     errorMessage.value = null
 
     const ts = moment().tz('America/New_York').subtract(1, 'days')
-    const currentWeek = ts.isoWeek()
 
     const order = props.order
     if (order) {
+      const currentWeek = order.week ?? ts.isoWeek()
       const org = await organizationsStore.resolve(order.organization)
       const broker = await brokersStore.resolve(order.broker)
 
@@ -337,7 +337,7 @@ async function createAndPdfBI() {
           is_deleted: false,
         })
 
-        const blob = await generateBI(order, org, broker, record)
+        const blob = await generateBI(order, org, broker)
 
         await uploadFile('orders', path, blob, (percentage) => (uploadProgress.value = percentage))
         uploadProgress.value = null
@@ -529,8 +529,7 @@ async function createRC() {
           @click="createAndPdfBI"
           :disabled="isDisabled"
         >
-          broker to
-          <QueryAndShow name="email" :id="order?.broker" :store="brokersStore"></QueryAndShow>
+          broker invoice
         </Button>
         <Button
           class="btn-soft font-light tracking-wider"

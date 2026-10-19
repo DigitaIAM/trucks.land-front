@@ -2,13 +2,10 @@ import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import { drawTable } from 'pdf-lib-draw-table-beta'
 import type { CellContent, DrawTableOptions } from 'pdf-lib-draw-table-beta/types.ts'
 import moment from 'moment-timezone'
-import type { FileRecord } from '@/stores/order_files.ts'
-import { sendEmail } from '@/utils/email.ts'
 
 const eventsStore = useEventsStore()
 const userStore = useUsersStore()
 const filesStore = useFilesStore()
-const accessTokenStore = useAccessTokenStore()
 
 function text_left(
   page: PDFPage,
@@ -50,12 +47,7 @@ function text_right(
   return font.heightAtSize(fontSize)
 }
 
-export async function generateBI(
-  order: Order,
-  org: Organization,
-  broker: Broker,
-  record: FileRecord,
-): Promise<Blob> {
+export async function generateBI(order: Order, org: Organization, broker: Broker): Promise<Blob> {
   const dispatcher = await userStore.resolve(order.created_by)
   const events = await eventsStore.fetching(order.id)
   const files = await filesStore.request(order.id)
@@ -66,11 +58,6 @@ export async function generateBI(
 
   if (broker.id != order.broker) {
     throw 'fail broker check'
-  }
-
-  const token = await accessTokenStore.getTokenZoho(org.id)
-  if (token == null) {
-    throw 'missing token'
   }
 
   const pieces = (order?.total_pieces as number) ?? ''
@@ -171,12 +158,13 @@ export async function generateBI(
   let cy = 800
   cy -= bls + text_right(page, font, 12, 'Invoice number', tableDimensions.endX, cy + 2 * bls)
   const ts = moment().tz('America/New_York').subtract(1, 'days')
-  const currentWeek = ref(ts.isoWeek())
-  const numberFormated = `${org.code2}-${currentWeek.value}-${order.number}`
+  const currentWeek = order.week ?? ts.isoWeek()
+  const numberFormated = `${org.code2}-${currentWeek}-${order.number}`
   cy -= bls + text_right(page, boldFont, 16, numberFormated, tableDimensions.endX, cy + bls)
 
   cy -= bls + text_right(page, font, 12, 'Invoice date', tableDimensions.endX, cy + bls)
-  const dateFormated = moment(record.created_at).tz('America/New_York').format('MM/DD/YYYY')
+  const invoiceDate = moment(order.created_at).tz('America/New_York')
+  const dateFormated = invoiceDate.format('MM/DD/YYYY')
   cy -= bls + text_right(page, boldFont, 16, dateFormated, tableDimensions.endX, cy)
 
   cy -= bls * 4
@@ -195,10 +183,7 @@ export async function generateBI(
   cy -= bls + text_left(page, font, fs, 'Carrier team (Third Party)', cx + bls, cy)
 
   text_right(page, boldFont, fs, 'DUE DATE:', cx, cy)
-  const due_date = moment(record.created_at)
-    .tz('America/New_York')
-    .add(30, 'days')
-    .format('MM/DD/YYYY')
+  const due_date = invoiceDate.clone().add(30, 'days').format('MM/DD/YYYY')
   cy -= bls + text_left(page, font, fs, `${due_date}`, cx + bls, cy)
 
   // text left
@@ -284,44 +269,7 @@ export async function generateBI(
     }
   }
 
-  // Save the PDF and send email
   const pdfBytes = await pdfDoc.save()
-
-  // await openInNewTab(pdfDoc)
-
-  const base64String = await pdfDoc.saveAsBase64()
-
-  //const currentYear = ref(ts.isoWeekYear())
-  const precent_qp = broker.percent_qp
-  let sentence = ''
-
-  if (precent_qp) {
-    sentence = `We want to proceed with ${precent_qp}% quick pay.<br /><br />`
-  }
-
-  const email = {
-    from: { address: `emily@cnulogistics.com` },
-    to: [{ email_address: { address: `${broker?.email}`, name: `${broker?.name}` } }], //'shabanovanatali@gmail.com', name: ''  `${broker?.email}`, name: `${broker?.name}`
-    cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
-    subject: `Open Invoice ${org.code2}-${currentWeek.value}-${order.number} PO# ${order.refs}`,
-    htmlbody:
-      'Hello team,<br />' +
-      '<br />' +
-      'Below attached an invoice with the paperwork. Please let me know once the payment is processed. <br />' +
-      `${sentence} ACH is preferable. <br />` +
-      '<br />' +
-      'Best Regards,<br />' +
-      `Emily<br />`,
-    attachments: [
-      {
-        name: `invoice_${currentWeek.value}-${org.code2}-${order.number}.pdf`,
-        content: base64String,
-        mime_type: 'application/pdf',
-      },
-    ],
-  }
-
-  await sendEmail(token, email)
 
   return new Blob([pdfBytes], { type: 'application/pdf' })
 }
