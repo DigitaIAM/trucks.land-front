@@ -529,7 +529,7 @@ async function createRC() {
           @click="createAndPdfBI"
           :disabled="isDisabled"
         >
-          broker invoice
+          broker
         </Button>
         <Button
           class="btn-soft font-light tracking-wider"
