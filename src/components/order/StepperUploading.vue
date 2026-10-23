@@ -39,6 +39,8 @@ const signedBy = ref('')
 const isSending = ref(false)
 const statusMessage = ref<string>('')
 
+const isSendingBI = ref(false)
+
 const errorMessage = ref<string | null>(null)
 
 const currentAccount = computedAsync(async () => {
@@ -296,6 +298,88 @@ async function closeEmailModal() {
   }
 }
 
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function createAndEmailBI() {
+  try {
+    isSendingBI.value = true
+    errorMessage.value = null
+
+    const order = props.order
+    if (order == null) {
+      throw 'missing order'
+    }
+
+    const org = await organizationsStore.resolve(order.organization)
+    if (org == null) {
+      throw 'missing organization'
+    }
+
+    const broker = await brokersStore.resolve(order.broker)
+    if (broker == null) {
+      throw 'missing broker'
+    }
+
+    if (!broker.email) {
+      throw 'broker has no email'
+    }
+
+    const token = await useAccessTokenStore().getTokenZoho(org.id)
+    if (token == null) {
+      throw 'missing token'
+    }
+
+    const ts = moment().tz('America/New_York').subtract(1, 'days')
+    const currentWeek = order.week ?? ts.isoWeek()
+    const invoiceNumber = `${org.code2}-${currentWeek}-${order.number}`
+
+    const blob = await generateBI(order, org, broker)
+    const base64String = await blobToBase64(blob)
+
+    const email = {
+      from: { address: 'emily@cnulogistics.com' },
+      to: [{ email_address: { address: broker.email, name: broker.name } }], // broker.email, name: broker.name
+      cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
+      subject: `BI_${invoiceNumber}`,
+      htmlbody:
+        'Greetings,<br />' +
+        '<br />' +
+        'BI #&nbsp;' +
+        `${invoiceNumber}` +
+        '&nbsp;is attached.<br />' +
+        '<br />' +
+        'For any inquiries regarding calculations, please contact us at emily@cnulogistics.com' +
+        '<br />' +
+        'Best Regards,<br />' +
+        '<br />' +
+        `${org.name}<br />` +
+        `${org.address1}<br />` +
+        `${org.address2}<br />`,
+      attachments: [
+        {
+          name: `BI_${invoiceNumber}.pdf`,
+          content: base64String,
+          mime_type: 'application/pdf',
+        },
+      ],
+    }
+
+    await sendEmail(token, email)
+  } catch (e) {
+    errorMessage.value = '' + e
+    throw e
+  } finally {
+    isSendingBI.value = false
+  }
+}
+
 async function createAndPdfBI() {
   try {
     errorMessage.value = null
@@ -524,13 +608,23 @@ async function createRC() {
       </div>
       <div class="grid grid-cols-1 mb-2 mt-8 w-full">
         <Text size="xl" class="mt-6 mb-4">Invoice for</Text>
-        <Button
-          class="flex btn-soft font-light tracking-wider mb-6"
-          @click="createAndPdfBI"
-          :disabled="isDisabled"
-        >
-          broker
-        </Button>
+        <div class="flex gap-2 mb-6">
+          <Button
+            class="flex-1 btn-soft font-light tracking-wider"
+            @click="createAndPdfBI"
+            :disabled="isDisabled"
+          >
+            broker (pdf)
+          </Button>
+          <Button
+            class="flex-1 btn-soft font-light tracking-wider"
+            @click="createAndEmailBI"
+            :disabled="isDisabled || isSendingBI"
+          >
+            <span v-if="isSendingBI" class="loading loading-spinner loading-xs mr-2"></span>
+            {{ isSendingBI ? 'Sending...' : 'send on email' }}
+          </Button>
+        </div>
         <Button
           class="btn-soft font-light tracking-wider"
           @click="createAndPdfFI"
