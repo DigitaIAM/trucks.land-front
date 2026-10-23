@@ -81,12 +81,6 @@ const links = [
     perm: (access) => access.is_admin || access.is_hr, //|| access.is_payroll_accountant
   },
   {
-    name: 'Brokers',
-    icon: defineAsyncComponent(() => import('~icons/streamline/business-handshake')),
-    path: '/refs/brokers',
-    perm: (access) => access.is_accountant,
-  },
-  {
     name: 'Create payments',
     icon: defineAsyncComponent(() => import('~icons/streamline/task-list')),
     path: '/reports/ownerUnpaidOrders',
@@ -152,6 +146,12 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/office-worker')),
     path: '/refs/users',
     perm: (access) => access.is_payroll_accountant,
+  },
+  {
+    name: 'Brokers',
+    icon: defineAsyncComponent(() => import('~icons/streamline/business-handshake')),
+    path: '/refs/brokers',
+    perm: (access) => access.is_accountant,
   },
   // {
   //   name: 'Hiring',
