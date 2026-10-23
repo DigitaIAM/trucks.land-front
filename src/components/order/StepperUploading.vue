@@ -343,28 +343,29 @@ async function createAndEmailBI() {
     const blob = await generateBI(order, org, broker)
     const base64String = await blobToBase64(blob)
 
+    const quickPayLine =
+      Number(broker.percent_qp) > 0
+        ? `We want to proceed with ${broker.percent_qp}% quick pay.<br />`
+        : ''
+
     const email = {
       from: { address: 'emily@cnulogistics.com' },
-      to: [{ email_address: { address: broker.email, name: broker.name } }], // broker.email, name: broker.name
+      to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: broker.name } }], // broker.email, name: broker.name
       cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
-      subject: `BI_${invoiceNumber}`,
+      subject: `Open Invoice ${invoiceNumber}`,
       htmlbody:
-        'Greetings,<br />' +
+        'Hello team,<br />' +
         '<br />' +
-        'BI #&nbsp;' +
-        `${invoiceNumber}` +
-        '&nbsp;is attached.<br />' +
-        '<br />' +
-        'For any inquiries regarding calculations, please contact us at emily@cnulogistics.com' +
+        'Below attached an invoice with the paperwork.<br />' +
+        'Please let me know once the payment is processed.<br />' +
+        quickPayLine +
+        'ACH is preferable.<br />' +
         '<br />' +
         'Best Regards,<br />' +
-        '<br />' +
-        `${org.name}<br />` +
-        `${org.address1}<br />` +
-        `${org.address2}<br />`,
+        'Emily',
       attachments: [
         {
-          name: `BI_${invoiceNumber}.pdf`,
+          name: `Invoice_${invoiceNumber}.pdf`,
           content: base64String,
           mime_type: 'application/pdf',
         },

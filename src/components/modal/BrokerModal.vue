@@ -31,6 +31,12 @@ watch(
 )
 
 const brokersStore = useBrokersStore()
+const authStore = useAuthStore()
+
+const canCreate = computed(
+  () =>
+    authStore.account?.access.is_admin === true || authStore.account?.access.is_dispatcher === true,
+)
 
 function resetAndShow(broker: Broker | null) {
   id.value = broker?.id
@@ -56,6 +62,11 @@ function resetAndShow(broker: Broker | null) {
 
 function saveBroker() {
   if (id.value == null) {
+    if (!canCreate.value) {
+      alert('У вас нет прав на создание брокеров')
+      return
+    }
+
     brokersStore.create({
       name: name.value,
       percent_qp: percent_qp.value,
@@ -102,7 +113,9 @@ function saveBroker() {
 <template>
   <div class="flex flex-row gap-6 px-4 mb-2 mt-3">
     <SearchVue :store="brokersStore"></SearchVue>
-    <Button class="btn-soft font-light tracking-wider" @click="resetAndShow(null)">Create</Button>
+    <Button v-if="canCreate" class="btn-soft font-light tracking-wider" @click="resetAndShow(null)"
+      >Create</Button
+    >
   </div>
 
   <Modal id="edit_broker">
