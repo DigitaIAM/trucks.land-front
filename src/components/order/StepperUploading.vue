@@ -350,7 +350,7 @@ async function createAndEmailBI() {
 
     const email = {
       from: { address: 'emily@cnulogistics.com' },
-      to: [{ email_address: { address: 'shabanovanatali@gmail.com', name: broker.name } }], // broker.email, name: broker.name
+      to: [{ email_address: { address: broker.email, name: broker.name } }], // broker.email, name: broker.name
       cc: [{ email_address: { address: 'emily@cnulogistics.com' } }],
       subject: `Open Invoice ${invoiceNumber}`,
       htmlbody:
