@@ -38,8 +38,9 @@ const vehicleRows = computed(() => {
   for (const [orderId, order] of props.summary.orders) {
     const cost = order.cost || 0
     const driverCost = order.driver_cost || 0
-    const profit = cost - driverCost
-    const vehicleId = props.summary.orderToVehicle.get(Number(orderId))
+    const id = Number(orderId)
+    const profit = props.summary.orderProfit?.get(id) ?? cost - driverCost
+    const vehicleId = props.summary.orderToVehicle.get(id)
 
     if (vehicleId) {
       const d = vehicleMap.get(vehicleId) || { ordersCount: 0, totalGross: 0, totalProfit: 0 }

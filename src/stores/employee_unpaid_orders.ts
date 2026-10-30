@@ -47,6 +47,7 @@ export interface EmployeePaymentSummary {
   contract_details: Array<ContractCommissionDetail>
   contract_commission_total: number
   contract_breakdown: Array<ContractWeekBreakdown>
+  orderProfit?: Map<number, number>
   orderToVehicle: Map<number, number>
   orderToVehicleAll: Map<number, number>
   vehicleIdToUnitId: Map<number, string>

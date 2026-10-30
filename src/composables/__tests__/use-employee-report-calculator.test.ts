@@ -47,6 +47,7 @@ import {
   loadUnpaidSettlements,
   calculateEmployeeReport,
   calculateWeeklyContractCommission,
+  loadDispatcherPerformanceReport,
 } from '../use-employee-report-calculator'
 
 describe('getWorkingDaysInRange', () => {
@@ -1208,5 +1209,208 @@ describe('calculateWeeklyContractCommission', () => {
 
     expect(result[0].employee_id).toBe(42)
     expect(result[1].employee_id).toBe(7)
+  })
+})
+
+describe('loadDispatcherPerformanceReport', () => {
+  beforeEach(() => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+  })
+
+  function makeOrder(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 1,
+      cost: 1000,
+      driver_cost: 500,
+      created_by: 10,
+      stage: 12,
+      excluded: false,
+      created_at: '2026-08-05T10:00:00',
+      week: 32,
+      year: 2026,
+      ...overrides,
+    }
+  }
+
+  function contractVehicle() {
+    mockTableData['vehicles'] = [{ id: 100, unit_id: 'TRK-1', kind: 'cargo van', contract: true }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+  }
+
+  it('keeps cost - driver_cost for non-contract vehicles', async () => {
+    mockTableData['orders_journal'] = [makeOrder({ cost: 1000, driver_cost: 600 })]
+    mockTableData['order_events'] = [{ document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' }]
+    mockTableData['vehicles'] = [{ id: 100, unit_id: 'TRK-1', kind: 'cargo van', contract: false }]
+    mockTableData['vehicle_type'] = [{ id: 5, name: 'cargo van' }]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    expect(result).toHaveLength(1)
+    const summary = result[0].summary
+    expect(summary.orders_profit).toBe(400)
+    expect(summary.payout_usd).toBe(400)
+    expect(summary.orders_number_contract).toBe(0)
+    expect(summary.orderProfit?.get(1)).toBe(400)
+  })
+
+  it('uses the weekly dispatch fee for contract vehicles', async () => {
+    mockTableData['orders_journal'] = [makeOrder({ cost: 3000, driver_cost: 1500 })]
+    mockTableData['order_events'] = [{ document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' }]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    const summary = result[0].summary
+    expect(summary.orders_profit).toBe(300)
+    expect(summary.payout_usd).toBe(300)
+    expect(summary.orderProfit?.get(1)).toBe(300)
+    expect(summary.orders_number_contract).toBe(1)
+    expect(summary.orders_amount_contract).toBe(3000)
+    expect(summary.contract_commission_total).toBe(300)
+  })
+
+  it('selects the contract tier by total weekly gross per vehicle', async () => {
+    mockTableData['orders_journal'] = [
+      makeOrder({ id: 1, cost: 3000 }),
+      makeOrder({ id: 2, cost: 3000 }),
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' },
+      { document: 2, vehicle: 100, datetime: '2026-08-05T11:00:00' },
+    ]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '1' },
+      { vehicle_type_id: 5, gross: '6500', dispatch_fee: '12', dispatcher_commission: '1.5' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    const summary = result[0].summary
+    expect(summary.orders_profit).toBe(720)
+    expect(summary.orderProfit?.get(1)).toBe(360)
+    expect(summary.orderProfit?.get(2)).toBe(360)
+  })
+
+  it('builds weekly gross across dispatchers sharing a contract vehicle', async () => {
+    mockTableData['orders_journal'] = [
+      makeOrder({ id: 1, cost: 1000, created_by: 10 }),
+      makeOrder({ id: 2, cost: 5000, created_by: 20 }),
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' },
+      { document: 2, vehicle: 100, datetime: '2026-08-05T11:00:00' },
+    ]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '1' },
+      { vehicle_type_id: 5, gross: '6500', dispatch_fee: '12', dispatcher_commission: '1.5' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    const first = result.find((r) => r.summary.employee === 10)!
+    const second = result.find((r) => r.summary.employee === 20)!
+    expect(first.summary.orders_profit).toBe(120)
+    expect(second.summary.orders_profit).toBe(600)
+  })
+
+  it('uses a different tier for orders from different weeks', async () => {
+    mockTableData['orders_journal'] = [
+      makeOrder({ id: 1, cost: 3000, week: 31 }),
+      makeOrder({ id: 2, cost: 6000, week: 32 }),
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 100, datetime: '2026-07-29T10:00:00' },
+      { document: 2, vehicle: 100, datetime: '2026-08-05T10:00:00' },
+    ]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '1' },
+      { vehicle_type_id: 5, gross: '6500', dispatch_fee: '12', dispatcher_commission: '1.5' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-07-27', '2026-08-09')
+
+    const summary = result[0].summary
+    expect(summary.orderProfit?.get(1)).toBe(300)
+    expect(summary.orderProfit?.get(2)).toBe(720)
+    expect(summary.orders_profit).toBe(1020)
+  })
+
+  it('falls back to cost - driver_cost when no contract tier exists', async () => {
+    mockTableData['orders_journal'] = [makeOrder({ cost: 2000, driver_cost: 800 })]
+    mockTableData['order_events'] = [{ document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' }]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = []
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    expect(result[0].summary.orders_profit).toBe(1200)
+    expect(result[0].summary.orderProfit?.get(1)).toBe(1200)
+  })
+
+  it('includes orders outside the range when calculating the weekly gross', async () => {
+    mockTableData['orders_journal'] = [
+      makeOrder({ id: 1, cost: 1000, created_at: '2026-08-05T10:00:00' }),
+      makeOrder({ id: 2, cost: 5000, created_by: 99, created_at: '2026-08-03T10:00:00' }),
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 100, datetime: '2026-08-05T10:00:00' },
+      { document: 2, vehicle: 100, datetime: '2026-08-03T10:00:00' },
+    ]
+    contractVehicle()
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '1' },
+      { vehicle_type_id: 5, gross: '6500', dispatch_fee: '12', dispatcher_commission: '1.5' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-05', '2026-08-06')
+
+    expect(result).toHaveLength(1)
+    const summary = result[0].summary
+    expect(summary.orders_number).toBe(1)
+    expect(summary.orders_profit).toBe(120)
+    expect(summary.orderProfit?.get(1)).toBe(120)
+    expect(summary.orderProfit?.has(2)).toBe(false)
+  })
+
+  it('combines non-contract profit with contract dispatch fee', async () => {
+    mockTableData['orders_journal'] = [
+      makeOrder({ id: 1, cost: 1000, driver_cost: 600 }),
+      makeOrder({ id: 2, cost: 3000, driver_cost: 1500 }),
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, vehicle: 200, datetime: '2026-08-05T10:00:00' },
+      { document: 2, vehicle: 100, datetime: '2026-08-05T11:00:00' },
+    ]
+    mockTableData['vehicles'] = [
+      { id: 100, unit_id: 'TRK-1', kind: 'cargo van', contract: true },
+      { id: 200, unit_id: 'TRK-2', kind: 'dry van', contract: false },
+    ]
+    mockTableData['vehicle_type'] = [
+      { id: 5, name: 'cargo van' },
+      { id: 6, name: 'dry van' },
+    ]
+    mockTableData['vehicle_commission_tiers'] = [
+      { vehicle_type_id: 5, gross: '5000', dispatch_fee: '10', dispatcher_commission: '2' },
+    ]
+
+    const result = await loadDispatcherPerformanceReport(1, '2026-08-01', '2026-08-31')
+
+    const summary = result[0].summary
+    expect(summary.orders_number).toBe(2)
+    expect(summary.orders_number_contract).toBe(1)
+    expect(summary.orders_amount).toBe(1000)
+    expect(summary.orders_amount_contract).toBe(3000)
+    expect(summary.orders_profit).toBe(700)
+    expect(summary.payout_usd).toBe(700)
   })
 })

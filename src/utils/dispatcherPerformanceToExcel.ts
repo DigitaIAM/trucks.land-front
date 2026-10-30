@@ -58,8 +58,9 @@ export async function dispatcherPerformanceExportToExcel(
     let noVehicleProfit = 0
 
     for (const [orderId, order] of record.orders) {
-      const profit = (order.cost || 0) - (order.driver_cost || 0)
-      const vehicleId = record.orderToVehicle.get(Number(orderId))
+      const id = Number(orderId)
+      const profit = record.orderProfit?.get(id) ?? (order.cost || 0) - (order.driver_cost || 0)
+      const vehicleId = record.orderToVehicle.get(id)
       if (vehicleId) {
         const d = vehicleAgg.get(vehicleId) || {
           vehicleId,
