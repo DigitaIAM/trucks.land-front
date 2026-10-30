@@ -32,12 +32,6 @@ const links = [
     perm: (access) => access.is_hr,
   },
   {
-    name: 'Dispatch stats',
-    icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
-    path: '/hr/dispatcherPerformance',
-    perm: (access) => access.is_hr,
-  },
-  {
     name: 'Check out',
     icon: defineAsyncComponent(() => import('~icons/streamline/check-square')),
     path: '/journals/checkOut',
@@ -152,6 +146,12 @@ const links = [
     icon: defineAsyncComponent(() => import('~icons/streamline/business-handshake')),
     path: '/refs/brokers',
     perm: (access) => access.is_accountant,
+  },
+  {
+    name: 'Dispatch stats',
+    icon: defineAsyncComponent(() => import('~icons/streamline/user-add-plus')),
+    path: '/hr/dispatcherPerformance',
+    perm: (access) => access.is_hr || access.is_accountant,
   },
   // {
   //   name: 'Hiring',

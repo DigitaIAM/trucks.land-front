@@ -34,8 +34,7 @@ const brokersStore = useBrokersStore()
 const authStore = useAuthStore()
 
 const canCreate = computed(
-  () =>
-    authStore.account?.access.is_admin === true || authStore.account?.access.is_dispatcher === true,
+  () => authStore.account?.access.is_admin === true || authStore.account?.access.is_hr === true,
 )
 
 function resetAndShow(broker: Broker | null) {
