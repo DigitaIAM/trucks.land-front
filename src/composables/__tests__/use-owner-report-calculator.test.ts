@@ -187,6 +187,60 @@ describe('loadOwnerPayments', () => {
     expect(result.get(200)![0].driver_payment).toBe(1200)
     expect(result.get(200)![0].contract).toBe(false)
   })
+
+  it('pays an agreement company when order has no vehicle owner', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: null,
+        vehicle: null,
+        driver: null,
+        driver_cost: 100,
+        cost: 1100,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, kind: 'agreement', company: 15, cost: 100, datetime: '2026-10-25T20:10:00Z' },
+    ]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(1)
+    expect(result.get(15)![0].driver_payment).toBe(100)
+    expect(result.get(15)![0].contract).toBe(false)
+    expect(result.get(15)![0].gross).toBe(0)
+  })
+
+  it('splits an agreement and a company change between owners', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: null,
+        vehicle: null,
+        driver: null,
+        driver_cost: 100,
+        cost: 1100,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, kind: 'agreement', company: 15, cost: 100, datetime: '2026-10-25T20:10:00Z' },
+      { document: 1, kind: 'change', company: 205, cost: 1000, datetime: '2026-10-28T00:22:00Z' },
+    ]
+
+    const result = await loadOwnerPayments(1)
+    expect(result.size).toBe(2)
+    expect(result.get(15)![0].driver_payment).toBe(100)
+    expect(result.get(205)![0].driver_payment).toBe(1000)
+  })
 })
 
 describe('loadOwnerExpenses', () => {
@@ -495,5 +549,37 @@ describe('calculateOwnerReport', () => {
     expect(v200[0].vehicle).toBe(14306)
     expect(v200[0].contract).toBe(true)
     expect(v200[0].gross).toBe(1200)
+  })
+
+  it('splits a company agreement and a company change end to end', async () => {
+    const from = global.supabase.from as Mock
+    from.mockImplementation((t: string) => mockQuery(mockTableData[t] ?? []))
+
+    mockTableData['owner_unpaid_orders'] = [
+      {
+        id: 1,
+        owner: null,
+        vehicle: null,
+        driver: null,
+        driver_cost: 100,
+        cost: 1100,
+        stage: 2,
+        organization: 1,
+      },
+    ]
+    mockTableData['order_events'] = [
+      { document: 1, kind: 'agreement', company: 15, cost: 100, datetime: '2026-10-25T20:10:00Z' },
+      { document: 1, kind: 'change', company: 205, cost: 1000, datetime: '2026-10-28T00:22:00Z' },
+    ]
+
+    const payments = await loadOwnerPayments(1)
+    const report = await calculateOwnerReport(payments, new Map(), null)
+
+    const owner15 = report.find((r) => r.owner === 15)!
+    const owner205 = report.find((r) => r.owner === 205)!
+    expect(owner15.orders_driver).toBe(100)
+    expect(owner15.orders_amount).toBe(1100)
+    expect(owner205.orders_driver).toBe(1000)
+    expect(owner205.orders_amount).toBe(1100)
   })
 })

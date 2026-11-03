@@ -340,8 +340,8 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p class="text-md">{{ eventDate.company_at_location }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
-          <p v-if="eventDate.details.note" class="text-md">
-            {{ eventDate.details.note }}
+          <p v-if="eventDate.details?.note" class="text-md">
+            {{ eventDate.details?.note || '' }}
           </p>
         </div>
 
@@ -372,7 +372,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p class="text-md">{{ eventDate.company_at_location }}</p>
           <p v-if="eventDate.address" class="text-md">{{ eventDate.address }}</p>
           <p class="text-md">{{ eventDate.city }} / {{ eventDate.state }} / {{ eventDate.zip }}</p>
-          <p v-if="eventDate.details.note" class="text-md">{{ eventDate.details.note }}</p>
+          <p v-if="eventDate.details?.note" class="text-md">{{ eventDate.details?.note || '' }}</p>
         </div>
 
         <div
@@ -399,8 +399,13 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
               />
             </svg>
           </span>
-          <h3 class="font-bold text-[#F08A34] leading-tight">Change of driver and vehicle</h3>
+          <h3 class="font-bold text-[#F08A34] leading-tight">
+            Change of driver, vehicle or company
+          </h3>
           <p class="text-md">{{ useDateMyFormat(eventDate.datetime) }}</p>
+          <p v-if="eventDate.company" class="text-md">
+            <QueryAndShow :id="eventDate.company" :store="ownersStore" />
+          </p>
           <p class="text-md">
             <QueryAndShow :id="eventDate.driver" :store="driversStore" />
           </p>
@@ -410,7 +415,7 @@ const deliveryPresent = computed(() => checkIfPresent(eventsStore.listing, 'deli
           <p class="text-md">
             {{ eventDate.cost > 0 ? `\$${eventDate.cost}` : `${eventDate.percent}\%` }}
           </p>
-          <p class="text-md">{{ eventDate.details.note }}</p>
+          <p class="text-md">{{ eventDate.details?.note || '' }}</p>
         </div>
         <div
           class="cursor-pointer mb-5"

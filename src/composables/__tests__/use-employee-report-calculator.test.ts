@@ -295,6 +295,32 @@ describe('calculateEmployeeReport', () => {
     expect(result[0].summary.orders_profit).toBe(320)
   })
 
+  it('includes company change events in driver cost', async () => {
+    mockFromFor('employee_payments')
+    mockFromFor('employee_absences')
+    mockFromFor('user_conditions')
+
+    const order: any = {
+      id: 1,
+      cost: 1100,
+      driver_cost: 100,
+      created_by: 10,
+      stage: 2,
+      organization: 1,
+      events: [
+        { kind: 'agreement', company: 15, cost: 100 },
+        { kind: 'change', company: 205, cost: 1000 },
+      ],
+    }
+    const mapping = new Map()
+    mapping.set(10, [{ employee: 10, employee_payment: 0, order }])
+
+    const result = await calculateEmployeeReport(1, new Map(), mapping, new Map())
+    expect(result).toHaveLength(1)
+    expect(result[0].summary.orders_driver).toBe(1100)
+    expect(result[0].summary.orders_profit).toBe(0)
+  })
+
   it('does not throw when a change event precedes the agreement', async () => {
     mockFromFor('employee_payments')
     mockFromFor('employee_absences')

@@ -13,35 +13,54 @@ export async function loadOwnerPayments(orgId: number | null) {
 
   const orderIds = rows.map((json) => Number(json['id'])).filter((id) => !Number.isNaN(id))
 
-  const changeByOrder = new Map<
-    number,
-    Array<{ vehicle: number | null; driver: number | null; cost: number | null }>
-  >()
-  const changeVehicleIds = new Set<number>()
+  interface OwnerReportEvent {
+    company: number | null
+    vehicle: number | null
+    driver: number | null
+    cost: number | null
+    percent: number | null
+    datetime: string | null
+  }
+
+  const agreementByOrder = new Map<number, Array<OwnerReportEvent>>()
+  const changeByOrder = new Map<number, Array<OwnerReportEvent>>()
+  const allVehicleIds = new Set<number>()
 
   for (let i = 0; i < orderIds.length; i += 100) {
     const batch = orderIds.slice(i, i + 100)
     const { data } = await supabase
       .from('order_events')
-      .select('document, vehicle, driver, cost')
+      .select('document, kind, company, vehicle, driver, cost, percent, datetime')
       .in('document', batch)
-      .eq('kind', 'change')
+      .in('kind', ['agreement', 'change'])
 
     data?.forEach((ev) => {
       const document = Number(ev['document'])
-      const list = changeByOrder.get(document) ?? []
-      list.push({
+      if (Number.isNaN(document)) return
+
+      const event: OwnerReportEvent = {
+        company: ev['company'] != null ? Number(ev['company']) : null,
         vehicle: ev['vehicle'] != null ? Number(ev['vehicle']) : null,
         driver: ev['driver'] != null ? Number(ev['driver']) : null,
-        cost: ev['cost'],
-      })
-      changeByOrder.set(document, list)
+        cost: ev['cost'] != null ? Number(ev['cost']) : null,
+        percent: ev['percent'] != null ? Number(ev['percent']) : null,
+        datetime: ev['datetime'] != null ? String(ev['datetime']) : null,
+      }
 
-      if (ev['vehicle'] != null) changeVehicleIds.add(Number(ev['vehicle']))
+      if (ev['kind'] === 'agreement') {
+        const list = agreementByOrder.get(document) ?? []
+        list.push(event)
+        agreementByOrder.set(document, list)
+      } else if (ev['kind'] === 'change') {
+        const list = changeByOrder.get(document) ?? []
+        list.push(event)
+        changeByOrder.set(document, list)
+      }
+
+      if (event.vehicle != null) allVehicleIds.add(event.vehicle)
     })
   }
 
-  const allVehicleIds = new Set<number>(changeVehicleIds)
   rows.forEach((json) => {
     if (json['vehicle'] != null) allVehicleIds.add(Number(json['vehicle']))
   })
@@ -88,42 +107,93 @@ export async function loadOwnerPayments(orgId: number | null) {
     paymentsMap.set(key, list)
   }
 
+  function getEventAmount(event: OwnerReportEvent | undefined, order: Order) {
+    if (!event) return 0
+    if (event.percent != null) return ((Number(order.cost) || 0) * event.percent) / 100
+    return event.cost ?? 0
+  }
+
+  function pickBaseAgreement(
+    agreements: Array<OwnerReportEvent>,
+    vehicle: number | null,
+    driver: number | null,
+  ) {
+    if (agreements.length === 0) return undefined
+
+    if (vehicle != null) {
+      const byVehicle = agreements.find((agreement) => agreement.vehicle === vehicle)
+      if (byVehicle) return byVehicle
+    }
+
+    if (driver != null) {
+      const byDriver = agreements.find((agreement) => agreement.driver === driver)
+      if (byDriver) return byDriver
+    }
+
+    return agreements.slice().sort((a, b) => {
+      const aTime = a.datetime ? new Date(a.datetime).getTime() : 0
+      const bTime = b.datetime ? new Date(b.datetime).getTime() : 0
+      return bTime - aTime
+    })[0]
+  }
+
   rows.forEach((json) => {
     const order = json as Order
     const orderId = Number(json['id'])
-    const agreementOwner = Number(json['owner'])
-    const agreementVehicle = json['vehicle'] != null ? Number(json['vehicle']) : null
-    const agreementDriver = json['driver'] != null ? Number(json['driver']) : null
+    const rowOwner = json['owner'] != null ? Number(json['owner']) : null
+    const rowVehicle = json['vehicle'] != null ? Number(json['vehicle']) : null
+    const rowDriver = json['driver'] != null ? Number(json['driver']) : null
+
+    const agreements = agreementByOrder.get(orderId) ?? []
+    const baseAgreement = pickBaseAgreement(agreements, rowVehicle, rowDriver)
+
+    const agreementVehicle = rowVehicle ?? baseAgreement?.vehicle ?? null
+    const agreementDriver = rowDriver ?? baseAgreement?.driver ?? null
+    const agreementOwner =
+      rowOwner ??
+      (agreementVehicle != null ? vehicleOwner.get(agreementVehicle) : undefined) ??
+      baseAgreement?.company ??
+      null
+
     const isContract =
       json['contract'] === true ||
       (agreementVehicle != null && vehicleContract.get(agreementVehicle) === true)
+
+    const basePayment =
+      json['driver_cost'] != null
+        ? Number(json['driver_cost']) || 0
+        : getEventAmount(baseAgreement, order)
 
     const changes = changeByOrder.get(orderId) ?? []
     const hasChange = changes.length > 0
 
     pushRecord(
       agreementOwner,
-      Number(json['driver_cost']) || 0,
+      basePayment,
       order,
       agreementVehicle,
       agreementDriver,
       isContract,
-      isContract ? (hasChange ? Number(json['driver_cost']) || 0 : Number(order.cost) || 0) : 0,
+      isContract ? (hasChange ? basePayment : Number(order.cost) || 0) : 0,
     )
 
     changes.forEach((ev) => {
       const changeVehicle = ev.vehicle
-      const changeOwner = changeVehicle != null ? vehicleOwner.get(changeVehicle) : undefined
+      const changeOwner =
+        ev.company ??
+        (changeVehicle != null ? vehicleOwner.get(changeVehicle) : undefined) ??
+        agreementOwner
       const changeContract =
         changeVehicle != null ? vehicleContract.get(changeVehicle) === true : false
+      const changePayment = getEventAmount(ev, order)
       pushRecord(
-        changeOwner ?? agreementOwner,
-        Number(ev.cost) || 0,
+        changeOwner,
+        changePayment,
         order,
         changeVehicle,
         ev.driver,
         changeContract,
-        changeContract ? Number(ev.cost) || 0 : 0,
+        changeContract ? changePayment : 0,
       )
     })
   })

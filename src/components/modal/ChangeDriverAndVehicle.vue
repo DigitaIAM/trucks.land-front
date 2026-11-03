@@ -12,6 +12,7 @@ const id = ref(null)
 const datetime = ref(new Date() as Date | undefined)
 const note = ref<string>('')
 const driver = ref<Driver | null>(null)
+const company = ref<Owner | null>(null)
 const vehicle = ref<Vehicle | null>(null)
 const cost = ref<number | null>(null)
 const city = ref<string>('')
@@ -42,6 +43,25 @@ const ownersStore = useOwnersStore()
 
 const colorMode = useColorMode()
 
+watch(
+  () => company.value?.id,
+  (id) => {
+    if (id != null) {
+      driver.value = null
+      vehicle.value = null
+    }
+  },
+)
+
+watch(
+  () => driver.value?.id,
+  (id) => {
+    if (id != null) {
+      company.value = null
+    }
+  },
+)
+
 function resetAndShow(event: OrderEvent | null) {
   if (event) {
     if (event.kind != 'change') {
@@ -52,6 +72,7 @@ function resetAndShow(event: OrderEvent | null) {
     datetime.value = event.datetime || ''
     note.value = event.details?.note || ''
     driver.value = event.driver ? { id: event.driver } : null
+    company.value = event.company ? { id: event.company } : null
     vehicle.value = event.vehicle ? { id: event.vehicle } : null
     cost.value = event.cost
     city.value = event.city || ''
@@ -76,6 +97,7 @@ async function saveAndEdit() {
         kind: 'change',
         datetime: datetime.value,
         driver: driver.value?.id,
+        company: company.value?.id ?? null,
         vehicle: vehicle.value?.id,
         cost: cost.value,
         details: {
@@ -91,6 +113,7 @@ async function saveAndEdit() {
         kind: 'change',
         datetime: datetime.value,
         driver: driver.value?.id,
+        company: company.value?.id ?? null,
         vehicle: vehicle.value?.id,
         cost: cost.value,
         details: {
@@ -121,7 +144,7 @@ function close() {
     <ModalBox class="max-w-[calc(50vw)]">
       <div class="flex items-start justify-between">
         <div class="md:w-1/2 md:mb-0">
-          <Text size="2xl">Change of driver and vehicle</Text>
+          <Text size="2xl">Change of driver, vehicle or company</Text>
         </div>
         <div class="md:w-1/2 md:mb-0">
           <VueDatePicker
@@ -141,7 +164,11 @@ function close() {
       <div class="flex space-x-3 mb-2 mt-4 w-full">
         <div class="md:w-1/4 md:mb-0">
           <Label>Vehicle</Label>
-          <selector v-model="vehicle" :store="vehiclesStore"></selector>
+          <selector
+            v-model="vehicle"
+            :store="vehiclesStore"
+            :disabled="company?.id != undefined"
+          ></selector>
         </div>
         <div class="md:w-3/4 md:mb-0">
           <Label>Owner</Label>
@@ -150,12 +177,25 @@ function close() {
       </div>
 
       <div class="flex space-x-3 mb-2 mt-4 w-full">
-        <div class="md:w-2/3 md:mb-0">
+        <div class="md:w-1/3 md:mb-0">
           <Label>Driver</Label>
-          <selector v-model="driver" :store="driversStore"></selector>
+          <selector
+            v-model="driver"
+            :store="driversStore"
+            :disabled="company?.id != undefined"
+          ></selector>
+        </div>
+        <Text class="pt-8">or</Text>
+        <div class="md:w-1/3 md:mb-0">
+          <Label>Company</Label>
+          <selector
+            v-model="company"
+            :store="ownersStore"
+            :disabled="driver?.id != undefined"
+          ></selector>
         </div>
         <div class="md:w-1/3 md:mb-0">
-          <Label>Driver payment $</Label>
+          <Label>Payment $</Label>
           <TextInput v-model="cost" />
         </div>
       </div>

@@ -183,6 +183,11 @@ export const useReportOwner = defineStore('owner_unpaid_orders', () => {
             total += amount
           }
 
+          const nonContractEntries = entries.filter((e) => !e.contract || e.vehicle == null)
+          for (const e of nonContractEntries) {
+            total += e.dp
+          }
+
           paymentRecords.push({
             doc_payment: -1,
             doc_order: order.id,
