@@ -2,6 +2,7 @@ import { Workbook } from 'exceljs'
 import { saveAs } from 'file-saver'
 import moment from 'moment-timezone'
 import type { Fill } from 'exceljs/index'
+import { buildGrossOwnerByOrder } from '@/utils/gross-allocation.ts'
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = []
@@ -109,19 +110,22 @@ export async function weekExportToExcel(
   const allOrderIds = [...new Set([...allOrderLinesMap.values()].flat().map((l) => l.doc_order))]
 
   onProgress?.(2, 4, 'Loading orders, pickups, deliveries...')
-  const [ordersResData, pickupsData, deliveriesData] = await Promise.all([
-    Promise.all(
-      chunkArray(allOrderIds, 50).map((chunk) =>
-        supabase
-          .from('orders_journal')
-          .select()
-          .in('id', chunk)
-          .then((r) => r.data ?? []),
-      ),
-    ).then((r) => r.flat()),
-    fetchInChunks('order_events', allOrderIds, { kind: 'pick-up' }),
-    fetchInChunks('order_events', allOrderIds, { kind: 'delivery' }),
-  ])
+  const [ordersResData, pickupsData, deliveriesData, agreementsData, changesData] =
+    await Promise.all([
+      Promise.all(
+        chunkArray(allOrderIds, 50).map((chunk) =>
+          supabase
+            .from('orders_journal')
+            .select()
+            .in('id', chunk)
+            .then((r) => r.data ?? []),
+        ),
+      ).then((r) => r.flat()),
+      fetchInChunks('order_events', allOrderIds, { kind: 'pick-up' }),
+      fetchInChunks('order_events', allOrderIds, { kind: 'delivery' }),
+      fetchInChunks('order_events', allOrderIds, { kind: 'agreement' }),
+      fetchInChunks('order_events', allOrderIds, { kind: 'change' }),
+    ])
 
   const ordersMap = new Map<number, any>()
   ordersResData.forEach((o) => ordersMap.set(o.id, o))
@@ -137,7 +141,12 @@ export async function weekExportToExcel(
   })
 
   // ШАГ 5: resolve vehicle/driver/broker/dispatcher параллельно
-  const vehicleIds = [...new Set(ordersResData.map((o) => o.vehicle).filter(Boolean))]
+  const eventVehicleIds = [...agreementsData, ...changesData]
+    .map((event) => event.vehicle)
+    .filter(Boolean)
+  const vehicleIds = [
+    ...new Set([...ordersResData.map((o) => o.vehicle).filter(Boolean), ...eventVehicleIds]),
+  ]
   const driverIds = [...new Set(ordersResData.map((o) => o.driver).filter(Boolean))]
   const brokerIds = [...new Set(ordersResData.map((o) => o.broker).filter(Boolean))]
   const dispatcherIds = [...new Set(ordersResData.map((o) => o.created_by).filter(Boolean))]
@@ -153,6 +162,20 @@ export async function weekExportToExcel(
   const driversMap = new Map(driversList)
   const brokersMap = new Map(brokersList)
   const dispatchersMap = new Map(dispatchersList)
+
+  const vehicleOwners = new Map<number, number>()
+  vehiclesMap.forEach((vehicle, id) => {
+    if (vehicle?.owner != null) {
+      vehicleOwners.set(Number(id), Number(vehicle.owner))
+    }
+  })
+
+  const grossOwnerByOrder = buildGrossOwnerByOrder(
+    documents,
+    allOrderLinesMap,
+    [...agreementsData, ...changesData],
+    vehicleOwners,
+  )
 
   // ШАГ 6: формируем строки Excel
   onProgress?.(3, 4, 'Building Excel file...')
@@ -193,7 +216,11 @@ export async function weekExportToExcel(
         deliveryT = moment(new Date(delivery.datetime)).tz('America/New_York').format('HH:mm a')
       }
 
-      const gross = line.order_cost
+      const grossOwner = grossOwnerByOrder.get(order.id)
+      const gross =
+        grossOwner != null && grossOwner !== Number(ownerPayment.owner)
+          ? 0
+          : Number(line.order_cost) || 0
       const driverPayment = line.amount
       const profit = gross - driverPayment
       const percent = gross > 0 ? (profit / gross) * 100 : 0
