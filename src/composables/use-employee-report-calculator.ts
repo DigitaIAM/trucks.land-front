@@ -324,6 +324,7 @@ export async function calculateEmployeeReport(
   ])
 
   const list = [] as EmployeeReportRecord[]
+  const warnedMissingTiers = new Set<string>()
 
   for (const employeeKey of finalKeys) {
     const employee = Number(employeeKey)
@@ -430,7 +431,6 @@ export async function calculateEmployeeReport(
           if (pc != 1) {
             throw 'unexpected pc ' + pc
           }
-          console.log('contract', vehicleId)
           orders_number_contract += 1
           orders_amount_contract += costVal * pc
 
@@ -573,9 +573,12 @@ export async function calculateEmployeeReport(
         data.totalGross,
       )
       if (!matchedTier) {
-        console.warn(
-          `missing vehicle commission tiers for "${vehicle.kind}" (vehicle #${vehicleId}), skipping`,
-        )
+        if (!warnedMissingTiers.has(vehicle.kind)) {
+          warnedMissingTiers.add(vehicle.kind)
+          console.warn(
+            `missing vehicle commission tiers for "${vehicle.kind}" (vehicle #${vehicleId}), skipping`,
+          )
+        }
         continue
       }
 

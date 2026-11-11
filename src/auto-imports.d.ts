@@ -16,6 +16,7 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const calcContractAmount: typeof import('./composables/use-employee-report-calculator')['calcContractAmount']
   const calculateEmployeeReport: typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']
   const calculateOwnerReport: typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']
   const calculateWeeklyContractCommission: typeof import('./composables/use-employee-report-calculator')['calculateWeeklyContractCommission']
@@ -73,6 +74,7 @@ declare global {
   const locationKey: typeof import('./composables/use-similar-loads')['locationKey']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const markRaw: typeof import('vue')['markRaw']
+  const matchContractTier: typeof import('./composables/use-employee-report-calculator')['matchContractTier']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -537,6 +539,7 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly calcContractAmount: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calcContractAmount']>
     readonly calculateEmployeeReport: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calculateEmployeeReport']>
     readonly calculateOwnerReport: UnwrapRef<typeof import('./composables/use-owner-report-calculator')['calculateOwnerReport']>
     readonly calculateWeeklyContractCommission: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['calculateWeeklyContractCommission']>
@@ -590,6 +593,7 @@ declare module 'vue' {
     readonly locationKey: UnwrapRef<typeof import('./composables/use-similar-loads')['locationKey']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly matchContractTier: UnwrapRef<typeof import('./composables/use-employee-report-calculator')['matchContractTier']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>

@@ -26,6 +26,7 @@ export interface VehicleCreate {
   door_height: number
   kind: string
   contract: boolean
+  vehicle_type_id?: number | null
 }
 
 export interface VehicleUpdate {
@@ -45,6 +46,7 @@ export interface VehicleUpdate {
   door_height?: number
   kind?: string
   contract?: boolean
+  vehicle_type_id?: number | null
 }
 
 function convert(vehicle: Vehicle): Vehicle {

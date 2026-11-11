@@ -3,6 +3,8 @@ import '@vuepic/vue-datepicker/dist/main.css'
 
 const listOfVanTypes = ['cargo van', 'small straight', 'large straight', 'dry van']
 
+const LEGACY_TYPE_ID = -1
+
 const owners = useOwnersStore()
 
 const props = defineProps<{
@@ -20,6 +22,7 @@ const vin = ref('')
 
 const model = ref('')
 const kind = ref('')
+const vehicle_type_id = ref<number | null>(null)
 
 const color = ref('')
 const year = ref<number>()
@@ -47,6 +50,30 @@ watch(
 )
 
 const vehicleStore = useVehiclesStore()
+const vehicleTypeStore = useVehicleTypeStore()
+
+const vehicleTypeOptions = computed(() => {
+  const options = (vehicleTypeStore.listing ?? []).map((vt) => ({ id: vt.id, name: vt.name }))
+
+  if (kind.value && !options.some((option) => option.name === kind.value)) {
+    options.unshift({ id: LEGACY_TYPE_ID, name: `${kind.value} (нет в справочнике)` })
+  }
+
+  return options
+})
+
+function syncVehicleTypeId() {
+  if (vehicle_type_id.value && vehicle_type_id.value !== LEGACY_TYPE_ID) return
+
+  const match = (vehicleTypeStore.listing ?? []).find((vt) => vt.name === kind.value)
+  vehicle_type_id.value = match?.id ?? (kind.value ? LEGACY_TYPE_ID : null)
+}
+
+watch(
+  () => vehicleTypeStore.listing,
+  () => syncVehicleTypeId(),
+  { immediate: true },
+)
 
 function resetAndShow(vehicle: Vehicle | null) {
   saveError.value = null
@@ -57,7 +84,10 @@ function resetAndShow(vehicle: Vehicle | null) {
   unit_id.value = vehicle?.unit_id
   vin.value = vehicle?.vin
   model.value = vehicle?.model
-  kind.value = vehicle?.kind
+  kind.value = vehicle?.kind ?? ''
+  vehicle_type_id.value = vehicle?.vehicle_type_id ?? null
+
+  syncVehicleTypeId()
 
   color.value = vehicle?.color
   year.value = vehicle?.year
@@ -79,12 +109,22 @@ function resetAndShow(vehicle: Vehicle | null) {
 async function saveVehicle() {
   saveError.value = null
 
+  const selectedType = vehicleTypeOptions.value.find(
+    (option) => option.id === vehicle_type_id.value,
+  )
+  const validType = selectedType && selectedType.id !== LEGACY_TYPE_ID ? selectedType : null
+  const selectedTypeId =
+    validType?.id ??
+    (vehicle_type_id.value && vehicle_type_id.value !== LEGACY_TYPE_ID
+      ? vehicle_type_id.value
+      : null)
+
   const vehicleData = {
     owner: owner.value?.id,
     unit_id: unit_id.value,
     vin: vin.value,
     model: model.value,
-    kind: kind.value,
+    kind: validType?.name ?? kind.value,
     color: color.value,
     year: year.value,
     load_capacity: load_capacity.value,
@@ -96,6 +136,7 @@ async function saveVehicle() {
     is_active: is_active.value,
     type: vanType.value,
     contract: contract.value,
+    vehicle_type_id: selectedTypeId,
   }
 
   try {
@@ -170,7 +211,7 @@ function handleClick() {
         </div>
         <div class="md:w-1/4 md:mb-0">
           <Label>Type</Label>
-          <TextInput v-model="kind" />
+          <Select v-model="vehicle_type_id" :options="vehicleTypeOptions" class="w-full" />
         </div>
         <div class="md:w-1/4 md:mb-0">
           <Label>Color</Label>
